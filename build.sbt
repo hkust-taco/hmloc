@@ -36,6 +36,7 @@ lazy val mlscript = crossProject(JSPlatform, JVMPlatform).in(file("."))
       JavaSerializable, Serializable, Product,
       LeakingSealed, Overloading,
       Option2Iterable, TraversableOps, ListAppend
+      , PublicInference
     ),
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.12" % Test,
     libraryDependencies += "com.lihaoyi" %%% "sourcecode" % "0.2.8",

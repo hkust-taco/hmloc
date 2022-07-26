@@ -7,7 +7,7 @@ object Helpers {
   /**
     * Show how a term is actually structured.
     */
-  def inspect(t: Term): Str = t match {
+  def inspect(t: Statement): Str = t match {
     case Var(name)     => s"Var($name)"
     case Lam(lhs, rhs) => s"Lam(${inspect(lhs)}, ${inspect(rhs)})"
     case App(lhs, rhs) => s"App(${inspect(lhs)}, ${inspect(rhs)})"
@@ -45,5 +45,16 @@ object Helpers {
     case UnitLit(value)  => s"UnitLit($value)"
     case Subs(arr, idx) => s"Subs(${inspect(arr)}, ${inspect(idx)})"
     case Assign(f, v)   => s"Assign(${inspect(f)}, ${inspect(v)})"
+    case DataDefn(body) => s"DataDefn(${inspect(body)})"
+    case DatatypeDefn(head, body) => s"DatatypeDefn(head: ${inspect(head)}, body: ${inspect(body)}"
+    case LetS(isRec, pat, rhs) => s"LetS(isRec: $isRec, pat: ${inspect(pat)}, rhs: ${inspect(rhs)}"
+    case Def(_, nme, body) => body.fold(term => s"Def(name: $nme, body: ${inspect(term)})", _ => s"Def($nme, polytype)")
+    case TypeDef(_, nme, _, _, _, _) => s"TypeDef($nme)"
   }
+
+  // def inspect(s: Statement): Str = s match {
+  // }
+
+  def inspect(pgrm: Pgrm): Str =
+    pgrm.tops.map(inspect).mkString("\n")
 }

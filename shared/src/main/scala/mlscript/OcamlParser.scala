@@ -42,7 +42,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   // new identifiers except keywords
   def ident[p: P]: P[String] =
-    P((letter | "_") ~~ (letter | digit | "_" | "'").repX).?.!.filter(!keywords(_))
+    P((letter | "_") ~~ (letter | digit | "_" | "'").repX).log.?.!.filter(!keywords(_)).log
 
   // introduce keyword
   def kw[p: P](s: String) = s ~~ !(letter | digit | "_" | "'")
@@ -118,6 +118,25 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     }
   )
 
+  def lit[p: P]: P[Lit] =
+    locate(
+      number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
+        | P(kw("undefined")).map(x => UnitLit(true)) | P(kw("null")).map(x => UnitLit(false))
+    )
+
+  def ocamlTerm[p: P]: P[Term] =
+    P((ident ~ "(" ~ ocamlTerm ~ ")").map{
+      case (nme, body) => App(Var(nme), Tup((None -> (body -> false)) :: Nil))
+    } | lit).log
+
+  def letS[p: P]: P[LetS] = locate(
+    P(
+      kw("let") ~/ kw("rec").!.?.map(_.isDefined) ~ variable ~ "=" ~ ocamlTerm
+    ) map { case (rec, id, rhs) =>
+      LetS(rec, id, rhs)
+    }
+  ).log
+
   /// ocaml above ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
   def tyDecl[p: P]: P[TypeDef] =
@@ -143,12 +162,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   }
 
   def term[p: P]: P[Term] = P(let | fun | ite | withsAsc | _match)
-
-  def lit[p: P]: P[Lit] =
-    locate(
-      number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
-        | P(kw("undefined")).map(x => UnitLit(true)) | P(kw("null")).map(x => UnitLit(false))
-    )
 
   def parens[p: P]: P[Term] = locate(P("(" ~/ (kw("mut").!.? ~ term).rep(0, ",") ~ ",".!.? ~ ")").map {
     case (Seq(None -> t), N)    => Bra(false, t)
@@ -203,14 +216,14 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   def withsAsc[p: P]: P[Term] = P(withs ~ (":" ~/ ty).rep).map { case (withs, ascs) =>
     ascs.foldLeft(withs)(Asc)
-  }
+  }.log
 
   def withs[p: P]: P[Term] = P(binops ~ (kw("with") ~ record).rep).map { case (as, ws) =>
     ws.foldLeft(as)((acc, w) => With(acc, w))
-  }
+  }.log
 
   def mkApp(lhs: Term, rhs: Term): Term = App(lhs, toParams(rhs))
-  def apps[p: P]: P[Term] = P(subterm.rep(1).map(_.reduce(mkApp)))
+  def apps[p: P]: P[Term] = P(subterm.rep(1).map(_.reduce(mkApp))).log
 
   def _match[p: P]: P[CaseOf] =
     locate(P(kw("case") ~/ term ~ "of" ~ "{" ~ "|".? ~ matchArms ~ "}").map(CaseOf.tupled))
@@ -265,9 +278,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         result
       }
       climb(0, pre)
-    }
+    }.log
   def operator[p: P]: P[Unit] = P(
-    !symbolicKeywords ~~ (!StringIn("/*", "//") ~~ (CharsWhile(OpCharNotSlash) | "/")).rep(1)
+    !symbolicKeywords ~~ (!StringIn("/*", "//") ~~ (CharsWhile(OpCharNotSlash) | "/")).rep(1).log
   ).opaque("operator")
   def symbolicKeywords[p: P] = P {
     StringIn(
@@ -358,7 +371,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   //   P(defDecl | tyDecl | termOrAssign, )
   def toplvl[p: P]: P[Ls[Statement]] =
     // P(typeDefinition | let.map(_ :: Nil))
-    P(let.map(_ :: Nil))
+    P(letS.map(_ :: Nil))
   def pgrm[p: P]: P[Pgrm] = P((";".rep ~ toplvl ~ topLevelSep.rep).rep ~ End).map(stmts => Pgrm(stmts.flatten.toList))
   def topLevelSep[p: P]: P[Unit] = ";"
   // def pgrm[p: P]: P[Pgrm] = P((typeDefinition).map(Pgrm))

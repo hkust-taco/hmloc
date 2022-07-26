@@ -192,7 +192,8 @@ class DiffTests extends org.scalatest.funsuite.AnyFunSuite with org.scalatest.Pa
             val blockLineNum = (allLines.size - lines.size) + 1
             if (mode.expectParseErrors)
               failures += blockLineNum
-            if (mode.showParse) output("Parsed: " + p)
+            // if (mode.showParse) output("Parsed: " + p)
+            if (mode.showParse) println(codegen.Helpers.inspect(p))
             // if (mode.isDebugging) typer.resetState()
             if (mode.stats) typer.resetStats()
             typer.dbg = mode.dbg
