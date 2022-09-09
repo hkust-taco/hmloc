@@ -51,7 +51,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def locate[p: P, L <: Located](tree: => P[L]): P[L] = (Index ~~ tree ~~ Index).map { case (i0, n, i1) =>
     n.withLoc(i0, i1, origin)
   }
-  def variable[p: P]: P[Var] = locate(ident.map(Var))
+  def variable[p: P]: P[Var] = locate(ident.map(Var)).log
 
   def tyName[p: P]: P[TypeName] = locate(P(ident map TypeName))
   def tyParam[p: P]: P[TypeName] =
@@ -100,11 +100,20 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       })
     })
 
-  def parseExpression[p: P]: P[Term] = P((StringIn("let")).map(t => Var("")))
+  def initializeConstructor[p: P]: P[Term] = P(
+    (variable ~ "(" ~/ (lit | variable | initializeConstructor).rep(0, ",") ~ ")").map {
+    case (typeName, arguments: Seq[Term]) =>
+      val argRecord = arguments.zipWithIndex.map {
+        case (t, i) => Var(s"_$i") -> (t -> true)
+      }.toList
+      App(typeName, Tup(None -> (Rcd(argRecord) -> true) :: Nil))
+  })
+  def parseExpression[p: P]: P[Term] = initializeConstructor
   def letBinding[p: P]: P[LetS] =
     P(("let" ~/ variable ~ "=" ~ parseExpression).map {
       case (pat, body) => LetS(false, pat, body)
     })
+    
   // def letExpression[p:P]: P[Let] =
   //   P(("let" ~~ "rec" ~~ variable.rep(1, " ")).map {
   //     case (t) => 
@@ -131,7 +140,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   def letS[p: P]: P[LetS] = locate(
     P(
-      kw("let") ~/ kw("rec").!.?.map(_.isDefined) ~ variable ~ "=" ~ ocamlTerm
+      kw("let") ~/ kw("rec").!.?.map(_.isDefined) ~ variable.log ~ "=" ~ initializeConstructor
     ) map { case (rec, id, rhs) =>
       LetS(rec, id, rhs)
     }
@@ -366,12 +375,12 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   )
   def litTy[p: P]: P[Type] = P(lit.map(l => Literal(l).withLocOf(l)))
 
-  // def toplvl[p: P]: P[Ls[Statement]] = typeDefinition
+  def toplvl[p: P]: P[Ls[Statement]] = typeDefinition
   // def toplvl[p: P]: P[Ls[Statement]] =
   //   P(defDecl | tyDecl | termOrAssign, )
-  def toplvl[p: P]: P[Ls[Statement]] =
+  // def toplvl[p: P]: P[Ls[Statement]] =
     // P(typeDefinition | let.map(_ :: Nil))
-    P(letS.map(_ :: Nil))
+    // P(letS.map(_ :: Nil))
   def pgrm[p: P]: P[Pgrm] = P((";".rep ~ toplvl ~ topLevelSep.rep).rep ~ End).map(stmts => Pgrm(stmts.flatten.toList))
   def topLevelSep[p: P]: P[Unit] = ";"
   // def pgrm[p: P]: P[Pgrm] = P((typeDefinition).map(Pgrm))
