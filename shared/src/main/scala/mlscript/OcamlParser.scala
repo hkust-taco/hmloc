@@ -56,14 +56,18 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def tyName[p: P]: P[TypeName] = locate(P(ident map TypeName))
   def tyParam[p: P]: P[TypeName] =
     ((CharIn("'") ~ tyName))
+  
+  // type ['a, 'b] tup = Tup of 'a * 'b
   def tyParams[p: P]: P[Ls[TypeName]] =
     (tyParam.rep(0, ",")).?.map(_.toList.flatten)
-
+    
+  // type ['a, 'b tup] = Tup of 'a * 'b
   def typeExpression[p: P]: P[(Ls[TypeName], TypeName)] =
     (tyParams ~ tyName).map { case args @ (tparams, tname) =>
       if (tname.name.isEmpty) (Ls.empty, tparams(0)) else args
     }
 
+  // type 'a, 'b tup = Tup of ['a * 'b]
   def constructorArguments[p: P]: P[(List[TypeName], Record)] = typeExpression
     .rep(1, "*")
     .map(args => {
@@ -76,7 +80,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       (typeParams, Record(fields))
     })
 
-  /** constructor declaration like Cons of 'a * 'a list */
+  // type 'a, 'b tup = [Tup of 'a * 'b]
   def constructorDecl[p: P]: P[TypeDef] =
     P((tyName ~ ("of" ~/ constructorArguments).?).map {
       case (id, Some((params, body))) => TypeDef(Cls, id, params, body)
@@ -85,11 +89,13 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   // https://v2.ocaml.org/manual/typedecl.html#ss:typedefs
   // TODO: handle record style type representation
+  // type 'a lst = [Null | Cons of 'a * 'a lst]
   def typeRepresentation[p: P]: P[List[TypeDef]] = constructorDecl.rep(1, "|").map(_.toList)
 
   /** Type definition declares an alias. The alias is a union of type names of the class defintions defined within it.
     * The class defintitions and then the body is returned as a list.
     */
+  // [type 'a lst = Null | Cons of 'a * 'a lst]
   def typeDefinition[p: P]: P[Ls[TypeDef]] =
     P(("type" ~/ tyParams ~ tyName).flatMap { case (ts, id) =>
       "=" ~/ typeRepresentation map (body => {
@@ -100,6 +106,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       })
     })
 
+  // [Cons(3, Cons(4, Null))]
   def initializeConstructor[p: P]: P[Term] = P(
     (variable ~ "(" ~/ (lit | variable | initializeConstructor).rep(0, ",") ~ ")").map {
     case (typeName, arguments: Seq[Term]) =>
@@ -108,11 +115,63 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       }.toList
       App(typeName, Tup(None -> (Rcd(argRecord) -> true) :: Nil))
   })
-  def parseExpression[p: P]: P[Term] = initializeConstructor
-  def letBinding[p: P]: P[LetS] =
-    P(("let" ~/ variable ~ "=" ~ parseExpression).map {
-      case (pat, body) => LetS(false, pat, body)
-    })
+  
+  // term application
+  def ocamlTerm[p: P]: P[Term] = P(
+    (variable ~ (variable | "(" ~/ initializeConstructor ~ ")").rep(0, " ")).map {
+      case (appliedVar, params) =>
+        val paramsTup = params.map {
+          case t => N -> (t -> true)
+        }.toList
+        if (paramsTup.isEmpty)
+          appliedVar
+        else
+          App(appliedVar, Tup(paramsTup))
+    }
+  )
+  def parseExpression[p: P]: P[Term] = initializeConstructor | ocamlTerm | matchCase
+  def letBinding[p: P]: P[Ls[Statement]] =
+    P(("let" ~/ kw("rec").!.? ~ variable ~ variable.rep(0, " ") ~ "=" ~ parseExpression).map {
+      // [let x = Cons(3, Cons(4, Null))]
+      case (isRec, name, Seq(), body) =>
+        LetS(isRec.isDefined, name, body) :: Nil
+      // [let rec f x y = x f y]
+      case (isRec, name, args, body) =>
+        val desugarLet = args.foldRight(body){ case (arg, acc) =>
+          Lam(toParams(arg), acc)
+        }
+        Def(isRec.isDefined, name, L(desugarLet)) :: Nil
+  })
+  
+  def matchCaseArm[p:P]: P[CaseBranches] = P(
+  (
+    ("_" ~ "->" ~ parseExpression).map(Wildcard)
+    | ((lit | variable) ~ parseExpression ~ matchArmsNoCase).map {
+        case (t, b, rest) => Case(t, b, rest)
+      }).?.map {
+    case None => NoCases
+    case Some(b) => b
+  })
+  def matchArmsNoCase[p: P]: P[CaseBranches] = ("|" ~ matchCaseArm).?.map(_.getOrElse(NoCases))
+  def matchCase[p:P]: P[CaseOf] = P(
+  locate(("match" ~/ variable ~/ "with" ~ matchCaseArm).map(CaseOf.tupled)))
+  
+  def tempArm[p: P]: P[CaseBranches] = P(
+    (("_" ~ "->" ~ term).map(Wildcard)
+      | ((lit | variable) ~ "->" ~ term ~ matchArms2)
+        .map { case (t, b, rest) => Case(t, b, rest) }).?.map {
+      case None    => NoCases
+      case Some(b) => b
+    }
+  )
+
+  def toplvl[p: P]: P[Ls[Statement]] = (typeDefinition | letBinding)
+  // def toplvl[p: P]: P[Ls[Statement]] =
+  //   P(defDecl | tyDecl | termOrAssign, )
+  // def toplvl[p: P]: P[Ls[Statement]] =
+    // P(typeDefinition | let.map(_ :: Nil))
+    // P(letS.map(_ :: Nil))
+  def pgrm[p: P]: P[Pgrm] = P((";".rep ~ toplvl ~ topLevelSep.rep).rep ~ End).map(stmts => Pgrm(stmts.flatten.toList))
     
   // def letExpression[p:P]: P[Let] =
   //   P(("let" ~~ "rec" ~~ variable.rep(1, " ")).map {
@@ -133,10 +192,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         | P(kw("undefined")).map(x => UnitLit(true)) | P(kw("null")).map(x => UnitLit(false))
     )
 
-  def ocamlTerm[p: P]: P[Term] =
-    P((ident ~ "(" ~ ocamlTerm ~ ")").map{
-      case (nme, body) => App(Var(nme), Tup((None -> (body -> false)) :: Nil))
-    } | lit).log
+  // def ocamlTerm[p: P]: P[Term] =
+  //   P((ident ~ "(" ~ ocamlTerm ~ ")").map{
+  //     case (nme, body) => App(Var(nme), Tup((None -> (body -> false)) :: Nil))
+  //   } | lit).log
 
   def letS[p: P]: P[LetS] = locate(
     P(
@@ -145,6 +204,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       LetS(rec, id, rhs)
     }
   ).log
+  def toParams(t: Term): Tup = t match {
+    case t: Tup => t
+    case _      => Tup((N, (t, false)) :: Nil)
+  }
 
   /// ocaml above ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -156,10 +219,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         }
       case (k @ Als, id, ts) => "=" ~ ty map (bod => TypeDef(k, id, ts, bod))
     })
-  def toParams(t: Term): Tup = t match {
-    case t: Tup => t
-    case _      => Tup((N, (t, false)) :: Nil)
-  }
   def toParamsTy(t: Type): Tuple = t match {
     case t: Tuple => t
     case _        => Tuple((N, Field(None, t)) :: Nil)
@@ -375,13 +434,13 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   )
   def litTy[p: P]: P[Type] = P(lit.map(l => Literal(l).withLocOf(l)))
 
-  def toplvl[p: P]: P[Ls[Statement]] = typeDefinition
+  // def toplvl[p: P]: P[Ls[Statement]] = typeDefinition
   // def toplvl[p: P]: P[Ls[Statement]] =
   //   P(defDecl | tyDecl | termOrAssign, )
   // def toplvl[p: P]: P[Ls[Statement]] =
     // P(typeDefinition | let.map(_ :: Nil))
     // P(letS.map(_ :: Nil))
-  def pgrm[p: P]: P[Pgrm] = P((";".rep ~ toplvl ~ topLevelSep.rep).rep ~ End).map(stmts => Pgrm(stmts.flatten.toList))
+  // def pgrm[p: P]: P[Pgrm] = P((";".rep ~ toplvl ~ topLevelSep.rep).rep ~ End).map(stmts => Pgrm(stmts.flatten.toList))
   def topLevelSep[p: P]: P[Unit] = ";"
   // def pgrm[p: P]: P[Pgrm] = P((typeDefinition).map(Pgrm))
 

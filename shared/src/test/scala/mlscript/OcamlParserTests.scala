@@ -12,7 +12,7 @@ class OcamlParserTests extends org.scalatest.funsuite.AnyFunSuite {
   val processedBlock = OcamlParser.addTopLevelSeparators(fileContents);
   val fph = new FastParseHelpers(fileContents);
   val ans =
-    parse(processedBlock.mkString, p => new OcamlParser(Origin(filePath, 0, fph)).letS(p), verboseFailures = true)
+    parse(processedBlock.mkString, p => new OcamlParser(Origin(filePath, 0, fph)).pgrm(p), verboseFailures = true)
   println(ans)
 }
 
