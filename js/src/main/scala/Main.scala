@@ -30,7 +30,7 @@ object Main {
     val tryRes = Try[Str] {
       import fastparse._
       import fastparse.Parsed.{Success, Failure}
-      import mlscript.{MLParser, TypeError, Origin}
+      import mlscript.{MLParser, ErrorReport, Origin}
       val lines = str.splitSane('\n').toIndexedSeq
       val processedBlock = MLParser.addTopLevelSeparators(lines).mkString
       val fph = new mlscript.FastParseHelpers(str, lines)
@@ -76,7 +76,7 @@ object Main {
               typeCheckResult.zip(pgrm.desugared._2._2) foreach { case ((name, ty), origin) =>
                 val value = origin match {
                   // Do not extract from results if its a type declaration.
-                  case Def(_, _, R(_)) => N
+                  case Def(_, _, R(_), _) => N
                   // Otherwise, `origin` is either a term or a definition.
                   case _ => results match {
                     case head :: next =>
@@ -177,7 +177,7 @@ object Main {
     val stopAtFirstError = true
     var errorOccurred = false
 
-    def formatError(culprit: Str, err: TypeError): Str = {
+    def formatError(culprit: Str, err: ErrorReport): Str = {
       s"""<b><font color="Red">
                 Error in <font color="LightGreen">${culprit}</font>: ${err.mainMsg}
                 <!--${
@@ -193,7 +193,7 @@ object Main {
     implicit var ctx: Ctx =
       try processTypeDefs(typeDefs)(Ctx.init, raise)
       catch {
-        case err: TypeError =>
+        case err: ErrorReport =>
           res ++= formatError("class definitions", err)
           Ctx.init
       }
@@ -238,10 +238,10 @@ object Main {
       }
       val sctx = Message.mkCtx(diag.allMsgs.iterator.map(_._1), "?")
       val headStr = diag match {
-        case TypeError(msg, loco) =>
+        case ErrorReport(msg, loco, src) =>
           totalTypeErrors += 1
           s"╔══ <strong style=\"color: #E74C3C\">[ERROR]</strong> "
-        case Warning(msg, loco) =>
+        case WarningReport(msg, loco, src) =>
           totalWarnings += 1
           s"╔══ <strong style=\"color: #F39C12\">[WARNING]</strong> "
       }
@@ -297,7 +297,7 @@ object Main {
       val d = decls.head
       decls = decls.tail
       try d match {
-        case d @ Def(isrec, nme, L(rhs)) =>
+        case d @ Def(isrec, nme, L(rhs), _) =>
           val ty_sch = typeLetRhs(isrec, nme.name, rhs)(ctx, raise)
           val inst = ty_sch.instantiate(0)
           println(s"Typed `$nme` as: $inst")
@@ -312,7 +312,7 @@ object Main {
           }
           res ++= formatBinding(d.nme.name, ty_sch)
           results append S(d.nme.name) -> (getType(ty_sch).show)
-        case d @ Def(isrec, nme, R(PolyType(tps, rhs))) =>
+        case d @ Def(isrec, nme, R(PolyType(tps, rhs)), _) =>
           declared.get(nme) match {
             case S(sign) =>
               import Message.MessageContext
@@ -345,10 +345,10 @@ object Main {
               }
           }
       } catch {
-        case err: TypeError =>
+        case err: ErrorReport =>
           if (stopAtFirstError) decls = Nil
           val culprit = d match {
-            case Def(isrec, nme, rhs)  => "def " + nme
+            case Def(isrec, nme, rhs, isByname)  => "def " + nme
             case _: DesugaredStatement => "statement"
           }
           res ++= report(err)

@@ -7,6 +7,8 @@ import scala.reflect.ClassTag
 import mlscript.{TypeName, Top, Bot, TypeDef, Als, Trt, Cls}
 import mlscript.MethodDef
 import mlscript.Term
+import mlscript.utils.{AnyOps, lastWords}
+import mlscript.JSField
 
 class Scope(name: Str, enclosing: Opt[Scope]) {
   private val lexicalTypeSymbols = scala.collection.mutable.HashMap[Str, TypeSymbol]()
@@ -49,18 +51,6 @@ class Scope(name: Str, enclosing: Opt[Scope]) {
     }
   }
 
-  /**
-    * Shorthands for creating function scopes.
-    */
-  def this(name: Str, params: Ls[Str], enclosing: Scope) = {
-    this(name, Opt(enclosing))
-    params foreach { param =>
-      // TODO: avoid reserved keywords.
-      val symbol = ValueSymbol(param, param)
-      register(symbol)
-    }
-  }
-
   private val allocateRuntimeNameIter = for {
     i <- (1 to Int.MaxValue).iterator
     c <- Scope.nameAlphabet.combinations(i)
@@ -83,23 +73,25 @@ class Scope(name: Str, enclosing: Opt[Scope]) {
     if (prefix.isEmpty()) {
       return allocateRuntimeName()
     }
+    // Replace ticks
+    val realPrefix = Scope.replaceTicks(prefix)
     // Try just prefix.
-    if (!runtimeSymbols.contains(prefix) && !Symbol.isKeyword(prefix)) {
-      return prefix
+    if (!runtimeSymbols.contains(realPrefix) && !Symbol.isKeyword(realPrefix)) {
+      return realPrefix
     }
     // Try prefix with an integer.
     for (i <- 1 to Int.MaxValue) {
-      val name = s"$prefix$i"
+      val name = s"$realPrefix$i"
       if (!runtimeSymbols.contains(name)) {
         return name
       }
     }
     // Give up.
     throw CodeGenError(
-      if (prefix.isEmpty())
+      if (realPrefix.isEmpty())
         "Cannot allocate a runtime name"
       else
-        s"Cannot allocate a runtime name starting with '$prefix'"
+        s"Cannot allocate a runtime name starting with '$realPrefix'"
     )
   }
 
@@ -131,6 +123,10 @@ class Scope(name: Str, enclosing: Opt[Scope]) {
     lexicalTypeSymbols.remove(symbol.lexicalName)
     runtimeSymbols.remove(symbol.runtimeName)
     ()
+  }
+
+  def unregisterSymbol(symbol: ValueSymbol): Unit = {
+    unregister(symbol)
   }
 
   def getType(name: Str): Opt[TypeSymbol] = lexicalTypeSymbols.get(name)
@@ -198,11 +194,11 @@ class Scope(name: Str, enclosing: Opt[Scope]) {
   }
 
   def declareTypeSymbol(typeDef: TypeDef): TypeSymbol = typeDef match {
-    case TypeDef(Als, TypeName(name), tparams, body, _, _) =>
+    case TypeDef(Als, TypeName(name), tparams, body, _, _, _) =>
       declareTypeAlias(name, tparams map { _.name }, body)
-    case TypeDef(Trt, TypeName(name), tparams, body, _, mthdDefs) =>
+    case TypeDef(Trt, TypeName(name), tparams, body, _, mthdDefs, _) =>
       declareTrait(name, tparams map { _.name }, body, mthdDefs)
-    case TypeDef(Cls, TypeName(name), tparams, baseType, _, members) =>
+    case TypeDef(Cls, TypeName(name), tparams, baseType, _, members, _) =>
       declareClass(name, tparams map { _.name }, baseType, members)
   }
 
@@ -235,8 +231,15 @@ class Scope(name: Str, enclosing: Opt[Scope]) {
     register(symbol)
     symbol
   }
+  
+  def declareThisAlias(): ValueSymbol = {
+    val runtimeName = allocateRuntimeName("self")
+    val symbol = ValueSymbol("this", runtimeName, Some(false), false)
+    register(symbol)
+    symbol
+  }
 
-  def declareValue(lexicalName: Str): ValueSymbol = {
+  def declareValue(lexicalName: Str, isByvalueRec: Option[Boolean], isLam: Boolean): ValueSymbol = {
     val runtimeName = lexicalValueSymbols.get(lexicalName) match {
       // If we are implementing a stub symbol and the stub symbol did not shadow any other
       // symbols, it is safe to reuse its `runtimeName`.
@@ -244,7 +247,7 @@ class Scope(name: Str, enclosing: Opt[Scope]) {
       case S(sym: BuiltinSymbol) if !sym.accessed    => sym.runtimeName
       case _                                         => allocateRuntimeName(lexicalName)
     }
-    val symbol = ValueSymbol(lexicalName, runtimeName)
+    val symbol = ValueSymbol(lexicalName, runtimeName, isByvalueRec, isLam)
     register(symbol)
     symbol
   }
@@ -290,6 +293,23 @@ class Scope(name: Str, enclosing: Opt[Scope]) {
     name
   }
 
+  /**
+    * This function declares a parameter in current scope and returns the 
+    * symbol's runtime name.
+    *
+    * @param name
+    * @return
+    */
+  def declareParameter(name: Str): Str = {
+    val prefix =
+      if (JSField.isValidIdentifier(name)) name
+      else if (Symbol.isKeyword(name)) name + "$"
+      else Scope.replaceTicks(name)
+    val runtimeName = allocateRuntimeName(prefix)
+    register(ValueSymbol(name, runtimeName, Some(false), false))
+    runtimeName
+  }
+
   def existsRuntimeSymbol(name: Str): Bool = runtimeSymbols.contains(name)
 
   /**
@@ -297,10 +317,10 @@ class Scope(name: Str, enclosing: Opt[Scope]) {
     */
   def derive(name: Str): Scope = new Scope(name, S(this))
 
-  /**
-    * Shorthands for deriving function scopes.
-    */
-  def derive(name: Str, params: Ls[Str]): Scope = Scope(name, params, this)
+  
+  def refreshRes(): Unit = {
+    lexicalValueSymbols("res") = ValueSymbol("res", "res", Some(false), false)
+  }
 }
 
 object Scope {
@@ -310,13 +330,9 @@ object Scope {
   */
   def apply(name: Str): Scope = new Scope(name)
 
-  /**
-    * Shorthands for creating function scopes.
-    */
-  def apply(name: Str, params: Ls[Str], enclosing: Scope): Scope =
-    new Scope(name, params, enclosing)
-
   private val nameAlphabet: Ls[Char] = Ls.from("abcdefghijklmnopqrstuvwxyz")
+
+  private def replaceTicks(str: Str): Str = str.replace('\'', '$')
 }
 
 /**
