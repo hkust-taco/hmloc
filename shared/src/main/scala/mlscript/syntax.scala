@@ -8,9 +8,21 @@ import mlscript.utils._, shorthands._
 final case class Pgrm(tops: Ls[Statement]) extends PgrmOrTypingUnit with PgrmImpl
 
 sealed abstract class Decl extends DesugaredStatement with DeclImpl
+/** A Def is any function declaration in the global scope
+  *
+  * @param rec
+  *   If the defintion is recursive
+  * @param nme
+  *   the name the body of the defintion is bound
+  * @param rhs
+  *   Is a term if it's a definition and a type if it's a declaration
+  * @param isByname
+  *   If this defintion is call by name or call by value
+  */
 final case class Def(rec: Bool, nme: Var, rhs: Term \/ PolyType, isByname: Bool) extends Decl with Terms {
   val body: Located = rhs.fold(identity, identity)
 }
+
 final case class TypeDef(
   kind: TypeDefKind,
   nme: TypeName,
@@ -82,6 +94,16 @@ final case class IfOpsApp(lhs: Term, opsRhss: Ls[Var -> IfBody]) extends IfBody
 final case class IfBlock(lines: Ls[IfBody \/ Statement]) extends IfBody
 // final case class IfApp(fun: Term, opsRhss: Ls[Var -> IfBody]) extends IfBody
 
+/** A Fld is used to store values in tuples, records and specialization terms.
+  * class Foo(#x, y) indicates that Foo is specialized for type of `#x`
+  *
+  * @param mut
+  *   if the field is mutable
+  * @param spec
+  *   if the field is specialized for overlying instance
+  * @param value
+  *   term body of the field
+  */
 final case class Fld(mut: Bool, spec: Bool, value: Term)
 
 sealed abstract class CaseBranches extends CaseBranchesImpl

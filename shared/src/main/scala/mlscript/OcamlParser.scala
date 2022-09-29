@@ -83,8 +83,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   // type 'a, 'b tup = [Tup of 'a * 'b]
   def constructorDecl[p: P]: P[TypeDef] =
     P((tyName ~ ("of" ~/ constructorArguments).?).map {
-      case (id, Some((params, body))) => TypeDef(Cls, id, params, body)
-      case (id, None)                 => TypeDef(Cls, id, List.empty, Record(List.empty))
+      case (id, Some((params, body))) => TypeDef(Cls, id, params, body, Nil, Nil, Nil)
+      case (id, None)                 => TypeDef(Cls, id, List.empty, Record(List.empty), Nil, Nil, Nil)
     })
 
   // https://v2.ocaml.org/manual/typedecl.html#ss:typedefs
@@ -102,18 +102,18 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         val bodyTypes =
           body.map(tyDef => if (tyDef.tparams.isEmpty) tyDef.nme else AppliedType(tyDef.nme, tyDef.tparams))
         val aliasBody = bodyTypes.foldLeft[Type](bodyTypes(0))((t1, t2) => Union(t1, t2))
-        body :+ TypeDef(Als, id, ts, aliasBody)
+        body :+ TypeDef(Als, id, ts, aliasBody, Nil, Nil, Nil)
       })
     })
 
   // [Cons(3, Cons(4, Null))]
-  def initializeConstructor[p: P]: P[Term] = P(
+  def initializeConstructor[p: P]: P[App] = P(
     (variable ~ "(" ~/ (lit | variable | initializeConstructor).rep(0, ",") ~ ")").map {
     case (typeName, arguments: Seq[Term]) =>
       val argRecord = arguments.zipWithIndex.map {
-        case (t, i) => Var(s"_$i") -> (t -> true)
+        case (t, i) => Var(s"_$i") -> Fld(true, false, t)
       }.toList
-      App(typeName, Tup(None -> (Rcd(argRecord) -> true) :: Nil))
+      App(typeName, Tup(None -> Fld(true, false, (Rcd(argRecord))) :: Nil))
   })
   
   // term application
@@ -121,7 +121,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     (variable ~ (variable | "(" ~/ initializeConstructor ~ ")").rep(0, " ")).map {
       case (appliedVar, params) =>
         val paramsTup = params.map {
-          case t => N -> (t -> true)
+          case t => N -> Fld(true, false, t)
         }.toList
         if (paramsTup.isEmpty)
           appliedVar
@@ -140,7 +140,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         val desugarLet = args.foldRight(body){ case (arg, acc) =>
           Lam(toParams(arg), acc)
         }
-        Def(isRec.isDefined, name, L(desugarLet)) :: Nil
+        Def(isRec.isDefined, name, L(desugarLet), false) :: Nil
   })
   
   def matchCaseArm[p:P]: P[CaseBranches] = P(
@@ -180,7 +180,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   def let[p: P]: P[Term] = locate(
     P(
-      kw("let") ~/ kw("rec").!.?.map(_.isDefined) ~ variable ~ subterm.rep ~ "=" ~ term ~ kw("in") ~ term
+      kw("let") ~/ kw("rec").!.?.map(_.isDefined) ~ variable ~
+        subterm.rep ~ "=" ~ term ~ kw("in") ~ term
     ) map { case (rec, id, ps, rhs, bod) =>
       Let(rec, id, ps.foldRight(rhs)((i, acc) => Lam(toParams(i), acc)), bod)
     }
@@ -206,19 +207,11 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   ).log
   def toParams(t: Term): Tup = t match {
     case t: Tup => t
-    case _      => Tup((N, (t, false)) :: Nil)
+    case _      => Tup(N -> Fld(false, false, t) :: Nil)
   }
 
   /// ocaml above ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  def tyDecl[p: P]: P[TypeDef] =
-    P((tyKind ~/ tyName ~ tyParams).flatMap {
-      case (k @ (Cls | Trt), id, ts) =>
-        (":" ~ ty).? ~ (mthDecl(id) | mthDef(id)).rep.map(_.toList) map { case (bod, ms) =>
-          TypeDef(k, id, ts, bod.getOrElse(Top), ms.collect { case R(md) => md }, ms.collect { case L(md) => md })
-        }
-      case (k @ Als, id, ts) => "=" ~ ty map (bod => TypeDef(k, id, ts, bod))
-    })
   def toParamsTy(t: Type): Tuple = t match {
     case t: Tuple => t
     case _        => Tuple((N, Field(None, t)) :: Nil)
@@ -233,8 +226,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   def parens[p: P]: P[Term] = locate(P("(" ~/ (kw("mut").!.? ~ term).rep(0, ",") ~ ",".!.? ~ ")").map {
     case (Seq(None -> t), N)    => Bra(false, t)
-    case (Seq(Some(_) -> t), N) => Tup(N -> (t, true) :: Nil) // ? single tuple with mutable
-    case (ts, _)                => Tup(ts.iterator.map(f => N -> (f._2, f._1.isDefined)).toList)
+    case (Seq(Some(_) -> t), N) => Tup(N -> Fld(true, false, t) :: Nil) // ? single tuple with mutable
+    case (ts, _)                => Tup(ts.iterator.map(f => N -> Fld(f._1.isDefined, false, f._2)).toList)
   })
 
   def subtermNoSel[p: P]: P[Term] = P(parens | record | lit | variable)
@@ -268,8 +261,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         .rep(sep = ";") ~ "}"
     ).map { fs =>
       Rcd(fs.map {
-        case L((mut, v, t)) => v -> (t -> mut.isDefined)
-        case R(mut -> id)   => id -> (id -> mut.isDefined)
+        case L((mut, v, t)) => v -> Fld(mut.isDefined, false, t)
+        case R(mut -> id)   => id -> Fld(mut.isDefined, false, id)
       }.toList)
     }
   )
@@ -372,9 +365,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   def defDecl[p: P]: P[Def] =
     locate(P((kw("def") ~ variable ~ tyParams ~ ":" ~/ ty map { case (id, tps, t) =>
-      Def(true, id, R(PolyType(tps, t)))
+      Def(true, id, R(PolyType(tps, t)), false)
     }) | (kw("rec").!.?.map(_.isDefined) ~ kw("def") ~/ variable ~ subterm.rep ~ "=" ~ term map {
-      case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))))
+      case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), false)
     })))
 
   def tyKind[p: P]: P[TypeDefKind] = (kw("class") | kw("trait") | kw("type")).! map {
