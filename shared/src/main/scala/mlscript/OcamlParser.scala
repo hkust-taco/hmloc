@@ -193,18 +193,53 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), true)
     })))
   
+  /** data constructor arguments
+    * type 'a, 'b tup = Tup of ['a * 'b]
+    * TODO handle type parameters
+    * TODO handle type aliases
+    * type heapVar = HeapInt of int | Heap of heap and
+    *   heap = (string * int) list
+    * 
+    */
+  def ocamlConstructorArguments[p: P]: P[(Ls[TypeName], Record)] =
+    tyName.rep(1, "*")
+    .map(args => {
+      val fields = args.zipWithIndex.map { case (tname, i) =>
+        (Var("_" + i.toString()), Field(None, tname))
+      }.toList
+      (Nil, Record(fields))
+    })
+    
+  /** data constructor declaration
+   *  type 'a, 'b tup = [Tup of 'a * 'b]
+   * TODO: handle type parameters
+   */
+  def ocamlConstructorDecl[p: P]: P[TypeDef] =
+    P((tyName ~ ("of" ~/ ocamlConstructorArguments).?).map {
+      case (id, Some((params, body))) => TypeDef(Cls, id, params, body, Nil, Nil, Nil)
+      case (id, None)                 => TypeDef(Cls, id, Ls.empty, Record(Ls.empty), Nil, Nil, Nil)
+    })
+    
+  // https://v2.ocaml.org/manual/typedecl.html#ss:typedefs
+  // TODO: handle record style type representation
+  // type 'a lst = [Null | Cons of 'a * 'a lst]
+  def ocamlTypeRepresentation[p: P]: P[List[TypeDef]] = ocamlConstructorDecl.rep(1, "|").map(_.toList)
+  
   def tyKind[p: P]: P[TypeDefKind] = (kw("class") | kw("trait") | kw("type")).! map {
     case "class" => Cls
     case "trait" => Trt
     case "type"  => Als
   }
-  def tyDecl[p: P]: P[TypeDef] =
-    P((tyKind ~/ tyName ~ tyParams).flatMap {
-      case (k @ (Cls | Trt), id, ts) => (":" ~ ty).? ~ (mthDecl(id) | mthDef(id)).rep.map(_.toList) map {
-        case (bod, ms) => TypeDef(k, id, ts, bod.getOrElse(Top), 
-          ms.collect { case R(md) => md }, ms.collect{ case L(md) => md }, Nil)
-      }
-      case (k @ Als, id, ts) => "=" ~ ty map (bod => TypeDef(k, id, ts, bod, Nil, Nil, Nil))
+  /** Modified type declaration that parses type constructor
+    * and data constructor and returns them all together as a
+    * list
+    */
+  def tyDecl[p: P]: P[Ls[TypeDef]] =
+    P((kw("type") ~/ tyName ~ "=" ~/ ocamlTypeRepresentation)
+      .map { case (tname, bodies) =>
+        val bodyTypes = bodies.map(tyDef => tyDef.nme)
+        val aliasBody = bodyTypes.foldLeft[Type](bodyTypes(0))(Union)
+        TypeDef(Als, tname, Nil, aliasBody, Nil, Nil, Nil) :: bodies
     })
   def tyParams[p: P]: P[Ls[TypeName]] =
     ("[" ~ tyName.rep(0, ",") ~ "]").?.map(_.toList.flatten)
@@ -271,9 +306,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   })
   def litTy[p: P]: P[Type] = P( lit.map(l => Literal(l).withLocOf(l)) )
   
-  def toplvl[p: P]: P[Statement] =
-    P( ocamlDefDecl | tyDecl | termOrAssign )
-  def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ toplvl ~ topLevelSep.rep).rep.map(_.toList) ~ End ).map(Pgrm)
+  def toplvl[p: P]: P[Ls[Statement]] =
+    P( ocamlDefDecl.map(_ :: Nil) | tyDecl | termOrAssign.map(_ :: Nil) )
+  def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ toplvl ~ topLevelSep.rep).rep.map(_.toList.flatten) ~ End ).map(Pgrm)
   def topLevelSep[p: P]: P[Unit] = ";"
   
   private var curHash = 0
