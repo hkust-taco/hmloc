@@ -118,18 +118,24 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def mkApp(lhs: Term, rhs: Term): Term = App(lhs, toParams(rhs))
   def apps[p: P]: P[Term] = P( subterm.rep(1).map(_.reduce(mkApp)) )
   
-  def _match[p: P]: P[CaseOf] =
-    locate(P( kw("case") ~/ term ~ "of" ~ "{" ~ "|".? ~ matchArms ~ "}" ).map(CaseOf.tupled))
-  def matchArms[p: P]: P[CaseBranches] = P(
-    ( ("_" ~ "->" ~ term).map(Wildcard)
-    | ((lit | variable) ~ "->" ~ term ~ matchArms2)
-      .map { case (t, b, rest) => Case(t, b, rest) }
-    ).?.map {
-      case None => NoCases
-      case Some(b) => b
-    }
-  )
-  def matchArms2[p: P]: P[CaseBranches] = ("|" ~ matchArms).?.map(_.getOrElse(NoCases))
+  def _match[p: P]: P[If] =
+    locate(P( kw("match") ~/ term ~ "with" ~ matchArms).map {
+      case (matchVar, branches) =>
+        val ifBlocks = IfBlock(branches.map(L.apply))
+        If(IfOpApp(matchVar, Var("is"), ifBlocks), N)
+    })
+  def matchArms[p:P]: P[Ls[IfBody]] = P(
+   (
+    ("_" ~ "->" ~ term).map(IfElse(_) :: Nil)
+    | (term ~ "->" ~ term ~ matchArms2).map {
+        case (t, b, rest) =>
+          IfThen(t, b) :: rest
+      }
+  ).?.map {
+    case None => Ls.empty
+    case Some(b) => b
+  })
+  def matchArms2[p: P]: P[Ls[IfBody]] = ("|" ~ matchArms).?.map(_.getOrElse(Ls.empty))
   
   private val prec: Map[Char,Int] = List(
     ":",
@@ -189,7 +195,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ocamlDefDecl[p: P]: P[Def] =
     locate(P((kw("let") ~ variable ~ tyParams ~ ":" ~/ ty map {
       case (id, tps, t) => Def(true, id, R(PolyType(tps, t)), true)
-    }) | (kw("rec").!.?.map(_.isDefined) ~ kw("let") ~/ variable ~ subterm.rep ~ "=" ~ term map {
+    }) | (kw("let") ~ kw("rec").!.?.map(_.isDefined) ~/ variable ~ subterm.rep ~ "=" ~ term map {
       case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), true)
     })))
   
