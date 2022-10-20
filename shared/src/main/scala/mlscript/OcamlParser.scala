@@ -8,7 +8,7 @@ import mlscript.Lexer._
 
 /** Parser for an ML-style input syntax, used in the legacy `ML*` tests. */
 @SuppressWarnings(Array("org.wartremover.warts.All"))
-class MLParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
+class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
   
   val keywords = Set(
     "def", "class", "trait", "type", "method", "mut",
@@ -185,10 +185,11 @@ class MLParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
   
   def expr[p: P]: P[Term] = P( term ~ End )
   
-  def defDecl[p: P]: P[Def] =
-    locate(P((kw("def") ~ variable ~ tyParams ~ ":" ~/ ty map {
+  /** top level function defintions using let with single and multiple arguments */
+  def ocamlDefDecl[p: P]: P[Def] =
+    locate(P((kw("let") ~ variable ~ tyParams ~ ":" ~/ ty map {
       case (id, tps, t) => Def(true, id, R(PolyType(tps, t)), true)
-    }) | (kw("rec").!.?.map(_.isDefined) ~ kw("def") ~/ variable ~ subterm.rep ~ "=" ~ term map {
+    }) | (kw("rec").!.?.map(_.isDefined) ~ kw("let") ~/ variable ~ subterm.rep ~ "=" ~ term map {
       case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), true)
     })))
   
@@ -271,7 +272,7 @@ class MLParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
   def litTy[p: P]: P[Type] = P( lit.map(l => Literal(l).withLocOf(l)) )
   
   def toplvl[p: P]: P[Statement] =
-    P( defDecl | tyDecl | termOrAssign )
+    P( ocamlDefDecl | tyDecl | termOrAssign )
   def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ toplvl ~ topLevelSep.rep).rep.map(_.toList) ~ End ).map(Pgrm)
   def topLevelSep[p: P]: P[Unit] = ";"
   
@@ -283,7 +284,7 @@ class MLParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
   }
   
 }
-object MLParser {
+object OcamlParser {
   
   def addTopLevelSeparators(lines: IndexedSeq[Str]): IndexedSeq[Str] = {
     (lines.iterator ++ lines.lastOption).toList.sliding(2).map {
