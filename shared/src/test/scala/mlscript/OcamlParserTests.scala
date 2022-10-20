@@ -17,5 +17,5 @@ class OcamlParserTests extends org.scalatest.funsuite.AnyFunSuite {
 }
 
 object OcamlParserTests {
-  val filePath = "/Users/twitu/Code/mlscript/shared/src/test/diff/analysis/test.ocaml"
+  val filePath = "/Users/twitu/Code/mlscript/shared/src/test/diff/analysis/test-parser.ocaml"
 }
