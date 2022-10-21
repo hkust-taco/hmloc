@@ -34,7 +34,7 @@ object Helpers {
     case CaseOf(trm, cases) =>
       def inspectCaseBranches(br: CaseBranches): Str = br match {
         case Case(clsNme, body, rest) =>
-          s"Case($clsNme, ${inspect(t)}, ${inspectCaseBranches(rest)})"
+          s"Case($clsNme, ${inspect(body)}, ${inspectCaseBranches(rest)})"
         case Wildcard(body) => s"Wildcard(${inspect(body)})"
         case NoCases        => "NoCases"
       }
@@ -54,8 +54,9 @@ object Helpers {
     case DataDefn(body) => s"DataDefn(${inspect(body)})"
     case DatatypeDefn(head, body) => s"DatatypeDefn(head: ${inspect(head)}, body: ${inspect(body)}"
     case LetS(isRec, pat, rhs) => s"LetS(isRec: $isRec, pat: ${inspect(pat)}, rhs: ${inspect(rhs)}"
-    case Def(_, nme, body, _) => body.fold(term => s"Def(name: $nme, body: ${inspect(term)})", _ => s"Def($nme, polytype)")
     case TypeDef(_, nme, _, _, _, _, _) => s"TypeDef($nme)"
+    case Def(rec, nme, rhs, isByname) =>
+      s"Def($rec, $nme, ${rhs.fold(inspect, _.toString)}, $isByname)"
   }
 
   // def inspect(s: Statement): Str = s match {
