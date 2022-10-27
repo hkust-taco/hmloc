@@ -4,6 +4,9 @@ import fastparse._
 import mlscript.utils._, shorthands._
 import mlscript._
 import scala.annotation.nowarn
+import fastparse.Parsed.Failure
+import fastparse.Parsed.Success
+import mlscript.codegen.Helpers
 
 class OcamlParserTests extends org.scalatest.funsuite.AnyFunSuite {
   import OcamlParserTests._
@@ -13,7 +16,13 @@ class OcamlParserTests extends org.scalatest.funsuite.AnyFunSuite {
   val fph = new FastParseHelpers(fileContents);
   val ans =
     parse(processedBlock.mkString, p => new OcamlParser(Origin(filePath, 0, fph)).pgrm(p), verboseFailures = true)
-  println(ans)
+  ans match {
+    case f: Failure => 
+      println(f)
+    case Success(pgrm, index) =>
+      println(pgrm)
+      println(Helpers.inspect(pgrm))
+  }
 }
 
 object OcamlParserTests {

@@ -54,7 +54,7 @@ object Helpers {
     case DataDefn(body) => s"DataDefn(${inspect(body)})"
     case DatatypeDefn(head, body) => s"DatatypeDefn(head: ${inspect(head)}, body: ${inspect(body)}"
     case LetS(isRec, pat, rhs) => s"LetS(isRec: $isRec, pat: ${inspect(pat)}, rhs: ${inspect(rhs)}"
-    case TypeDef(_, nme, _, _, _, _, _) => s"TypeDef($nme)"
+    case TypeDef(kind, nme, tname, tbody, _, _, tvars) => s"TypeDef($kind, $nme, $tname, $tbody, $tvars)"
     case Def(rec, nme, rhs, isByname) =>
       s"Def($rec, $nme, ${rhs.fold(inspect, _.toString)}, $isByname)"
   }

@@ -104,6 +104,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   val IntType: ClassTag = ClassTag(Var("int"), Set.single(TypeName("number")))(noTyProv)
   val DecType: ClassTag = ClassTag(Var("number"), Set.empty)(noTyProv)
   val StrType: ClassTag = ClassTag(Var("string"), Set.empty)(noTyProv)
+  // Add class tags for list constructors
+  val ConsType: ClassTag = ClassTag(Var("Cons"), Set.empty)(noTyProv)
+  val NilType: ClassTag = ClassTag(Var("Nil"), Set.empty)(noTyProv)
   
   val ErrTypeId: SimpleTerm = Var("error")
   
@@ -145,6 +148,25 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.in))
       tyDef
     } ::
+    // Add type definitions for list constructors and alias
+    TypeDef(Cls, TypeName("Nil"), Nil, Nil, RecordType(Nil)(noTyProv), Nil, Nil, Set.empty, N, Nil) ::
+    {
+      val tv = freshVar(noTyProv)(1)
+      val consBody = RecordType(List(
+        (Var("_0"), FieldType(None, tv)(noTyProv)),
+        (Var("_1"), FieldType(None, TypeRef(TypeName("List"), List(tv))(noTyProv))(noTyProv)),
+      ))(noTyProv)
+      val tyDef = TypeDef(Cls, TypeName("Cons"), List((TypeName("A"), tv)), Nil, consBody, Nil, Nil, Set.empty, N, Nil)
+      tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.co))
+      tyDef
+     } ::
+     {
+       val tv = freshVar(noTyProv)(1)
+       val listBody = ComposedType(true, TypeRef(TypeName("Cons"), List(tv))(noTyProv), TypeRef(TypeName("Nil"), Nil)(noTyProv))(noTyProv)
+       val tyDef = TypeDef(Als, TypeName("List"), List(TypeName("A") -> tv), Nil, listBody, Nil, Nil, Set.empty, N, Nil)
+       tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.co))
+       tyDef
+     } ::
     Nil
   val primitiveTypes: Set[Str] =
     builtinTypes.iterator.map(_.nme.name).flatMap(n => n.decapitalize :: n.capitalize :: Nil).toSet
@@ -206,6 +228,25 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // PolymorphicType(0, fun(singleTup(BoolType), fun(singleTup(v), fun(singleTup(v), v)(noProv))(noProv))(noProv))
         PolymorphicType(0, fun(BoolType, fun(v, fun(v, v)(noProv))(noProv))(noProv))
       },
+      // Add bindings for List constructor
+      "Cons" ->{
+        val listTyVar = freshVar(noProv, Some("A"))(1)
+        val headTyVar = freshVar(noProv, Some("_0"), Nil, listTyVar :: Nil)(1)
+        val tailTyVar = freshVar(noProv, Some("_1"), Nil, TypeRef(TypeName("List"), listTyVar :: Nil)(noProv) :: Nil)(1)
+        val consFnLhs = RecordType.mk(
+          (Var("_0"), FieldType(None, headTyVar)(noProv)) ::
+          (Var("_1"), FieldType(None, tailTyVar)(noProv)) :: Nil
+        )()
+        val consFnRhs = ComposedType(false, ConsType, RecordType.mk(
+          (Var("_0"), FieldType(None, headTyVar)(noProv)) ::
+          (Var("_1"), FieldType(None, tailTyVar)(noProv)) ::
+          (Var("Cons#A"), FieldType(Some(listTyVar), listTyVar)(noProv)) :: Nil)()
+        )(noProv)
+        PolymorphicType(0, fun(singleTup(consFnLhs), consFnRhs)(noProv))
+      },
+      "Nil" -> {
+        PolymorphicType(0, fun(singleTup(TopType), NilType)(noProv))
+      }
     ) ++ primTypes ++ primTypes.map(p => "" + p._1.capitalize -> p._2) // TODO settle on naming convention...
   }
   
