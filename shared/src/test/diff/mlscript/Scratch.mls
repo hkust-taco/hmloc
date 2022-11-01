@@ -1,12 +1,47 @@
 :ex
 :p
-class List[A]: { length: A }
-List { length = 1 }
-//│ Parsed: TypeDef(TypeName(List))
-//│ App(Var(List), Tup(_: Rcd(Var(length) = IntLit(1)})))
-//│ Desugared: class List[A]: {length: A}
-//│ Desugared: List ({length: 1},)
-//│ AST: App(Var(List), Tup(_: Rcd(Var(length) = IntLit(1)})))
-//│ Defined class List[+A]
-//│ res: List[1]
-//│    = List { length: 1 }
+:d
+:s
+1 == 2
+//│ Parsed: App(App(Var(==), Tup(_: IntLit(1))), Tup(_: IntLit(2)))
+//│ Desugared: == (1,) (2,)
+//│ AST: App(App(Var(==), Tup(_: IntLit(1))), Tup(_: IntLit(2)))
+//│ 0. Typing term == (1,) (2,)
+//│ | 0. Typing term == (1,)
+//│ | | 0. Typing term ==
+//│ | | 0. : [(number<> -> (number<> -> bool<>))]
+//│ | | 0. Typing term 1,
+//│ | | | 0. Typing term 1
+//│ | | | 0. : 1<int,number>
+//│ | | 0. : (1<int,number>,)
+//│ | | CONSTRAIN [[(number<> -> (number<> -> bool<>))]] <! ([(1<int,number>,)] -> α29)
+//│ | |   where 
+//│ | | C [[(number<> -> (number<> -> bool<>))]] <! ([(1<int,number>,)] -> α29)    (0)
+//│ | | | C [(number<> -> (number<> -> bool<>))] <! ([(1<int,number>,)] -> α29)    (0)
+//│ | | | | C (number<> -> (number<> -> bool<>)) <! ([(1<int,number>,)] -> α29)    (0)
+//│ | | | | | C [(1<int,number>,)] <! (number<>,)    (1)
+//│ | | | | | | C (1<int,number>,) <! (number<>,)    (1)
+//│ | | | | | | | C 1<int,number> <! number<>    (2)
+//│ | | | | | C (number<> -> bool<>) <! α29    (3)
+//│ | 0. : α29
+//│ | 0. Typing term 2,
+//│ | | 0. Typing term 2
+//│ | | 0. : 2<int,number>
+//│ | 0. : (2<int,number>,)
+//│ | CONSTRAIN [α29] <! ([(2<int,number>,)] -> α30)
+//│ |   where 
+//│ 		α29 :> [(number<> -> bool<>)]
+//│ | C [α29] <! ([(2<int,number>,)] -> α30)    (0)
+//│ | | C α29 <! ([(2<int,number>,)] -> α30)    (0)
+//│ | | | C [(number<> -> bool<>)] <! ([(2<int,number>,)] -> α30)    (1)
+//│ | | | | C (number<> -> bool<>) <! ([(2<int,number>,)] -> α30)    (1)
+//│ | | | | | C [(2<int,number>,)] <! (number<>,)    (2)
+//│ | | | | | | C (2<int,number>,) <! (number<>,)    (2)
+//│ | | | | | | | C 2<int,number> <! number<>    (3)
+//│ | | | | | C bool<> <! α30    (4)
+//│ 0. : α30
+//│ ⬤ Typed as: α30
+//│  where: 
+//│ 		α30 :> [[bool<>]]
+//│ res: bool
+//│    = false
