@@ -48,7 +48,12 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def lit[p: P]: P[Lit] =
     locate(number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
     | P(kw("undefined")).map(x => UnitLit(true)) | P(kw("null")).map(x => UnitLit(false)))
-  
+  def ocamlList[p: P]: P[Term] = P("[" ~ lit.rep(0, ",") ~ "]").map(vals => {
+    val emptyList = mkApp(Var("Nil"), Rcd(Nil))
+    vals.foldRight(emptyList)((v, list) =>
+      mkApp(Var("Cons"), Rcd((Var("_0"), Fld(false, false, v)) :: (Var("_1"), Fld(false, false, list)) :: Nil)
+    ))
+  })
   def variable[p: P]: P[Var] = locate(ident.map(Var))
 
   def parenCell[p: P]: P[Either[Term, (Term, Boolean)]] = (("..." | kw("mut")).!.? ~ term).map {
@@ -71,7 +76,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       }.toList)
   })
 
-  def subtermNoSel[p: P]: P[Term] = P( parens | record | lit | variable )
+  def subtermNoSel[p: P]: P[Term] = P( parens | record | lit | variable | ocamlList )
   
   def subterm[p: P]: P[Term] = P( Index ~~ subtermNoSel ~ (
     // Fields:
@@ -107,6 +112,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ite[p: P]: P[Term] = P( kw("if") ~/ term ~ kw("then") ~ term ~ kw("else") ~ term ).map(ite =>
     App(App(App(Var("if"), ite._1), ite._2), ite._3))
   
+  /** Parses an expression of the form `expr (: type)` where the type ascription
+    * is optional This is the key parser that is used in the defintions of all
+    * other term parsers.
+    */
   def withsAsc[p: P]: P[Term] = P( withs ~ (":" ~/ ty).rep ).map {
     case (withs, ascs) => ascs.foldLeft(withs)(Asc)
   }
@@ -116,6 +125,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   }
   
   def mkApp(lhs: Term, rhs: Term): Term = App(lhs, toParams(rhs))
+  /** Parses where one or more subterms are applied to one subterm. It is used
+    * in binops which is used in withs to parse terms.
+    */
   def apps[p: P]: P[Term] = P( subterm.rep(1).map(_.reduce(mkApp)) )
   
   def _match[p: P]: P[If] =

@@ -71,8 +71,14 @@ final case class Tup(fields: Ls[Opt[Var] -> Fld])                    extends Ter
 final case class Rcd(fields: Ls[Var -> Fld])                         extends Term
 final case class Sel(receiver: Term, fieldName: Var)                 extends Term
 final case class Let(isRec: Bool, name: Var, rhs: Term, body: Term)  extends Term
+/** A block of statements that are parsed and type checked together */
 final case class Blk(stmts: Ls[Statement])                           extends Term with BlkImpl
+/** Braces or brackets that encloses a term
+  * @param rcd set this flag if this term is a record, otherwise it's a tuple
+  * @param trm
+  */
 final case class Bra(rcd: Bool, trm: Term)                           extends Term
+/** A term is optionally ascribed with a type as in: term: ty */
 final case class Asc(trm: Term, ty: Type)                            extends Term
 final case class Bind(lhs: Term, rhs: Term)                          extends Term
 final case class Test(trm: Term, ty: Term)                           extends Term
