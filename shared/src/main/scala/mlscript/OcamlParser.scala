@@ -147,9 +147,13 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     * is optional This is the key parser that is used in the defintions of all
     * other term parsers.
     */
-  def withsAsc[p: P]: P[Term] = P( withs ~ (":" ~/ ty).rep ).map {
+  def withsAsc[p: P]: P[Term] = (P( withs ~ (":" ~/ ty).rep ).map {
     case (withs, ascs) => val v = ascs.foldLeft(withs)(Asc); println(v); v
-  }.log
+  }.log ~ ("=" ~/ term).?).map{
+    case (trm1, N) => trm1
+    case (trm1, S(trm2)) =>
+      App(OpApp("==", trm1), trm2)
+  }
   
   def withs[p: P]: P[Term] = P( binops ~ (kw("with") ~ record).rep ).map {
     case (as, ws) => ws.foldLeft(as)((acc, w) => With(acc, w))
