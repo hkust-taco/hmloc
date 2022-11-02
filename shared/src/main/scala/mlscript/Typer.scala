@@ -169,7 +169,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
      } ::
     Nil
   val primitiveTypes: Set[Str] =
-    builtinTypes.iterator.map(_.nme.name).flatMap(n => n.decapitalize :: n.capitalize :: Nil).toSet
+    builtinTypes.iterator.map(_.nme.name).flatMap(n => n.decapitalize :: n.capitalize :: Nil).toSet - "List"
   def singleTup(ty: ST): ST =
     if (funkyTuples) ty else TupleType((N, ty.toUpper(ty.prov) ) :: Nil)(noProv)
   val builtinBindings: Bindings = {

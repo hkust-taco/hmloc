@@ -448,7 +448,9 @@ class NormalForms extends TyperDatatypes { self: Typer =>
       mk(mkDeepST(ty, pol), pol)
     }
     def mkDeepST(ty: SimpleType, pol: Bool)
-          (implicit ctx: Ctx, ptr: PreserveTypeRefs = false, etf: ExpandTupleFields = true): ST = ty match {
+          (implicit ctx: Ctx, ptr: PreserveTypeRefs = false, etf: ExpandTupleFields = true): ST = 
+        // trace(s"mkDeep[$pol,$ptr,$etf](${ty})") {
+        ty match {
       case ProvType(und) =>
         mkDeepST(und, pol).withProv(ty.prov)
       case TypeBounds(lb, ub) => mkDeepST(if (pol) ub else lb, pol).withProv(ty.prov)
@@ -463,6 +465,7 @@ class NormalForms extends TyperDatatypes { self: Typer =>
         }
         dnf.toType().mapPol(S(pol))(go)
     }
+    // }(r => s"= $r")
     
     def mk(ty: SimpleType, pol: Bool)(implicit ctx: Ctx, ptr: PreserveTypeRefs = false, etf: ExpandTupleFields = true): DNF =
         // trace(s"DNF[$pol,$ptr,$etf](${ty})") {
