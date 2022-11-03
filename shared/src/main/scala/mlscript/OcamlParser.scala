@@ -41,9 +41,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def termOrAssign[p: P]: P[Statement] = P( term ~ ("=" ~ term).? ).map {
     case (expr, N) => expr
     case (pat, S(bod)) => LetS(false, pat, bod)
-  }.log
+  }
 
-  def term[p: P]: P[Term] = P(let | fun | ite | withsAsc | _match).log
+  def term[p: P]: P[Term] = P(let | fun | ite | withsAsc | _match)
 
   def lit[p: P]: P[Lit] =
     locate(number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
@@ -78,8 +78,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   def subtermNoSel[p: P]: P[Term] = P( parens | record | lit | variable | ocamlList )
   
-  def subterm[p:P]: P[Term] = ocamlSubterm
-  def mlscriptSubterm[p: P]: P[Term] = P( Index ~~ subtermNoSel ~ (
+  def subterm[p: P]: P[Term] = P( Index ~~ subtermNoSel ~ (
     // Fields:
     ("." ~/ (variable | locate(("(" ~/ ident ~ "." ~ ident ~ ")")
       .map {case (prt, id) => Var(s"${prt}.${id}")})))
@@ -95,53 +94,22 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         })
         a.fold(base)(Assign(base, _))
     }
-
-  /** Parses an optional operation on a subterm like
-   *  r.a <- 1 // assignment on a mutable record field
-   *  if t = 1 then ... // equality check in a if then else statement
-    */
-  def ocamlSubtermOp[p: P]: P[Either[Term, Term]] = P(
-    // assignment of term on lhs
-    ("<-" ~ term).map(L(_)) |
-    // equality check of term with lhs
-    ("=" ~~ term).map(R(_)) // TODO: This won't work in the general case
-  ).log
-  def ocamlSubterm[p: P]: P[Term] = P( Index ~~ subtermNoSel ~ (
-    // Fields:
-    ("." ~/ (variable | locate(("(" ~/ ident ~ "." ~ ident ~ ")")
-      .map {case (prt, id) => Var(s"${prt}.${id}")})))
-      .map {(t: Var) => Left(t)} |
-    // Array subscripts:
-    ("[" ~ term ~/ "]" ~~ Index).map {Right(_)}
-    ).rep ~ ocamlSubtermOp.?.log).map {
-      case (i0, st, sels, a) =>
-        val base = sels.foldLeft(st)((acc, t) => t match {
-          case Left(se) => Sel(acc, se)
-          case Right((su, i1)) => Subs(acc, su).withLoc(i0, i1, origin)
-        })
-        a.fold(base)(op => op.fold(
-          // assignment
-          Assign(base, _),
-          // equality check
-          mkApp(mkApp(Var("=="), base), _))
-        )
-    }
   def record[p: P]: P[Rcd] = locate(P(
       "{" ~/ (kw("mut").!.? ~ variable ~ "=" ~ term map L.apply).|(kw("mut").!.? ~ variable map R.apply).rep(sep = ";") ~ "}"
     ).map { fs => Rcd(fs.map{ 
         case L((mut, v, t)) => v -> Fld(mut.isDefined, false, t)
         case R(mut -> id) => id -> Fld(mut.isDefined, false, id) }.toList)})
   
-  def fun[p: P]: P[Term] = locate(P( kw("fun") ~/ term ~ "->" ~ term ).map(nb => Lam(toParams(nb._1), nb._2))).log
+  def fun[p: P]: P[Term] = locate(P( kw("fun") ~/ term ~ "->" ~ term ).map(nb => Lam(toParams(nb._1), nb._2)))
   
   def let[p: P]: P[Term] = locate(P(
       kw("let") ~/ kw("rec").!.?.map(_.isDefined) ~ variable ~ subterm.rep ~ "=" ~ term ~ kw("in") ~ term
     ) map {
       case (rec, id, ps, rhs, bod) => Let(rec, id, ps.foldRight(rhs)((i, acc) => Lam(toParams(i), acc)), bod)
-    }).log
+    })
   
   def ite[p: P]: P[Term] = P( kw("if") ~/ term ~ kw("then") ~ term ~ kw("else") ~ term ).map(ite =>
-    App(App(App(Var("if"), ite._1), ite._2), ite._3)).log
+    App(App(App(Var("if"), ite._1), ite._2), ite._3))
   
   /** Parses an expression of the form `expr (: type)` where the type ascription
     * is optional This is the key parser that is used in the defintions of all
@@ -149,7 +117,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     */
   def withsAsc[p: P]: P[Term] = (P( withs ~ (":" ~/ ty).rep ).map {
     case (withs, ascs) => val v = ascs.foldLeft(withs)(Asc); println(v); v
-  }.log ~ ("=" ~/ term).?).map{
+  } ~ ("=" ~/ term).?).map{
     case (trm1, N) => trm1
     case (trm1, S(trm2)) =>
       App(OpApp("==", trm1), trm2)
@@ -170,7 +138,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case (matchVar, branches) =>
         val ifBlocks = IfBlock(branches.map(L.apply))
         If(IfOpApp(matchVar, Var("is"), ifBlocks), N)
-    }).log
+    })
   def matchArms[p:P]: P[Ls[IfBody]] = P(
    (
     ("_" ~ "->" ~ term).map(IfElse(_) :: Nil)
@@ -222,7 +190,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         result
       }
       climb(0, pre)
-    }.log
+    }
   def operator[p: P]: P[Unit] = P(
     !symbolicKeywords ~~ (!StringIn("/*", "//") ~~ (CharsWhile(OpCharNotSlash) | "/")).rep(1)
   ).opaque("operator")
@@ -369,7 +337,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def litTy[p: P]: P[Type] = P( lit.map(l => Literal(l).withLocOf(l)) )
   
   def toplvl[p: P]: P[Ls[Statement]] =
-    P( ocamlDefDecl.map(_ :: Nil).log | ocamlTyDecl | termOrAssign.map(_ :: Nil).log ).log
+    P( ocamlDefDecl.map(_ :: Nil) | ocamlTyDecl | termOrAssign.map(_ :: Nil) )
   def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ toplvl ~ topLevelSep.rep).rep.map(_.toList.flatten) ~ End ).map(Pgrm)
   def topLevelSep[p: P]: P[Unit] = ";"
   
