@@ -127,6 +127,7 @@ class DiffTests
       expectCodeGenErrors: Bool = false,
       showRepl: Bool = false,
       allowEscape: Bool = false,
+      ocamlParser: Bool = false,
       // noProvs: Bool = false,
     ) {
       def isDebugging: Bool = dbg || dbgSimplif
@@ -180,6 +181,7 @@ class DiffTests
           case "re" => mode.copy(expectRuntimeErrors = true)
           case "ShowRepl" => mode.copy(showRepl = true)
           case "escape" => mode.copy(allowEscape = true)
+          case "OcamlParser" => mode.copy(ocamlParser = true)
           case _ =>
             failures += allLines.size - lines.size
             output("/!\\ Unrecognized option " + line)
@@ -224,6 +226,7 @@ class DiffTests
           // || l.startsWith(oldOutputMarker)
         ))).toIndexedSeq
         block.foreach(out.println)
+        // top level line separators are same for both mlscript and ocaml parser
         val processedBlock = if (file.ext =:= "fun") block.map(_ + "\n") else MLParser.addTopLevelSeparators(block)
         val processedBlockStr = processedBlock.mkString
         val fph = new FastParseHelpers(block)
@@ -344,6 +347,7 @@ class DiffTests
           }
           else parse(processedBlockStr, p =>
             if (file.ext =:= "fun") new Parser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
+            else if (mode.ocamlParser) new OcamlParser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
             else new MLParser(Origin(testName, globalStartLineNum, fph)).pgrm(p),
             verboseFailures = true
           )

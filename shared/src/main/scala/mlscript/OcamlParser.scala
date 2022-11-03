@@ -111,18 +111,25 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ite[p: P]: P[Term] = P( kw("if") ~/ term ~ kw("then") ~ term ~ kw("else") ~ term ).map(ite =>
     App(App(App(Var("if"), ite._1), ite._2), ite._3))
   
-  /** Parses an expression of the form `expr (: type)` where the type ascription
-    * is optional This is the key parser that is used in the defintions of all
-    * other term parsers.
+  /** Parses an expression of the form `expr (: type) (= expr2)`. This is the
+    * an important term parser because it is the one that actually parses the
+    * sub terms
+    * 
+    * the type ascription is optional
+    * 
+    * The equality check is optional but needed for parsing ocaml style
+    * equality check for terms as in the following examples
+    * a [= 3]
+    * b: List [= Cons(0, Nil)]
     */
-  def withsAsc[p: P]: P[Term] = (P( withs ~ (":" ~/ ty).rep ).map {
-    case (withs, ascs) => val v = ascs.foldLeft(withs)(Asc); println(v); v
-  } ~ ("=" ~/ term).?).map{
-    case (trm1, N) => trm1
-    case (trm1, S(trm2)) =>
-      App(OpApp("==", trm1), trm2)
+  def withsAsc[p: P]: P[Term] = P(withs
+    ~ (":" ~/ ty).rep  // ascription
+    ~ ("=" ~/ term).?  // equality check
+  ).map {
+    case (withs, ascs, equateTerm) =>
+      val trm1 = ascs.foldLeft(withs)(Asc)
+      equateTerm.fold(trm1)(App(OpApp("==", trm1), _))
   }
-  
   def withs[p: P]: P[Term] = P( binops ~ (kw("with") ~ record).rep ).map {
     case (as, ws) => ws.foldLeft(as)((acc, w) => With(acc, w))
   }
