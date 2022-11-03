@@ -139,6 +139,8 @@ class DiffTests
     var allowParseErrors = false // TODO use
     var showRelativeLineNums = false
     var noJavaScript = false
+    // Parse and check the file with ocaml syntax and semantic rules
+    var ocamlMode = false
     var noProvs = false
     var allowRuntimeErrors = false
     var newParser = basePath.headOption.contains("parser") || basePath.headOption.contains("mono")
@@ -181,7 +183,8 @@ class DiffTests
           case "re" => mode.copy(expectRuntimeErrors = true)
           case "ShowRepl" => mode.copy(showRepl = true)
           case "escape" => mode.copy(allowEscape = true)
-          case "OcamlParser" => mode.copy(ocamlParser = true)
+          // Parse and check the file with ocaml syntax and semantic rules
+          case "OcamlParser" => ocamlMode = true; mode
           case _ =>
             failures += allLines.size - lines.size
             output("/!\\ Unrecognized option " + line)
@@ -347,7 +350,7 @@ class DiffTests
           }
           else parse(processedBlockStr, p =>
             if (file.ext =:= "fun") new Parser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
-            else if (mode.ocamlParser) new OcamlParser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
+            else if (ocamlMode) new OcamlParser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
             else new MLParser(Origin(testName, globalStartLineNum, fph)).pgrm(p),
             verboseFailures = true
           )
@@ -365,7 +368,7 @@ class DiffTests
           case Success(p, index) =>
             if (mode.expectParseErrors && !newParser)
               failures += blockLineNum
-            if (mode.showParse || mode.dbgParsing) output(s"Parsed: ${codegen.Helpers.inspect(p)}")
+            if (mode.dbgParsing) output(s"Parsed: ${codegen.Helpers.inspect(p)}")
             // if (mode.isDebugging) typer.resetState()
             if (mode.stats) typer.resetStats()
             typer.dbg = mode.dbg
