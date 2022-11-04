@@ -365,30 +365,33 @@ class DiffTests
               s" at l.$globalLineNum:$col: $lineStr")
             
           // successfully parsed block into a valid syntactically valid program
-          case Success(p, index) =>
+          case Success(prog, index) =>
             if (mode.expectParseErrors && !newParser)
               failures += blockLineNum
-            if (mode.dbgParsing) output(s"Parsed: ${codegen.Helpers.inspect(p)}")
+            if (mode.dbgParsing) output(s"Parsed: ${codegen.Helpers.inspect(prog)}")
             // if (mode.isDebugging) typer.resetState()
             if (mode.stats) typer.resetStats()
             typer.dbg = mode.dbg
-            // typer.recordProvenances = !noProvs
+
             typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors
             typer.verbose = mode.verbose
             typer.explainErrors = mode.explainErrors
             stdout = mode.stdout
-            
-            val (diags, (typeDefs, stmts)) = p.desugared
-            report(diags)
-            
-            if (mode.showParse) {
+
+            // In parseOnly mode file only parse and print desugared blocks for file
+            // do not perform type checking or codegen or results
+            val (p, (diags, (typeDefs, stmts))) = if (parseOnly) {
+              val (diags, (typeDefs, stmts)) = prog.desugared
               typeDefs.foreach(td => output("Desugared: " + td))
               stmts.foreach { s =>
                 output("Desugared: " + s)
-                output("AST: " + mlscript.codegen.Helpers.inspect(s))
               }
+              (Pgrm(Nil), (Nil, (Nil, Nil)))
+            } else {
+              (prog, prog.desugared)
             }
-            
+            report(diags)
+
             val oldCtx = ctx
             ctx = 
               // if (newParser) typer.typeTypingUnit(tu)
