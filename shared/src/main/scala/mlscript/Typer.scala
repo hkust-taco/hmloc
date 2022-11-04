@@ -248,6 +248,13 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       "::" -> listConsTy,
       "Nil" -> {
         PolymorphicType(0, fun(singleTup(TopType), NilType)(noProv))
+      },
+
+      /** Ocaml raise is not relevant to simplifying type error messages. It is a function that simply
+        * consumes the exception.
+        */
+      "raise" -> {
+        fun(singleTup(TopType), BotType)(noProv)
       }
     ) ++ primTypes ++ primTypes.map(p => "" + p._1.capitalize -> p._2) // TODO settle on naming convention...
   }

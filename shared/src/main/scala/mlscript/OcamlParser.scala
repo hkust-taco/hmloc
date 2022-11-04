@@ -37,7 +37,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def number[p: P]: P[Int] = P( CharIn("0-9").repX(1).!.map(_.toInt) )
   def ident[p: P]: P[String] =
     P( (letter | "_") ~~ (letter | digit | "_" | "'").repX ).!.filter(!keywords(_))
-  
+
+  /** all top level statements and expressions.
+    * Note: this is will treat 1 = 2 as let 1 = 2 and not 1 == 2
+    */
   def termOrAssign[p: P]: P[Statement] = P( term ~ ("=" ~ term).? ).map {
     case (expr, N) => expr
     case (pat, S(bod)) => LetS(false, pat, bod)
@@ -342,9 +345,16 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       } })
   })
   def litTy[p: P]: P[Type] = P( lit.map(l => Literal(l).withLocOf(l)) )
-  
+
+  /** Exceptions are definitions returning empty records
+    * Raising them is not relevant to the type checking flow so the raise is defined
+    * as raise: anything -> nothing and simply consumes the exception
+    */
+  def ocamlExceptionDef[p: P]: P[Def] = P(
+    "exception" ~ ident
+  ).map(name => Def(false, Var(name), L(Rcd(Nil)), false))
   def toplvl[p: P]: P[Ls[Statement]] =
-    P( ocamlDefDecl.map(_ :: Nil) | ocamlTyDecl | termOrAssign.map(_ :: Nil) )
+    P(ocamlDefDecl.map(_ :: Nil) | ocamlTyDecl | ocamlExceptionDef.map(_ :: Nil) | termOrAssign.map(_ :: Nil))
   def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ toplvl ~ topLevelSep.rep).rep.map(_.toList.flatten) ~ End ).map(Pgrm)
   def topLevelSep[p: P]: P[Unit] = ";"
   
