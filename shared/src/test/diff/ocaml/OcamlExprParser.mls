@@ -1,0 +1,99 @@
+:NoJS
+:ParseOnly
+:OcamlParser
+
+// equality check
+let a = b = c
+let d = e = f = g
+//│ Desugared: def a: == b c
+//│ Desugared: def d: == e (== f g)
+
+// list values
+1 :: 2
+[1, 2, 3, 4]
+[]
+let a = []
+//│ Desugared: :: (1,) (2,)
+//│ Desugared: Cons ({_0: 1, _1: Cons ({_0: 2, _1: Cons ({_0: 3, _1: Cons ({_0: 4, _1: Nil ({},)},)},)},)},)
+//│ Desugared: Nil ({},)
+//│ Desugared: def a: Nil ({},)
+
+// let without in as definitions
+let a = 1
+let a = a + 1
+let a = a + a + 1
+//│ Desugared: def a: 1
+//│ Desugared: def a: + (a,) (1,)
+//│ Desugared: def a: + (+ (a,) (a,),) (1,)
+
+// match case with operations and nested let statements
+let check e = match e with
+  Something a b c -> here
+ | Nothing d e f -> nothere
+let rec interp_e (h:heap) (e:exp) =
+  match e with
+  Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
+  | Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
+let check e =
+ match e with
+   Something here -> let nothere = here in nothere
+ | Nothing -> beat it
+let check e =
+  match e with
+   a :: b -> []
+   | [] -> Nil
+//│ Desugared: def check: e, => if e is ‹(Something (a,) (b,) (c,)) then here; (Nothing (d,) (e,) (f,)) then nothere›
+//│ Desugared: rec def interp_e: '(' h : TypeName(heap) ')', => '(' e : TypeName(exp) ')', => if e is ‹(Plus (e1, e2,)) then + ('(' interp_e (h,) (e1,) ')',) ('(' interp_e (h,) (e2,) ')',); (Times (e1, e2,)) then * ('(' interp_e (h,) (e1,) ')',) ('(' interp_e (h,) (e2,) ')',)›
+//│ Desugared: def check: e, => if e is ‹(Something (here,)) then let nothere = here in nothere; (Nothing) then beat (it,)›
+//│ Desugared: def check: e, => if e is ‹(:: (a,) (b,)) then Nil ({},); (Nil ({},)) then Nil›
+
+// define lambdas using fun
+fun (env: env) _ -> []
+let interp2 = interp (fun (env:env) opt ->
+  match opt with
+     None -> 0)
+//│ Desugared: '(' env : TypeName(env) ')' (_,), => Nil ({},)
+//│ Desugared: def interp2: interp ('(' '(' env : TypeName(env) ')' (opt,), => if opt is ‹(None) then 0› ')',)
+
+// TODO floats and floating point operators
+2.0
+let b = 3.0
+let c = 3.0 +. 4.0 *. 6.0
+//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):1:3, found "0;let b = " at l.59:3: 2.0
+
+// TODO make tuples
+1, 2, 3
+let mktup = 1, 2, 3
+let mktup = [1, 2, 3], 4, 5, 6
+//│ /!\ Parse error: Expected end-of-input:1:2, found ", 2, 3;let" at l.65:2: 1, 2, 3
+
+// TODO sequential let
+let _ = 
+  pr ansL; print_newline (); 
+  pr ansS; print_newline ();
+  pr ansI; print_newline (); 
+//│ Desugared: def _: pr (ansL,)
+//│ Desugared: print_newline ()
+//│ Desugared: pr (ansS,)
+//│ Desugared: print_newline ()
+//│ Desugared: pr (ansI,)
+//│ Desugared: print_newline ()
+
+
+// TODO comments
+(* ### *)
+1 (* ### *)
+let val = 0 (* ############### *)
+let val = 2 (* IGNORE THIS *)
+let val = 4 (**** IRREGULAR *)
+//│ /!\ Parse error: Expected ")":1:2, found "* ### *);1" at l.84:2: (* ### *)
+
+// TODO create classes for exceptions
+exception Unimplemented
+exception AlreadyDone
+raise Unimplemented
+raise AlreadyDone
+//│ Desugared: exception (Unimplemented,)
+//│ Desugared: exception (AlreadyDone,)
+//│ Desugared: raise (Unimplemented,)
+//│ Desugared: raise (AlreadyDone,)
