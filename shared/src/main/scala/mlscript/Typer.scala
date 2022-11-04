@@ -178,6 +178,21 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     val intBinOpTy = fun(singleTup(IntType), fun(singleTup(IntType), IntType)(noProv))(noProv)
     val numberBinOpTy = fun(singleTup(DecType), fun(singleTup(DecType), DecType)(noProv))(noProv)
     val numberBinPred = fun(singleTup(DecType), fun(singleTup(DecType), BoolType)(noProv))(noProv)
+    val listConsTy: TypeScheme = {
+      val listTyVar = freshVar(noProv, Some("A"))(1)
+      val headTyVar = freshVar(noProv, Some("_0"), Nil, listTyVar :: Nil)(1)
+      val tailTyVar = freshVar(noProv, Some("_1"), Nil, TypeRef(TypeName("List"), listTyVar :: Nil)(noProv) :: Nil)(1)
+      val consFnLhs = RecordType.mk(
+        (Var("_0"), FieldType(None, headTyVar)(noProv)) ::
+        (Var("_1"), FieldType(None, tailTyVar)(noProv)) :: Nil
+      )()
+      val consFnRhs = ComposedType(false, ConsType, RecordType.mk(
+        (Var("_0"), FieldType(None, headTyVar)(noProv)) ::
+        (Var("_1"), FieldType(None, tailTyVar)(noProv)) ::
+        (Var("Cons#A"), FieldType(Some(listTyVar), listTyVar)(noProv)) :: Nil)()
+      )(noProv)
+      PolymorphicType(0, fun(singleTup(consFnLhs), consFnRhs)(noProv))
+    }
     Map(
       "true" -> TrueType,
       "false" -> FalseType,
@@ -229,21 +244,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         PolymorphicType(0, fun(BoolType, fun(v, fun(v, v)(noProv))(noProv))(noProv))
       },
       // Add bindings for List constructor
-      "Cons" ->{
-        val listTyVar = freshVar(noProv, Some("A"))(1)
-        val headTyVar = freshVar(noProv, Some("_0"), Nil, listTyVar :: Nil)(1)
-        val tailTyVar = freshVar(noProv, Some("_1"), Nil, TypeRef(TypeName("List"), listTyVar :: Nil)(noProv) :: Nil)(1)
-        val consFnLhs = RecordType.mk(
-          (Var("_0"), FieldType(None, headTyVar)(noProv)) ::
-          (Var("_1"), FieldType(None, tailTyVar)(noProv)) :: Nil
-        )()
-        val consFnRhs = ComposedType(false, ConsType, RecordType.mk(
-          (Var("_0"), FieldType(None, headTyVar)(noProv)) ::
-          (Var("_1"), FieldType(None, tailTyVar)(noProv)) ::
-          (Var("Cons#A"), FieldType(Some(listTyVar), listTyVar)(noProv)) :: Nil)()
-        )(noProv)
-        PolymorphicType(0, fun(singleTup(consFnLhs), consFnRhs)(noProv))
-      },
+      "Cons" -> listConsTy,
+      "::" -> listConsTy,
       "Nil" -> {
         PolymorphicType(0, fun(singleTup(TopType), NilType)(noProv))
       }
