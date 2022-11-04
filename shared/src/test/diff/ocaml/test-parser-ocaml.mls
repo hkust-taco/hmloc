@@ -10,16 +10,40 @@ type stmt = Skip | Assign of string * exp
          | While of exp * stmt 
          | SaveHeap of string
          | RestoreHeap of string
-//│ /!\ Parse error: Expected end-of-input:1:24, found "of int | H" at l.5:24: type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ Desugared: type alias heap = list[{_0: string, _1: int}]
+//│ Desugared: type alias heapVar = HeapInt | Heap
+//│ Desugared: class HeapInt: {_0: int}
+//│ Desugared: class Heap: {_0: heap}
+//│ Desugared: type alias exp = Int | Var | Plus | Times
+//│ Desugared: class Int: {_0: int}
+//│ Desugared: class Var: {_0: string}
+//│ Desugared: class Plus: {_0: exp, _1: exp}
+//│ Desugared: class Times: {_0: exp, _1: exp}
+//│ Desugared: type alias stmt = Skip | Assign | Seq | If | While | SaveHeap | RestoreHeap
+//│ Desugared: class Skip: {}
+//│ Desugared: class Assign: {_0: string, _1: exp}
+//│ Desugared: class Seq: {_0: stmt, _1: stmt}
+//│ Desugared: class If: {_0: exp, _1: stmt, _2: stmt}
+//│ Desugared: class While: {_0: exp, _1: stmt}
+//│ Desugared: class SaveHeap: {_0: string}
+//│ Desugared: class RestoreHeap: {_0: string}
 
 let update h str i = (str,i)::h
 let rec lookup (h:heap) str =
   match h with
     [] -> HeapInt(0)
   |(s,i)::tl -> if s=str then i else lookup tl str
-let rec interp_s (h:heap) (s:stmt) = match s with Skip -> h |Seq(s1,s2) -> let h2 = interp_s h s1 in interp_s h2 s2 |If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2 |Assign(str,e) -> update h str (interp_e h e) |While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h |SaveHeap(str) -> []
-  |RestoreHeap(str) -> []
-//│ /!\ Parse error: Expected "in":1:32, found ";let rec l" at l.14:32: let update h str i = (str,i)::h
+let rec interp_s (h:heap) (s:stmt) = match s with
+    Skip -> h
+  | Seq(s1,s2) -> let h2 = interp_s h s1 in interp_s h2 s2
+  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
+  | Assign(str,e) -> update h str (interp_e h e)
+  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
+  | SaveHeap(str) -> []
+  | RestoreHeap(str) -> []
+//│ Desugared: def update: h, => str, => i, => :: ('(' str, i, ')',) (h,)
+//│ Desugared: rec def lookup: '(' h : TypeName(heap) ')', => str, => if h is ‹(Nil ({},)) then HeapInt ('(' 0 ')',); (:: ('(' s, i, ')',) (tl,)) then if (== s str) i (lookup (tl,) (str,))›
+//│ Desugared: rec def interp_s: '(' h : TypeName(heap) ')', => '(' s : TypeName(stmt) ')', => if s is ‹(Skip) then h; (Seq ('(' s1, s2, ')',)) then let h2 = interp_s (h,) (s1,) in interp_s (h2,) (s2,); (If ('(' e, s1, s2, ')',)) then if (<> ('(' interp_e (h,) (e,) ')',) (0,)) (interp_s (h,) (s1,)) (interp_s (h,) (s2,)); (Assign ('(' str, e, ')',)) then update (h,) (str,) ('(' interp_e (h,) (e,) ')',); (While ('(' e, s1, ')',)) then if (<> ('(' interp_e (h,) (e,) ')',) (0,)) (let h2 = interp_s (h,) (s1,) in interp_s (h2,) (s,)) h; (SaveHeap ('(' str ')',)) then Nil ({},); (RestoreHeap ('(' str ')',)) then Nil ({},)›
 
 let rec interp_e (h:heap) (e:exp) =
  match e with
@@ -27,30 +51,37 @@ let rec interp_e (h:heap) (e:exp) =
  |Var str     ->lookup h str
  |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
  |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
-//│ /!\ Parse error: Expected (Index ~ let | Index ~ fun | ite | withsAsc | Index ~ _match):2:2, found "match e wi" at l.23:2:  match e with
+//│ Desugared: rec def interp_e: '(' h : TypeName(heap) ')', => '(' e : TypeName(exp) ')', => if e is ‹(Int (i,)) then i; (Var (str,)) then lookup (h,) (str,); (Plus ('(' e1, e2, ')',)) then + ('(' interp_e (h,) (e1,) ')',) ('(' interp_e (h,) (e2,) ')',); (Times ('(' e1, e2, ')',)) then * ('(' interp_e (h,) (e1,) ')',) ('(' interp_e (h,) (e2,) ')',)›
 
 let testProgram1 = Skip
 let testProgram1 = Seq (testProgram1, (Assign ("x",Int 1)))
-//│ /!\ Parse error: Expected "in":1:24, found ";let testP" at l.29:24: let testProgram1 = Skip
+//│ Desugared: def testProgram1: Skip
+//│ Desugared: def testProgram1: Seq ('(' testProgram1, '(' Assign ('(' "x", Int (1,), ')',) ')', ')',)
 
 let mt_heap = [] 
-//│ /!\ Parse error: Expected (Index ~ let | Index ~ fun | ite | withsAsc | Index ~ _match):1:15, found "[] ;" at l.32:15: let mt_heap = [] 
+//│ Desugared: def mt_heap: Nil ({},)
 
 let interp_prog s = 
   lookup (interp_s mt_heap s) "ans"
-//│ /!\ Parse error: Expected "in":3:1, found "" at l.35:37:   lookup (interp_s mt_heap s) "ans"
+//│ Desugared: def interp_prog: s, => lookup ('(' interp_s (mt_heap,) (s,) ')',) ("ans",)
 
 let testProgram1 = Seq (testProgram1, (SaveHeap ("myheap1")))
 let testProgram1 = Seq (testProgram1, (Assign ("x",Int 12)))
 let testProgram1 = Seq (testProgram1, (RestoreHeap ("myheap1")))
 let testProgram1 = Seq (testProgram1, (Assign ("ans",Var "x")))
-//│ /!\ Parse error: Expected "in":1:62, found ";let testP" at l.37:62: let testProgram1 = Seq (testProgram1, (SaveHeap ("myheap1")))
+//│ Desugared: def testProgram1: Seq ('(' testProgram1, '(' SaveHeap ('(' "myheap1" ')',) ')', ')',)
+//│ Desugared: def testProgram1: Seq ('(' testProgram1, '(' Assign ('(' "x", Int (12,), ')',) ')', ')',)
+//│ Desugared: def testProgram1: Seq ('(' testProgram1, '(' RestoreHeap ('(' "myheap1" ')',) ')', ')',)
+//│ Desugared: def testProgram1: Seq ('(' testProgram1, '(' Assign ('(' "ans", Var ("x",), ')',) ')', ')',)
 
 let testProgram2 = Skip
 let testProgram2 = Seq (testProgram2, (Assign ("x",Int 1)))
 let testProgram2 = Seq (testProgram2, (SaveHeap ("myheap1")))
 let testProgram2 = Seq (testProgram2, (Assign ("ans",Var "myheap1")))
-//│ /!\ Parse error: Expected "in":1:24, found ";let testP" at l.42:24: let testProgram2 = Skip
+//│ Desugared: def testProgram2: Skip
+//│ Desugared: def testProgram2: Seq ('(' testProgram2, '(' Assign ('(' "x", Int (1,), ')',) ')', ')',)
+//│ Desugared: def testProgram2: Seq ('(' testProgram2, '(' SaveHeap ('(' "myheap1" ')',) ')', ')',)
+//│ Desugared: def testProgram2: Seq ('(' testProgram2, '(' Assign ('(' "ans", Var ("myheap1",), ')',) ')', ')',)
 
 let testProgram3 = Skip
 let testProgram3 = Seq (testProgram3, (Assign ("x",Int 1)))
@@ -58,4 +89,10 @@ let testProgram3 = Seq (testProgram3, (SaveHeap ("myheap1")))
 let testProgram3 = Seq (testProgram3, (Assign ("x",Int 12)))
 let testProgram3 = Seq (testProgram3, (RestoreHeap ("myheapnot")))
 let testProgram3 = Seq (testProgram3, (Assign ("ans",Var "x")))
-//│ /!\ Parse error: Expected "in":1:24, found ";let testP" at l.47:24: let testProgram3 = Skip
+//│ Desugared: def testProgram3: Skip
+//│ Desugared: def testProgram3: Seq ('(' testProgram3, '(' Assign ('(' "x", Int (1,), ')',) ')', ')',)
+//│ Desugared: def testProgram3: Seq ('(' testProgram3, '(' SaveHeap ('(' "myheap1" ')',) ')', ')',)
+//│ Desugared: def testProgram3: Seq ('(' testProgram3, '(' Assign ('(' "x", Int (12,), ')',) ')', ')',)
+//│ Desugared: def testProgram3: Seq ('(' testProgram3, '(' RestoreHeap ('(' "myheapnot" ')',) ')', ')',)
+//│ Desugared: def testProgram3: Seq ('(' testProgram3, '(' Assign ('(' "ans", Var ("x",), ')',) ')', ')',)
+

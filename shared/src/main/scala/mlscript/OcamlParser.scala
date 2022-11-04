@@ -25,6 +25,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case t: Tup => t
     case _ => Tup((N, Fld(false, false, t)) :: Nil)
   }
+  def toParams(t: Ls[Term]): Tup = {
+    val fields = t.map(t => (N, Fld(false, false, t)))
+    Tup(fields)
+  }
   def toParamsTy(t: Type): Tuple = t match {
     case t: Tuple => t
     case _ => Tuple((N, Field(None, t)) :: Nil)
@@ -46,7 +50,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case (pat, S(bod)) => LetS(false, pat, bod)
   }
 
-  def term[p: P]: P[Term] = P(let | fun | ite | withsAsc | _match)
+  /** Top level term */
+  def term[p: P]: P[Term] = P(let | fun | ite | ocamlWithAsc | _match)
 
   def lit[p: P]: P[Lit] =
     locate(number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
@@ -124,14 +129,33 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     * equality check for terms as in the following examples
     * a [= 3]
     * b: List [= Cons(0, Nil)]
+    *
+    * Ocaml parses comma-separated terms as a tuple handle them differently
     */
-  def withsAsc[p: P]: P[Term] = P(withs
+  def ocamlWithAsc[p: P]: P[Term] = P(withs
     ~ (":" ~/ ty).rep  // ascription
     ~ ("=" ~/ term).?  // equality check
+    ~ ("," ~/ withsAsc).?  // ocaml creates implicit tuples for comma separated terms
   ).map {
-    case (withs, ascs, equateTerm) =>
+    case (withs, ascs, equateTerm, tupleTerm) =>
       val trm1 = ascs.foldLeft(withs)(Asc)
-      equateTerm.fold(trm1)(App(OpApp("==", trm1), _))
+      val trm2 = equateTerm.fold(trm1)(App(OpApp("==", trm1), _))
+      tupleTerm.fold(trm2)(trm3 => toParams(trm2 :: trm3))
+  }
+  /** Inner call to withsAsc term which parses a list of terms optionally
+    * type ascribed
+    * equated
+    * comma-separated
+    */
+  def withsAsc[p: P]: P[Ls[Term]] = P(withs
+    ~ (":" ~/ ty).rep  // ascription
+    ~ ("=" ~/ term).?  // equality check
+    ~ ("," ~/ withsAsc).?  // ocaml creates implicit tuples for comma separated terms
+  ).map {
+    case (withs, ascs, equateTerm, tupleTerm) =>
+      val trm1 = ascs.foldLeft(withs)(Asc)
+      val trm2 = equateTerm.fold(trm1)(App(OpApp("==", trm1), _))
+      tupleTerm.fold(trm2 :: Nil)(trm2 :: _)
   }
   def withs[p: P]: P[Term] = P( binops ~ (kw("with") ~ record).rep ).map {
     case (as, ws) => ws.foldLeft(as)((acc, w) => With(acc, w))
