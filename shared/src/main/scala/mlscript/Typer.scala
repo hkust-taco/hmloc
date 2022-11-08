@@ -149,7 +149,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       tyDef
     } ::
     // Add type definitions for list constructors and alias
+    // class Nil: {}
     TypeDef(Cls, TypeName("Nil"), Nil, Nil, RecordType(Nil)(noTyProv), Nil, Nil, Set.empty, N, Nil) ::
+    // class Cons[A]: {_1: A; _2: List[A]}
     {
       val tv = freshVar(noTyProv)(1)
       val consBody = RecordType(List(
@@ -160,6 +162,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.co))
       tyDef
      } ::
+    // type List[A] = Cons[A] | Nil
      {
        val tv = freshVar(noTyProv)(1)
        val listBody = ComposedType(true, TypeRef(TypeName("Cons"), List(tv))(noTyProv), TypeRef(TypeName("Nil"), Nil)(noTyProv))(noTyProv)
@@ -172,6 +175,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     builtinTypes.iterator.map(_.nme.name).flatMap(n => n.decapitalize :: n.capitalize :: Nil).toSet - "List"
   def singleTup(ty: ST): ST =
     if (funkyTuples) ty else TupleType((N, ty.toUpper(ty.prov) ) :: Nil)(noProv)
+
+  // built in operators bound to their type schemes
   val builtinBindings: Bindings = {
     val tv = freshVar(noProv)(1)
     import FunctionType.{ apply => fun }
@@ -182,10 +187,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       val listTyVar = freshVar(noProv, Some("A"))(1)
       val headTyVar = freshVar(noProv, Some("_0"), Nil, listTyVar :: Nil)(1)
       val tailTyVar = freshVar(noProv, Some("_1"), Nil, TypeRef(TypeName("List"), listTyVar :: Nil)(noProv) :: Nil)(1)
-      val consFnLhs = RecordType.mk(
-        (Var("_0"), FieldType(None, headTyVar)(noProv)) ::
-        (Var("_1"), FieldType(None, tailTyVar)(noProv)) :: Nil
-      )()
+      val consFnLhs = TupleType.apply(
+        (N, FieldType(None, headTyVar)(noProv)) ::
+        (N, FieldType(None, tailTyVar)(noProv)) :: Nil
+      )(noProv)
       val consFnRhs = ComposedType(false, ConsType, RecordType.mk(
         (Var("_0"), FieldType(None, headTyVar)(noProv)) ::
         (Var("_1"), FieldType(None, tailTyVar)(noProv)) ::
