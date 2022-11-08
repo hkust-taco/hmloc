@@ -4,18 +4,21 @@ import fastparse._
 import fastparse.Parsed.Failure
 import fastparse.Parsed.Success
 import sourcecode.Line
+
 import scala.collection.mutable
 import scala.collection.mutable.{Map => MutMap}
 import scala.collection.immutable
-import mlscript.utils._, shorthands._
+import mlscript.utils._
+import shorthands._
 import mlscript.JSTestBackend.IllFormedCode
 import mlscript.JSTestBackend.Unimplemented
 import mlscript.JSTestBackend.UnexpectedCrash
 import mlscript.JSTestBackend.TestCode
 import mlscript.codegen.typescript.TsTypegenCodeBuilder
-import org.scalatest.{funsuite, ParallelTestExecution}
+import org.scalatest.{ParallelTestExecution, funsuite}
 import org.scalatest.time._
-import org.scalatest.concurrent.{TimeLimitedTests, Signaler}
+import org.scalatest.concurrent.{Signaler, TimeLimitedTests}
+import os.Path
 
 
 class DiffTests
@@ -141,12 +144,76 @@ class DiffTests
     var noJavaScript = false
     // Parse and check the file with ocaml syntax and semantic rules
     var ocamlMode = false
+    // load mlscript type definitions of ocaml standard library constructs
+    var ocamlLoadLibrary = false
     var noProvs = false
     var allowRuntimeErrors = false
     var newParser = basePath.headOption.contains("parser") || basePath.headOption.contains("mono")
 
     val backend = new JSTestBackend()
     val host = ReplHost()
+
+    /** Load type definitions and function definitions from a file into ctx
+      * and declared definitions. This is useful for loading ocaml standard
+      * library definitions
+      */
+    def loadLibrary(file: Path, typer: Typer): (typer.Ctx, Map[Str, typer.PolymorphicType]) = {
+      val fileContents = os.read(file)
+      val allLines = fileContents.splitSane('\n').toIndexedSeq
+      val block = MLParser.addTopLevelSeparators(allLines).mkString
+      val fph = new FastParseHelpers(block)
+      val globalStartLineNum = 0
+      parse(block, p => new MLParser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
+        , verboseFailures = true) match {
+        case Failure(lbl, index, extra) =>
+          val (lineNum, lineStr, col) = fph.getLineColAt(index)
+          val globalLineNum = allLines.size + lineNum
+          output("/!\\ Parse error: " + extra.trace().msg +
+            s" at l.$globalLineNum:$col: $lineStr")
+          output("Failed to parse library")
+          (typer.Ctx.init, Map.empty)
+        case Success(prog, index) => {
+          val (_, (typeDefs, stmts)) = prog.desugared
+          var ctx = typer.Ctx.init
+          val raise: typer.Raise = d => ()
+          var declared: Map[Str, typer.PolymorphicType] = Map.empty
+
+          ctx = typer.processTypeDefs(typeDefs)(ctx, raise)
+          stmts.foreach {
+            // statement only declares a new term with its type
+            // but does not give a body/definition to it
+            case Def(isrec, nme, R(PolyType(tps, rhs)), isByname) =>
+              val ty_sch = typer.PolymorphicType(0,
+                typer.typeType(rhs)(ctx.nextLevel, raise,
+                  vars = tps.map(tp => tp.name -> typer.freshVar(typer.noProv/*FIXME*/)(1)).toMap))
+              ctx += nme.name -> ty_sch
+              declared += nme.name -> ty_sch
+
+            // statement is defined and has a body/definition
+            case d @ Def(isrec, nme, L(rhs), isByname) =>
+              val ty_sch = typer.typeLetRhs(isrec, nme.name, rhs)(ctx, raise)
+              // statement does not have a declared type for the body
+              // the inferred type must be used and stored for lookup
+              declared.get(nme.name) match {
+                // statement has a body but it's type was not declared
+                // infer it's type and store it for lookup and type gen
+                case N =>
+                  ctx += nme.name -> ty_sch
+
+                // statement has a body and a declared type
+                // both are used to compute a subsumption (What is this??)
+                // the inferred type is used to for ts type gen
+                case S(sign) =>
+                  ctx += nme.name -> sign
+                  typer.subsume(ty_sch, sign)(ctx, raise, typer.TypeProvenance(d.toLoc, "def definition"))
+              }
+
+            case desug: DesugaredStatement => ()
+          }
+          (ctx, declared)
+        }
+      }
+    }
     
     def rec(lines: List[String], mode: Mode): Unit = lines match {
       case "" :: Nil =>
@@ -185,6 +252,13 @@ class DiffTests
           case "escape" => mode.copy(allowEscape = true)
           // Parse and check the file with ocaml syntax and semantic rules
           case "OcamlParser" => ocamlMode = true; mode
+          // load ocaml library definitions and use the updated context and declarations
+          case "OcamlLoadLibrary" =>
+            ocamlLoadLibrary = true
+            val (libCtx, libDeclared): (typer.Ctx, Map[Str, typer.PolymorphicType]) = loadLibrary(DiffTests.libPath, typer)
+            ctx = libCtx
+            declared = libDeclared
+            mode
           case _ =>
             failures += allLines.size - lines.size
             output("/!\\ Unrecognized option " + line)
@@ -825,7 +899,8 @@ object DiffTests {
   
   private val pwd = os.pwd
   private val dir = pwd/"shared"/"src"/"test"/"diff"
-  
+  private val libPath = dir/"ocaml"/"library.ml.mls.txt"
+
   private val allFiles = os.walk(dir).filter(_.toIO.isFile)
   
   private val validExt = Set("fun", "mls")
