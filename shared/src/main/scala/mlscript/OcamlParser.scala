@@ -39,6 +39,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def uppercase[p: P]  = P( CharIn("A-Z") )
   def digit[p: P]      = P( CharIn("0-9") )
   def number[p: P]: P[Int] = P( CharIn("0-9").repX(1).!.map(_.toInt) )
+  // ocaml operators adapted from https://v2.ocaml.org/manual/lex.html#operator-char
+  def ocamlOps[p:P]: P[Var] = P("::").!.map(Var)
   def ident[p: P]: P[String] =
     P( (letter | "_") ~~ (letter | digit | "_" | "'").repX ).!.filter(!keywords(_))
 
@@ -63,6 +65,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     ))
   })
   def variable[p: P]: P[Var] = locate(ident.map(Var))
+  def ocamlLabelName[p: P]: P[Var] = locate((ident).map(Var) | "(" ~ ocamlOps ~ ")")
 
   def parenCell[p: P]: P[Either[Term, (Term, Boolean)]] = (("..." | kw("mut")).!.? ~ term).map {
     case (Some("..."), t) => Left(t)
@@ -240,11 +243,14 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   
   def expr[p: P]: P[Term] = P( term ~ End )
   
-  /** top level function defintions using let with single and multiple arguments */
+  /** top level function defintions using let with single and multiple arguments
+   *  let ap a b = a b
+   *  let :: a b = Cons a b
+  */
   def ocamlDefDecl[p: P]: P[Def] =
-    locate(P((kw("let") ~ variable ~ tyParams ~ ":" ~/ ty map {
+    locate(P((kw("let") ~ ocamlLabelName ~ tyParams ~ ":" ~/ ty map {
       case (id, tps, t) => Def(true, id, R(PolyType(tps, t)), true)
-    }) | (kw("let") ~ kw("rec").!.?.map(_.isDefined) ~/ variable ~ subterm.rep ~ "=" ~ term map {
+    }) | (kw("let") ~ kw("rec").!.?.map(_.isDefined) ~/ ocamlLabelName ~ subterm.rep ~ "=" ~ term map {
       case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), true)
     })))
   

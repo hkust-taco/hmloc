@@ -95,7 +95,7 @@ let _ =
 let val = 0 (* ############### *)
 let val = 2 (* IGNORE THIS *)
 let val = 4 (**** IRREGULAR *)
-//│ /!\ Parse error: Expected ")":1:2, found "* ### *);1" at l.94:2: (* ### *)
+//│ /!\ Parse error: Expected ")":1:2, found "* ### *);1" at l.93:2: (* ### *)
 
 // create classes for exceptions
 exception Unimplemented
@@ -106,3 +106,41 @@ raise AlreadyDone
 //│ Desugared: def AlreadyDone: {}
 //│ Desugared: raise (Unimplemented,)
 //│ Desugared: raise (AlreadyDone,)
+
+// Ocaml specific operators
+// TODO: prefix operators
+let (::) a b = Cons a b
+let head xs = match xs with
+  :: x xs -> x
+  | _ -> raise Error
+//│ /!\ Parse error: Expected end-of-input:2:3, found ":: x xs ->" at l.114:3:   :: x xs -> x
+
+// type definitions
+type heapVar = HeapInt of int | Heap of heap and heap = (string * int) List
+type exp = EInt of int | Var of string | Plus of exp * exp | Times of exp * exp
+type stmt = Skip | Assign of string * exp
+         | Seq of stmt * stmt 
+         | If of exp * stmt * stmt
+         | While of exp * stmt 
+         | SaveHeap of string
+         | RestoreHeap of string
+//│ Desugared: type alias heap = List[]
+//│ Desugared: type alias heapVar = HeapInt | Heap
+//│ Desugared: class HeapInt: {_0: int}
+//│ Desugared: class Heap: {_0: heap}
+//│ Desugared: type alias exp = EInt | Var | Plus | Times
+//│ Desugared: class EInt: {_0: int}
+//│ Desugared: class Var: {_0: string}
+//│ Desugared: class Plus: {_0: exp, _1: exp}
+//│ Desugared: class Times: {_0: exp, _1: exp}
+//│ Desugared: type alias stmt = Skip | Assign | Seq | If | While | SaveHeap | RestoreHeap
+//│ Desugared: class Skip: {}
+//│ Desugared: class Assign: {_0: string, _1: exp}
+//│ Desugared: class Seq: {_0: stmt, _1: stmt}
+//│ Desugared: class If: {_0: exp, _1: stmt, _2: stmt}
+//│ Desugared: class While: {_0: exp, _1: stmt}
+//│ Desugared: class SaveHeap: {_0: string}
+//│ Desugared: class RestoreHeap: {_0: string}
+
+// parameterized type definitions
+// type 'a list = Cons of 'a * 'a list | Nil
