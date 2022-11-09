@@ -21,7 +21,7 @@ object Helpers {
       val entries = fields.iterator
         .map { case k -> Fld(_, _, v) => s"${inspect(k)} = ${inspect(v)}" }
         .mkString(", ")
-      s"Rcd({$entries})"
+      s"Rcd($entries)"
     case Sel(receiver, fieldName)    => s"Sel(${inspect(receiver)}, $fieldName)"
     case Let(isRec, name, rhs, body) => s"Let($isRec, $name, ${inspect(rhs)}, ${inspect(body)})"
     case Blk(stmts)                  => s"Blk(...)"
@@ -56,12 +56,22 @@ object Helpers {
     case LetS(isRec, pat, rhs) => s"LetS(isRec: $isRec, pat: ${inspect(pat)}, rhs: ${inspect(rhs)}"
     case TypeDef(kind, nme, tname, tbody, _, _, tvars) => s"TypeDef($kind, $nme, $tname, $tbody, $tvars)"
     case Def(rec, nme, rhs, isByname) =>
-      s"Def($rec, $nme, ${rhs.fold(inspect, _.toString)}, $isByname)"
+      s"Def($rec, $nme, ${rhs.fold(inspect, "" + _)}, $isByname)"
   }
-
-  // def inspect(s: Statement): Str = s match {
-  // }
 
   def inspect(pgrm: Pgrm): Str =
     pgrm.tops.map(inspect).mkString("\n")
+  def inspect(t: TypingUnit): Str = t.entities.iterator
+    .map {
+      case term: Term => inspect(term)
+      case NuFunDef(lt, nme, targs, L(term)) =>
+        s"NuFunDef(${lt}, ${nme.name}, ${targs.mkString("[", ", ", "]")}, ${inspect(term)})"
+      case NuFunDef(lt, nme, targs, R(ty)) =>
+        s"NuFunDef(${lt}, ${nme.name}, ${targs.mkString("[", ", ", "]")}, $ty)"
+      case NuTypeDef(kind, nme, tparams, params, parents, body) =>
+        s"NuTypeDef(${kind.str}, ${nme.name}, ${tparams.mkString("(", ", ", ")")}, ${
+          inspect(params)}, ${parents.map(inspect).mkString("(", ", ", ")")}, ${inspect(body)})"
+      case others => others.toString()
+    }
+    .mkString("TypingUnit(", ", ", ")")
 }

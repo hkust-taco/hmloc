@@ -330,7 +330,7 @@ trait TypeNameImpl extends Ordered[TypeName] { self: TypeName =>
 
 trait TermImpl extends StatementImpl { self: Term =>
   val original: this.type = this
-  
+
   def describe: Str = this match {
     case Bra(true, Tup(_ :: _ :: _) | Tup((S(_), _) :: _) | Blk(_)) => "record"
     case Bra(_, trm) => trm.describe
@@ -440,8 +440,11 @@ trait TermImpl extends StatementImpl { self: Term =>
     case Rcd(fields) => Record(fields.map(fld => (fld._1, fld._2 match {
       case Fld(m, s, v) => val ty = v.toType_!; Field(Option.when(m)(ty), ty)
     })))
+    case Sel(receiver, fieldName) => receiver match {
+      case Var(name) if !name.startsWith("`") => TypeName(s"$name.$fieldName")
+      case _ => throw new NotAType(this)
+    }
     // TODO:
-    // case Sel(receiver, fieldName) => ???
     // case Let(isRec, name, rhs, body) => ???
     // case Blk(stmts) => ???
     // case Asc(trm, ty) => ???
@@ -718,7 +721,7 @@ trait BlkImpl { self: Blk =>
 }
 
 trait CaseBranchesImpl extends Located { self: CaseBranches =>
-  
+
   def children: List[Located] = this match {
     case Case(pat, body, rest) => pat :: body :: rest :: Nil
     case Wildcard(body) => body :: Nil
@@ -733,7 +736,7 @@ trait CaseBranchesImpl extends Located { self: CaseBranches =>
 }
 
 trait IfBodyImpl extends Located { self: IfBody =>
-  
+
   def children: List[Located] = this match {
     // case Case(pat, body, rest) => pat :: body :: rest :: Nil
     // case Wildcard(body) => body :: Nil
