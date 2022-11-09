@@ -124,16 +124,16 @@ type stmt = Skip | Assign of string * exp
          | While of exp * stmt 
          | SaveHeap of string
          | RestoreHeap of string
-//│ Desugared: type alias heap = List[]
-//│ Desugared: type alias heapVar = HeapInt | Heap
+//│ Desugared: type alias heap = {_0: List[{_0: string, _1: int}]}
+//│ Desugared: type alias heapVar = Heap | HeapInt
 //│ Desugared: class HeapInt: {_0: int}
 //│ Desugared: class Heap: {_0: heap}
-//│ Desugared: type alias exp = EInt | Var | Plus | Times
+//│ Desugared: type alias exp = Times | Plus | Var | EInt
 //│ Desugared: class EInt: {_0: int}
 //│ Desugared: class Var: {_0: string}
 //│ Desugared: class Plus: {_0: exp, _1: exp}
 //│ Desugared: class Times: {_0: exp, _1: exp}
-//│ Desugared: type alias stmt = Skip | Assign | Seq | If | While | SaveHeap | RestoreHeap
+//│ Desugared: type alias stmt = RestoreHeap | SaveHeap | While | If | Seq | Assign | Skip
 //│ Desugared: class Skip: {}
 //│ Desugared: class Assign: {_0: string, _1: exp}
 //│ Desugared: class Seq: {_0: stmt, _1: stmt}
@@ -143,4 +143,30 @@ type stmt = Skip | Assign of string * exp
 //│ Desugared: class RestoreHeap: {_0: string}
 
 // parameterized type definitions
-// type 'a list = Cons of 'a * 'a list | Nil
+type 'a heap = HeapA of 'a
+type 'a, 'b heap = HeapB of 'a
+type 'a, 'b heap = HeapC of 'a list
+type 'a list = Cons of 'a * 'a list | Nil
+//│ Desugared: type alias heap['a] = HeapA['a]
+//│ Desugared: class HeapA['a]: {_0: 'a}
+//│ Desugared: type alias heap['a, 'b] = HeapB['a]
+//│ Desugared: class HeapB['a]: {_0: 'a}
+//│ Desugared: type alias heap['a, 'b] = HeapC['a]
+//│ Desugared: class HeapC['a]: {_0: list['a]}
+//│ Desugared: type alias list['a] = Nil | Cons['a]
+//│ Desugared: class Cons['a]: {_0: 'a, _1: list['a]}
+//│ Desugared: class Nil: {}
+
+// TODO: NonsHeap should have ['a, 'b] parameters because
+// alias otherList is used in it
+type 'a, 'b heap =
+  Heap of 'a list
+  | NonHeap of otherList
+  | NonsHeap of (otherList * 'a) list
+  and otherList = 'b list
+//│ Desugared: type alias otherList['b] = {_0: list['b]}
+//│ Desugared: type alias heap['a, 'b] = NonsHeap['a] | NonHeap | Heap['a]
+//│ Desugared: class Heap['a]: {_0: list['a]}
+//│ Desugared: class NonHeap: {_0: otherList}
+//│ Desugared: class NonsHeap['a]: {_0: list[{_0: otherList, _1: 'a}]}
+

@@ -13,7 +13,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   val keywords = Set(
     "def", "class", "trait", "type", "method", "mut",
     "let", "rec", "in", "fun", "with", "undefined", "null",
-    "if", "then", "else", "match", "case", "of")
+    "if", "then", "else", "match", "case", "of",
+    // ocaml keywords
+    "and"
+    )
   def kw[p: P](s: String) = s ~~ !(letter | digit | "_" | "'")
   
   // NOTE: due to bug in fastparse, the parameter should be by-name!
@@ -253,28 +256,66 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     }) | (kw("let") ~ kw("rec").!.?.map(_.isDefined) ~/ ocamlLabelName ~ subterm.rep ~ "=" ~ term map {
       case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), true)
     })))
+    
+  /** Parse each ocaml type parameters like
+   * 'a (string * int) list
+   * and return the type variables and the type
+  */
+  def ocamlTypeBodyPart[p: P]: P[(Set[TypeName], Type)] = (
+    tyName.map(tname => (Set.empty[TypeName], tname))
+  | ocamlTyParam.map(param => (Set(param), param))
+  | "(" ~ ocamlConstructorBody ~ ")"
+  ).rep(1)
+    .map {
+      case Seq(b) => b
+      case parts =>
+        val tparams = parts.flatMap(_._1).toSet
+        parts.last._2 match {
+          case tname: TypeName =>
+            val args = parts.init.toList.map(_._2).toList
+            (tparams, AppliedType(tname, args))
+          case t =>
+            // last parameter has to be a type name when there are
+            // multiple parameters being applied
+            throw new Error(s"Parameters applied to non-TypeName $t")
+        }
+    }
   
-  /** data constructor arguments
-    * type 'a, 'b tup = Tup of ['a * 'b]
-    * TODO handle type parameters
+  /** data constructor body
+    * type 'a, 'b tup = Tup of ['a * 'b] => ('a, 'b)
+    * type 'a, 'b tup = Tup of ['a list * 'b] => (List['a], 'b)
+    * type 'a, 'b tup = Tup of ['a * 'b list] => ('a, List['b])
+    * type 'a, 'b tup = Tup of [('a * 'b) list] => (List[('a, 'b)])
     */
-  def ocamlConstructorArguments[p: P]: P[Record] =
-    tyName.rep(1, "*")
+  def ocamlConstructorBody[p: P]: P[(Set[TypeName], Record)] =
+    ocamlTypeBodyPart.rep(1, "*")
     .map(args => {
-      val fields = args.zipWithIndex.map { case (tname, i) =>
-        (Var("_" + i.toString()), Field(None, tname))
+      val fields = args.zipWithIndex.map {
+        // Heap of [string]
+        case ((isEmpty, tname), i) =>
+          (Var("_" + i.toString()), Field(None, tname))
+        // if the type name is the parameter itself don't apply it
+        // Heap of ['a]
+        case ((tparams, tname: TypeName), i) if tparams(tname) =>
+          (Var("_" + i.toString()), Field(None, tname))
+        // Heap of ['a list]
+        case ((tparams, tname: TypeName), i) =>
+          (Var("_" + i.toString()), Field(None, AppliedType(tname, tparams.toList)))
+        // Heap of ['a * 'b list]
+        case ((tparams, tbody), i) =>
+          (Var("_" + i.toString()), Field(None, tbody))
       }.toList
-      Record(fields)
+      val tparams = args.flatMap(_._1).toSet
+      (tparams, Record(fields))
     })
     
   /** data constructor declaration
    *  type 'a, 'b tup = [Tup of 'a * 'b]
-   * TODO: handle type parameters
    */
   def ocamlConstructorDecl[p: P]: P[TypeDef] =
-    P((tyName ~ ("of" ~/ ocamlConstructorArguments).?).map {
-      case (id, Some(body)) => TypeDef(Cls, id, Ls.empty, body, Nil, Nil, Nil)
-      case (id, None)                 => TypeDef(Cls, id, Ls.empty, Record(Ls.empty), Nil, Nil, Nil)
+    P((tyName ~ ("of" ~/ ocamlConstructorBody).?).map {
+      case (id, Some((params, body))) => TypeDef(Cls, id, params.toList, body, Nil, Nil, Nil)
+      case (id, None)                 => TypeDef(Cls, id, Nil, Record(Ls.empty), Nil, Nil, Nil)
     })
     
   // https://v2.ocaml.org/manual/typedecl.html#ss:typedefs
@@ -285,13 +326,12 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   /** Parse type alias like heap in the example below
    * 
     * type heapVar = HeapInt of int | Heap of heap and
-    *   heap = (string * int) list
+    *   [heap = (string * int) list] => type alias Heap = (string * int) list
     */
   def ocamlTyDeclTyAlias[p: P]: P[TypeDef] =
-    P((tyName ~ "=" ~/ "(" ~ ocamlConstructorArguments ~ ")" ~ tyName).map {
-      case (nme, args, tyName) =>
-        val alsBody = if (args.fields.length == 0) tyName else AppliedType(tyName, args :: Nil)
-        TypeDef(Als, nme, Ls.empty, alsBody, Nil, Nil, Nil)
+    P((tyName ~ "=" ~/ ocamlConstructorBody).map {
+      case (nme, (alsParams, alsBody)) =>
+        TypeDef(Als, nme, alsParams.toList, alsBody, Nil, Nil, Nil)
     })
   
   def tyKind[p: P]: P[TypeDefKind] = (kw("class") | kw("trait") | kw("type")).! map {
@@ -304,15 +344,29 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     * list
     */
   def ocamlTyDecl[p: P]: P[Ls[TypeDef]] =
-    P((kw("type") ~/ tyName ~ "=" ~/ ocamlTypeRepresentation ~ ("and" ~ ocamlTyDeclTyAlias).?)
-      .map { case (tname, bodies, alias) =>
-        val bodyTypes = bodies.map(tyDef => tyDef.nme)
-        val aliasBody = bodyTypes.foldLeft[Type](bodyTypes(0))(Union)
-        val result = TypeDef(Als, tname, Nil, aliasBody, Nil, Nil, Nil) :: bodies
+    P((kw("type") ~/ ocamlTyParams ~ tyName ~ "=" ~/ ocamlTypeRepresentation ~ ("and" ~ ocamlTyDeclTyAlias).?)
+      .map { case (tparams, tname, bodies, alias) =>
+        val paramSet = tparams.toSet
+        val unionType: TypeDef => Type = (tyDef) => {
+          val appliedParams = tyDef.tparams.filter(paramSet(_))
+          appliedParams match {
+            case Nil => tyDef.nme
+            case applied => AppliedType(tyDef.nme, applied)
+          }
+        }
+        val initialBody = unionType(bodies(0))
+        // TODO: apply if parameters are common to alias
+        // otherwise just use type name
+        val aliasBody = bodies.foldLeft[Type](initialBody){
+          case (union, tdef) => Union(unionType(tdef), union)
+        }
+        val result = TypeDef(Als, tname, tparams, aliasBody, Nil, Nil, Nil) :: bodies
         alias.map(als => als :: result).getOrElse(result)
     })
   def tyParams[p: P]: P[Ls[TypeName]] =
     ("[" ~ tyName.rep(0, ",") ~ "]").?.map(_.toList.flatten)
+  def ocamlTyParams[p: P]: P[Ls[TypeName]] =
+    (ocamlTyParam.rep(0, ",")).?.map(_.toList.flatten)
   def mthDecl[p: P](prt: TypeName): P[R[MethodDef[Right[Term, Type]]]] = 
     P(kw("method") ~ variable ~ tyParams ~ ":" ~/ ty map {
       case (id, ts, t) => R(MethodDef[Right[Term, Type]](true, prt, id, ts, R(t)))
@@ -344,6 +398,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   }) | tyNeg | tyName | tyVar | tyWild | litTy
   def tyNeg[p: P]: P[Type] = locate(P("~" ~/ tyNoFun map { t => Neg(t) }))
   def tyName[p: P]: P[TypeName] = locate(P(ident map TypeName))
+  def ocamlTyParam[p: P]: P[TypeName] = locate(P(("'" ~~ lowercase.!).map(param =>
+      TypeName("'" + param)
+    )))
   def tyVar[p: P]: P[TypeVar] = locate(P("'" ~ ident map (id => TypeVar(R("'" + id), N))))
   def tyWild[p: P]: P[Bounds] = locate(P("?".! map (_ => Bounds(Bot, Top))))
   def rcd[p: P]: P[Record] =
