@@ -148,31 +148,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.in))
       tyDef
     } ::
-    // Add type definitions for list constructors and alias
-    // class Nil: {}
-    TypeDef(Cls, TypeName("Nil"), Nil, Nil, RecordType(Nil)(noTyProv), Nil, Nil, Set.empty, N, Nil) ::
-    // class Cons[A]: {_1: A; _2: List[A]}
-    {
-      val tv = freshVar(noTyProv)(1)
-      val consBody = RecordType(List(
-        (Var("_0"), FieldType(None, tv)(noTyProv)),
-        (Var("_1"), FieldType(None, TypeRef(TypeName("List"), List(tv))(noTyProv))(noTyProv)),
-      ))(noTyProv)
-      val tyDef = TypeDef(Cls, TypeName("Cons"), List((TypeName("A"), tv)), Nil, consBody, Nil, Nil, Set.empty, N, Nil)
-      tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.co))
-      tyDef
-     } ::
-    // type List[A] = Cons[A] | Nil
-     {
-       val tv = freshVar(noTyProv)(1)
-       val listBody = ComposedType(true, TypeRef(TypeName("Cons"), List(tv))(noTyProv), TypeRef(TypeName("Nil"), Nil)(noTyProv))(noTyProv)
-       val tyDef = TypeDef(Als, TypeName("List"), List(TypeName("A") -> tv), Nil, listBody, Nil, Nil, Set.empty, N, Nil)
-       tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.co))
-       tyDef
-     } ::
     Nil
   val primitiveTypes: Set[Str] =
-    builtinTypes.iterator.map(_.nme.name).flatMap(n => n.decapitalize :: n.capitalize :: Nil).toSet - "List"
+    builtinTypes.iterator.map(_.nme.name).flatMap(n => n.decapitalize :: n.capitalize :: Nil).toSet
   def singleTup(ty: ST): ST =
     if (funkyTuples) ty else TupleType((N, ty.toUpper(ty.prov) ) :: Nil)(noProv)
 
@@ -248,19 +226,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // PolymorphicType(0, fun(singleTup(BoolType), fun(singleTup(v), fun(singleTup(v), v)(noProv))(noProv))(noProv))
         PolymorphicType(0, fun(BoolType, fun(v, fun(v, v)(noProv))(noProv))(noProv))
       },
-      // Add bindings for List constructor
-      "Cons" -> listConsTy,
-      "::" -> listConsTy,
-      "Nil" -> {
-        PolymorphicType(0, fun(singleTup(TopType), NilType)(noProv))
-      },
-
-      /** Ocaml raise is not relevant to simplifying type error messages. It is a function that simply
-        * consumes the exception.
-        */
-      "raise" -> {
-        fun(singleTup(TopType), BotType)(noProv)
-      }
     ) ++ primTypes ++ primTypes.map(p => "" + p._1.capitalize -> p._2) // TODO settle on naming convention...
   }
   
