@@ -62,7 +62,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     locate(number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
     | P(kw("undefined")).map(x => UnitLit(true)) | P(kw("null")).map(x => UnitLit(false)))
   def ocamlList[p: P]: P[Term] = P("[" ~ lit.rep(0, ",") ~ "]").map(vals => {
-    val emptyList = mkApp(Var("Nil"), Rcd(Nil))
+    val emptyList: Term = Var("Nil")
     vals.foldRight(emptyList)((v, list) =>
       mkApp(Var("Cons"), Rcd((Var("_0"), Fld(false, false, v)) :: (Var("_1"), Fld(false, false, list)) :: Nil)
     ))
