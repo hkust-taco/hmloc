@@ -21,21 +21,18 @@ x => succ / succ / x + 1
 
 :p
 foo / x => succ / succ / x
-//│ Parsed: foo (x => succ (succ x));
-//│ Desugared: foo (x => succ (succ x))
-//│ AST: App(Var(foo), Lam(Var(x), App(Var(succ), App(Var(succ), Var(x)))))
 //│ res: int
 
 :e
 foo / foo / x => succ / succ / x
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.30: 	foo / foo / x => succ / succ / x
+//│ ║  l.27: 	foo / foo / x => succ / succ / x
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── application of type `int` is not a function
-//│ ║  l.30: 	foo / foo / x => succ / succ / x
+//│ ║  l.27: 	foo / foo / x => succ / succ / x
 //│ ║        	                 ^^^^^^^^^^^^^^^
 //│ ╟── but it flows into application with expected type `1 -> ?a`
-//│ ║  l.30: 	foo / foo / x => succ / succ / x
+//│ ║  l.27: 	foo / foo / x => succ / succ / x
 //│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
 //│ ║  l.7: 	let foo = f => f 1
@@ -45,10 +42,15 @@ foo / foo / x => succ / succ / x
 //│ ╙──     	               ^
 //│ res: error
 
+
+
+
+
+
 :e
 foo / foo
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.49: 	foo / foo
+//│ ║  l.51: 	foo / foo
 //│ ║        	^^^^^^^^^
 //│ ╟── integer literal of type `1` is not a function
 //│ ║  l.7: 	let foo = f => f 1
@@ -60,3 +62,7 @@ foo / foo
 //│ ║  l.7: 	let foo = f => f 1
 //│ ╙──     	               ^
 //│ res: error
+
+
+
+

@@ -22,42 +22,42 @@ let foo = x =>
 foo 1
 foo / 1
 foo / foo / 1
-//│ res: int
-//│ res: int
-//│ res: int
 foo
   foo
     1
-//│ res: int
 foo
   discard / foo
     1
   foo
     1
-//│ res: int
 foo / foo /
   foo 1
+//│ res: int
+//│ res: int
+//│ res: int
+//│ res: int
+//│ res: int
 //│ res: int
 
 :p
 discard / foo
     1
-//│ Parsed: discard (foo {1});
-//│ Desugared: discard (foo {1})
-//│ AST: App(Var(discard), App(Var(foo), Blk(...)))
 
 :e
 discard foo
   1
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.50: 	discard foo
+//│ ║  l.47: 	discard foo
 //│ ║        	^^^^^^^^^^^
-//│ ║  l.51: 	  1
+//│ ║  l.48: 	  1
 //│ ║        	^^^
 //│ ╟── application of type `unit` is not a function
-//│ ║  l.50: 	discard foo
+//│ ║  l.47: 	discard foo
 //│ ╙──      	^^^^^^^^^^^
 //│ res: error
+
+
+
 
 :w
 foo
@@ -76,12 +76,12 @@ foo
 //│ ╙──      	  ^^^^^
 //│ res: int
 
+
+
+
 :p
 id id
   id
-//│ Parsed: id id {id};
-//│ Desugared: id id {id}
-//│ AST: App(App(Var(id), Var(id)), Blk(...))
 //│ res: 'a -> 'a
 
 :p
@@ -89,27 +89,18 @@ id id id
   id id id
     id id id
       id id id
-//│ Parsed: id id id {id id id {id id id {id id id}}};
-//│ Desugared: id id id {id id id {id id id {id id id}}}
-//│ AST: App(App(App(Var(id), Var(id)), Var(id)), Blk(...))
 //│ res: 'a -> 'a
 
 :p
 id id /
   id id /
     id id
-//│ Parsed: id id {id id {id id}};
-//│ Desugared: id id {id id {id id}}
-//│ AST: App(App(Var(id), Var(id)), Blk(...))
 //│ res: 'a -> 'a
 
 :p
 id id
     id id
   id id
-//│ Parsed: id id {id id} {id id};
-//│ Desugared: id id {id id} {id id}
-//│ AST: App(App(App(Var(id), Var(id)), Blk(...)), Blk(...))
 //│ res: 'a -> 'a
 
 let foo =
@@ -160,25 +151,26 @@ succ (
   1
 )
 //│ ╔══[WARNING] Pure expression does nothing in statement position.
-//│ ║  l.159: 	  succ
+//│ ║  l.150: 	  succ
 //│ ╙──       	  ^^^^
 //│ res: int
+
 
 :pe
 succ (succ
 1)
-//│ /!\ Parse error: Expected end-of-input:1:6, found "(succ\n1)\n" at l.168:6: succ (succ
+//│ /!\ Parse error: Expected end-of-input:1:6, found "(succ\n1)\n" at l.160:6: succ (succ
 
 :pe
 succ (succ
 succ 1)
-//│ /!\ Parse error: Expected end-of-input:1:6, found "(succ\nsucc" at l.173:6: succ (succ
+//│ /!\ Parse error: Expected end-of-input:1:6, found "(succ\nsucc" at l.165:6: succ (succ
 
 :pe
 succ (succ
 succ
   1)
-//│ /!\ Parse error: Expected end-of-input:1:6, found "(succ\nsucc" at l.178:6: succ (succ
+//│ /!\ Parse error: Expected end-of-input:1:6, found "(succ\nsucc" at l.170:6: succ (succ
 
 (let x = 1)
 (let x = 1; x)
@@ -222,9 +214,10 @@ let test =
     bbb
   bbb
 //│ ╔══[ERROR] identifier not found: bbb
-//│ ║  l.223: 	  bbb
+//│ ║  l.215: 	  bbb
 //│ ╙──       	  ^^^
 //│ test: error
+
 
 let test =
   let aaa =
@@ -236,9 +229,10 @@ let test =
 :e
 aaa
 //│ ╔══[ERROR] identifier not found: aaa
-//│ ║  l.237: 	aaa
+//│ ║  l.230: 	aaa
 //│ ╙──       	^^^
 //│ res: error
+
 
 
 :pe
@@ -247,16 +241,25 @@ succ
     let x = 1
     x
 )
-//│ /!\ Parse error: Expected expression:1:1, found "succ\n  (\n " at l.245:1: succ
+//│ /!\ Parse error: Expected expression:1:1, found "succ\n  (\n " at l.239:1: succ
 
 :pe
 let a =
     succ
   1
   "?"
+//│ /!\ Parse error: Expected end-of-input:3:3, found "1\n  \"?\"\n" at l.249:3:   1
+<<<<<<<
 //│ /!\ Parse error: Expected end-of-input:3:3, found "1\n  \"?\"\n" at l.255:3:   1
 
 :pe
   1
 //│ /!\ Parse error: Expected (data type definition | data definition | let binding | expression):1:1, found "  1\n" at l.260:1:   1
+=======
+//│ /!\ Parse error: Expected end-of-input:3:3, found "1\n  \"?\"\n" at l.259:3:   1
+
+:pe
+  1
+//│ /!\ Parse error: Expected (data type definition | data definition | let binding | expression):1:1, found "  1\n" at l.264:1:   1
+>>>>>>>
 

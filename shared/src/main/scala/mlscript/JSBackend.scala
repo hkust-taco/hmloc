@@ -235,7 +235,18 @@ class JSBackend(allowUnresolvedSymbols: Boolean) {
         case _ =>
           throw CodeGenError(s"illegal assignemnt left-hand side: ${inspect(lhs)}")
       }
-    case _: Bind | _: Test | If(_, _) | New(_, _) | TyApp(_, _) | _: Splc =>
+    case iff: If =>
+      iff.desugaredIf match {
+        case N => throw CodeGenError(s"if expression has not been desugared")
+        case S(term) => translateTerm(term)
+      }
+    case New(N, TypingUnit(Nil)) => JSRecord(Nil)
+    case New(S(TypeName(className) -> Tup(args)), TypingUnit(Nil)) =>
+      val callee = translateVar(className, true)
+      callee(args.map { case (_, Fld(_, _, arg)) => translateTerm(arg) }: _*)
+    case New(_, TypingUnit(_)) =>
+      throw CodeGenError("custom class body is not supported yet")
+    case _: Bind | _: Test | If(_, _) | TyApp(_, _) | _: Splc =>
       throw CodeGenError(s"cannot generate code for term ${inspect(term)}")
   }
 
@@ -736,7 +747,9 @@ object JSTestBackend {
   /**
     * Represents the result of code generation.
     */
-  abstract class Result
+  abstract class Result {
+    def showFirstResult(prefixLength: Int): Unit = ()
+  }
 
   /**
     * Emitted code.
