@@ -43,7 +43,7 @@ class MLParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
     case (pat, S(bod)) => LetS(false, pat, bod)
   }
 
-  def term[p: P]: P[Term] = P(let | fun | ite | withsAsc | _match)
+  def term[p: P]: P[Term] = P(let | fun | ite | withsAsc | _match).map(v => {println(v); v}).log
 
   def lit[p: P]: P[Lit] =
     locate(number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
@@ -71,15 +71,15 @@ class MLParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
       }.toList)
   })
 
-  def subtermNoSel[p: P]: P[Term] = P( parens | record | lit | variable )
+  def subtermNoSel[p: P]: P[Term] = P( parens | record | lit | variable ).log
   
   def subterm[p: P]: P[Term] = P( Index ~~ subtermNoSel ~ (
     // Fields:
-    ("." ~/ (variable | locate(("(" ~/ ident ~ "." ~ ident ~ ")")
-      .map {case (prt, id) => Var(s"${prt}.${id}")})))
+    ("." ~/ (variable | locate(("(" ~/ ident ~ "." ~ ident ~ ")").log
+      .map {case (prt, id) => Var(s"${prt}.${id}")}))).log
       .map {(t: Var) => Left(t)} |
     // Array subscripts:
-    ("[" ~ term ~/ "]" ~~ Index).map {Right(_)}
+    ("[" ~ term ~/ "]" ~~ Index).map {Right(_)}.log("array")
     // Assignment:
     ).rep ~ ("<-" ~ term).?).map {
       case (i0, st, sels, a) =>
@@ -88,7 +88,7 @@ class MLParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
           case Right((su, i1)) => Subs(acc, su).withLoc(i0, i1, origin)
         })
         a.fold(base)(Assign(base, _))
-    }
+    }.map(v => {println(v); v}).log
 
   def record[p: P]: P[Rcd] = locate(P(
       "{" ~/ (kw("mut").!.? ~ variable ~ "=" ~ term map L.apply).|(kw("mut").!.? ~ variable map R.apply).rep(sep = ";") ~ "}"
@@ -169,10 +169,10 @@ class MLParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
         result
       }
       climb(0, pre)
-    }
+    }.log
   def operator[p: P]: P[Unit] = P(
     !symbolicKeywords ~~ (!StringIn("/*", "//") ~~ (CharsWhile(OpCharNotSlash) | "/")).rep(1)
-  ).opaque("operator")
+  ).opaque("operator").log
   def symbolicKeywords[p: P] = P{
     StringIn(
       "|",
@@ -273,7 +273,7 @@ class MLParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
   def litTy[p: P]: P[Type] = P( lit.map(l => Literal(l).withLocOf(l)) )
   
   def toplvl[p: P]: P[Statement] =
-    P( defDecl | tyDecl | termOrAssign )
+    P( defDecl | tyDecl | termOrAssign ).log
   def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ toplvl ~ topLevelSep.rep).rep.map(_.toList) ~ End ).map(Pgrm)
   def topLevelSep[p: P]: P[Unit] = ";"
   

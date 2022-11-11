@@ -9,6 +9,7 @@ import mlscript.Lexer._
 /** Parser for an ML-style input syntax, used in the legacy `ML*` tests. */
 @SuppressWarnings(Array("org.wartremover.warts.All"))
 class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
+  import OcamlParser.whitespace
   
   val keywords = Set(
     "def", "class", "trait", "type", "method", "mut",
@@ -62,6 +63,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     locate(number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
     | P(kw("undefined")).map(x => UnitLit(true)) | P(kw("null")).map(x => UnitLit(false)))
   def ocamlList[p: P]: P[Term] = P("[" ~ lit.rep(0, ",") ~ "]").map(vals => {
+    // assumes that the standard library defining list
+    // also defines a helper function to create lists
     val emptyList: Term = Var("Nil")
     vals.foldRight(emptyList)((v, list) =>
       mkApp(Var("Cons"), Rcd((Var("_0"), Fld(false, false, v)) :: (Var("_1"), Fld(false, false, list)) :: Nil)
@@ -232,7 +235,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       climb(0, pre)
     }
   def operator[p: P]: P[Unit] = P(
-    !symbolicKeywords ~~ (!StringIn("/*", "//") ~~ (CharsWhile(OpCharNotSlash) | "/")).rep(1)
+    !symbolicKeywords ~~ (!StringIn("/*", "//", "(*") ~~ (CharsWhile(OpCharNotSlash) | "/" | "*)")).rep(1)
   ).opaque("operator")
   def symbolicKeywords[p: P] = P{
     StringIn(
@@ -444,16 +447,67 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     P(ocamlDefDecl.map(_ :: Nil) | ocamlTyDecl | ocamlExceptionDef.map(_ :: Nil) | termOrAssign.map(_ :: Nil))
   def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ toplvl ~ topLevelSep.rep).rep.map(_.toList.flatten) ~ End ).map(Pgrm)
   def topLevelSep[p: P]: P[Unit] = ";"
-  
-  private var curHash = 0
-  def nextHash: Int = {
-    val res = curHash
-    curHash = res + 1
-    res
-  }
-  
 }
+
 object OcamlParser {
+  
+  import scala.annotation.{Annotation, switch, tailrec}
+  import fastparse.internal.Util
+  
+  // scala style white space parser modified to handle ocaml style comments too
+  implicit val whitespace: ParsingRun[_] => ParsingRun[Unit] = {implicit ctx: ParsingRun[_] =>
+    val input = ctx.input
+    val startIndex = ctx.index
+    @tailrec def rec(current: Int, state: Int, nesting: Int): ParsingRun[Unit] = {
+      if (!input.isReachable(current)) {
+        if (state === 0 || state === 1) ctx.freshSuccessUnit(current)
+        else if(state === 2 && nesting === 0) ctx.freshSuccessUnit(current - 1)
+        else {
+          ctx.cut = true
+          val res = ctx.freshFailure(current)
+          if (ctx.verboseFailures) ctx.setMsg(startIndex, () => Util.literalize("*/ or *)"))
+          res
+        }
+      } else {
+        val currentChar = input(current)
+        (state: @switch) match{
+          case 0 =>
+            (currentChar: @switch) match{
+              case ' ' | '\t' | '\n' | '\r' => rec(current + 1, state, 0)
+              case '/' => rec(current + 1, state = 2, 0)
+              case '(' => rec(current + 1, state = 2, 0)  // ocaml comments are like "(* ... *)"
+              case _ => ctx.freshSuccessUnit(current)
+            }
+          case 1 => rec(current + 1, state = if (currentChar === '\n') 0 else state, 0)
+          case 2 =>
+            (currentChar: @switch) match{
+              case '/' =>
+                if (nesting === 0) rec(current + 1, state = 1, 0)
+                else rec(current + 1, state = 2, nesting)
+              case '*' => rec(current + 1, state = 3, nesting + 1)
+              case _ =>
+                if (nesting === 0) ctx.freshSuccessUnit(current - 1)
+                else rec(current + 1, state = 3, nesting)
+            }
+          case 3 =>
+            (currentChar: @switch) match{
+              case '/' => rec(current + 1, state = 2, nesting)
+              case '*' => rec(current + 1, state = 4 , nesting)
+              case _ => rec(current + 1, state = state, nesting)
+            }
+          case 4 =>
+            (currentChar: @switch) match{
+              case '/' => rec(current + 1, state = if (nesting === 1) 0 else 3 , nesting - 1)
+              // ocaml comments are like "(* ... *)"
+              case ')' => rec(current + 1, state = if (nesting === 1) 0 else 3, nesting - 1)
+              case '*' => rec(current + 1, state = 4, nesting)
+              case _ => rec(current + 1, state = 3, nesting)
+            }
+        }
+      }
+    }
+    rec(current = ctx.index, state = 0, nesting = 0)
+  }
   
   def addTopLevelSeparators(lines: IndexedSeq[Str]): IndexedSeq[Str] = {
     (lines.iterator ++ lines.lastOption).toList.sliding(2).map {

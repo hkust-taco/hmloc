@@ -156,12 +156,14 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
     val allMthEnv = ctx.mthEnv.clone
     val newDefsInfo = newDefs0.iterator.map { case td => td.nme.name -> (td.kind, td.tparams.size) }.toMap
     val newDefs = newDefs0.flatMap { td0 =>
-      val n = td0.nme.name.capitalize
-      val td = if (td0.nme.name.isCapitalized) td0
-      else {
-        err(msg"Type names must start with a capital letter", td0.nme.toLoc)
-        td0.copy(nme = td0.nme.copy(n).withLocOf(td0.nme)).withLocOf(td0)
-      }
+      val n = td0.nme.name
+      val td = td0
+      // val n = td0.nme.name.capitalize
+      // val td = if (td0.nme.name.isCapitalized) td0
+      // else {
+      //   err(msg"Type names must start with a capital letter", td0.nme.toLoc)
+      //   td0.copy(nme = td0.nme.copy(n).withLocOf(td0.nme)).withLocOf(td0)
+      // }
       if (primitiveTypes.contains(n)) {
         err(msg"Type name '$n' is reserved.", td.nme.toLoc)
       }

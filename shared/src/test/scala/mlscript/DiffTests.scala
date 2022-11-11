@@ -67,7 +67,8 @@ class DiffTests
   protected lazy val files = allFiles.filter { file =>
       val fileName = file.baseName
       // validExt(file.ext) && filter(fileName)
-      validExt(file.ext) && filter(file.relativeTo(pwd))
+      // validExt(file.ext) && filter(file.relativeTo(pwd))
+      validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("OcamlExprParser")
   }
   
   val timeLimit = TimeLimit
@@ -925,7 +926,7 @@ object DiffTests {
   
   private val pwd = os.pwd
   private val dir = pwd/"shared"/"src"/"test"/"diff"
-  private val libPath = dir/"ocaml"/"library.ml.mls.txt"
+  private val libPath = dir/"ocaml"/"OcamlLibrary.mls.txt"
 
   private val allFiles = os.walk(dir).filter(_.toIO.isFile)
   

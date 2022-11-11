@@ -14,9 +14,9 @@ let d = e = f = g
 []
 let a = []
 //│ Desugared: :: (1,) (2,)
-//│ Desugared: Cons ({_0: 1, _1: Cons ({_0: 2, _1: Cons ({_0: 3, _1: Cons ({_0: 4, _1: Nil ({},)},)},)},)},)
-//│ Desugared: Nil ({},)
-//│ Desugared: def a: Nil ({},)
+//│ Desugared: Cons ({_0: 1, _1: Cons ({_0: 2, _1: Cons ({_0: 3, _1: Cons ({_0: 4, _1: Nil},)},)},)},)
+//│ Desugared: Nil
+//│ Desugared: def a: Nil
 
 // let without in as definitions
 let a = 1
@@ -45,14 +45,14 @@ let check e =
 //│ Desugared: def check: e, => if e is ‹(Something (a,) (b,) (c,)) then here; (Nothing (d,) (e,) (f,)) then nothere›
 //│ Desugared: rec def interp_e: '(' h : TypeName(heap) ')', => '(' e : TypeName(exp) ')', => if e is ‹(Plus ('(' e1, e2, ')',)) then + ('(' interp_e (h,) (e1,) ')',) ('(' interp_e (h,) (e2,) ')',); (Times ('(' e1, e2, ')',)) then * ('(' interp_e (h,) (e1,) ')',) ('(' interp_e (h,) (e2,) ')',)›
 //│ Desugared: def check: e, => if e is ‹(Something (here,)) then let nothere = here in nothere; (Nothing) then beat (it,)›
-//│ Desugared: def check: e, => if e is ‹(:: (a,) (b,)) then Nil ({},); (Nil ({},)) then Nil›
+//│ Desugared: def check: e, => if e is ‹(:: (a,) (b,)) then Nil; (Nil) then Nil›
 
 // define lambdas using fun
 fun (env: env) _ -> []
 let interp2 = interp (fun (env:env) opt ->
   match opt with
      None -> 0)
-//│ Desugared: '(' env : TypeName(env) ')' (_,), => Nil ({},)
+//│ Desugared: '(' env : TypeName(env) ')' (_,), => Nil
 //│ Desugared: def interp2: interp ('(' '(' env : TypeName(env) ')' (opt,), => if opt is ‹(None) then 0› ')',)
 
 // TODO floats and floating point operators
@@ -72,7 +72,7 @@ app (2,3) 4 // TODO is the extra tupling correct?
 //│ Desugared: 1, 2, 3,
 //│ Desugared: def mktup: 1, 2, 3,
 //│ Desugared: def mktup: 1, '(' 2, 3, ')',
-//│ Desugared: def mktup: Cons ({_0: 1, _1: Cons ({_0: 2, _1: Cons ({_0: 3, _1: Nil ({},)},)},)},), 4, '(' 5, 6, ')',
+//│ Desugared: def mktup: Cons ({_0: 1, _1: Cons ({_0: 2, _1: Cons ({_0: 3, _1: Nil},)},)},), 4, '(' 5, 6, ')',
 //│ Desugared: app (2,) (3,) (4,)
 //│ Desugared: app (2,), 3 (4,),
 
@@ -89,13 +89,16 @@ let _ =
 //│ Desugared: print_newline ()
 
 
-// INPROGRESS comments
-(* ### *)
-1 (* ### *)
+// TODO fix single line comment
+// (* ### **)
+1 (* ### **)
 let val = 0 (* ############### *)
 let val = 2 (* IGNORE THIS *)
 let val = 4 (**** IRREGULAR *)
-//│ /!\ Parse error: Expected ")":1:2, found "* ### *);1" at l.93:2: (* ### *)
+//│ Desugared: 1
+//│ Desugared: def val: 0
+//│ Desugared: def val: 2
+//│ Desugared: def val: 4
 
 // create classes for exceptions
 exception Unimplemented
@@ -113,7 +116,7 @@ let (::) a b = Cons a b
 let head xs = match xs with
   :: x xs -> x
   | _ -> raise Error
-//│ /!\ Parse error: Expected end-of-input:2:3, found ":: x xs ->" at l.114:3:   :: x xs -> x
+//│ /!\ Parse error: Expected end-of-input:2:3, found ":: x xs ->" at l.117:3:   :: x xs -> x
 
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) List
