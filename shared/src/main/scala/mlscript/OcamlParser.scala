@@ -65,7 +65,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ocamlList[p: P]: P[Term] = P("[" ~ lit.rep(0, ",") ~ "]").map(vals => {
     // assumes that the standard library defining list
     // also defines a helper function to create lists
-    val emptyList: Term = Var("Nil")
+    val emptyList: Term = Var("nil")
     vals.foldRight(emptyList)((v, list) =>
       mkApp(Var("Cons"), Rcd((Var("_0"), Fld(false, false, v)) :: (Var("_1"), Fld(false, false, list)) :: Nil)
     ))
@@ -194,13 +194,15 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case Some(b) => b
   })
   def matchArms2[p: P]: P[Ls[IfBody]] = ("|" ~ matchArms).?.map(_.getOrElse(Ls.empty))
-  
+
+  private val infixity: Set[String] = Set("::")
   private val prec: Map[Char,Int] = List(
-    ":",
     "|",
     "^",
     "&",
     "= !",
+    // cons operator higher precedence that relational operators
+    ":",
     "< >",
     "+ -",
     "* / %",
@@ -221,7 +223,14 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
             case None => false
             case Some((off0, op, off1, next)) =>
               val prec: Int = precedence(op)
-              if (prec < minPrec) false
+              // right associative infix operators like `::` list cons
+              if (infixity(op) && prec < minPrec) {
+                remaining = remaining.tail
+                val rhs = climb(prec + 1, next)
+                result = App(App(Var(op).withLoc(off0, off1, origin), toParams(result)), toParams(rhs))
+                true
+              }
+              else if (prec < minPrec) false
               else {
                 remaining = remaining.tail
                 val rhs = climb(prec + 1, next)
