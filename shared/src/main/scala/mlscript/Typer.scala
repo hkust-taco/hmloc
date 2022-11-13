@@ -744,6 +744,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case iff @ If(body, fallback) =>
         import mlscript.ucs._
         try {
+          println(mlscript.codegen.Helpers.inspect(iff))
           val cnf = desugarIf(body, fallback)
           Clause.print(println, cnf)
           val caseTree = MutCaseOf.build(cnf)
@@ -751,8 +752,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           MutCaseOf.show(caseTree).foreach(println(_))
           val scrutineePatternMap = MutCaseOf.summarizePatterns(caseTree)
           println("Exhaustiveness map")
-          scrutineePatternMap.foreach { case (scrutinee, classNames) =>
-            println(s"- $scrutinee => " + classNames.mkString(", "))
+          scrutineePatternMap.foreach { case (scrutinee, patterns) =>
+            println(s"- $scrutinee => " + patterns.keys.mkString(", "))
           }
           MutCaseOf.checkExhaustive(caseTree, N)(scrutineePatternMap)
           val trm = MutCaseOf.toTerm(caseTree)
