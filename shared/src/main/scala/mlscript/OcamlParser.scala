@@ -65,7 +65,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ocamlList[p: P]: P[Term] = P("[" ~ lit.rep(0, ",") ~ "]").map(vals => {
     // assumes that the standard library defining list
     // also defines a helper function to create lists
-    val emptyList: Term = Var("nil")
+    val emptyList: Term = mkApp(Var("Nil"), Rcd(Nil))
     vals.foldRight(emptyList)((v, list) =>
       mkApp(Var("Cons"), Rcd((Var("_0"), Fld(false, false, v)) :: (Var("_1"), Fld(false, false, list)) :: Nil)
     ))
@@ -375,6 +375,33 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         val result = TypeDef(Als, tname, tparams, aliasBody, Nil, Nil, Nil) :: bodies
         alias.map(als => als :: result).getOrElse(result)
     })
+  // create a helper function for a class constructor
+  // for e.g. Cons[A] = {_0: A; _1: List[A]} gets
+  // def cons a b = Cons {_0 = a; _1 = b}
+  def ocamlTyDeclHelper(tyDef: TypeDef): Opt[Def] = {
+    tyDef.kind match {
+      case Cls => {
+        val args = tyDef.body match {
+          case Record(Nil) => Nil
+          case Record(args) =>
+            val numArgs = args.length
+            Range(0, numArgs).map(i => Var((97+i).toChar.toString)).toList
+          case _ => Nil
+        }
+        val funName = tyDef.nme.name.toLowerCase();
+        val funBody = Rcd(args.zipWithIndex.map{ case (arg, i) => Var("_" + i.toString) -> Fld(false, false, arg) })
+        val funApp = mkApp(Var(tyDef.nme.name), funBody)
+        val fun = Def(false, Var(funName), L(args.foldRight(funApp)((i, acc) => Lam(toParams(i), acc))), true)
+        S(fun)
+      }
+      case _ => None
+    }
+  }
+  def ocamlTyDeclAndHelper[p:P]: P[Ls[Statement]] = ocamlTyDecl.map(tyDefs => {
+    // only create helpers for classes
+    val helpers = tyDefs.flatMap(ocamlTyDeclHelper)
+    tyDefs ::: helpers
+  })
   def tyParams[p: P]: P[Ls[TypeName]] =
     ("[" ~ tyName.rep(0, ",") ~ "]").?.map(_.toList.flatten)
   def ocamlTyParams[p: P]: P[Ls[TypeName]] =
@@ -453,7 +480,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     "exception" ~ ident
   ).map(name => Def(false, Var(name), L(Rcd(Nil)), false))
   def toplvl[p: P]: P[Ls[Statement]] =
-    P(ocamlDefDecl.map(_ :: Nil) | ocamlTyDecl | ocamlExceptionDef.map(_ :: Nil) | termOrAssign.map(_ :: Nil))
+    P(ocamlDefDecl.map(_ :: Nil) | ocamlTyDeclAndHelper | ocamlExceptionDef.map(_ :: Nil) | termOrAssign.map(_ :: Nil))
   def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ toplvl ~ topLevelSep.rep).rep.map(_.toList.flatten) ~ End ).map(Pgrm)
   def topLevelSep[p: P]: P[Unit] = ";"
 }

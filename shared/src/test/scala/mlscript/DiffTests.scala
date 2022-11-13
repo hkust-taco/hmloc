@@ -67,8 +67,8 @@ class DiffTests
   protected lazy val files = allFiles.filter { file =>
       val fileName = file.baseName
       // validExt(file.ext) && filter(fileName)
-      validExt(file.ext) && filter(file.relativeTo(pwd))
-      // validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("OcamlExprParser")
+      // validExt(file.ext) && filter(file.relativeTo(pwd))
+      validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("OcamlExprChecker")
   }
   
   val timeLimit = TimeLimit

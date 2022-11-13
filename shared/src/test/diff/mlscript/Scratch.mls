@@ -1,15 +1,33 @@
-// class Nil: {}
-// class Cons[A]: {_0: A; _1: List[A]}
-// type List[A] = Cons[A] | Nil
-// def Nil = Nil {}
-// def Cons a b = Cons {_0 = a; _1 = b}
+class Nil: {}
+class Cons[A]: {_0: A; _1: List[A]}
+type List[A] = Cons[A] | Nil
+def nil = Nil {}
+//│ Defined class Nil
+//│ Defined class Cons[+A]
+//│ Defined type alias List[+A]
+//│ nil: Nil
+//│    = [Function: nil]
 
-// :d
-// def head xs = case xs of
-//   { Nil -> error // hi
-//   | Cons -> xs._0
-//   }
+:dp
+Nil {}
+//│ Parsed: App(Var(Nil), Tup(_: Rcd()))
+//│ res: Nil
+//│    = Nil {}
 
-def a = 1 // hi
-//│ a: 1
-//│  = [Function: a]
+:dp
+def cons a b = Cons {_0 = a; _1 = b}
+//│ Parsed: Def(false, cons, Lam(Tup(_: Var(a)), Lam(Tup(_: Var(b)), App(Var(Cons), Tup(_: Rcd(Var(_0) = Var(a), Var(_1) = Var(b)))))), true)
+//│ cons: ('_0 & 'A) -> (List['A] & '_1) -> (Cons['A] with {_0: '_0, _1: '_1})
+//│     = [Function: cons]
+
+type Heap = List[(string, int)]
+//│ Defined type alias Heap
+
+def data = 1 : int
+//│ data: int
+//│     = [Function: data]
+
+
+// TODO
+type heapVar = Heap of (string * int) list
+//│ /!\ Parse error: Expected end-of-input:1:21, found "of (string" at l.32:21: type heapVar = Heap of (string * int) list

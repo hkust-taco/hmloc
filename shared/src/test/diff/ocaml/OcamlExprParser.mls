@@ -16,9 +16,10 @@ let d = e = f = g
 let a = []
 //│ Desugared: :: (1,) (2,)
 //│ Desugared: :: (1,) (:: (2,) (3,),)
-//│ Desugared: Cons ({_0: 1, _1: Cons ({_0: 2, _1: Cons ({_0: 3, _1: Cons ({_0: 4, _1: nil},)},)},)},)
-//│ Desugared: nil
-//│ Desugared: def a: nil
+//│ Desugared: Cons ({_0: 1, _1: Cons ({_0: 2, _1: Cons ({_0: 3, _1: Cons ({_0: 4, _1: Nil ({},)},)},)},)},)
+//│ Desugared: Nil ({},)
+//│ Desugared: def a: Nil ({},)
+
 
 // let without in as definitions
 let a = 1
@@ -47,21 +48,21 @@ let check e =
 //│ Desugared: def check: e, => if e is ‹(Something (a,) (b,) (c,)) then here; (Nothing (d,) (e,) (f,)) then nothere›
 //│ Desugared: rec def interp_e: '(' h : TypeName(heap) ')', => '(' e : TypeName(exp) ')', => if e is ‹(Plus ('(' e1, e2, ')',)) then + ('(' interp_e (h,) (e1,) ')',) ('(' interp_e (h,) (e2,) ')',); (Times ('(' e1, e2, ')',)) then * ('(' interp_e (h,) (e1,) ')',) ('(' interp_e (h,) (e2,) ')',)›
 //│ Desugared: def check: e, => if e is ‹(Something (here,)) then let nothere = here in nothere; (Nothing) then beat (it,)›
-//│ Desugared: def check: e, => if e is ‹(:: (a,) (b,)) then nil; (nil) then Nil›
+//│ Desugared: def check: e, => if e is ‹(:: (a,) (b,)) then Nil ({},); (Nil ({},)) then Nil›
 
 // define lambdas using fun
 fun (env: env) _ -> []
 let interp2 = interp (fun (env:env) opt ->
   match opt with
      None -> 0)
-//│ Desugared: '(' env : TypeName(env) ')' (_,), => nil
+//│ Desugared: '(' env : TypeName(env) ')' (_,), => Nil ({},)
 //│ Desugared: def interp2: interp ('(' '(' env : TypeName(env) ')' (opt,), => if opt is ‹(None) then 0› ')',)
 
 // TODO floats and floating point operators
 2.0
 let b = 3.0
 let c = 3.0 +. 4.0 *. 6.0
-//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):1:3, found "0;let b = " at l.61:3: 2.0
+//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):1:3, found "0;let b = " at l.62:3: 2.0
 
 // make tuples from comma separated terms
 1, 2, 3
@@ -74,7 +75,7 @@ app (2,3) 4 // TODO is the extra tupling correct?
 //│ Desugared: 1, 2, 3,
 //│ Desugared: def mktup: 1, 2, 3,
 //│ Desugared: def mktup: 1, '(' 2, 3, ')',
-//│ Desugared: def mktup: Cons ({_0: 1, _1: Cons ({_0: 2, _1: Cons ({_0: 3, _1: nil},)},)},), 4, '(' 5, 6, ')',
+//│ Desugared: def mktup: Cons ({_0: 1, _1: Cons ({_0: 2, _1: Cons ({_0: 3, _1: Nil ({},)},)},)},), 4, '(' 5, 6, ')',
 //│ Desugared: app (2,) (3,) (4,)
 //│ Desugared: app (2,), 3 (4,),
 
@@ -118,7 +119,7 @@ let (::) a b = Cons a b
 let head xs = match xs with
   :: x xs -> x
   | _ -> raise Error
-//│ /!\ Parse error: Expected end-of-input:2:3, found ":: x xs ->" at l.119:3:   :: x xs -> x
+//│ /!\ Parse error: Expected end-of-input:2:3, found ":: x xs ->" at l.120:3:   :: x xs -> x
 
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) List
@@ -146,6 +147,19 @@ type stmt = Skip | Assign of string * exp
 //│ Desugared: class While: {_0: exp, _1: stmt}
 //│ Desugared: class SaveHeap: {_0: string}
 //│ Desugared: class RestoreHeap: {_0: string}
+//│ Desugared: def heapint: a, => HeapInt ({_0: a},)
+//│ Desugared: def heap: a, => Heap ({_0: a},)
+//│ Desugared: def eint: a, => EInt ({_0: a},)
+//│ Desugared: def var: a, => Var ({_0: a},)
+//│ Desugared: def plus: a, => b, => Plus ({_0: a, _1: b},)
+//│ Desugared: def times: a, => b, => Times ({_0: a, _1: b},)
+//│ Desugared: def skip: Skip ({},)
+//│ Desugared: def assign: a, => b, => Assign ({_0: a, _1: b},)
+//│ Desugared: def seq: a, => b, => Seq ({_0: a, _1: b},)
+//│ Desugared: def if: a, => b, => c, => If ({_0: a, _1: b, _2: c},)
+//│ Desugared: def while: a, => b, => While ({_0: a, _1: b},)
+//│ Desugared: def saveheap: a, => SaveHeap ({_0: a},)
+//│ Desugared: def restoreheap: a, => RestoreHeap ({_0: a},)
 
 // parameterized type definitions
 type 'a heap = HeapA of 'a
@@ -161,6 +175,11 @@ type 'a list = Cons of 'a * 'a list | Nil
 //│ Desugared: type alias list['a] = Nil | Cons['a]
 //│ Desugared: class Cons['a]: {_0: 'a, _1: list['a]}
 //│ Desugared: class Nil: {}
+//│ Desugared: def heapa: a, => HeapA ({_0: a},)
+//│ Desugared: def heapb: a, => HeapB ({_0: a},)
+//│ Desugared: def heapc: a, => HeapC ({_0: a},)
+//│ Desugared: def cons: a, => b, => Cons ({_0: a, _1: b},)
+//│ Desugared: def nil: Nil ({},)
 
 // TODO: NonsHeap should have ['a, 'b] parameters because
 // alias otherList is used in it
@@ -174,4 +193,24 @@ type 'a, 'b heap =
 //│ Desugared: class Heap['a]: {_0: list['a]}
 //│ Desugared: class NonHeap: {_0: otherList}
 //│ Desugared: class NonsHeap['a]: {_0: list[{_0: otherList, _1: 'a}]}
+//│ Desugared: def heap: a, => Heap ({_0: a},)
+//│ Desugared: def nonheap: a, => NonHeap ({_0: a},)
+//│ Desugared: def nonsheap: a, => NonsHeap ({_0: a},)
 
+
+type 'a list = Cons of 'a * 'a list | Nil
+let (::) a b = Cons {_0 = a; _1 = b}
+type 'a option = None | Some of 'a
+let raise a = nothing
+//│ Desugared: type alias list['a] = Nil | Cons['a]
+//│ Desugared: class Cons['a]: {_0: 'a, _1: list['a]}
+//│ Desugared: class Nil: {}
+//│ Desugared: type alias option['a] = Some['a] | None
+//│ Desugared: class None: {}
+//│ Desugared: class Some['a]: {_0: 'a}
+//│ Desugared: def cons: a, => b, => Cons ({_0: a, _1: b},)
+//│ Desugared: def nil: Nil ({},)
+//│ Desugared: def ::: a, => b, => Cons ({_0: a, _1: b},)
+//│ Desugared: def none: None ({},)
+//│ Desugared: def some: a, => Some ({_0: a},)
+//│ Desugared: def raise: a, => nothing
