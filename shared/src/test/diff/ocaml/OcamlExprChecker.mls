@@ -1,0 +1,313 @@
+:NoJS
+:OcamlParser
+:AllowTypeErrors
+
+// library type definitions and functions
+type 'a list = Cons of 'a * 'a list | Nil
+let (::) a b = Cons (a, b)
+type 'a option = None | Some of 'a
+let raise a = nothing
+exception Error
+//│ Defined type alias list[+'a]
+//│ Defined class Cons[+'a]
+//│ Defined class Nil
+//│ Defined type alias option[+'a]
+//│ Defined class None
+//│ Defined class Some[+'a]
+//│ Cons: ('_0 & 'a, list['a] & '_1,) -> (Cons['a] with {_0: '_0, _1: '_1})
+//│ Nil: Nil
+//│ ::: ('_0 & 'a) -> (list['a] & '_1) -> (Cons['a] with {_0: '_0, _1: '_1})
+//│ None: None
+//│ Some: '_0 -> Some['_0]
+//│ raise: anything -> nothing
+//│ Error: anything
+
+// equality check
+// FIXME
+let a b c = b = c
+let a b c d = b = c = d
+//│ a: number -> number -> bool
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.28: 	let a b c d = b = c = d
+//│ ║        	              ^^^^^^^^^
+//│ ╟── application of type `bool` is not a 1-element tuple
+//│ ║  l.28: 	let a b c d = b = c = d
+//│ ╙──      	                  ^^^^^
+//│ a: number -> number -> number -> (bool | error)
+
+// list values
+1 :: Nil
+1 :: 2 :: Nil
+[1, 2, 3, 4]
+[]
+// let a = []
+//│ res: Cons[1] with {_1: Nil}
+//│ res: Cons[1 | 2] with {_0: 1, _1: Cons[2] with {_1: Nil}}
+//│ res: Cons[1 | 2 | 3 | 4] with {_0: 1, _1: Cons[2 | 3 | 4] with {_0: 2, _1: Cons[3 | 4] with {_0: 3, _1: Cons[4] with {_1: Nil}}}}
+//│ res: Nil
+
+// let without in as definitions
+let a = 1
+let a = a + 1
+let a = a + a + 1
+//│ a: 1
+//│ a: int
+//│ a: int
+
+let a = ("hi", 2)
+let b = ("bye", 3)
+let data = Cons (a, Cons (b, Nil))
+//│ a: ("hi", 2,)
+//│ b: ("bye", 3,)
+//│ data: Cons[("bye" | "hi", 2 | 3,)] with {_0: ("hi", 2,), _1: Cons[("bye", 3,)] with {_1: Nil}}
+
+// TODO floats and floating point operators
+// FIXME
+2.0
+let b = 3.0
+let c = 3.0 +. 4.0 *. 6.0
+//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):1:3, found "0;let b = " at l.66:3: 2.0
+
+// make tuples from comma separated terms
+1, 2, 3
+let mktup = 1, 2, 3
+let mktup = 1, (2, 3)
+let mktup = [1, 2, 3], 4, (5, 6)
+//│ res: (1, 2, 3,)
+//│ mktup: (1, 2, 3,)
+//│ mktup: (1, (2, 3,),)
+//│ mktup: (Cons[1 | 2 | 3] with {_0: 1, _1: Cons[2 | 3] with {_0: 2, _1: Cons[3] with {_1: Nil}}}, 4, (5, 6,),)
+
+// create classes for exceptions
+exception Unimplemented
+exception AlreadyDone
+raise Unimplemented
+raise AlreadyDone
+//│ Unimplemented: anything
+//│ AlreadyDone: anything
+//│ res: nothing
+//│ res: nothing
+
+// type definitions
+type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ Defined type alias heap
+//│ Defined type alias heapVar
+//│ Defined class HeapInt
+//│ Defined class Heap
+//│ HeapInt: (int & '_0) -> (HeapInt with {_0: '_0})
+//│ Heap: (heap & '_0) -> (Heap with {_0: '_0})
+
+type exp = EInt of int | Var of string | Plus of exp * exp | Times of exp * exp
+//│ Defined type alias exp
+//│ Defined class EInt
+//│ Defined class Var
+//│ Defined class Plus
+//│ Defined class Times
+//│ EInt: (int & '_0) -> (EInt with {_0: '_0})
+//│ Var: (string & '_0) -> (Var with {_0: '_0})
+//│ Plus: (exp & '_0, exp & '_1,) -> (Plus with {_0: '_0, _1: '_1})
+//│ Times: (exp & '_0, exp & '_1,) -> (Times with {_0: '_0, _1: '_1})
+
+type stmt = Skip | Assign of string * exp
+         | Seq of stmt * stmt 
+         | If of exp * stmt * stmt
+         | While of exp * stmt 
+         | SaveHeap of string
+         | RestoreHeap of string
+//│ Defined type alias stmt
+//│ Defined class Skip
+//│ Defined class Assign
+//│ Defined class Seq
+//│ Defined class If
+//│ Defined class While
+//│ Defined class SaveHeap
+//│ Defined class RestoreHeap
+//│ Skip: Skip
+//│ Assign: (string & '_0, exp & '_1,) -> (Assign with {_0: '_0, _1: '_1})
+//│ Seq: (stmt & '_0, stmt & '_1,) -> (Seq with {_0: '_0, _1: '_1})
+//│ If: (exp & '_0, stmt & '_1, stmt & '_2,) -> (If with {_0: '_0, _1: '_1, _2: '_2})
+//│ While: (exp & '_0, stmt & '_1,) -> (While with {_0: '_0, _1: '_1})
+//│ SaveHeap: (string & '_0) -> (SaveHeap with {_0: '_0})
+//│ RestoreHeap: (string & '_0) -> (RestoreHeap with {_0: '_0})
+
+// parameterized type definitions
+type 'a heapA = HeapA of 'a
+type 'a, 'b heapB = HeapB of ('a * 'b)
+type 'a, 'b heapC = HeapC of ('a * 'b) list
+type 'a, 'b heapD = HeapD of 'a * 'b list
+//│ Defined type alias heapA[+'a]
+//│ Defined class HeapA[+'a]
+//│ Defined type alias heapB[+'a, +'b]
+//│ Defined class HeapB[+'a, +'b]
+//│ Defined type alias heapC[+'a, +'b]
+//│ Defined class HeapC[+'a, +'b]
+//│ Defined type alias heapD[+'a, +'b]
+//│ Defined class HeapD[+'a, +'b]
+//│ HeapA: '_0 -> HeapA['_0]
+//│ HeapB: ({_0: 'a, _1: 'b} & '_0) -> (HeapB['a, 'b] with {_0: '_0})
+//│ HeapC: (list[{_0: 'a, _1: 'b}] & '_0) -> (HeapC['a, 'b] with {_0: '_0})
+//│ HeapD: ('_0, list['b] & '_1,) -> (HeapD['_0, 'b] with {_1: '_1})
+
+
+
+// match case with operations and nested let statements
+:dp
+let rec interp_s (h:heap) (s:stmt) = match s with
+    Skip -> h
+  | Seq(s1,s2) -> let h2 = interp_s h s1 in interp_s h2 s2
+  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
+  | Assign(str,e) -> update h str (interp_e h e)
+  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
+  | SaveHeap(str) -> []
+  | RestoreHeap(str) -> []
+  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
+//│ Parsed: Def(true, interp_s, Lam(Tup(_: Asc(Var(h), TypeName(heap))), Lam(Tup(_: Asc(Var(s), TypeName(stmt))), If(IfOpApp(Var(s), Var(is), IfBlock(IfThen(Var(Skip), Var(h);IfThen(App(Var(Seq), Tup(_: Var(s1), _: Var(s2))), Let(false, h2, App(App(Var(interp_s), Tup(_: Var(h))), Tup(_: Var(s1))), App(App(Var(interp_s), Tup(_: Var(h2))), Tup(_: Var(s2))));IfThen(App(Var(If), Tup(_: Var(e), _: Var(s1), _: Var(s2))), App(App(App(Var(if), App(App(Var(<>), Tup(_: App(App(Var(interp_e), Tup(_: Var(h))), Tup(_: Var(e))))), Tup(_: IntLit(0)))), App(App(Var(interp_s), Tup(_: Var(h))), Tup(_: Var(s1)))), App(App(Var(interp_s), Tup(_: Var(h))), Tup(_: Var(s2))));IfThen(App(Var(Assign), Tup(_: Var(str), _: Var(e))), App(App(App(Var(update), Tup(_: Var(h))), Tup(_: Var(str))), Tup(_: App(App(Var(interp_e), Tup(_: Var(h))), Tup(_: Var(e)))));IfThen(App(Var(While), Tup(_: Var(e), _: Var(s1))), App(App(App(Var(if), App(App(Var(<>), Tup(_: App(App(Var(interp_e), Tup(_: Var(h))), Tup(_: Var(e))))), Tup(_: IntLit(0)))), Let(false, h2, App(App(Var(interp_s), Tup(_: Var(h))), Tup(_: Var(s1))), App(App(Var(interp_s), Tup(_: Var(h2))), Tup(_: Var(s))))), Var(h));IfThen(App(Var(SaveHeap), Tup(_: Var(str))), Var(Nil);IfThen(App(Var(RestoreHeap), Tup(_: Var(str))), Var(Nil);IfThen(App(Var(Times), Tup(_: Var(e1), _: Var(e2))), App(App(Var(*), Tup(_: App(App(Var(interp_e), Tup(_: Var(h))), Tup(_: Var(e1))))), Tup(_: App(App(Var(interp_e), Tup(_: Var(h))), Tup(_: Var(e2)))))), None))), true)
+//│ ╔══[ERROR] identifier not found: <>
+//│ ║  l.158: 	  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
+//│ ╙──       	                                     ^^
+//│ ╔══[ERROR] identifier not found: interp_e
+//│ ║  l.158: 	  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
+//│ ╙──       	                       ^^^^^^^^
+//│ ╔══[ERROR] identifier not found: update
+//│ ║  l.159: 	  | Assign(str,e) -> update h str (interp_e h e)
+//│ ╙──       	                     ^^^^^^
+//│ ╔══[ERROR] identifier not found: interp_e
+//│ ║  l.159: 	  | Assign(str,e) -> update h str (interp_e h e)
+//│ ╙──       	                                   ^^^^^^^^
+//│ ╔══[ERROR] identifier not found: <>
+//│ ║  l.160: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
+//│ ╙──       	                                     ^^
+//│ ╔══[ERROR] identifier not found: interp_e
+//│ ║  l.160: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
+//│ ╙──       	                       ^^^^^^^^
+//│ ╔══[ERROR] identifier not found: interp_e
+//│ ║  l.163: 	  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
+//│ ╙──       	                    ^^^^^^^^
+//│ ╔══[ERROR] identifier not found: interp_e
+//│ ║  l.163: 	  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
+//│ ╙──       	                                    ^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.155: 	let rec interp_s (h:heap) (s:stmt) = match s with
+//│ ║         	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.156: 	    Skip -> h
+//│ ║         	^^^^^^^^^^^^^
+//│ ║  l.157: 	  | Seq(s1,s2) -> let h2 = interp_s h s1 in interp_s h2 s2
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.158: 	  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.159: 	  | Assign(str,e) -> update h str (interp_e h e)
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.160: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.161: 	  | SaveHeap(str) -> []
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.162: 	  | RestoreHeap(str) -> []
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.163: 	  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `Nil` does not have field '_0'
+//│ ║  l.6: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	                                      ^^^
+//│ ╟── Note: constraint arises from record type:
+//│ ║  l.92: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ║        	                                                         ^^^^^^^^^^^^
+//│ ╟── from application:
+//│ ║  l.160: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
+//│ ╙──       	                                                        ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.155: 	let rec interp_s (h:heap) (s:stmt) = match s with
+//│ ║         	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.156: 	    Skip -> h
+//│ ║         	^^^^^^^^^^^^^
+//│ ║  l.157: 	  | Seq(s1,s2) -> let h2 = interp_s h s1 in interp_s h2 s2
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.158: 	  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.159: 	  | Assign(str,e) -> update h str (interp_e h e)
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.160: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.161: 	  | SaveHeap(str) -> []
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.162: 	  | RestoreHeap(str) -> []
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.163: 	  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── operator application of type `int` does not have field '_0'
+//│ ║  l.163: 	  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
+//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from record type:
+//│ ║  l.92: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ║        	                                                         ^^^^^^^^^^^^
+//│ ╟── from application:
+//│ ║  l.160: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
+//│ ╙──       	                                                        ^^^^^^^^^^^^^
+//│ interp_s: heap -> stmt -> (error | int | Nil | heap)
+
+/// FIXME
+// define lambdas using fun
+fun (env: env) _ -> []
+let interp2 = interp (fun (env:env) opt ->
+  match opt with
+     None -> 0)
+//│ ╔══[ERROR] Unsupported pattern shape:
+//│ ║  l.249: 	fun (env: env) _ -> []
+//│ ╙──       	    ^^^^^^^^^^^^
+//│ res: error -> Nil
+//│ ╔══[ERROR] identifier not found: interp
+//│ ║  l.250: 	let interp2 = interp (fun (env:env) opt ->
+//│ ╙──       	              ^^^^^^
+//│ ╔══[ERROR] Unsupported pattern shape:
+//│ ║  l.250: 	let interp2 = interp (fun (env:env) opt ->
+//│ ╙──       	                          ^^^^^^^^^^^^^
+//│ ╔══[ERROR] identifier not found: opt
+//│ ║  l.251: 	  match opt with
+//│ ╙──       	        ^^^
+//│ interp2: error
+
+
+let head xs = match xs with
+  Cons(x, xs) -> x
+  | _ -> raise Error
+//│ head: ((Cons[?] with {_0: 'a}) | ~Cons[?]) -> 'a
+
+// FIXME
+let head xs = match xs with
+  x :: xs -> x
+  | _ -> raise Error
+//│ ╔══[ERROR] Cannot find operator `::` in the context
+//│ ║  l.276: 	  x :: xs -> x
+//│ ╙──       	    ^^
+//│ head: anything -> error
+
+
+// FIXME
+// TODO: NonsHeap should have ['a, 'b] parameters because
+// alias otherList is used in it
+type 'a, 'b bigHeap =
+  NoHeap of 'a list
+  | NonHeap of otherList
+  | NonsHeap of (otherList * 'a) list
+  and otherList = 'b list
+//│ ╔══[ERROR] Type otherList takes parameters
+//│ ║  l.289: 	  | NonHeap of otherList
+//│ ╙──       	               ^^^^^^^^^
+//│ ╔══[ERROR] Type otherList takes parameters
+//│ ║  l.290: 	  | NonsHeap of (otherList * 'a) list
+//│ ╙──       	                 ^^^^^^^^^
+//│ Defined type alias otherList[+'b]
+//│ Defined type alias bigHeap[+'a, ±'b]
+//│ Defined class NoHeap[+'a]
+//│ Defined class NonHeap
+//│ Defined class NonsHeap[+'a]
+//│ ╔══[WARNING] Type definition bigHeap has bivariant type parameters:
+//│ ║  l.287: 	type 'a, 'b bigHeap =
+//│ ║         	            ^^^^^^^
+//│ ╟── 'b is irrelevant and may be removed
+//│ ║  l.287: 	type 'a, 'b bigHeap =
+//│ ╙──       	         ^^
+//│ NoHeap: (list['a] & '_0) -> (NoHeap['a] with {_0: '_0})
+//│ NonHeap: (error & '_0) -> (NonHeap with {_0: '_0})
+//│ NonsHeap: (list[{_0: error, _1: 'a}] & '_0) -> (NonsHeap['a] with {_0: '_0})
+
+

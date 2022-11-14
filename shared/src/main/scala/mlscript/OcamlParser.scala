@@ -27,6 +27,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   
   def toParams(t: Term): Tup = t match {
     case t: Tup => t
+    case Bra(false, t) => toParams(t)
     case _ => Tup((N, Fld(false, false, t)) :: Nil)
   }
   def toParams(t: Ls[Term]): Tup = {
@@ -48,7 +49,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ident[p: P]: P[String] =
     P( (letter | "_") ~~ (letter | digit | "_" | "'").repX ).!.filter(!keywords(_))
 
-  /** all top level statements and expressions.
+  /** all top level statements and .
     * Note: this is will treat 1 = 2 as let 1 = 2 and not 1 == 2
     */
   def termOrAssign[p: P]: P[Statement] = P( term ~ ("=" ~ term).? ).map {
@@ -65,9 +66,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ocamlList[p: P]: P[Term] = P("[" ~ lit.rep(0, ",") ~ "]").map(vals => {
     // assumes that the standard library defining list
     // also defines a helper function to create lists
-    val emptyList: Term = mkApp(Var("Nil"), Rcd(Nil))
+    val emptyList: Term = Var("Nil")
     vals.foldRight(emptyList)((v, list) =>
-      mkApp(Var("Cons"), Rcd((Var("_0"), Fld(false, false, v)) :: (Var("_1"), Fld(false, false, list)) :: Nil)
+      mkApp(Var("Cons"), Tup((N, Fld(false, false, v)) :: (N, Fld(false, false, list)) :: Nil)
     ))
   })
   def variable[p: P]: P[Var] = locate(ident.map(Var))
@@ -326,7 +327,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
    */
   def ocamlConstructorDecl[p: P]: P[TypeDef] =
     P((tyName ~ ("of" ~/ ocamlConstructorBody).?).map {
-      case (id, Some((params, body))) => TypeDef(Cls, id, params.toList, body, Nil, Nil, Nil)
+      case (id, Some((params, body))) =>
+        val positionals = body.fields.map(_._1)
+        TypeDef(Cls, id, params.toList, body, Nil, Nil, positionals)
       case (id, None)                 => TypeDef(Cls, id, Nil, Record(Ls.empty), Nil, Nil, Nil)
     })
     
@@ -377,24 +380,26 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     })
   // create a helper function for a class constructor
   // for e.g. Cons[A] = {_0: A; _1: List[A]} gets
-  // def cons a b = Cons {_0 = a; _1 = b}
+  // def Cons (a, b) = Cons {_0 = a; _1 = b}
   def ocamlTyDeclHelper(tyDef: TypeDef): Opt[Def] = {
     tyDef.kind match {
       case Cls => {
-        val args = tyDef.body match {
-          case Record(Nil) => Nil
-          case Record(args) =>
-            val numArgs = args.length
-            Range(0, numArgs).map(i => Var((97+i).toChar.toString)).toList
-          case _ => Nil
+        tyDef.body match {
+          case Record(Nil) =>
+            val funApp = mkApp(Var(tyDef.nme.name), Rcd(Nil))
+            val fun = Def(false, Var(tyDef.nme.name), L(funApp), true)
+            S(fun)
+          case Record(fields) =>
+            val numArgs = fields.length
+            val args = Range(0, numArgs).map(i => Var((97+i).toChar.toString)).toList
+            val funBody = Rcd(args.zipWithIndex.map{ case (arg, i) => Var("_" + i.toString) -> Fld(false, false, arg) })
+            val funApp = mkApp(Var(tyDef.nme.name), funBody)
+            val fun = Def(false, Var(tyDef.nme.name), L(Lam(toParams(args), funApp)), true)
+            S(fun)
+          case _ => N
         }
-        val funName = tyDef.nme.name.toLowerCase();
-        val funBody = Rcd(args.zipWithIndex.map{ case (arg, i) => Var("_" + i.toString) -> Fld(false, false, arg) })
-        val funApp = mkApp(Var(tyDef.nme.name), funBody)
-        val fun = Def(false, Var(funName), L(args.foldRight(funApp)((i, acc) => Lam(toParams(i), acc))), true)
-        S(fun)
       }
-      case _ => None
+      case _ => N
     }
   }
   def ocamlTyDeclAndHelper[p:P]: P[Ls[Statement]] = ocamlTyDecl.map(tyDefs => {
