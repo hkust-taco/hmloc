@@ -1,0 +1,272 @@
+:NoJS
+:OcamlParser
+:OcamlLoadLibrary
+
+type exp = EInt of int | Var of string 
+       | Plus of exp * exp | Times of exp * exp
+type stmt = Skip | Assign of string * exp
+         | Seq of stmt * stmt 
+         | If of exp * stmt * stmt
+         | While of exp * stmt 
+         | SaveHeap of string
+         | RestoreHeap of string
+type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ Defined type alias exp
+//│ Defined class EInt
+//│ Defined class Var
+//│ Defined class Plus
+//│ Defined class Times
+//│ Defined type alias stmt
+//│ Defined class Skip
+//│ Defined class Assign
+//│ Defined class Seq
+//│ Defined class If
+//│ Defined class While
+//│ Defined class SaveHeap
+//│ Defined class RestoreHeap
+//│ Defined type alias heap
+//│ Defined type alias heapVar
+//│ Defined class HeapInt
+//│ Defined class Heap
+//│ EInt: (int & '_0) -> (EInt with {_0: '_0})
+//│ Var: (string & '_0) -> (Var with {_0: '_0})
+//│ Plus: (exp & '_0, exp & '_1,) -> (Plus with {_0: '_0, _1: '_1})
+//│ Times: (exp & '_0, exp & '_1,) -> (Times with {_0: '_0, _1: '_1})
+//│ Skip: Skip
+//│ Assign: (string & '_0, exp & '_1,) -> (Assign with {_0: '_0, _1: '_1})
+//│ Seq: (stmt & '_0, stmt & '_1,) -> (Seq with {_0: '_0, _1: '_1})
+//│ If: (exp & '_0, stmt & '_1, stmt & '_2,) -> (If with {_0: '_0, _1: '_1, _2: '_2})
+//│ While: (exp & '_0, stmt & '_1,) -> (While with {_0: '_0, _1: '_1})
+//│ SaveHeap: (string & '_0) -> (SaveHeap with {_0: '_0})
+//│ RestoreHeap: (string & '_0) -> (RestoreHeap with {_0: '_0})
+//│ HeapInt: (int & '_0) -> (HeapInt with {_0: '_0})
+//│ Heap: (heap & '_0) -> (Heap with {_0: '_0})
+
+// FIXME
+let rec lookup (h:heap) str =
+  match h with
+  (* FOUND ERROR: this should return an int *)
+    [] -> HeapInt(0) (* ############### *)
+  |(s,i)::tl -> if s=str then i else lookup tl str
+//│ /!!!\ Uncaught error: java.lang.Exception: illegal pattern: Tup(_: Var(s), _: Var(i))
+
+// FIXME
+let update h str i = (str,i)::h
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.54: 	let update h str i = (str,i)::h
+//│ ║        	                      ^^^^^^^^^
+//│ ╟── expression of type `(?b,)` does not match type `Cons[?a] | Nil`
+//│ ╟── Note: constraint arises from union type:
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
+//│ ║       	                       ^^^^^^^^^^^^^^^^^^
+//│ ╟── from applied type reference:
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
+//│ ╙──     	                            ^^
+//│ update: 'a -> 'b -> 'c -> ((Cons[('b, 'c,)] with {_1: ('a,)}) | error)
+
+let rec interp_e (h:heap) (e:exp) =
+ match e with
+  EInt i       ->i
+ |Var str     ->lookup h str
+ |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
+ |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
+//│ interp_e: heap -> exp -> int
+
+// FIXME
+let rec interp_s (h:heap) (s:stmt) =
+  match s with
+   Skip -> h
+  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
+                 interp_s h2 s2
+  |If(e,s1,s2) -> if (interp_e h e) <> 0
+                  then interp_s h s1 
+                  else interp_s h s2
+  |Assign(str,e) -> update h str (interp_e h e)
+  |While(e,s1) -> if (interp_e h e) <> 0
+                  then let h2 = interp_s h s1 in
+                       interp_s h2 s
+                  else h
+  |SaveHeap(str) -> []
+  |RestoreHeap(str) -> []
+//│ ╔══[ERROR] identifier not found: <>
+//│ ║  l.81: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ╙──      	                                    ^^
+//│ ╔══[ERROR] identifier not found: <>
+//│ ║  l.85: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ╙──      	                                    ^^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.76: 	let rec interp_s (h:heap) (s:stmt) =
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^
+//│ ║  l.77: 	  match s with
+//│ ║        	^^^^^^^^^^^^^^
+//│ ║  l.78: 	   Skip -> h
+//│ ║        	^^^^^^^^^^^^
+//│ ║  l.79: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.80: 	                 interp_s h2 s2
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.81: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.82: 	                  then interp_s h s1 
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.83: 	                  else interp_s h s2
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.84: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.85: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.86: 	                  then let h2 = interp_s h s1 in
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.87: 	                       interp_s h2 s
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.88: 	                  else h
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.89: 	  |SaveHeap(str) -> []
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.90: 	  |RestoreHeap(str) -> []
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── tuple literal of type `(?a, ?b,)` does not match type `Cons[{_0: string, _1: int}] | Nil`
+//│ ║  l.54: 	let update h str i = (str,i)::h
+//│ ║        	                      ^^^^^
+//│ ╟── Note: constraint arises from union type:
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
+//│ ║       	                       ^^^^^^^^^^^^^^^^^^
+//│ ╟── from applied type reference:
+//│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ╙──      	                                                         ^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.76: 	let rec interp_s (h:heap) (s:stmt) =
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^
+//│ ║  l.77: 	  match s with
+//│ ║        	^^^^^^^^^^^^^^
+//│ ║  l.78: 	   Skip -> h
+//│ ║        	^^^^^^^^^^^^
+//│ ║  l.79: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.80: 	                 interp_s h2 s2
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.81: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.82: 	                  then interp_s h s1 
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.83: 	                  else interp_s h s2
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.84: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.85: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.86: 	                  then let h2 = interp_s h s1 in
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.87: 	                       interp_s h2 s
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.88: 	                  else h
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.89: 	  |SaveHeap(str) -> []
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.90: 	  |RestoreHeap(str) -> []
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `Nil` does not have field '_0'
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
+//│ ║       	                                      ^^^
+//│ ╟── Note: constraint arises from record type:
+//│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ║        	                                                         ^^^^^^^^^^^^
+//│ ╟── from application:
+//│ ║  l.86: 	                  then let h2 = interp_s h s1 in
+//│ ╙──      	                                ^^^^^^^^^^^^^
+//│ interp_s: heap -> stmt -> ((Cons[(string, int,)] with {_1: (heap,)}) | error | Nil | heap)
+
+let mt_heap = [] 
+//│ mt_heap: Nil
+
+// FIXME
+let interp_prog s = 
+  lookup (interp_s mt_heap s) "ans"
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.184: 	  lookup (interp_s mt_heap s) "ans"
+//│ ║         	          ^^^^^^^^^^^^^^^^
+//│ ╟── reference of type `Nil` does not have field '_0'
+//│ ║  l.184: 	  lookup (interp_s mt_heap s) "ans"
+//│ ║         	                   ^^^^^^^
+//│ ╟── Note: constraint arises from record type:
+//│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ║        	                                                         ^^^^^^^^^^^^
+//│ ╟── from type reference:
+//│ ║  l.76: 	let rec interp_s (h:heap) (s:stmt) =
+//│ ║        	                    ^^^^
+//│ ╟── Note: class Nil is defined at:
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
+//│ ╙──     	                                      ^^^
+//│ interp_prog: stmt -> nothing
+
+
+// FIXME: full line comment
+// (******************** Test Program in IMP **************************)
+
+// (* ############### *)
+let testProgram1 = Skip
+let testProgram1 = Seq (testProgram1, (Assign ("x",Int 1)))
+let testProgram1 = Seq (testProgram1, (SaveHeap ("myheap1")))
+let testProgram1 = Seq (testProgram1, (Assign ("x",Int 12)))
+let testProgram1 = Seq (testProgram1, (RestoreHeap ("myheap1")))
+let testProgram1 = Seq (testProgram1, (Assign ("ans",Var "x")))
+//│ testProgram1: Skip
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.208: 	let testProgram1 = Seq (testProgram1, (Assign ("x",Int 1)))
+//│ ║         	                                                   ^^^^^
+//│ ╟── reference of type `int` is not a function
+//│ ║  l.208: 	let testProgram1 = Seq (testProgram1, (Assign ("x",Int 1)))
+//│ ╙──       	                                                   ^^^
+//│ testProgram1: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}
+//│ testProgram1: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}, _1: SaveHeap & {_0: "myheap1"}}
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.210: 	let testProgram1 = Seq (testProgram1, (Assign ("x",Int 12)))
+//│ ║         	                                                   ^^^^^^
+//│ ╟── reference of type `int` is not a function
+//│ ║  l.210: 	let testProgram1 = Seq (testProgram1, (Assign ("x",Int 12)))
+//│ ╙──       	                                                   ^^^
+//│ testProgram1: Seq with {_0: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}, _1: SaveHeap & {_0: "myheap1"}}, _1: Assign with {_0: "x", _1: error}}
+//│ testProgram1: Seq with {_0: Seq with {_0: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}, _1: SaveHeap & {_0: "myheap1"}}, _1: Assign with {_0: "x", _1: error}}, _1: RestoreHeap & {_0: "myheap1"}}
+//│ testProgram1: Seq with {_0: Seq with {_0: Seq with {_0: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}, _1: SaveHeap & {_0: "myheap1"}}, _1: Assign with {_0: "x", _1: error}}, _1: RestoreHeap & {_0: "myheap1"}}, _1: Assign with {_0: "ans", _1: Var & {_0: "x"}}}
+
+// (* ############### *)
+let testProgram2 = Skip
+let testProgram2 = Seq (testProgram2, (Assign ("x",Int 1)))
+let testProgram2 = Seq (testProgram2, (SaveHeap ("myheap1")))
+let testProgram2 = Seq (testProgram2, (Assign ("ans",Var "myheap1")))
+//│ testProgram2: Skip
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.234: 	let testProgram2 = Seq (testProgram2, (Assign ("x",Int 1)))
+//│ ║         	                                                   ^^^^^
+//│ ╟── reference of type `int` is not a function
+//│ ║  l.234: 	let testProgram2 = Seq (testProgram2, (Assign ("x",Int 1)))
+//│ ╙──       	                                                   ^^^
+//│ testProgram2: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}
+//│ testProgram2: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}, _1: SaveHeap & {_0: "myheap1"}}
+//│ testProgram2: Seq with {_0: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}, _1: SaveHeap & {_0: "myheap1"}}, _1: Assign with {_0: "ans", _1: Var & {_0: "myheap1"}}}
+
+// (* ################ *)
+let testProgram3 = Skip
+let testProgram3 = Seq (testProgram3, (Assign ("x",Int 1)))
+let testProgram3 = Seq (testProgram3, (SaveHeap ("myheap1")))
+let testProgram3 = Seq (testProgram3, (Assign ("x",Int 12)))
+let testProgram3 = Seq (testProgram3, (RestoreHeap ("myheapnot")))
+let testProgram3 = Seq (testProgram3, (Assign ("ans",Var "x")))
+//│ testProgram3: Skip
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.250: 	let testProgram3 = Seq (testProgram3, (Assign ("x",Int 1)))
+//│ ║         	                                                   ^^^^^
+//│ ╟── reference of type `int` is not a function
+//│ ║  l.250: 	let testProgram3 = Seq (testProgram3, (Assign ("x",Int 1)))
+//│ ╙──       	                                                   ^^^
+//│ testProgram3: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}
+//│ testProgram3: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}, _1: SaveHeap & {_0: "myheap1"}}
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.252: 	let testProgram3 = Seq (testProgram3, (Assign ("x",Int 12)))
+//│ ║         	                                                   ^^^^^^
+//│ ╟── reference of type `int` is not a function
+//│ ║  l.252: 	let testProgram3 = Seq (testProgram3, (Assign ("x",Int 12)))
+//│ ╙──       	                                                   ^^^
+//│ testProgram3: Seq with {_0: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}, _1: SaveHeap & {_0: "myheap1"}}, _1: Assign with {_0: "x", _1: error}}
+//│ testProgram3: Seq with {_0: Seq with {_0: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}, _1: SaveHeap & {_0: "myheap1"}}, _1: Assign with {_0: "x", _1: error}}, _1: RestoreHeap & {_0: "myheapnot"}}
+//│ testProgram3: Seq with {_0: Seq with {_0: Seq with {_0: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: error}}, _1: SaveHeap & {_0: "myheap1"}}, _1: Assign with {_0: "x", _1: error}}, _1: RestoreHeap & {_0: "myheapnot"}}, _1: Assign with {_0: "ans", _1: Var & {_0: "x"}}}

@@ -67,8 +67,8 @@ class DiffTests
   protected lazy val files = allFiles.filter { file =>
       val fileName = file.baseName
       // validExt(file.ext) && filter(fileName)
-      // validExt(file.ext) && filter(file.relativeTo(pwd))
-      validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("OcamlExprChecker")
+    validExt(file.ext) && filter(file.relativeTo(pwd))
+        // validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("OcamlProg1")
   }
   
   val timeLimit = TimeLimit
@@ -204,8 +204,11 @@ class DiffTests
           var ctx = typer.Ctx.init
           val raise: typer.Raise = d => ()
           var declared: Map[Str, typer.PolymorphicType] = Map.empty
-
+          
           ctx = typer.processTypeDefs(typeDefs)(ctx, raise)
+          val curBlockTypeDefs = ctx.tyDefs.iterator.map(_._2).toList
+          typer.computeVariances(curBlockTypeDefs, ctx)
+          
           stmts.foreach {
             // statement only declares a new term with its type
             // but does not give a body/definition to it
@@ -857,7 +860,7 @@ object DiffTests {
   
   private val TimeLimit =
     if (sys.env.get("CI").isDefined) Span(25, Seconds)
-    else Span(10, Seconds)
+    else Span(100, Seconds)
   
   private val pwd = os.pwd
   private val dir = pwd/"shared"/"src"/"test"/"diff"
