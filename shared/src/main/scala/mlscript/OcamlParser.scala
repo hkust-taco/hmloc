@@ -171,7 +171,18 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case (as, ws) => ws.foldLeft(as)((acc, w) => With(acc, w))
   }
   
-  def mkApp(lhs: Term, rhs: Term): Term = App(lhs, toParams(rhs))
+  /** Subsitute operators with functions to handle special cases in ocaml */
+  def appSubstitution: PartialFunction[Term, Term] = {
+    // substitute x :: xs with Cons(x, xs) recursively
+    // while retaining location information
+    case App(App(op@Var("::"), Tup((N -> Fld(false, false, lhs) :: Nil))), Tup(N -> Fld(false, false, rhs) :: Nil)) =>
+      val newLhs = appSubstitution(lhs)
+      val newRhs = appSubstitution(rhs)
+      App(op.copy(name = "Cons"), toParams(newLhs :: newRhs :: Nil))
+    case t => t
+  }
+  def mkApp(lhs: Term, rhs: Term): Term = 
+    App(appSubstitution(lhs), toParams(rhs))
   /** Parses where one or more subterms are applied to one subterm. It is used
     * in binops which is used in withs to parse terms.
     */
@@ -196,7 +207,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   })
   def matchArms2[p: P]: P[Ls[IfBody]] = ("|" ~ matchArms).?.map(_.getOrElse(Ls.empty))
 
-  private val infixity: Set[String] = Set("::")
+  private val infixity: Set[String] = Set("::", "<>")
   private val prec: Map[Char,Int] = List(
     "|",
     "^",
@@ -228,21 +239,22 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
               if (infixity(op) && prec < minPrec) {
                 remaining = remaining.tail
                 val rhs = climb(prec + 1, next)
-                result = App(App(Var(op).withLoc(off0, off1, origin), toParams(result)), toParams(rhs))
+                result = mkApp(mkApp(Var(op).withLoc(off0, off1, origin), result), rhs)
                 true
               }
               else if (prec < minPrec) false
               else {
                 remaining = remaining.tail
                 val rhs = climb(prec + 1, next)
-                result = App(App(Var(op).withLoc(off0, off1, origin), toParams(result)), toParams(rhs))
+                result = mkApp(mkApp(Var(op).withLoc(off0, off1, origin), result), rhs)
                 true
               }
           }
         )()
         result
       }
-      climb(0, pre)
+      val appliedOp = climb(0, pre)
+      appSubstitution(appliedOp)
     }
   def operator[p: P]: P[Unit] = P(
     !symbolicKeywords ~~ (!StringIn("/*", "//", "(*") ~~ (CharsWhile(OpCharNotSlash) | "/" | "*)")).rep(1)

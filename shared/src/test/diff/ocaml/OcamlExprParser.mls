@@ -14,8 +14,8 @@ let d = e = f = g
 [1, 2, 3, 4]
 []
 let a = []
-//│ Desugared: :: (1,) (2,)
-//│ Desugared: :: (1,) (:: (2,) (3,),)
+//│ Desugared: Cons (1, 2,)
+//│ Desugared: Cons (1, Cons (2, 3,),)
 //│ Desugared: Cons (1, Cons (2, Cons (3, Cons (4, Nil,),),),)
 //│ Desugared: Nil
 //│ Desugared: def a: Nil
@@ -48,7 +48,7 @@ let check e =
 //│ Desugared: def check: e, => if e is ‹(Something (a,) (b,) (c,)) then here; (Nothing (d,) (e,) (f,)) then nothere›
 //│ Desugared: rec def interp_e: h : TypeName(heap), => e : TypeName(exp), => if e is ‹(Plus (e1, e2,)) then + (interp_e (h,) (e1,),) (interp_e (h,) (e2,),); (Times (e1, e2,)) then * (interp_e (h,) (e1,),) (interp_e (h,) (e2,),)›
 //│ Desugared: def check: e, => if e is ‹(Something (here,)) then let nothere = here in nothere; (Nothing) then beat (it,)›
-//│ Desugared: def check: e, => if e is ‹(:: (a,) (b,)) then Nil; (Nil) then Nil›
+//│ Desugared: def check: e, => if e is ‹(Cons (a, b,)) then Nil; (Nil) then Nil›
 
 // define lambdas using fun
 fun (env: env) _ -> []
@@ -119,7 +119,7 @@ let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
 //│ Desugared: def ::: a, => b, => Cons (a,) (b,)
-//│ Desugared: def head: xs, => if xs is ‹(:: (x,) (xs,)) then x; else raise (Error,)›
+//│ Desugared: def head: xs, => if xs is ‹(Cons (x, xs,)) then x; else raise (Error,)›
 
 // FIXME
 let head xs = match xs with
