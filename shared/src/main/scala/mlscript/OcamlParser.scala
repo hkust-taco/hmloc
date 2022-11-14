@@ -175,10 +175,17 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def appSubstitution: PartialFunction[Term, Term] = {
     // substitute x :: xs with Cons(x, xs) recursively
     // while retaining location information
-    case App(App(op@Var("::"), Tup((N -> Fld(false, false, lhs) :: Nil))), Tup(N -> Fld(false, false, rhs) :: Nil)) =>
+    // the representation will be (App(App(Var("::"), Tup(...)), Tup(...)))
+    // the tups fields are further substituted in the recursive calls
+    case App(App(op@Var("::"), lhs), rhs) =>
       val newLhs = appSubstitution(lhs)
       val newRhs = appSubstitution(rhs)
       App(op.copy(name = "Cons"), toParams(newLhs :: newRhs :: Nil))
+    case t@Tup(N -> Fld(false, false, value) :: Nil) =>
+      t.copy(fields = N -> Fld(false, false, appSubstitution(value)) :: Nil)
+    case t@Tup(fields) =>
+      val newFields = fields.map { case (v, fld) => (v, fld.copy(value = appSubstitution(fld.value))) }
+      t.copy(fields = newFields)
     case t => t
   }
   def mkApp(lhs: Term, rhs: Term): Term = 
