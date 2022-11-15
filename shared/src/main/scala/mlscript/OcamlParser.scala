@@ -175,12 +175,26 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def appSubstitution: PartialFunction[Term, Term] = {
     // substitute x :: xs with Cons(x, xs) recursively
     // while retaining location information
-    // the representation will be (App(App(Var("::"), Tup(...)), Tup(...)))
+    // the term is of this shape (App(App(Var("::"), Tup(a)), Tup(b)))
+    // and gets substituted to (App(Var("Cons"), Tup(a, b)))
     // the tups fields are further substituted in the recursive calls
-    case App(App(op@Var("::"), lhs), rhs) =>
+    case App(App(op@Var("::"), lhs@Tup(_)), rhs@Tup(_)) =>
+      val argSub: Tup => Term = {
+        case Tup(N -> Fld(false, false, value) :: Nil) =>
+          appSubstitution(value)
+        case t@Tup(fields) =>
+          val newFields = fields.map { case (v, fld) => (v, fld.copy(value = appSubstitution(fld.value))) }
+          t.copy(fields = newFields)
+      }
+      val newLhs = argSub(lhs)
+      val newRhs = argSub(rhs)
+      App(op.copy(name = "Cons"), toParams(newLhs :: newRhs :: Nil))
+    // substitute a <> b which is ocaml operator for structural equality
+    // with this the equality check in mlscript
+    case o@App(i@App(op@Var("<>"), lhs), rhs) =>
       val newLhs = appSubstitution(lhs)
       val newRhs = appSubstitution(rhs)
-      App(op.copy(name = "Cons"), toParams(newLhs :: newRhs :: Nil))
+      o.copy(lhs = i.copy(lhs = op.copy(name = "=="), rhs = newLhs), rhs = newRhs)
     case t@Tup(N -> Fld(false, false, value) :: Nil) =>
       t.copy(fields = N -> Fld(false, false, appSubstitution(value)) :: Nil)
     case t@Tup(fields) =>

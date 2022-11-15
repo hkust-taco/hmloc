@@ -52,17 +52,7 @@ let rec lookup (h:heap) str =
 
 // FIXME
 let update h str i = (str,i)::h
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.54: 	let update h str i = (str,i)::h
-//│ ║        	                      ^^^^^^^^^
-//│ ╟── expression of type `(?b,)` does not match type `Cons[?a] | Nil`
-//│ ╟── Note: constraint arises from union type:
-//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
-//│ ║       	                       ^^^^^^^^^^^^^^^^^^
-//│ ╟── from applied type reference:
-//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
-//│ ╙──     	                            ^^
-//│ update: 'a -> 'b -> 'c -> ((Cons[('b, 'c,)] with {_1: ('a,)}) | error)
+//│ update: (list['a] & '_1) -> 'b -> 'c -> (Cons['a | ('b, 'c,)] with {_0: ('b, 'c,), _1: '_1})
 
 let rec interp_e (h:heap) (e:exp) =
  match e with
@@ -88,42 +78,51 @@ let rec interp_s (h:heap) (s:stmt) =
                   else h
   |SaveHeap(str) -> []
   |RestoreHeap(str) -> []
-//│ ╔══[ERROR] identifier not found: <>
-//│ ║  l.81: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
-//│ ╙──      	                                    ^^
-//│ ╔══[ERROR] identifier not found: <>
-//│ ║  l.85: 	  |While(e,s1) -> if (interp_e h e) <> 0
-//│ ╙──      	                                    ^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.74: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║        	                    ^^^^^^^^
+//│ ╟── type `{_0: list[{_0: string, _1: int}]}` does not match type `Cons[?a] | Nil`
+//│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ║        	                                                         ^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Cons[?a0] | Nil`
+//│ ║  l.74: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║        	                           ^
+//│ ╟── Note: constraint arises from union type:
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
+//│ ║       	                       ^^^^^^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.54: 	let update h str i = (str,i)::h
+//│ ╙──      	                              ^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.76: 	let rec interp_s (h:heap) (s:stmt) =
+//│ ║  l.66: 	let rec interp_s (h:heap) (s:stmt) =
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^
-//│ ║  l.77: 	  match s with
+//│ ║  l.67: 	  match s with
 //│ ║        	^^^^^^^^^^^^^^
-//│ ║  l.78: 	   Skip -> h
+//│ ║  l.68: 	   Skip -> h
 //│ ║        	^^^^^^^^^^^^
-//│ ║  l.79: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
+//│ ║  l.69: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.80: 	                 interp_s h2 s2
+//│ ║  l.70: 	                 interp_s h2 s2
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.81: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ║  l.71: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.82: 	                  then interp_s h s1 
+//│ ║  l.72: 	                  then interp_s h s1 
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.83: 	                  else interp_s h s2
+//│ ║  l.73: 	                  else interp_s h s2
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.84: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║  l.74: 	  |Assign(str,e) -> update h str (interp_e h e)
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.85: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ║  l.75: 	  |While(e,s1) -> if (interp_e h e) <> 0
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.86: 	                  then let h2 = interp_s h s1 in
+//│ ║  l.76: 	                  then let h2 = interp_s h s1 in
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.87: 	                       interp_s h2 s
+//│ ║  l.77: 	                       interp_s h2 s
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.88: 	                  else h
+//│ ║  l.78: 	                  else h
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.89: 	  |SaveHeap(str) -> []
+//│ ║  l.79: 	  |SaveHeap(str) -> []
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.90: 	  |RestoreHeap(str) -> []
+//│ ║  l.80: 	  |RestoreHeap(str) -> []
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── tuple literal of type `(?a, ?b,)` does not match type `Cons[{_0: string, _1: int}] | Nil`
 //│ ║  l.54: 	let update h str i = (str,i)::h
@@ -135,35 +134,35 @@ let rec interp_s (h:heap) (s:stmt) =
 //│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
 //│ ╙──      	                                                         ^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.76: 	let rec interp_s (h:heap) (s:stmt) =
+//│ ║  l.66: 	let rec interp_s (h:heap) (s:stmt) =
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^
-//│ ║  l.77: 	  match s with
+//│ ║  l.67: 	  match s with
 //│ ║        	^^^^^^^^^^^^^^
-//│ ║  l.78: 	   Skip -> h
+//│ ║  l.68: 	   Skip -> h
 //│ ║        	^^^^^^^^^^^^
-//│ ║  l.79: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
+//│ ║  l.69: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.80: 	                 interp_s h2 s2
+//│ ║  l.70: 	                 interp_s h2 s2
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.81: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ║  l.71: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.82: 	                  then interp_s h s1 
+//│ ║  l.72: 	                  then interp_s h s1 
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.83: 	                  else interp_s h s2
+//│ ║  l.73: 	                  else interp_s h s2
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.84: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║  l.74: 	  |Assign(str,e) -> update h str (interp_e h e)
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.85: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ║  l.75: 	  |While(e,s1) -> if (interp_e h e) <> 0
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.86: 	                  then let h2 = interp_s h s1 in
+//│ ║  l.76: 	                  then let h2 = interp_s h s1 in
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.87: 	                       interp_s h2 s
+//│ ║  l.77: 	                       interp_s h2 s
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.88: 	                  else h
+//│ ║  l.78: 	                  else h
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.89: 	  |SaveHeap(str) -> []
+//│ ║  l.79: 	  |SaveHeap(str) -> []
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.90: 	  |RestoreHeap(str) -> []
+//│ ║  l.80: 	  |RestoreHeap(str) -> []
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `Nil` does not have field '_0'
 //│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
@@ -172,9 +171,9 @@ let rec interp_s (h:heap) (s:stmt) =
 //│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
 //│ ║        	                                                         ^^^^^^^^^^^^
 //│ ╟── from application:
-//│ ║  l.86: 	                  then let h2 = interp_s h s1 in
+//│ ║  l.76: 	                  then let h2 = interp_s h s1 in
 //│ ╙──      	                                ^^^^^^^^^^^^^
-//│ interp_s: heap -> stmt -> ((Cons[(string, int,)] with {_1: (heap,)}) | error | Nil | heap)
+//│ interp_s: heap -> stmt -> ((Cons[(string, int,) | list[{_0: string, _1: int}]] with {_0: (string, int,), _1: heap}) | error | Nil | heap)
 
 let mt_heap = [] 
 //│ mt_heap: Nil
@@ -183,16 +182,16 @@ let mt_heap = []
 let interp_prog s = 
   lookup (interp_s mt_heap s) "ans"
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.184: 	  lookup (interp_s mt_heap s) "ans"
+//│ ║  l.183: 	  lookup (interp_s mt_heap s) "ans"
 //│ ║         	          ^^^^^^^^^^^^^^^^
 //│ ╟── reference of type `Nil` does not have field '_0'
-//│ ║  l.184: 	  lookup (interp_s mt_heap s) "ans"
+//│ ║  l.183: 	  lookup (interp_s mt_heap s) "ans"
 //│ ║         	                   ^^^^^^^
 //│ ╟── Note: constraint arises from record type:
 //│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
 //│ ║        	                                                         ^^^^^^^^^^^^
 //│ ╟── from type reference:
-//│ ║  l.76: 	let rec interp_s (h:heap) (s:stmt) =
+//│ ║  l.66: 	let rec interp_s (h:heap) (s:stmt) =
 //│ ║        	                    ^^^^
 //│ ╟── Note: class Nil is defined at:
 //│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
@@ -240,3 +239,4 @@ let testProgram3 = Seq (testProgram3, (Assign ("ans",Var "x")))
 //│ testProgram3: Seq with {_0: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: EInt & {_0: 1}}}, _1: SaveHeap & {_0: "myheap1"}}, _1: Assign with {_0: "x", _1: EInt & {_0: 12}}}
 //│ testProgram3: Seq with {_0: Seq with {_0: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: EInt & {_0: 1}}}, _1: SaveHeap & {_0: "myheap1"}}, _1: Assign with {_0: "x", _1: EInt & {_0: 12}}}, _1: RestoreHeap & {_0: "myheapnot"}}
 //│ testProgram3: Seq with {_0: Seq with {_0: Seq with {_0: Seq with {_0: Seq with {_0: Skip, _1: Assign with {_0: "x", _1: EInt & {_0: 1}}}, _1: SaveHeap & {_0: "myheap1"}}, _1: Assign with {_0: "x", _1: EInt & {_0: 12}}}, _1: RestoreHeap & {_0: "myheapnot"}}, _1: Assign with {_0: "ans", _1: Var & {_0: "x"}}}
+

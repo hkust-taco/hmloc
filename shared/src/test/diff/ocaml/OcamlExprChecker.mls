@@ -150,123 +150,13 @@ type 'a, 'b heapD = HeapD of 'a * 'b list
 
 
 let update h str i = (str,i)::h
-//│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.152: 	let update h str i = (str,i)::h
-//│ ║         	                      ^^^^^^^^
-//│ ╟── tuple literal of type `(?a, ?b,)` does not match type `(?c,)`
-//│ ║  l.152: 	let update h str i = (str,i)::h
-//│ ╙──       	                      ^^^^^
-//│ update: (list['a] & '_1) -> anything -> anything -> ((Cons['a] with {_0: nothing, _1: '_1}) | error)
-
-// match case with operations and nested let statements
-let rec interp_s (h:heap) (s:stmt) = match s with
-    Skip -> h
-  | Seq(s1,s2) -> let h2 = interp_s h s1 in interp_s h2 s2
-  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
-  | Assign(str,e) -> update h str (interp_e h e)
-  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
-  | SaveHeap(str) -> []
-  | RestoreHeap(str) -> []
-  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
-//│ ╔══[ERROR] identifier not found: <>
-//│ ║  l.165: 	  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
-//│ ╙──       	                                     ^^
-//│ ╔══[ERROR] identifier not found: interp_e
-//│ ║  l.165: 	  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
-//│ ╙──       	                       ^^^^^^^^
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.166: 	  | Assign(str,e) -> update h str (interp_e h e)
-//│ ║         	                     ^^^^^^^^
-//│ ╟── type `{_0: list[{_0: string, _1: int}]}` does not match type `Cons[?a] | Nil`
-//│ ║  l.92: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
-//│ ║        	                                                         ^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `Cons[?a] | Nil`
-//│ ║  l.166: 	  | Assign(str,e) -> update h str (interp_e h e)
-//│ ║         	                            ^
-//│ ╟── Note: constraint arises from union type:
-//│ ║  l.6: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	                       ^^^^^^^^^^^^^^^^^^
-//│ ╟── from reference:
-//│ ║  l.152: 	let update h str i = (str,i)::h
-//│ ╙──       	                              ^
-//│ ╔══[ERROR] identifier not found: interp_e
-//│ ║  l.166: 	  | Assign(str,e) -> update h str (interp_e h e)
-//│ ╙──       	                                   ^^^^^^^^
-//│ ╔══[ERROR] identifier not found: <>
-//│ ║  l.167: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
-//│ ╙──       	                                     ^^
-//│ ╔══[ERROR] identifier not found: interp_e
-//│ ║  l.167: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
-//│ ╙──       	                       ^^^^^^^^
-//│ ╔══[ERROR] identifier not found: interp_e
-//│ ║  l.170: 	  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
-//│ ╙──       	                    ^^^^^^^^
-//│ ╔══[ERROR] identifier not found: interp_e
-//│ ║  l.170: 	  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
-//│ ╙──       	                                    ^^^^^^^^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.162: 	let rec interp_s (h:heap) (s:stmt) = match s with
-//│ ║         	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.163: 	    Skip -> h
-//│ ║         	^^^^^^^^^^^^^
-//│ ║  l.164: 	  | Seq(s1,s2) -> let h2 = interp_s h s1 in interp_s h2 s2
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.165: 	  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.166: 	  | Assign(str,e) -> update h str (interp_e h e)
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.167: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.168: 	  | SaveHeap(str) -> []
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.169: 	  | RestoreHeap(str) -> []
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.170: 	  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `Nil` does not have field '_0'
-//│ ║  l.6: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	                                      ^^^
-//│ ╟── Note: constraint arises from record type:
-//│ ║  l.92: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
-//│ ║        	                                                         ^^^^^^^^^^^^
-//│ ╟── from application:
-//│ ║  l.167: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
-//│ ╙──       	                                                        ^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.162: 	let rec interp_s (h:heap) (s:stmt) = match s with
-//│ ║         	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.163: 	    Skip -> h
-//│ ║         	^^^^^^^^^^^^^
-//│ ║  l.164: 	  | Seq(s1,s2) -> let h2 = interp_s h s1 in interp_s h2 s2
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.165: 	  | If(e,s1,s2) -> if (interp_e h e) <> 0 then interp_s h s1 else interp_s h s2
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.166: 	  | Assign(str,e) -> update h str (interp_e h e)
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.167: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.168: 	  | SaveHeap(str) -> []
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.169: 	  | RestoreHeap(str) -> []
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.170: 	  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── operator application of type `int` does not have field '_0'
-//│ ║  l.170: 	  | Times(e1,e2) ->(interp_e h e1)*(interp_e h e2)
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from record type:
-//│ ║  l.92: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
-//│ ║        	                                                         ^^^^^^^^^^^^
-//│ ╟── from application:
-//│ ║  l.167: 	  | While(e,s1) -> if (interp_e h e) <> 0 then let h2 = interp_s h s1 in interp_s h2 s else h
-//│ ╙──       	                                                        ^^^^^^^^^^^^^
-//│ interp_s: heap -> stmt -> ((Cons[list[{_0: string, _1: int}]] with {_0: nothing, _1: heap}) | error | int | Nil | heap)
+//│ update: (list['a] & '_1) -> 'b -> 'c -> (Cons['a | ('b, 'c,)] with {_0: ('b, 'c,), _1: '_1})
 
 /// FIXME
 // define lambdas using fun
 fun (env: env) _ -> []
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.267: 	fun (env: env) _ -> []
+//│ ║  l.157: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
 //│ res: error -> Nil
 
@@ -274,13 +164,13 @@ let interp2 = interp (fun (env:env) opt ->
   match opt with
      None -> 0)
 //│ ╔══[ERROR] identifier not found: interp
-//│ ║  l.273: 	let interp2 = interp (fun (env:env) opt ->
+//│ ║  l.163: 	let interp2 = interp (fun (env:env) opt ->
 //│ ╙──       	              ^^^^^^
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.273: 	let interp2 = interp (fun (env:env) opt ->
+//│ ║  l.163: 	let interp2 = interp (fun (env:env) opt ->
 //│ ╙──       	                          ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
-//│ ║  l.274: 	  match opt with
+//│ ║  l.164: 	  match opt with
 //│ ╙──       	        ^^^
 //│ interp2: error
 
@@ -306,10 +196,10 @@ type 'a, 'b bigHeap =
   | NonsHeap of (otherList * 'a) list
   and otherList = 'b list
 //│ ╔══[ERROR] Type otherList takes parameters
-//│ ║  l.305: 	  | NonHeap of otherList
+//│ ║  l.195: 	  | NonHeap of otherList
 //│ ╙──       	               ^^^^^^^^^
 //│ ╔══[ERROR] Type otherList takes parameters
-//│ ║  l.306: 	  | NonsHeap of (otherList * 'a) list
+//│ ║  l.196: 	  | NonsHeap of (otherList * 'a) list
 //│ ╙──       	                 ^^^^^^^^^
 //│ Defined type alias otherList[+'b]
 //│ Defined type alias bigHeap[+'a, ±'b]
@@ -317,13 +207,11 @@ type 'a, 'b bigHeap =
 //│ Defined class NonHeap
 //│ Defined class NonsHeap[+'a]
 //│ ╔══[WARNING] Type definition bigHeap has bivariant type parameters:
-//│ ║  l.303: 	type 'a, 'b bigHeap =
+//│ ║  l.193: 	type 'a, 'b bigHeap =
 //│ ║         	            ^^^^^^^
 //│ ╟── 'b is irrelevant and may be removed
-//│ ║  l.303: 	type 'a, 'b bigHeap =
+//│ ║  l.193: 	type 'a, 'b bigHeap =
 //│ ╙──       	         ^^
 //│ NoHeap: (list['a] & '_0) -> (NoHeap['a] with {_0: '_0})
 //│ NonHeap: (error & '_0) -> (NonHeap with {_0: '_0})
 //│ NonsHeap: (list[{_0: error, _1: 'a}] & '_0) -> (NonsHeap['a] with {_0: '_0})
-
-
