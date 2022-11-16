@@ -118,6 +118,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         case L((mut, v, t)) => v -> Fld(mut.isDefined, false, t)
         case R(mut -> id) => id -> Fld(mut.isDefined, false, id) }.toList)})
   
+  // TODO: change term to list of terms and give the list of terms as to `toParams`
   def fun[p: P]: P[Term] = locate(P( kw("fun") ~/ term ~ "->" ~ term ).map(nb => Lam(toParams(nb._1), nb._2)))
   
   def let[p: P]: P[Term] = locate(P(
