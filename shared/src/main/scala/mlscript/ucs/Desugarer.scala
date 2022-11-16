@@ -71,32 +71,67 @@ class Desugarer extends TypeDefs { self: Typer =>
     * @param matchRootLoc the caller is expect to be in a match environment,
     * this parameter indicates the location of the match root
     */
-  def makeScrutinee(term: Term)(implicit matchRootLoc: Opt[Loc]): Scrutinee = {
-    val res = term match {
-      case _: Var => Scrutinee(N, term)
-      case _ =>
-        Scrutinee(S(localizedScrutineeMap.getOrElseUpdate(term, {
-          Var(freshName).withLoc(term.toLoc)
-        })), term)
-    }
-    res.matchRootLoc = matchRootLoc
-    res
-  }
+  def makeScrutinee(term: Term, isMultiLineMatch: Bool)(implicit matchRootLoc: Opt[Loc]): Scrutinee =
+    trace(s"Making a scrutinee for $term") {
+      val res = term match {
+        case _: Var => Scrutinee(N, term)
+        case _ =>
+          Scrutinee(
+            S(localizedScrutineeMap.getOrElseUpdate(term, {
+              Var(freshName).withLoc(term.toLoc)
+            })),
+            term,
+          )
+      }
+      res.isMultiLineMatch = isMultiLineMatch
+      res.matchRootLoc = matchRootLoc
+      res
+    }()
 
   /**
     * Destruct nested patterns to a list of simple condition with bindings.
-
     *
     * @param scrutinee the scrutinee of the pattern matching
     * @param pattern the pattern we will destruct
-    * @param tyDefs `TypeDef`s in the context
+    * @param raise the `Raise` function
+    * @param aliasMap the field alias map
+    * @param matchRootLoc the location of the root of the pattern matching
+    * @param fragments fragment term that used to construct the given pattern.
+    *   It is used to tracking locations.
+    * @param isMultiLineMatch whether the scrutinee is in multi-line pattern match.
+    *   For example,
+    *   ```
+    *   if x is
+    *     A then "x is A!"
+    *     B then "x is B"
+    *   ```
+    *   is multi-line pattern match. Whereas `if x is Foo then 1 else 0` is not.
     * @return a list of simple condition with bindings. This method does not
     * return `ConjunctedCondition` because conditions built from nested patterns
     * do not contain interleaved let bindings.
     */
   private def destructPattern
-      (scrutinee: Term, pattern: Term)
-      (implicit ctx: Ctx, raise: Raise, aliasMap: FieldAliasMap, matchRootLoc: Opt[Loc], fragments: Ls[Term] = Nil): Ls[Clause] = 
+      (scrutinee: Term, pattern: Term, isMultiLineMatch: Bool = false)
+      (implicit ctx: Ctx,
+                raise: Raise,
+                aliasMap: FieldAliasMap,
+                matchRootLoc: Opt[Loc],
+                fragments: Ls[Term] = Nil): Ls[Clause] = {
+    // This piece of code is use in two match cases.
+    def desugarTuplePattern(tuple: Tup): Ls[Clause] = {
+      val (subPatterns, bindings) = desugarPositionals(
+        scrutinee,
+        tuple.fields.iterator.map(_._2.value),
+        1.to(tuple.fields.length).map("_" + _).toList
+      )
+      val clause = Clause.MatchTuple(
+        makeScrutinee(scrutinee, isMultiLineMatch),
+        tuple.fields.length,
+        bindings
+      )
+      clause.locations = collectLocations(scrutinee)
+      clause :: destructSubPatterns(subPatterns)
+    }
     pattern match {
       // This case handles top-level wildcard `Var`.
       // We don't make any conditions in this level.
@@ -115,7 +150,7 @@ class Desugarer extends TypeDefs { self: Typer =>
             msg"Cannot find the constructor `$className` in the context"
           }, classNameVar.toLoc)
           case S(_) => 
-            val clause = Clause.MatchClass(makeScrutinee(scrutinee), classNameVar, Nil)
+            val clause = Clause.MatchClass(makeScrutinee(scrutinee, isMultiLineMatch), classNameVar, Nil)
             println(s"Build a Clause.MatchClass from $scrutinee where pattern is $classNameVar")
             clause.locations = collectLocations(scrutinee)
             clause :: Nil
@@ -136,7 +171,7 @@ class Desugarer extends TypeDefs { self: Typer =>
                 args.iterator.map(_._2.value),
                 td.positionals
               )
-              val clause = Clause.MatchClass(makeScrutinee(scrutinee), classNameVar, bindings)
+              val clause = Clause.MatchClass(makeScrutinee(scrutinee, isMultiLineMatch), classNameVar, bindings)
               println(s"Build a Clause.MatchClass from $scrutinee where pattern is $pattern")
               println(s"Fragments: $fragments")
               clause.locations = pattern.toLoc.toList ::: collectLocations(scrutinee)
@@ -176,7 +211,7 @@ class Desugarer extends TypeDefs { self: Typer =>
               lhs :: rhs :: Nil,
               td.positionals
             )
-            val clause = Clause.MatchClass(makeScrutinee(scrutinee), opVar, bindings)
+            val clause = Clause.MatchClass(makeScrutinee(scrutinee, isMultiLineMatch), opVar, bindings)
             println(s"Build a Clause.MatchClass from $scrutinee where operator is $opVar")
             clause.locations = collectLocations(scrutinee)
             clause :: destructSubPatterns(subPatterns)
@@ -190,20 +225,16 @@ class Desugarer extends TypeDefs { self: Typer =>
               } but found two parameters"
             }, app.toLoc)
         }
-      // This case handles tuple destructions.
+      // This case handles **direct** tuple destructions.
       // x is (a, b, c)
-      case Bra(_, Tup(elems)) =>
-        val (subPatterns, bindings) = desugarPositionals(
-          scrutinee,
-          elems.iterator.map(_._2.value),
-          1.to(elems.length).map("_" + _).toList
-        )
-        val clause = Clause.MatchTuple(makeScrutinee(scrutinee), elems.length, bindings)
-        clause.locations = collectLocations(scrutinee)
-        clause :: destructSubPatterns(subPatterns)
+      case Bra(_, tuple: Tup) => desugarTuplePattern(tuple)
+      // This case handles **nested** tuple destructions.
+      // x is Cons((x, y), Nil)
+      case tuple: Tup => desugarTuplePattern(tuple)
       // What else?
       case _ => throw new Exception(s"illegal pattern: ${mlscript.codegen.Helpers.inspect(pattern)}")
     }
+  }
 
   /**
     * Collect `Loc`s from a synthetic term.
@@ -290,7 +321,7 @@ class Desugarer extends TypeDefs { self: Typer =>
         //   B(...) and ... then ... // Case 2: more conjunctions
         case L(IfThen(patTest, consequent)) =>
           val (patternPart, extraTestOpt) = separatePattern(patTest)
-          val patternConditions = destructPattern(scrutinee, partialPattern.addTerm(patternPart).term)
+          val patternConditions = destructPattern(scrutinee, partialPattern.addTerm(patternPart).term, true)
           val conditions = Conjunction.concat(
             collectedConditions,
             withBindings((patternConditions, Nil))
@@ -440,5 +471,135 @@ class Desugarer extends TypeDefs { self: Typer =>
     // Add the fallback case to conjunctions if there is any.
     fallback.foreach { branches += (Nil, Nil) -> _ }
     branches.toList
+  }
+
+  import MutCaseOf.{MutCase, IfThenElse, Match, MissingCase, Consequent}
+
+  /**
+  * A map from each scrutinee term to all its cases and the first `MutCase`.
+  */
+  type ExhaustivenessMap = Map[Str \/ Int, Map[Var, MutCase]]
+
+  type MutExhaustivenessMap = MutMap[Str \/ Int, MutMap[Var, MutCase]]
+
+  def getScurtineeKey(scrutinee: Scrutinee)(implicit ctx: Ctx, raise: Raise): Str \/ Int = {
+    scrutinee.term match {
+      // The original scrutinee is an reference.
+      case v @ Var(name) => 
+        ctx.env.get(name) match {
+          case S(VarSymbol(_, defVar)) => defVar.uid.fold[Str \/ Int](L(v.name))(R(_))
+          case S(_) | N                => L(v.name)
+        }
+      // Otherwise, the scrutinee has a temporary name.
+      case _ =>
+        scrutinee.local match {
+          case N => throw new Error("check your `makeScrutinee`")
+          case S(localNameVar) => L(localNameVar.name)
+        }
+    }
+  }
+
+  /**
+    * Check the exhaustiveness of the given `MutCaseOf`.
+    *
+    * @param t the mutable `CaseOf` of 
+    * @param parentOpt
+    * @param scrutineePatternMap
+    */
+  def checkExhaustive
+    (t: MutCaseOf, parentOpt: Opt[MutCaseOf])
+    (implicit scrutineePatternMap: ExhaustivenessMap, ctx: Ctx, raise: Raise)
+  : Unit = {
+    println(s"Check exhaustiveness of ${t.describe}")
+    indent += 1
+    try t match {
+      case _: Consequent => ()
+      case MissingCase =>
+        import Message.MessageContext
+        parentOpt match {
+          case S(IfThenElse(test, whenTrue, whenFalse)) =>
+            if (whenFalse === t) {
+              throw DesugaringException.Single(msg"Missing the otherwise case of test ${test.toString}", test.toLoc)
+            } else {
+              ???
+            }
+          case S(Match(_, _, _)) => ???
+          case S(Consequent(_)) | S(MissingCase) | N => die
+        }
+      case IfThenElse(condition, whenTrue, whenFalse) =>
+        checkExhaustive(whenTrue, S(t))
+        checkExhaustive(whenFalse, S(t))
+      case Match(scrutinee, branches, default) =>
+        scrutineePatternMap.get(getScurtineeKey(scrutinee)) match {
+          // Should I call `die` here?
+          case N => throw new Error(s"unreachable case: unknown scrutinee ${scrutinee.term}")
+          case S(patternMap) =>
+            println(s"The exhaustiveness map is ${scrutineePatternMap}")
+            println(s"The scrutinee key is ${getScurtineeKey(scrutinee)}")
+            println("Pattern map of the scrutinee:")
+            if (patternMap.isEmpty)
+              println("<Empty>")
+            else
+              patternMap.foreach { case (key, mutCase) => println(s"- $key => $mutCase")}
+            // Filter out missing cases in `branches`.
+            val missingCases = patternMap.removedAll(branches.iterator.map {
+              case MutCase(classNameVar -> _, _) => classNameVar
+            })
+            println(s"Number of missing cases: ${missingCases.size}")
+            if (!missingCases.isEmpty) {
+              throw DesugaringException.Multiple({
+                import Message.MessageContext
+                val numMissingCases = missingCases.size
+                (msg"The match is not exhaustive." -> scrutinee.matchRootLoc) ::
+                  (msg"The scrutinee at this position misses ${numMissingCases.toString} ${
+                    "case".pluralize(numMissingCases)
+                  }." -> scrutinee.term.toLoc) ::
+                  missingCases.iterator.zipWithIndex.flatMap { case ((classNameVar, firstMutCase), index) =>
+                    val progress = s"[Missing Case ${index + 1}/$numMissingCases]"
+                    (msg"$progress `${classNameVar.name}`" -> N) ::
+                      firstMutCase.locations.iterator.zipWithIndex.map { case (loc, index) =>
+                        (if (index === 0) msg"It first appears here." else msg"continued at") -> S(loc)
+                      }.toList
+                  }.toList
+              })
+            }
+        }
+        // if (branches.length === 1 && scrutinee.isMultiLineMatch && default.isEmpty) {
+        //   import Message.MessageContext
+        //   raise(WarningReport({
+        //     msg"This scrutinee has only one case." -> scrutinee.matchRootLoc
+        //   } :: Nil))
+        // }
+        default.foreach(checkExhaustive(_, S(t)))
+        branches.foreach { case MutCase(_, consequent) =>
+          checkExhaustive(consequent, S(t))
+        }
+    } finally indent -= 1
+  }
+
+  def summarizePatterns(t: MutCaseOf)(implicit ctx: Ctx, raise: Raise): ExhaustivenessMap = {
+    val m = MutMap.empty[Str \/ Int, MutMap[Var, MutCase]]
+    def rec(t: MutCaseOf): Unit = {
+      println(s"Summarize pattern of ${t.describe}")
+      indent += 1
+      try t match {
+        case Consequent(term) => ()
+        case MissingCase => ()
+        case IfThenElse(_, whenTrue, whenFalse) =>
+          rec(whenTrue)
+          rec(whenFalse)
+        case Match(scrutinee, branches, _) =>
+          val key = getScurtineeKey(scrutinee)
+          branches.foreach { mutCase =>
+            val patternMap = m.getOrElseUpdate( key, MutMap.empty)
+            if (!patternMap.contains(mutCase.patternFields._1)) {
+              patternMap += ((mutCase.patternFields._1, mutCase))
+            }
+            rec(mutCase.consequent)
+          }
+      } finally indent -= 1
+    }
+    rec(t)
+    Map.from(m.iterator.map { case (key, patternMap) => key -> Map.from(patternMap) })
   }
 }
