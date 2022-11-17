@@ -327,6 +327,51 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
             throw new Error(s"Parameters applied to non-TypeName $t")
         }
     }
+
+  /** Type parameters and types separated by white space
+   * this is one part of a type alias separated by `*`
+   * e.g.
+   * 'a
+   * int list
+   * ('a * 'b) list
+   * ('a * int) list
+   */
+  def ocamlTypeAliasPart[p: P]: P[(Set[TypeName], Type)] = (
+    // type names like list, int
+    tyName.map(tname => (Set.empty[TypeName], tname))
+    // type parameters like 'a, 'b
+  | ocamlTyParam.map(param => (Set(param), param))
+    // type bodies like type names, parameter, applied types or tuples
+  | ("(" ~ ocamlTypeAliasBody ~ ")")
+      .map {
+        case (tparams, tupTypes) =>
+          val tupleType = Tuple(tupTypes.map(t => N -> Field(N, t)))
+          (tparams, tupleType)
+      }
+  ).rep(1)
+    .map {
+      case Seq(b) => b
+      case parts =>
+        val tparams = parts.flatMap(_._1).toSet
+        parts.last._2 match {
+          case tname: TypeName =>
+            val args = parts.init.toList.map(_._2).toList
+            (tparams, AppliedType(tname, args))
+          case t =>
+            // last parameter has to be a type name when there are
+            // multiple parameters being applied
+            throw new Error(s"Parameters applied to non-TypeName $t")
+        }
+    }
+
+  /** Type alias body made of parts in a product type */
+  def ocamlTypeAliasBody[p: P]: P[(Set[TypeName], Ls[Type])] =
+    ocamlTypeAliasPart.rep(1, "*").map {
+      case Seq(t) => (t._1, t._2 :: Nil)
+      case parts =>
+        val tparams = parts.flatMap(_._1).toSet
+        (tparams, parts.map(_._2).toList)
+    }
   
   /** data constructor body
     * type 'a, 'b tup = Tup of ['a * 'b] => ('a, 'b)
@@ -373,13 +418,17 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ocamlTypeRepresentation[p: P]: P[List[TypeDef]] = ocamlConstructorDecl.rep(1, "|").map(_.toList)
   
   /** Parse type alias like heap in the example below
+   * TODO: temporary fix to parse aliases in parallel type declaration
    * 
     * type heapVar = HeapInt of int | Heap of heap and
     *   [heap = (string * int) list] => type alias Heap = (string * int) list
     */
   def ocamlTyDeclTyAlias[p: P]: P[TypeDef] =
-    P((tyName ~ "=" ~/ ocamlConstructorBody).map {
-      case (nme, (alsParams, alsBody)) =>
+    P((tyName ~ "=" ~/ ocamlTypeAliasBody).map {
+      case (nme, (alsParams, t :: Nil)) =>
+        TypeDef(Als, nme, alsParams.toList, t, Nil, Nil, Nil)
+      case (nme, (alsParams, tupTypes)) =>
+        val alsBody = Tuple(tupTypes.map(t => N -> Field(N, t)))
         TypeDef(Als, nme, alsParams.toList, alsBody, Nil, Nil, Nil)
     })
   
@@ -410,7 +459,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
           case (union, tdef) => Union(unionType(tdef), union)
         }
         val result = TypeDef(Als, tname, tparams, aliasBody, Nil, Nil, Nil) :: bodies
-        alias.map(als => als :: result).getOrElse(result)
+        alias.fold(result)(als => als :: result)
     })
   // create a helper function for a class constructor
   // for e.g. Cons[A] = {_0: A; _1: List[A]} gets

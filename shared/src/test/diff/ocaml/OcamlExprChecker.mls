@@ -148,6 +148,12 @@ type 'a, 'b heapD = HeapD of 'a * 'b list
 //│ HeapC: (list[{_0: 'a, _1: 'b}] & '_0) -> (HeapC['a, 'b] with {_0: '_0})
 //│ HeapD: ('_0, list['b] & '_1,) -> (HeapD['_0, 'b] with {_1: '_1})
 
+(("hi", 1) :: Nil)
+(("hi", 1) :: Nil):heap
+(("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ res: Cons[("hi", 1,)] with {_1: Nil}
+//│ res: heap
+//│ res: heap
 
 let update h str i = (str,i)::h
 //│ update: (list['a] & '_1) -> 'b -> 'c -> (Cons['a | ('b, 'c,)] with {_0: ('b, 'c,), _1: '_1})
@@ -155,24 +161,21 @@ let update h str i = (str,i)::h
 /// FIXME
 // define lambdas using fun
 fun (env: env) _ -> []
-//│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.157: 	fun (env: env) _ -> []
-//│ ╙──       	    ^^^^^^^^^^^^
-//│ res: error -> Nil
-
-let interp2 = interp (fun (env:env) opt ->
+let interp2 = (fun (env:env) opt ->
   match opt with
      None -> 0)
-//│ ╔══[ERROR] identifier not found: interp
-//│ ║  l.163: 	let interp2 = interp (fun (env:env) opt ->
-//│ ╙──       	              ^^^^^^
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.163: 	let interp2 = interp (fun (env:env) opt ->
-//│ ╙──       	                          ^^^^^^^^^^^^^
+//│ ║  l.163: 	fun (env: env) _ -> []
+//│ ╙──       	    ^^^^^^^^^^^^
+//│ res: error -> Nil
+//│ ╔══[ERROR] Unsupported pattern shape:
+//│ ║  l.164: 	let interp2 = (fun (env:env) opt ->
+//│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
-//│ ║  l.164: 	  match opt with
+//│ ║  l.165: 	  match opt with
 //│ ╙──       	        ^^^
-//│ interp2: error
+//│ interp2: error -> 0
+
 
 
 let head xs = match xs with
@@ -196,10 +199,10 @@ type 'a, 'b bigHeap =
   | NonsHeap of (otherList * 'a) list
   and otherList = 'b list
 //│ ╔══[ERROR] Type otherList takes parameters
-//│ ║  l.195: 	  | NonHeap of otherList
+//│ ║  l.198: 	  | NonHeap of otherList
 //│ ╙──       	               ^^^^^^^^^
 //│ ╔══[ERROR] Type otherList takes parameters
-//│ ║  l.196: 	  | NonsHeap of (otherList * 'a) list
+//│ ║  l.199: 	  | NonsHeap of (otherList * 'a) list
 //│ ╙──       	                 ^^^^^^^^^
 //│ Defined type alias otherList[+'b]
 //│ Defined type alias bigHeap[+'a, ±'b]
@@ -207,11 +210,27 @@ type 'a, 'b bigHeap =
 //│ Defined class NonHeap
 //│ Defined class NonsHeap[+'a]
 //│ ╔══[WARNING] Type definition bigHeap has bivariant type parameters:
-//│ ║  l.193: 	type 'a, 'b bigHeap =
+//│ ║  l.196: 	type 'a, 'b bigHeap =
 //│ ║         	            ^^^^^^^
 //│ ╟── 'b is irrelevant and may be removed
-//│ ║  l.193: 	type 'a, 'b bigHeap =
+//│ ║  l.196: 	type 'a, 'b bigHeap =
 //│ ╙──       	         ^^
 //│ NoHeap: (list['a] & '_0) -> (NoHeap['a] with {_0: '_0})
 //│ NonHeap: (error & '_0) -> (NonHeap with {_0: '_0})
 //│ NonsHeap: (list[{_0: error, _1: 'a}] & '_0) -> (NonsHeap['a] with {_0: '_0})
+
+// TODO
+// FIXME
+let check (v: ((int, int))) =
+  match v with
+   ((c, d)) -> c + d
+//│ /!!!\ Uncaught error: java.lang.Exception: illegal pattern: Bra(rcd = false, Bra(rcd = false, Tup(_: Var(c), _: Var(d))))
+
+// TODO
+// FIXME
+let checkagain (v: (int, int, (int, int))) =
+  match v with
+   (a, b, (c, d)) -> a + b + c + d
+//│ ╔══[ERROR] type identifier not found: Tuple#3
+//│ ╙──
+//│ checkagain: (int, int, (int, int,),) -> error

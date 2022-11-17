@@ -74,7 +74,7 @@ let interp2 = interp (fun (env:env) opt ->
 2.0
 let b = 3.0
 let c = 3.0 +. 4.0 *. 6.0
-//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):1:3, found "0;let b = " at l.70:3: 2.0
+//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):1:3, found "0;let b = " at l.74:3: 2.0
 
 // make tuples from comma separated terms
 1, 2, 3
@@ -137,7 +137,7 @@ let head xs = match xs with
 let head xs = match xs with
   (::) x xs -> x
   | _ -> raise Error
-//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.134:4:   (::) x xs -> x
+//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.138:4:   (::) x xs -> x
 
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) List
@@ -148,7 +148,7 @@ type stmt = Skip | Assign of string * exp
          | While of exp * stmt 
          | SaveHeap of string
          | RestoreHeap of string
-//│ Desugared: type alias heap = {_0: List[{_0: string, _1: int}]}
+//│ Desugared: type alias heap = List[(string, int,)]
 //│ Desugared: type alias heapVar = Heap | HeapInt
 //│ Desugared: class HeapInt(_0): {_0: int}
 //│ Desugared: class Heap(_0): {_0: heap}
@@ -221,7 +221,7 @@ type 'a, 'b heap =
   | NonHeap of otherList
   | NonsHeap of (otherList * 'a) list
   and otherList = 'b list
-//│ Desugared: type alias otherList['b] = {_0: list['b]}
+//│ Desugared: type alias otherList['b] = list['b]
 //│ Desugared: type alias heap['a, 'b] = NonsHeap['a] | NonHeap | Heap['a]
 //│ Desugared: class Heap['a](_0): {_0: list['a]}
 //│ Desugared: class NonHeap(_0): {_0: otherList}
@@ -247,3 +247,6 @@ let raise a = nothing
 //│ Desugared: def None: None ({},)
 //│ Desugared: def Some: a, => Some ({_0: a},)
 //│ Desugared: def raise: a, => nothing
+
+fun (env: env) _ -> []
+//│ Desugared: '(' env : TypeName(env) ')' (_,), => Nil

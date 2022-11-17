@@ -48,9 +48,10 @@ let rec lookup (h:heap) str =
   (* FOUND ERROR: this should return an int *)
     [] -> HeapInt(0) (* ############### *)
   |(s,i)::tl -> if s=str then i else lookup tl str
-//│ /!!!\ Uncaught error: java.lang.Exception: illegal pattern: Tup(_: Var(s), _: Var(i))
+//│ ╔══[ERROR] type identifier not found: Tuple#2
+//│ ╙──
+//│ lookup: heap -> anything -> (error | HeapInt & {_0: 0})
 
-// FIXME
 let update h str i = (str,i)::h
 //│ update: (list['a] & '_1) -> 'b -> 'c -> (Cons['a | ('b, 'c,)] with {_0: ('b, 'c,), _1: '_1})
 
@@ -60,7 +61,32 @@ let rec interp_e (h:heap) (e:exp) =
  |Var str     ->lookup h str
  |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
  |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
-//│ interp_e: heap -> exp -> int
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.58: 	let rec interp_e (h:heap) (e:exp) =
+//│ ║        	                  ^^^^^^^^^^^^^^^^^
+//│ ║  l.59: 	 match e with
+//│ ║        	^^^^^^^^^^^^^
+//│ ║  l.60: 	  EInt i       ->i
+//│ ║        	^^^^^^^^^^^^^^^^^^^
+//│ ║  l.61: 	 |Var str     ->lookup h str
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.62: 	 |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.63: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `HeapInt & {_0: ?_0}` is not an instance of type `int`
+//│ ║  l.49: 	    [] -> HeapInt(0) (* ############### *)
+//│ ║        	          ^^^^^^^^^
+//│ ╟── but it flows into application with expected type `int`
+//│ ║  l.61: 	 |Var str     ->lookup h str
+//│ ║        	                ^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.63: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
+//│ ╙──      	                                 ^^^^^^^^^^^^^
+//│ interp_e: heap -> exp -> (error | HeapInt & {_0: 0} | int)
+
+let rec test (h:heap) (s:stmt) = update h
+//│ test: heap -> stmt -> 'a -> 'b -> (Cons[(string | 'a, int | 'b,)] with {_0: ('a, 'b,), _1: heap})
 
 // FIXME
 let rec interp_s (h:heap) (s:stmt) =
@@ -79,101 +105,64 @@ let rec interp_s (h:heap) (s:stmt) =
   |SaveHeap(str) -> []
   |RestoreHeap(str) -> []
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.74: 	  |Assign(str,e) -> update h str (interp_e h e)
-//│ ║        	                    ^^^^^^^^
-//│ ╟── type `{_0: list[{_0: string, _1: int}]}` does not match type `Cons[?a] | Nil`
-//│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
-//│ ║        	                                                         ^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `Cons[?a0] | Nil`
-//│ ║  l.74: 	  |Assign(str,e) -> update h str (interp_e h e)
-//│ ║        	                           ^
-//│ ╟── Note: constraint arises from union type:
-//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
-//│ ║       	                       ^^^^^^^^^^^^^^^^^^
-//│ ╟── from reference:
-//│ ║  l.54: 	let update h str i = (str,i)::h
-//│ ╙──      	                              ^
+//│ ║  l.97: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ║        	                      ^^^^^^^^^^^^
+//│ ╟── application of type `HeapInt & {_0: ?_0}` is not an instance of type `number`
+//│ ║  l.49: 	    [] -> HeapInt(0) (* ############### *)
+//│ ║        	          ^^^^^^^^^
+//│ ╟── but it flows into application with expected type `number`
+//│ ║  l.97: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ╙──      	                      ^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.101: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ║         	                      ^^^^^^^^^^^^
+//│ ╟── application of type `HeapInt & {_0: ?_0}` is not an instance of type `number`
+//│ ║  l.49: 	    [] -> HeapInt(0) (* ############### *)
+//│ ║        	          ^^^^^^^^^
+//│ ╟── but it flows into application with expected type `number`
+//│ ║  l.101: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ╙──       	                      ^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.66: 	let rec interp_s (h:heap) (s:stmt) =
+//│ ║  l.92: 	let rec interp_s (h:heap) (s:stmt) =
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^
-//│ ║  l.67: 	  match s with
+//│ ║  l.93: 	  match s with
 //│ ║        	^^^^^^^^^^^^^^
-//│ ║  l.68: 	   Skip -> h
+//│ ║  l.94: 	   Skip -> h
 //│ ║        	^^^^^^^^^^^^
-//│ ║  l.69: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
+//│ ║  l.95: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.70: 	                 interp_s h2 s2
+//│ ║  l.96: 	                 interp_s h2 s2
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.71: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ║  l.97: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.72: 	                  then interp_s h s1 
+//│ ║  l.98: 	                  then interp_s h s1 
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.73: 	                  else interp_s h s2
+//│ ║  l.99: 	                  else interp_s h s2
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.74: 	  |Assign(str,e) -> update h str (interp_e h e)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.75: 	  |While(e,s1) -> if (interp_e h e) <> 0
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.76: 	                  then let h2 = interp_s h s1 in
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.77: 	                       interp_s h2 s
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.78: 	                  else h
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.79: 	  |SaveHeap(str) -> []
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.80: 	  |RestoreHeap(str) -> []
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── tuple literal of type `(?a, ?b,)` does not match type `Cons[{_0: string, _1: int}] | Nil`
-//│ ║  l.54: 	let update h str i = (str,i)::h
-//│ ║        	                      ^^^^^
-//│ ╟── Note: constraint arises from union type:
-//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
-//│ ║       	                       ^^^^^^^^^^^^^^^^^^
-//│ ╟── from applied type reference:
+//│ ║  l.100: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.101: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.102: 	                  then let h2 = interp_s h s1 in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.103: 	                       interp_s h2 s
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.104: 	                  else h
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.105: 	  |SaveHeap(str) -> []
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.106: 	  |RestoreHeap(str) -> []
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `HeapInt & {_0: ?_0}` is not an instance of type `int`
+//│ ║  l.49: 	    [] -> HeapInt(0) (* ############### *)
+//│ ║        	          ^^^^^^^^^
+//│ ╟── but it flows into application with expected type `int`
+//│ ║  l.100: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║         	                                  ^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from type reference:
 //│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
-//│ ╙──      	                                                         ^^^^^^^^^^^^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.66: 	let rec interp_s (h:heap) (s:stmt) =
-//│ ║        	                  ^^^^^^^^^^^^^^^^^^
-//│ ║  l.67: 	  match s with
-//│ ║        	^^^^^^^^^^^^^^
-//│ ║  l.68: 	   Skip -> h
-//│ ║        	^^^^^^^^^^^^
-//│ ║  l.69: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.70: 	                 interp_s h2 s2
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.71: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.72: 	                  then interp_s h s1 
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.73: 	                  else interp_s h s2
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.74: 	  |Assign(str,e) -> update h str (interp_e h e)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.75: 	  |While(e,s1) -> if (interp_e h e) <> 0
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.76: 	                  then let h2 = interp_s h s1 in
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.77: 	                       interp_s h2 s
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.78: 	                  else h
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.79: 	  |SaveHeap(str) -> []
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.80: 	  |RestoreHeap(str) -> []
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `Nil` does not have field '_0'
-//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
-//│ ║       	                                      ^^^
-//│ ╟── Note: constraint arises from record type:
-//│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
-//│ ║        	                                                         ^^^^^^^^^^^^
-//│ ╟── from application:
-//│ ║  l.76: 	                  then let h2 = interp_s h s1 in
-//│ ╙──      	                                ^^^^^^^^^^^^^
-//│ interp_s: heap -> stmt -> ((Cons[(string, int,) | list[{_0: string, _1: int}]] with {_0: (string, int,), _1: heap}) | error | Nil | heap)
+//│ ╙──      	                                                                  ^^^
+//│ interp_s: heap -> stmt -> ((Cons[(string, error | HeapInt & {_0: 0} | int,)] with {_1: heap}) | Nil | heap)
 
 let mt_heap = [] 
 //│ mt_heap: Nil
@@ -181,22 +170,7 @@ let mt_heap = []
 // FIXME
 let interp_prog s = 
   lookup (interp_s mt_heap s) "ans"
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.183: 	  lookup (interp_s mt_heap s) "ans"
-//│ ║         	          ^^^^^^^^^^^^^^^^
-//│ ╟── reference of type `Nil` does not have field '_0'
-//│ ║  l.183: 	  lookup (interp_s mt_heap s) "ans"
-//│ ║         	                   ^^^^^^^
-//│ ╟── Note: constraint arises from record type:
-//│ ║  l.13: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
-//│ ║        	                                                         ^^^^^^^^^^^^
-//│ ╟── from type reference:
-//│ ║  l.66: 	let rec interp_s (h:heap) (s:stmt) =
-//│ ║        	                    ^^^^
-//│ ╟── Note: class Nil is defined at:
-//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;let (::) a b = Cons(a, b);type 'a option = None | Some of 'a;let raise a = nothing;
-//│ ╙──     	                                      ^^^
-//│ interp_prog: stmt -> nothing
+//│ interp_prog: stmt -> (error | HeapInt & {_0: 0})
 
 
 // FIXME: full line comment
