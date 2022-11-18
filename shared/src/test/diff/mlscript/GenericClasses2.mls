@@ -21,10 +21,16 @@ b: Foo1[string]
 //│ ╔══[ERROR] Type mismatch in type ascription:
 //│ ║  l.20: 	b: Foo1[string]
 //│ ║        	^
-//│ ╟── integer literal of type `1` is not an instance of type `string`
+//│ ╟── integer literal of type `1` is not an instance of `Foo1[string]`
 //│ ║  l.15: 	b = Bar1{x = 1}
 //│ ║        	             ^
-//│ ╟── Note: constraint arises from type reference:
+//│ ╟── but it flows into reference with expected type `Foo1[string]`
+//│ ║  l.20: 	b: Foo1[string]
+//│ ║        	^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.20: 	b: Foo1[string]
+//│ ║        	   ^^^^^^^^^^^^
+//│ ╟── from type reference:
 //│ ║  l.20: 	b: Foo1[string]
 //│ ╙──      	        ^^^^^^
 //│ res: Foo1[string]
@@ -55,13 +61,13 @@ Bar3
 //│     'x <: int
 //│    = [Function: res]
 //│ ╔══[ERROR] Instantiation of an abstract type is forbidden
-//│ ║  l.52: 	Bar3
+//│ ║  l.58: 	Bar3
 //│ ║        	^^^^
 //│ ╟── Note that class Bar3 is abstract:
-//│ ║  l.46: 	class Bar3: Foo2[int]
+//│ ║  l.52: 	class Bar3: Foo2[int]
 //│ ║        	      ^^^^^^^^^^^^^^^
 //│ ╟── Hint: method M2 is abstract
-//│ ║  l.38: 	  method M2: A
+//│ ║  l.44: 	  method M2: A
 //│ ╙──      	         ^^^^^
 //│ res: error
 //│    = [Function: res]
@@ -75,13 +81,13 @@ Bar3
 //│ res: {x: int & 'x} -> (Bar2 with {x: 'x})
 //│    = [Function: res]
 //│ ╔══[ERROR] Instantiation of an abstract type is forbidden
-//│ ║  l.74: 	Bar3
+//│ ║  l.80: 	Bar3
 //│ ║        	^^^^
 //│ ╟── Note that class Bar3 is abstract:
-//│ ║  l.46: 	class Bar3: Foo2[int]
+//│ ║  l.52: 	class Bar3: Foo2[int]
 //│ ║        	      ^^^^^^^^^^^^^^^
 //│ ╟── Hint: method M2 is abstract
-//│ ║  l.38: 	  method M2: A
+//│ ║  l.44: 	  method M2: A
 //│ ╙──      	         ^^^^^
 //│ res: error
 //│    = [Function: res]
@@ -92,7 +98,7 @@ Bar3
 :e
 {A = 1}
 //│ ╔══[ERROR] Field identifiers must start with a small letter
-//│ ║  l.93: 	{A = 1}
+//│ ║  l.99: 	{A = 1}
 //│ ╙──      	^^^^^^^
 //│ res: {A <: 1}
 //│    = { A: 1 }
@@ -101,7 +107,7 @@ Bar3
 :e
 error: {A: 1}
 //│ ╔══[ERROR] Field identifiers must start with a small letter
-//│ ║  l.102: 	error: {A: 1}
+//│ ║  l.108: 	error: {A: 1}
 //│ ╙──       	        ^
 //│ res: {A <: 1}
 //│ Runtime error:
@@ -115,13 +121,19 @@ b = Bar2{x = 1}
 :e
 c = b: Foo2[string]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.116: 	c = b: Foo2[string]
+//│ ║  l.122: 	c = b: Foo2[string]
 //│ ║         	    ^
-//│ ╟── type `int` is not an instance of type `string`
-//│ ║  l.39: 	class Bar2: Foo2[int] & { x: int }
+//│ ╟── type `int` is not an instance of `Foo2[string]`
+//│ ║  l.45: 	class Bar2: Foo2[int] & { x: int }
 //│ ║        	                 ^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.116: 	c = b: Foo2[string]
+//│ ╟── but it flows into reference with expected type `Foo2[string]`
+//│ ║  l.122: 	c = b: Foo2[string]
+//│ ║         	    ^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.122: 	c = b: Foo2[string]
+//│ ║         	       ^^^^^^^^^^^^
+//│ ╟── from type reference:
+//│ ║  l.122: 	c = b: Foo2[string]
 //│ ╙──       	            ^^^^^^
 //│ c: Foo2[string]
 //│  = Bar2 { x: 1 }
@@ -148,13 +160,19 @@ d: Foo2['a]
 :e
 d: Foo2[string]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.149: 	d: Foo2[string]
+//│ ║  l.161: 	d: Foo2[string]
 //│ ║         	^
-//│ ╟── type `int` is not an instance of type `string`
-//│ ║  l.39: 	class Bar2: Foo2[int] & { x: int }
+//│ ╟── type `int` is not an instance of `Foo2[string]`
+//│ ║  l.45: 	class Bar2: Foo2[int] & { x: int }
 //│ ║        	                 ^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.149: 	d: Foo2[string]
+//│ ╟── but it flows into reference with expected type `Foo2[string]`
+//│ ║  l.161: 	d: Foo2[string]
+//│ ║         	^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.161: 	d: Foo2[string]
+//│ ║         	   ^^^^^^^^^^^^
+//│ ╟── from type reference:
+//│ ║  l.161: 	d: Foo2[string]
 //│ ╙──       	        ^^^^^^
 //│ res: Foo2[string]
 //│    = Bar2 { x: 1 }

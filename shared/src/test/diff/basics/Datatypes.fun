@@ -164,9 +164,9 @@ not (Cons 42 Nil).head
 //│ ╟── integer literal of type `42` is not an instance of type `bool`
 //│ ║  l.160: 	not (Cons 42 Nil).head
 //│ ║         	          ^^
-//│ ╟── but it flows into field selection with expected type `bool`
+//│ ╟── but it flows into application with expected type `bool`
 //│ ║  l.160: 	not (Cons 42 Nil).head
-//│ ╙──       	                 ^^^^^
+//│ ╙──       	     ^^^^^^^^^^^
 //│ res: bool | error
 
 
@@ -199,15 +199,15 @@ Cons 1 2
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.198: 	Cons 1 2
 //│ ║         	^^^^^^^^
-//│ ╟── integer literal of type `2` does not match type `Cons[?a] | Nil[?]`
+//│ ╟── integer literal of type `2` is not a 1-element tuple
 //│ ║  l.198: 	Cons 1 2
 //│ ║         	       ^
-//│ ╟── Note: constraint arises from union type:
-//│ ║  l.107: 	data type List a of
-//│ ║         	               ^
-//│ ╟── from tuple type:
+//│ ╟── Note: constraint arises from tuple type:
 //│ ║  l.109: 	  Cons (head: a) (tail: List a)
-//│ ╙──       	                        ^^^^^^
+//│ ║         	                        ^^^^^^
+//│ ╟── from union type:
+//│ ║  l.107: 	data type List a of
+//│ ╙──       	               ^
 //│ res: Cons[1] | error
 
 

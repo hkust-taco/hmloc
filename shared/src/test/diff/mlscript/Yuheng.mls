@@ -40,15 +40,18 @@ f a2
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.39: 	f a2
 //│ ║        	^^^^
-//│ ╟── type `number` is not an instance of `int`
+//│ ╟── type `number` is not a 1-element tuple
 //│ ║  l.34: 	a2 = A { x = 0: number }
 //│ ║        	                ^^^^^^
-//│ ╟── Note: constraint arises from type reference:
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.39: 	f a2
+//│ ║        	  ^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.19: 	def f v = case v of {
+//│ ║        	               ^
+//│ ╟── from type reference:
 //│ ║  l.20: 	    A -> (v.x : int)
-//│ ║        	                ^^^
-//│ ╟── from field selection:
-//│ ║  l.20: 	    A -> (v.x : int)
-//│ ╙──      	          ^^^
+//│ ╙──      	                ^^^
 //│ res: error | int
 //│    = 0
 
@@ -85,10 +88,10 @@ a = (0, 1)
 class Expr[A]
 //│ Defined class Expr[±A]
 //│ ╔══[WARNING] Type definition Expr has bivariant type parameters:
-//│ ║  l.85: 	class Expr[A]
+//│ ║  l.88: 	class Expr[A]
 //│ ║        	      ^^^^
 //│ ╟── A is irrelevant and may be removed
-//│ ║  l.85: 	class Expr[A]
+//│ ║  l.88: 	class Expr[A]
 //│ ╙──      	           ^
 
 
@@ -100,13 +103,13 @@ class IntLit: Expr[int] & { value: int }
 class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
 //│ Defined class Pair[±A, ±B]
 //│ ╔══[WARNING] Type definition Pair has bivariant type parameters:
-//│ ║  l.100: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
+//│ ║  l.103: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
 //│ ║         	      ^^^^
 //│ ╟── A is irrelevant and may be removed
-//│ ║  l.100: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
+//│ ║  l.103: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
 //│ ║         	           ^
 //│ ╟── B is irrelevant and may be removed
-//│ ║  l.100: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
+//│ ║  l.103: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
 //│ ╙──       	              ^
 
 
@@ -190,13 +193,13 @@ ep = eval p
 class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
 //│ Defined class Pair2[±A, ±B]
 //│ ╔══[WARNING] Type definition Pair2 has bivariant type parameters:
-//│ ║  l.190: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
+//│ ║  l.193: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
 //│ ║         	      ^^^^^
 //│ ╟── A is irrelevant and may be removed
-//│ ║  l.190: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
+//│ ║  l.193: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
 //│ ║         	            ^
 //│ ╟── B is irrelevant and may be removed
-//│ ║  l.190: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
+//│ ║  l.193: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
 //│ ╙──       	               ^
 
 
@@ -213,10 +216,10 @@ ep + 1
 //│ ╔══[ERROR] Type mismatch in operator application:
 //│ ║  l.+1: 	ep + 1
 //│ ║        	^^^^
-//│ ╟── tuple literal of type `(?a, ?b,)` is not an instance of type `int`
-//│ ║  l.127: 	  | Pair -> (eval e.lhs, eval e.rhs)
+//│ ╟── tuple literal of type `(?a, ?b,)` does not match type `(int,)`
+//│ ║  l.130: 	  | Pair -> (eval e.lhs, eval e.rhs)
 //│ ║         	            ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `int`
+//│ ╟── but it flows into reference with expected type `(int,)`
 //│ ║  l.+1: 	ep + 1
 //│ ╙──      	^^
 //│ res: error | int
@@ -229,7 +232,7 @@ ep[0]
 //│ ║  l.+1: 	ep[0]
 //│ ║        	^^^^^
 //│ ╟── integer literal of type `1` does not match type `Array[?a]`
-//│ ║  l.151: 	  lhs = IntLit { value = 1 };
+//│ ║  l.154: 	  lhs = IntLit { value = 1 };
 //│ ║         	                         ^
 //│ ╟── but it flows into reference with expected type `Array[?b]`
 //│ ║  l.+1: 	ep[0]
@@ -254,7 +257,7 @@ eval (Pair {
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+5: 	    rhs = IntLit { value = 3 } } } })
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Pair[?, ?] with {Pair#A = ?A, Pair#B = ?B, lhs: ?lhs, rhs: ?rhs}` is not an instance of type `int`
+//│ ╟── application of type `Pair[?, ?] with {Pair#A = ?A, Pair#B = ?B, lhs: ?lhs, rhs: ?rhs}` does not match type `?value`
 //│ ║  l.+3: 	  rhs = IntLit { value = Pair {
 //│ ║        	                         ^^^^^^
 //│ ║  l.+4: 	    lhs = IntLit { value = 2 };
@@ -262,7 +265,7 @@ eval (Pair {
 //│ ║  l.+5: 	    rhs = IntLit { value = 3 } } } })
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.96: 	class IntLit: Expr[int] & { value: int }
+//│ ║  l.99: 	class IntLit: Expr[int] & { value: int }
 //│ ╙──      	                                   ^^^
 //│ res: 'a
 //│   where
@@ -301,8 +304,8 @@ rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+4: 	  }
 //│ ║        	^^^
-//│ ╟── type `Expr[?]` does not match type `IntLit & ?a | Pair[?, ?] & ?b`
-//│ ║  l.288: 	def eval: Expr['a] -> 'a
+//│ ╟── type `Expr[?]` does not match type `?a`
+//│ ║  l.291: 	def eval: Expr['a] -> 'a
 //│ ║         	          ^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	rec def eval(e) = case e of
@@ -316,13 +319,15 @@ rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+4: 	  }
 //│ ║        	^^^
-//│ ╟── expression of type `Expr[?] & ~#IntLit` does not have field 'rhs'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.+3: 	  | Pair -> (eval e.lhs, eval e.rhs)
-//│ ║        	                              ^^^^^
-//│ ╟── from refined scrutinee:
+//│ ╟── type `Expr[?]` does not match type `?a`
+//│ ║  l.291: 	def eval: Expr['a] -> 'a
+//│ ║         	          ^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	rec def eval(e) = case e of
-//│ ╙──      	                       ^
+//│ ║        	                       ^
+//│ ╟── from receiver:
+//│ ║  l.+3: 	  | Pair -> (eval e.lhs, eval e.rhs)
+//│ ╙──      	                              ^
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.+1: 	rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -332,13 +337,15 @@ rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+4: 	  }
 //│ ║        	^^^
-//│ ╟── expression of type `Expr[?] & ~#IntLit` does not have field 'lhs'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.+3: 	  | Pair -> (eval e.lhs, eval e.rhs)
-//│ ║        	                  ^^^^^
-//│ ╟── from refined scrutinee:
+//│ ╟── type `Expr[?]` does not match type `?a`
+//│ ║  l.291: 	def eval: Expr['a] -> 'a
+//│ ║         	          ^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	rec def eval(e) = case e of
-//│ ╙──      	                       ^
+//│ ║        	                       ^
+//│ ╟── from receiver:
+//│ ║  l.+3: 	  | Pair -> (eval e.lhs, eval e.rhs)
+//│ ╙──      	                  ^
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.+1: 	rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -348,13 +355,15 @@ rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+4: 	  }
 //│ ║        	^^^
-//│ ╟── expression of type `Expr[?] & ~#Pair | Expr[?] & ~?a` does not have field 'value'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.+2: 	  { IntLit -> e.value
-//│ ║        	              ^^^^^^^
-//│ ╟── from refined scrutinee:
+//│ ╟── type `Expr[?]` does not match type `?a`
+//│ ║  l.291: 	def eval: Expr['a] -> 'a
+//│ ║         	          ^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	rec def eval(e) = case e of
-//│ ╙──      	                       ^
+//│ ║        	                       ^
+//│ ╟── from receiver:
+//│ ║  l.+2: 	  { IntLit -> e.value
+//│ ╙──      	              ^
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.+1: 	rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -368,7 +377,7 @@ rec def eval(e) = case e of
 //│ ║  l.+3: 	  | Pair -> (eval e.lhs, eval e.rhs)
 //│ ║        	            ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from type variable:
-//│ ║  l.288: 	def eval: Expr['a] -> 'a
+//│ ║  l.291: 	def eval: Expr['a] -> 'a
 //│ ╙──       	                      ^^
 //│ 'a -> 'value
 //│   where
@@ -423,13 +432,15 @@ rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^
 //│ ║  l.+5: 	  }
 //│ ║        	^^^
-//│ ╟── expression of type `Expr[?] & ~#IntLit & ~?a | Pair[?, ?]` does not have field 'rhs'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.+3: 	  | Pair -> (eval e.lhs, eval e.rhs)
-//│ ║        	                              ^^^^^
-//│ ╟── from refined scrutinee:
+//│ ╟── type `Expr[?]` does not match type `?a`
+//│ ║  l.291: 	def eval: Expr['a] -> 'a
+//│ ║         	          ^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	rec def eval(e) = case e of
-//│ ╙──      	                       ^
+//│ ║        	                       ^
+//│ ╟── from receiver:
+//│ ║  l.+3: 	  | Pair -> (eval e.lhs, eval e.rhs)
+//│ ╙──      	                              ^
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.+1: 	rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -441,13 +452,15 @@ rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^
 //│ ║  l.+5: 	  }
 //│ ║        	^^^
-//│ ╟── expression of type `Expr[?] & ~#IntLit & ~?a | Pair[?, ?]` does not have field 'lhs'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.+3: 	  | Pair -> (eval e.lhs, eval e.rhs)
-//│ ║        	                  ^^^^^
-//│ ╟── from refined scrutinee:
+//│ ╟── type `Expr[?]` does not match type `?a`
+//│ ║  l.291: 	def eval: Expr['a] -> 'a
+//│ ║         	          ^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	rec def eval(e) = case e of
-//│ ╙──      	                       ^
+//│ ║        	                       ^
+//│ ╟── from receiver:
+//│ ║  l.+3: 	  | Pair -> (eval e.lhs, eval e.rhs)
+//│ ╙──      	                  ^
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.+1: 	rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -459,13 +472,15 @@ rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^
 //│ ║  l.+5: 	  }
 //│ ║        	^^^
-//│ ╟── expression of type `Expr[?] & ~#Pair & ~?a | IntLit | Pair[?, ?] & ~#Pair | ~?b & (Expr[?] & ~?a | Pair[?, ?])` does not have field 'value'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.+2: 	  { IntLit -> e.value
-//│ ║        	              ^^^^^^^
-//│ ╟── from refined scrutinee:
+//│ ╟── type `Expr[?]` does not match type `?a`
+//│ ║  l.291: 	def eval: Expr['a] -> 'a
+//│ ║         	          ^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	rec def eval(e) = case e of
-//│ ╙──      	                       ^
+//│ ║        	                       ^
+//│ ╟── from receiver:
+//│ ║  l.+2: 	  { IntLit -> e.value
+//│ ╙──      	              ^
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.+1: 	rec def eval(e) = case e of
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -481,7 +496,7 @@ rec def eval(e) = case e of
 //│ ║  l.+3: 	  | Pair -> (eval e.lhs, eval e.rhs)
 //│ ║        	            ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from type variable:
-//│ ║  l.288: 	def eval: Expr['a] -> 'a
+//│ ║  l.291: 	def eval: Expr['a] -> 'a
 //│ ╙──       	                      ^^
 //│ 'a -> 'value
 //│   where

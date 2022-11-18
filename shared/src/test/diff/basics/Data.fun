@@ -31,28 +31,28 @@ bar {age: 1} // TODO B/E
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.28: 	bar {}
 //│ ║        	^^^^^^
-//│ ╟── tuple of type `anything` does not have field 'age'
+//│ ╟── tuple of type `anything` is not a 1-element tuple
 //│ ║  l.28: 	bar {}
 //│ ║        	    ^^
-//│ ╟── Note: constraint arises from field selection:
+//│ ╟── Note: constraint arises from binding:
 //│ ║  l.21: 	let bar (q: Person _) = q.age
-//│ ║        	                         ^^^^
-//│ ╟── from binding:
+//│ ║        	         ^^^^^^^^^^^
+//│ ╟── from receiver:
 //│ ║  l.21: 	let bar (q: Person _) = q.age
-//│ ╙──      	         ^^^^^^^^^^^
+//│ ╙──      	                        ^
 //│ res: error
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.29: 	bar {name: "Bob"}
 //│ ║        	^^^^^^^^^^^^^^^^^
-//│ ╟── record of type `{name: "Bob"}` does not have field 'age'
+//│ ╟── record of type `{name: "Bob"}` is not a 1-element tuple
 //│ ║  l.29: 	bar {name: "Bob"}
 //│ ║        	    ^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from field selection:
+//│ ╟── Note: constraint arises from binding:
 //│ ║  l.21: 	let bar (q: Person _) = q.age
-//│ ║        	                         ^^^^
-//│ ╟── from binding:
+//│ ║        	         ^^^^^^^^^^^
+//│ ╟── from receiver:
 //│ ║  l.21: 	let bar (q: Person _) = q.age
-//│ ╙──      	         ^^^^^^^^^^^
+//│ ╙──      	                        ^
 //│ res: error
 //│ res: 1
 

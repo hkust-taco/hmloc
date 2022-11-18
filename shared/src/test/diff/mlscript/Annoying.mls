@@ -38,7 +38,7 @@ v0: int
 //│ ╔══[ERROR] Type mismatch in type ascription:
 //│ ║  l.37: 	v0: int
 //│ ║        	^^
-//│ ╟── type `~X\x\y` is not an instance of type `int`
+//│ ╟── type `~X\x\y` is not an instance of `int`
 //│ ║  l.33: 	def v0: (~(X\x))\y
 //│ ║        	        ^^^^^^^^
 //│ ╟── but it flows into reference with expected type `int`
@@ -64,30 +64,39 @@ def test x = case x of { int -> x.f | _ -> x.x }
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── expression of type `int & {x: 'a} | {x: 'a} & ~?a` does not have field 'f'
-//│ ╟── Note: constraint arises from field selection:
+//│ ╟── type `int & {x: 'a} | {x: 'a} & ~?a` does not match type `?b`
+//│ ║  l.59: 	def test: (int & { f: 'a } | { x: 'a } | { y: 'a }) -> 'a
+//│ ║        	                             ^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
-//│ ║        	                                ^^^
-//│ ╟── from refined scrutinee:
+//│ ║        	                  ^
+//│ ╟── from receiver:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
-//│ ╙──      	                  ^
+//│ ╙──      	                                ^
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── expression of type `{y: 'a} & ~int` does not have field 'x'
-//│ ╟── Note: constraint arises from field selection:
+//│ ╟── type `{y: 'a} & ~int` does not match type `?a`
+//│ ║  l.59: 	def test: (int & { f: 'a } | { x: 'a } | { y: 'a }) -> 'a
+//│ ║        	                                         ^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
-//│ ╙──      	                                           ^^^
+//│ ║        	                  ^
+//│ ╟── from receiver:
+//│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
+//│ ╙──      	                                           ^
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── expression of type `int & {y: 'a} | {y: 'a} & ~?a` does not have field 'f'
-//│ ╟── Note: constraint arises from field selection:
+//│ ╟── type `int & {y: 'a} | {y: 'a} & ~?a` does not match type `?b`
+//│ ║  l.59: 	def test: (int & { f: 'a } | { x: 'a } | { y: 'a }) -> 'a
+//│ ║        	                                         ^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
-//│ ║        	                                ^^^
-//│ ╟── from refined scrutinee:
+//│ ║        	                  ^
+//│ ╟── from receiver:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
-//│ ╙──      	                  ^
+//│ ╙──      	                                ^
 //│ (int & {f: 'f} | {x: 'f} & ~int) -> 'f
 //│   <:  test:
 //│ anything -> nothing
@@ -131,13 +140,16 @@ test (error: C & { c: int })
 :e
 test (error: B & { c: int })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.132: 	test (error: B & { c: int })
+//│ ║  l.141: 	test (error: B & { c: int })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `B & {c: int}` does not match type `A & {a: ?a} | B & {b: ?a} | C & {c: ?a}`
-//│ ║  l.132: 	test (error: B & { c: int })
+//│ ╟── type `B & {c: int}` is not a 1-element tuple
+//│ ║  l.141: 	test (error: B & { c: int })
 //│ ║         	             ^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from union type:
-//│ ║  l.121: 	def test: (A & { a: 'a } | B & { b: 'a } | C & { c: 'a }) -> 'a
+//│ ╟── but it flows into argument with expected type `(A & {a: ?a} | B & {b: ?a} | C & {c: ?a},)`
+//│ ║  l.141: 	test (error: B & { c: int })
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from tuple type:
+//│ ║  l.130: 	def test: (A & { a: 'a } | B & { b: 'a } | C & { c: 'a }) -> 'a
 //│ ╙──       	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ res: error
 
@@ -158,13 +170,16 @@ test (error: C & { x: int; y: string })
 :e
 test (error: A & { x: int })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.159: 	test (error: A & { x: int })
+//│ ║  l.171: 	test (error: A & { x: int })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `A & {x: int}` does not match type `A & {x: ?a, y: ?b} | B & {x: ?a, y: ?b} | C & {x: ?a, y: ?b}`
-//│ ║  l.159: 	test (error: A & { x: int })
+//│ ╟── type `A & {x: int}` is not a 1-element tuple
+//│ ║  l.171: 	test (error: A & { x: int })
 //│ ║         	             ^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from union type:
-//│ ║  l.148: 	def test: (A & { x: 'a; y: 'b } | B & { x: 'a; y: 'b } | C & { x: 'a; y: 'b }) -> { l: 'a; r: 'b }
+//│ ╟── but it flows into argument with expected type `(A & {x: ?a, y: ?b} | B & {x: ?a, y: ?b} | C & {x: ?a, y: ?b},)`
+//│ ║  l.171: 	test (error: A & { x: int })
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from tuple type:
+//│ ║  l.160: 	def test: (A & { x: 'a; y: 'b } | B & { x: 'a; y: 'b } | C & { x: 'a; y: 'b }) -> { l: 'a; r: 'b }
 //│ ╙──       	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ res: error | {l: int, r: nothing}
 
@@ -198,16 +213,16 @@ v.x
 :e
 negInt: A | { x: 'a }
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.199: 	negInt: A | { x: 'a }
+//│ ║  l.214: 	negInt: A | { x: 'a }
 //│ ║         	^^^^^^
 //│ ╟── type `~int` does not match type `A | {x: ?a}`
-//│ ║  l.186: 	def negInt: ~int
+//│ ║  l.201: 	def negInt: ~int
 //│ ║         	            ^^^^
 //│ ╟── but it flows into reference with expected type `A | {x: ?a}`
-//│ ║  l.199: 	negInt: A | { x: 'a }
+//│ ║  l.214: 	negInt: A | { x: 'a }
 //│ ║         	^^^^^^
 //│ ╟── Note: constraint arises from union type:
-//│ ║  l.199: 	negInt: A | { x: 'a }
+//│ ║  l.214: 	negInt: A | { x: 'a }
 //│ ╙──       	        ^^^^^^^^^^^^^
 //│ res: A | {x: nothing}
 
@@ -266,13 +281,13 @@ funny.x
 :e
 (error: { x: int }): int | string
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.267: 	(error: { x: int }): int | string
+//│ ║  l.282: 	(error: { x: int }): int | string
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `{x: int}` does not match type `int | string`
-//│ ║  l.267: 	(error: { x: int }): int | string
+//│ ║  l.282: 	(error: { x: int }): int | string
 //│ ║         	        ^^^^^^^^^^
 //│ ╟── Note: constraint arises from union type:
-//│ ║  l.267: 	(error: { x: int }): int | string
+//│ ║  l.282: 	(error: { x: int }): int | string
 //│ ╙──       	                     ^^^^^^^^^^^^
 //│ res: int | string
 
@@ -313,6 +328,8 @@ def takeFunOrRecord: (int -> int | { x: int }) -> int
 
 :pe
 takeFunOrRecord x = case x of { { x = v } -> 0 | _ -> 1 }
+//│ /!\ Parse error: Expected "}":1:33, found "{ x = v } " at l.330:33: takeFunOrRecord x = case x of { { x = v } -> 0 | _ -> 1 }
+<<<<<<<
 //│ /!\ Parse error: Expected "}":1:33, found "{ x = v } " at l.315:33: takeFunOrRecord x = case x of { { x = v } -> 0 | _ -> 1 }
 
 :pe
@@ -326,6 +343,21 @@ takeFunOrRecord x = case x of { (int -> int) -> 0 | _ -> 1 }
 :pe
 takeFunOrRecord x = case x of { (->) -> 0 | _ -> 1 }
 //│ /!\ Parse error: Expected "}":1:33, found "(->) -> 0 " at l.327:33: takeFunOrRecord x = case x of { (->) -> 0 | _ -> 1 }
+=======
+//│ /!\ Parse error: Expected "}":1:33, found "{ x = v } " at l.305:33: takeFunOrRecord x = case x of { { x = v } -> 0 | _ -> 1 }
+
+:pe
+takeFunOrRecord x = case x of { { x } -> 0 | _ -> 1 }
+//│ /!\ Parse error: Expected "}":1:33, found "{ x } -> 0" at l.309:33: takeFunOrRecord x = case x of { { x } -> 0 | _ -> 1 }
+
+:pe
+takeFunOrRecord x = case x of { (int -> int) -> 0 | _ -> 1 }
+//│ /!\ Parse error: Expected "}":1:33, found "(int -> in" at l.313:33: takeFunOrRecord x = case x of { (int -> int) -> 0 | _ -> 1 }
+
+:pe
+takeFunOrRecord x = case x of { (->) -> 0 | _ -> 1 }
+//│ /!\ Parse error: Expected "}":1:33, found "(->) -> 0 " at l.317:33: takeFunOrRecord x = case x of { (->) -> 0 | _ -> 1 }
+>>>>>>>
 
 
 class AA
@@ -341,16 +373,16 @@ def ty2: TT & { x: int }
 :e
 ty = ty2
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.342: 	ty = ty2
+//│ ║  l.374: 	ty = ty2
 //│ ║         	^^^^^^^^
 //│ ╟── type `TT & {x: int}` does not match type `'a\x | AA`
-//│ ║  l.334: 	def ty2: TT & { x: int }
+//│ ║  l.366: 	def ty2: TT & { x: int }
 //│ ║         	         ^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `'a\x | AA`
-//│ ║  l.342: 	ty = ty2
+//│ ║  l.374: 	ty = ty2
 //│ ║         	     ^^^
 //│ ╟── Note: constraint arises from union type:
-//│ ║  l.333: 	def ty: AA | ('a \ x)
+//│ ║  l.365: 	def ty: AA | ('a \ x)
 //│ ╙──       	        ^^^^^^^^^^^^^
 //│ TT & {x: int}
 //│   <:  ty:

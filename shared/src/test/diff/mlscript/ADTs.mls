@@ -102,10 +102,10 @@ eval exp
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+2: 	eval exp
 //│ ║        	^^^^^^^^
-//│ ╟── type `Array[Automata] -> Array[Binding]` does not match type `Add[?] & ?a | Lit & ?b | Nega[?] & ?c`
+//│ ╟── type `Array[Automata] -> Array[Binding]` is not a 1-element tuple
 //│ ║  l.+1: 	def exp: Array[Automata] -> Array[Binding]
 //│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `Add[?] & ?d | Lit & ?e | Nega[?] & ?f`
+//│ ╟── but it flows into reference with expected type `(?a,)`
 //│ ║  l.+2: 	eval exp
 //│ ║        	     ^^^
 //│ ╟── Note: constraint arises from reference:
@@ -122,24 +122,30 @@ eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ╔══[ERROR] Type mismatch in type ascription:
 //│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ║        	      ^
-//│ ╟── type `Lit` is not an instance of type `int`
+//│ ╟── type `Lit` does not match type `?e`
 //│ ║  l.62: 	def e: Lit | Add['e] | Nega['e] as 'e
 //│ ║        	       ^^^
-//│ ╟── Note: constraint arises from type reference:
+//│ ╟── but it flows into reference with expected type `?e0`
+//│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
+//│ ║        	      ^
+//│ ╟── Note: constraint arises from local type binding:
+//│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
+//│ ║        	          ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from type reference:
 //│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ╙──      	                               ^^^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int` does not match type `Add[?] & ?a | Lit & ?b | Nega[?] & ?c`
+//│ ╟── type `int` is not a 1-element tuple
 //│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ║        	                               ^^^
+//│ ╟── but it flows into applied type reference with expected type `(?a,)`
+//│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
+//│ ║        	                          ^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.32: 	rec def eval e = case e of {
-//│ ║        	                      ^
-//│ ╟── from field selection:
-//│ ║  l.35: 	  | Nega -> 0 - (eval e.arg)
-//│ ╙──      	                      ^^^^^
+//│ ╙──      	                      ^
 //│ res: error | int
 
 

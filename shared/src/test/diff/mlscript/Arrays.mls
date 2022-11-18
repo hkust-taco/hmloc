@@ -58,7 +58,7 @@ ty3A = ty3A
 //│ 'a
 //│   where
 //│     'a := MyArray['a]
-//│ constrain calls  : 50
+//│ constrain calls  : 51
 //│ annoying  calls  : 44
 //│ subtyping calls  : 88
 
@@ -76,9 +76,9 @@ ty3B = ty3A
 //│ 'a
 //│   where
 //│     'a := MyArray[MyArray['a]]
-//│ constrain calls  : 116
+//│ constrain calls  : 123
 //│ annoying  calls  : 86
-//│ subtyping calls  : 165
+//│ subtyping calls  : 166
 
 :stats
 ty3A = ty3B
@@ -89,9 +89,9 @@ ty3A = ty3B
 //│ 'a
 //│   where
 //│     'a := MyArray['a]
-//│ constrain calls  : 116
+//│ constrain calls  : 118
 //│ annoying  calls  : 86
-//│ subtyping calls  : 153
+//│ subtyping calls  : 154
 
 def ty4B: MyArray[MyArray[MyArray['a]]] as 'a
 //│ ty4B: 'a
@@ -107,7 +107,7 @@ ty4B = ty4B
 //│ 'a
 //│   where
 //│     'a := MyArray[MyArray[MyArray['a]]]
-//│ constrain calls  : 60
+//│ constrain calls  : 61
 //│ annoying  calls  : 48
 //│ subtyping calls  : 85
 
@@ -119,21 +119,17 @@ ty4B = ty4B
 :e
 :stats
 ty1A = ty1B
-//│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.+1: 	ty1A = ty1B
-//│ ║        	^^^^^^^^^^^
-//│ ╟── type `int` does not match type `0 | 1`
-//│ ║  l.17: 	def ty1A: MyArray[int]
-//│ ║        	                  ^^^
-//│ ╟── Note: constraint arises from union type:
-//│ ║  l.18: 	def ty1B: MyArray[0 | 1]
-//│ ╙──      	                  ^^^^^
-//│ MyArray[0 | 1]
-//│   <:  ty1A:
-//│ MyArray[int]
-//│ constrain calls  : 9
-//│ annoying  calls  : 5
-//│ subtyping calls  : 25
+//│ /!!!\ Uncaught error: java.lang.Exception: Cannot update counter for uninitialized location
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateCounter$1(ConstraintSolver.scala:864)
+//│ 	at: scala.collection.mutable.HashMap.updateWith(HashMap.scala:154)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateCounter(ConstraintSolver.scala:857)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3(ConstraintSolver.scala:914)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3$adapted(ConstraintSolver.scala:914)
+//│ 	at: scala.Option.foreach(Option.scala:437)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2(ConstraintSolver.scala:914)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2$adapted(ConstraintSolver.scala:914)
+//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateChainCount(ConstraintSolver.scala:914)
 
 
 
@@ -176,7 +172,7 @@ ty2A = ty2B
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.+1: 	ty2A = ty2B
 //│ ║        	^^^^^^^^^^^
-//│ ╟── type `'a` is not an instance of type `MyArray`
+//│ ╟── type `'a` is not an instance of `MyArray[?a]`
 //│ ║  l.23: 	def ty2A: MyArray['a]
 //│ ║        	                  ^^
 //│ ╟── Note: constraint arises from applied type reference:
@@ -185,19 +181,19 @@ ty2A = ty2B
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.+1: 	ty2A = ty2B
 //│ ║        	^^^^^^^^^^^
-//│ ╟── type `'a` is not a record (expected a record with fields: size, set, get)
+//│ ╟── type `'a` is not an instance of `MyArray[?a]`
 //│ ║  l.23: 	def ty2A: MyArray['a]
 //│ ║        	                  ^^
-//│ ╟── Note: constraint arises from record type:
-//│ ║  l.4: 	class MyArray[A]: { size: int; set: (int, A) -> (); get: int -> A }
-//│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── from applied type reference:
+//│ ╟── Note: constraint arises from applied type reference:
 //│ ║  l.35: 	def ty2B: MyArray[MyArray['a]]
-//│ ╙──      	                  ^^^^^^^^^^^
+//│ ║        	                  ^^^^^^^^^^^
+//│ ╟── from record type:
+//│ ║  l.4: 	class MyArray[A]: { size: int; set: (int, A) -> (); get: int -> A }
+//│ ╙──     	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.+1: 	ty2A = ty2B
 //│ ║        	^^^^^^^^^^^
-//│ ╟── type `'a` does not have field 'MyArray#A'
+//│ ╟── type `'a` is not an instance of `MyArray[?a]`
 //│ ║  l.23: 	def ty2A: MyArray['a]
 //│ ║        	                  ^^
 //│ ╟── Note: constraint arises from applied type reference:

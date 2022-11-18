@@ -28,16 +28,13 @@ foo / foo / x => succ / succ / x
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.27: 	foo / foo / x => succ / succ / x
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `int` is not a function
+//│ ╟── application of type `int` does not match type `?a`
 //│ ║  l.27: 	foo / foo / x => succ / succ / x
 //│ ║        	                 ^^^^^^^^^^^^^^^
-//│ ╟── but it flows into application with expected type `1 -> ?a`
+//│ ╟── but it flows into application with expected type `?b`
 //│ ║  l.27: 	foo / foo / x => succ / succ / x
 //│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.7: 	let foo = f => f 1
-//│ ║       	               ^^^
-//│ ╟── from reference:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.7: 	let foo = f => f 1
 //│ ╙──     	               ^
 //│ res: error
@@ -50,15 +47,12 @@ foo / foo / x => succ / succ / x
 :e
 foo / foo
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.51: 	foo / foo
+//│ ║  l.48: 	foo / foo
 //│ ║        	^^^^^^^^^
-//│ ╟── integer literal of type `1` is not a function
+//│ ╟── integer literal of type `1` does not match type `?a`
 //│ ║  l.7: 	let foo = f => f 1
 //│ ║       	                 ^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.7: 	let foo = f => f 1
-//│ ║       	               ^^^
-//│ ╟── from reference:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.7: 	let foo = f => f 1
 //│ ╙──     	               ^
 //│ res: error

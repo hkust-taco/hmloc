@@ -189,12 +189,17 @@ ft = fun x -> fun y -> if (y) then gt x 0 else y
 p.Map fx fy
 p.Test ft
 (p.Map fx fy).Test ft
-//│ res: AbstractPair[int, bool]
-//│    = Pair { x: 84, y: false }
-//│ res: bool
-//│    = true
-//│ res: bool
-//│    = false
+//│ /!!!\ Uncaught error: java.lang.Exception: Cannot update counter for uninitialized location
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateCounter$1(ConstraintSolver.scala:864)
+//│ 	at: scala.collection.mutable.HashMap.updateWith(HashMap.scala:154)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateCounter(ConstraintSolver.scala:857)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3(ConstraintSolver.scala:914)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3$adapted(ConstraintSolver.scala:914)
+//│ 	at: scala.Option.foreach(Option.scala:437)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2(ConstraintSolver.scala:914)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2$adapted(ConstraintSolver.scala:914)
+//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateChainCount(ConstraintSolver.scala:914)
 
 t = Tru { x = "foo"; y = false }
 t.(Tru.True)
@@ -248,20 +253,20 @@ class Class3C: Class2C
     method MtdA = 42
     method MtdB = 42
 //│ ╔══[ERROR] Type mismatch in method definition:
-//│ ║  l.249: 	    method MtdB = 42
+//│ ║  l.254: 	    method MtdB = 42
 //│ ║         	           ^^^^^^^^^
-//│ ╟── integer literal of type `42` is not an instance of type `bool`
-//│ ║  l.249: 	    method MtdB = 42
+//│ ╟── integer literal of type `42` is not an instance of `bool`
+//│ ║  l.254: 	    method MtdB = 42
 //│ ║         	                  ^^
 //│ ╟── but it flows into method definition with expected type `bool`
-//│ ║  l.249: 	    method MtdB = 42
+//│ ║  l.254: 	    method MtdB = 42
 //│ ║         	           ^^^^^^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.233: 	class Class2C: Class2B[int, bool]
-//│ ║         	                            ^^^^
-//│ ╟── from inherited method declaration:
-//│ ║  l.232: 	    method MtdB: B
-//│ ╙──       	           ^^^^^^^
+//│ ╟── Note: constraint arises from inherited method declaration:
+//│ ║  l.237: 	    method MtdB: B
+//│ ║         	           ^^^^^^^
+//│ ╟── from type reference:
+//│ ║  l.238: 	class Class2C: Class2B[int, bool]
+//│ ╙──       	                            ^^^^
 //│ Defined class Class3C
 //│ Defined Class3C.MtdA: Class3C -> 42
 //│ Defined Class3C.MtdB: Class3C -> 42
@@ -301,10 +306,10 @@ Test3B.F
 class Test4A[A]: { x: A }
     method Mth4A[A]: A
 //│ ╔══[WARNING] Method type parameter A
-//│ ║  l.301: 	class Test4A[A]: { x: A }
+//│ ║  l.306: 	class Test4A[A]: { x: A }
 //│ ║         	             ^
 //│ ╟── shadows class type parameter A
-//│ ║  l.302: 	    method Mth4A[A]: A
+//│ ║  l.307: 	    method Mth4A[A]: A
 //│ ╙──       	                 ^
 //│ Defined class Test4A[+A]
 //│ Declared Test4A.Mth4A: Test4A[?] -> nothing
@@ -358,13 +363,13 @@ Ber.F
 :e
 Ber
 //│ ╔══[ERROR] Instantiation of an abstract type is forbidden
-//│ ║  l.359: 	Ber
+//│ ║  l.364: 	Ber
 //│ ║         	^^^
 //│ ╟── Note that class Ber is abstract:
-//│ ║  l.351: 	class Ber: Fee & Fee2
+//│ ║  l.356: 	class Ber: Fee & Fee2
 //│ ║         	      ^^^^^^^^^^^^^^^
 //│ ╟── Hint: method F is abstract
-//│ ║  l.351: 	class Ber: Fee & Fee2
+//│ ║  l.356: 	class Ber: Fee & Fee2
 //│ ╙──       	      ^^^^^^^^^^^^^^^
 //│ res: error
 //│    = [Function: res]

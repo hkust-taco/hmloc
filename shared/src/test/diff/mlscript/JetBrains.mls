@@ -76,15 +76,18 @@ evalN2 evalN2 e
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	evalN2 evalN2 e
 //│ ║        	^^^^^^^^^^^^^^^
-//│ ╟── application of type `Neg & {underlying: ?underlying}` does not match type `Add & ?a | Lit & ?b`
+//│ ╟── application of type `Neg & {underlying: ?underlying}` is not a 1-element tuple
 //│ ║  l.47: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
 //│ ║        	                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.+1: 	evalN2 evalN2 e
+//│ ║        	              ^
 //│ ╟── Note: constraint arises from reference:
+//│ ║  l.67: 	def evalN2 evalN2 x = case x of {
+//│ ║        	                           ^
+//│ ╟── from reference:
 //│ ║  l.18: 	def eval eval x = case x of {
-//│ ║        	                       ^
-//│ ╟── from field selection:
-//│ ║  l.20: 	  | Add -> eval eval x.lhs + eval eval x.rhs
-//│ ╙──      	                                       ^^^^^
+//│ ╙──      	                       ^
 //│ res: error | int
 
 
@@ -99,7 +102,7 @@ def evalN3 evalN3 x = case x of {
 //│ ╔══[ERROR] Type mismatch in operator application:
 //│ ║  l.+2: 	  Neg -> 0 - (evalN2 x.underlying)
 //│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> (?b | ?c)` is not an instance of type `int`
+//│ ╟── function of type `?a -> (?b | ?c)` is not a 1-element tuple
 //│ ║  l.67: 	def evalN2 evalN2 x = case x of {
 //│ ║        	                  ^^^^^^^^^^^^^^^
 //│ ║  l.68: 	  Neg -> 0 - (evalN2 evalN2 x.underlying)
@@ -108,7 +111,7 @@ def evalN3 evalN3 x = case x of {
 //│ ║        	^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.70: 	  }
 //│ ║        	^^^
-//│ ╟── but it flows into application with expected type `int`
+//│ ╟── but it flows into application with expected type `(int,)`
 //│ ║  l.+2: 	  Neg -> 0 - (evalN2 x.underlying)
 //│ ╙──      	              ^^^^^^^^^^^^^^^^^^^
 //│ evalN3: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'val}) | (Neg with {underlying: 'b -> nothing -> int & 'b})) -> (error | int | 'val)
@@ -129,30 +132,36 @@ evalN3 evalN3 e
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	evalN3 evalN3 e
 //│ ║        	^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> ?b` is not an instance of type `int`
-//│ ║  l.122: 	def evalN3 evalN3 x = case x of {
+//│ ╟── function of type `?a -> ?b` does not match type `?c`
+//│ ║  l.125: 	def evalN3 evalN3 x = case x of {
 //│ ║         	                  ^^^^^^^^^^^^^^^
-//│ ║  l.123: 	  Neg -> 0 - (evalN3 x.underlying)
+//│ ║  l.126: 	  Neg -> 0 - (evalN3 x.underlying)
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.124: 	  | _ -> eval evalN3 x
+//│ ║  l.127: 	  | _ -> eval evalN3 x
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.125: 	  }
+//│ ║  l.128: 	  }
 //│ ║         	^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.123: 	  Neg -> 0 - (evalN3 x.underlying)
-//│ ╙──       	              ^^^^^^^^^^^^^^^^^^^
+//│ ║  l.126: 	  Neg -> 0 - (evalN3 x.underlying)
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^
+//│ ╟── from argument:
+//│ ║  l.126: 	  Neg -> 0 - (evalN3 x.underlying)
+//│ ╙──       	             ^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	evalN3 evalN3 e
 //│ ║        	^^^^^^^^^^^^^^^
-//│ ╟── application of type `Lit & {val: ?val}` is not a function
+//│ ╟── application of type `Lit & {val: ?val}` is not a 1-element tuple
 //│ ║  l.47: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
 //│ ║        	                                                   ^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.+1: 	evalN3 evalN3 e
+//│ ║        	              ^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.125: 	def evalN3 evalN3 x = case x of {
+//│ ║         	                           ^
+//│ ╟── from reference:
 //│ ║  l.20: 	  | Add -> eval eval x.lhs + eval eval x.rhs
-//│ ║        	                             ^^^^^^^^^
-//│ ╟── from field selection:
-//│ ║  l.123: 	  Neg -> 0 - (evalN3 x.underlying)
-//│ ╙──       	                     ^^^^^^^^^^^^
+//│ ╙──      	                             ^^^^
 //│ res: error | int
 
 

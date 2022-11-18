@@ -7,19 +7,37 @@ import scala.util.chaining._
 import scala.annotation.tailrec
 import mlscript.utils._, shorthands._
 import mlscript.Message._
+import sourcecode._
 
 abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   
   type TN = TypeName
   
-  
   // The data types used for type inference:
-  
-  case class TypeProvenance(loco: Opt[Loc], desc: Str, originName: Opt[Str] = N, isType: Bool = false) {
+  case class TypeProvenance(loco: Opt[Loc], desc: Str, originName: Opt[Str] = N, isType: Bool = false)(implicit val file: FileName, val line: Line) {
     val isOrigin: Bool = originName.isDefined
     def & (that: TypeProvenance): TypeProvenance = this // arbitrary; maybe should do better
-    override def toString: Str = (if (isOrigin) "o: " else "") + "‹"+loco.fold(desc)(desc+":"+_)+"›"
+    override def toString: Str = (if (isOrigin) "o: " else "") + "‹"+loco.fold(desc)(desc+":"+_)+s"›[${file.value}:${line.value}]"
   }
+
+  case class NestingInfo(info: Str = "<nesting info here>", reversed: Bool = false) {
+    override def toString: Str = info
+  }
+  class NestedTypeProvenance(var chain: Ls[SimpleType], var nestingInfo: NestingInfo = NestingInfo()) extends TypeProvenance(N, "<nested>") {
+    override def toString: Str = "<nested> " + chain.mkString(" -> ") + " <nested>"
+    
+    def updateInfo(newInfo: Str): NestedTypeProvenance = {
+      nestingInfo = nestingInfo.copy(info = newInfo)
+      this
+    }
+  }
+
+  object NestedTypeProvenance {
+    def apply(chain: Ls[SimpleType], nestingInfo: NestingInfo = NestingInfo()): NestedTypeProvenance = {
+      new NestedTypeProvenance(chain, nestingInfo)
+    }
+  }
+
   type TP = TypeProvenance
   
   sealed abstract class TypeInfo
@@ -141,6 +159,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     lazy val inner: FieldType = fields.map(_._2).reduceLeftOption(_ || _).getOrElse(BotType.toUpper(noProv))
     lazy val level: Int = fields.iterator.map(_._2.level).maxOption.getOrElse(0)
     lazy val toArray: ArrayType = ArrayType(inner)(prov)  // upcast to array
+    var implicitTuple: Bool = false
     override lazy val toRecord: RecordType =
       RecordType(
         fields.zipWithIndex.map { case ((_, t), i) => (Var("_"+(i+1)), t) }
@@ -201,7 +220,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   
   /** The sole purpose of ProvType is to store additional type provenance info. */
   case class ProvType(underlying: SimpleType)(val prov: TypeProvenance) extends ProxyType {
-    override def toString = s"[$underlying]"
+    override def toString = if (prov is NestedTypeProvenance) s"[$underlying] prov: $prov" else s"[$underlying]"
     // override def toString = s"$underlying[${prov.desc.take(5)}]"
     // override def toString = s"$underlying[${prov.toString.take(5)}]"
     // override def toString = s"$underlying@${prov}"
@@ -223,6 +242,13 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   case class TypeRef(defn: TypeName, targs: Ls[SimpleType])(val prov: TypeProvenance) extends SimpleType {
     def level: Int = targs.iterator.map(_.level).maxOption.getOrElse(0)
     def expand(implicit ctx: Ctx): SimpleType = expandWith(paramTags = true)
+    /**
+      * Expands a type reference to actual typedef kind it refers to
+      *
+      * @param paramTags
+      * @param ctx
+      * @return
+      */
     def expandWith(paramTags: Bool)(implicit ctx: Ctx): SimpleType = {
       val td = ctx.tyDefs(defn.name)
       require(targs.size === td.tparamsargs.size)
@@ -234,6 +260,8 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
               if (tvv(tv).isContravariant) TopType else tv)(prov)
           })(noProv)
         else TopType
+      // substitute the arguments of type def
+      // with the arguments given to the type ref
       subst(td.kind match {
         case Als => td.bodyTy
         case Nms => throw new NotImplementedError("Namespaces are not supported yet.")

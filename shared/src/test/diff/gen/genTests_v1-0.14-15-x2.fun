@@ -1190,13 +1190,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x.u) 0)
 //│ ║        	 ^^^^^^^^^^^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `0` does not match type `?a`
 //│ ║  l.+1: 	((x => x.u) 0)
 //│ ║        	            ^
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.+1: 	((x => x.u) 0)
-//│ ║        	        ^^
-//│ ╟── from reference:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	((x => x.u) 0)
 //│ ╙──      	       ^
 //│ res: error
@@ -1209,13 +1206,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x.u) add)
 //│ ║        	 ^^^^^^^^^^^^^^
-//│ ╟── reference of type `int -> int -> int` does not have field 'u'
+//│ ╟── reference of type `int -> int -> int` does not match type `?a`
 //│ ║  l.+1: 	((x => x.u) add)
 //│ ║        	            ^^^
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.+1: 	((x => x.u) add)
-//│ ║        	        ^^
-//│ ╟── from reference:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	((x => x.u) add)
 //│ ╙──      	       ^
 //│ res: error
@@ -1250,16 +1244,13 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x.u) {u: 0}.u)
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `0` does not match type `?a`
 //│ ║  l.+1: 	((x => x.u) {u: 0}.u)
 //│ ║        	                ^
-//│ ╟── but it flows into field selection with expected type `{u: ?u}`
+//│ ╟── but it flows into field selection with expected type `?b`
 //│ ║  l.+1: 	((x => x.u) {u: 0}.u)
 //│ ║        	                  ^^
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.+1: 	((x => x.u) {u: 0}.u)
-//│ ║        	        ^^
-//│ ╟── from reference:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	((x => x.u) {u: 0}.u)
 //│ ╙──      	       ^
 //│ res: error
@@ -1273,16 +1264,13 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x.u) {u: add}.u)
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── reference of type `int -> int -> int` does not have field 'u'
+//│ ╟── reference of type `int -> int -> int` does not match type `?a`
 //│ ║  l.+1: 	((x => x.u) {u: add}.u)
 //│ ║        	                ^^^
-//│ ╟── but it flows into field selection with expected type `{u: ?u}`
+//│ ╟── but it flows into field selection with expected type `?b`
 //│ ║  l.+1: 	((x => x.u) {u: add}.u)
 //│ ║        	                    ^^
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.+1: 	((x => x.u) {u: add}.u)
-//│ ║        	        ^^
-//│ ╟── from reference:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	((x => x.u) {u: add}.u)
 //│ ╙──      	       ^
 //│ res: error
@@ -2153,10 +2141,10 @@ add
 //│ ╔══[ERROR] Type mismatch in binding of application:
 //│ ║  l.+1: 	(let rec x = (add x); (0 x))
 //│ ║        	             ^^^^^^^
-//│ ╟── application of type `int -> int` is not an instance of type `int`
+//│ ╟── application of type `int -> int` does not match type `?x`
 //│ ║  l.+1: 	(let rec x = (add x); (0 x))
 //│ ║        	              ^^^^^
-//│ ╟── Note: constraint arises from argument:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	(let rec x = (add x); (0 x))
 //│ ╙──      	                  ^
 //│ ╔══[ERROR] Type mismatch in application:
@@ -2599,10 +2587,10 @@ add
 //│ ╔══[ERROR] Type mismatch in binding of application:
 //│ ║  l.+1: 	(let rec x = (add x); {u: 0, v: 0})
 //│ ║        	             ^^^^^^^
-//│ ╟── application of type `int -> int` is not an instance of type `int`
+//│ ╟── application of type `int -> int` does not match type `?x`
 //│ ║  l.+1: 	(let rec x = (add x); {u: 0, v: 0})
 //│ ║        	              ^^^^^
-//│ ╟── Note: constraint arises from argument:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	(let rec x = (add x); {u: 0, v: 0})
 //│ ╙──      	                  ^
 //│ res: {u: 0, v: 0}

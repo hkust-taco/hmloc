@@ -7,6 +7,7 @@ import scala.util.chaining._
 import scala.annotation.tailrec
 import mlscript.utils._, shorthands._
 import mlscript.Message._
+import scala.collection.immutable
 
 /** A class encapsulating type inference state.
  *  It uses its own internal representation of types and type variables, using mutable data structures.
@@ -18,7 +19,18 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   
   def funkyTuples: Bool = false
   def doFactorize: Bool = false
+  def setErrorSimplification(simplifyError: Bool): Unit =
+    errorSimplifer.simplifyError = simplifyError
+    
+  def showSuspiciousLocations()(implicit raise: Raise): Unit =
+    errorSimplifer.reportInfo(N, 8)
   
+  /** If flag is set proxy types are created during constraint resolution. This
+    * is needed for debugging, showing verbose error messages traces and
+    * creating simplified error messages.
+    * 
+    * It should be set wherever such features are needed
+    */
   var recordProvenances: Boolean = true
   
   type Raise = Diagnostic => Unit
@@ -77,7 +89,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   implicit def lvl(implicit ctx: Ctx): Int = ctx.lvl
   
   import TypeProvenance.{apply => tp}
-  def ttp(trm: Term, desc: Str = ""): TypeProvenance =
+  import sourcecode._
+  def ttp(trm: Term, desc: Str = "")(implicit file: FileName, line: Line): TypeProvenance =
     TypeProvenance(trm.toLoc, if (desc === "") trm.describe else desc)
   def originProv(loco: Opt[Loc], desc: Str, name: Str): TypeProvenance = {
     tp(loco, desc, S(name), isType = true)
@@ -464,11 +477,29 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       } else N
   }
   
+  /**
+    * Pass no prov in the case of application expression. This is to ensure
+    * those locations don't get double counted when simplifying error
+    * messages.
+    *
+    * @param p
+    * @return
+    */
+  def hintProv(p: TP): TP = noProv
+  
   /** Infer the type of a term. */
   def typeTerm(term: Term)(implicit ctx: Ctx, raise: Raise, vars: Map[Str, SimpleType] = Map.empty): SimpleType
         = trace(s"$lvl. Typing ${if (ctx.inPattern) "pattern" else "term"} $term") {
-    implicit val prov: TypeProvenance = ttp(term)
+    // implicit val prov: TypeProvenance = ttp(term)
+    implicit def prov(implicit file: FileName, line: Line): TypeProvenance = ttp(term)
     
+    /** Constrain lhs and rhs type and handle errors if any
+      *
+      * @param lhs
+      * @param rhs
+      * @param res
+      * @return
+      */
     def con(lhs: SimpleType, rhs: SimpleType, res: SimpleType): SimpleType = {
       var errorsCount = 0
       constrain(lhs, rhs)({
@@ -561,6 +592,20 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         })(prov)
       case tup: Tup if funkyTuples =>
         typeTerms(tup :: Nil, false, Nil)
+      case tup: Tup if (tup.isInstanceOf[ImplicitTup]) =>
+        tup.fields match {
+          case ((N, Fld(false, false, t)) :: Nil) =>
+            val tym = typeTerm(t)
+            // Note: Do not pass extra prov here
+            // an implicit tuple is a function argument
+            // App(f, a) case already creates a proxy type
+            // to store provance of argument storing prov
+            // again leads to duplication
+            val rettype = TupleType((N, tym.toUpper(noProv)) :: Nil)(noProv)
+            rettype.implicitTuple = true
+            rettype
+          case _ => err(msg"Implicit tuple with no fields is not allowed", N)(raise)
+        }
       case Tup(fs) =>
         TupleType(fs.map { case (n, Fld(mut, _, t)) =>
           val tym = typeTerm(t)
@@ -652,10 +697,11 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val arg_ty = mkProxy(a_ty, tp(a.toCoveringLoc, "argument"))
           // ^ Note: this no longer really makes a difference, due to tupled arguments by default
         val funProv = tp(f.toCoveringLoc, "applied expression")
-        val fun_ty = mkProxy(f_ty, funProv)
+        // val fun_ty = mkProxy(f_ty, funProv)
+        val fun_ty = f_ty
           // ^ This is mostly not useful, except in test Tuples.fun with `(1, true, "hey").2`
         val resTy = con(fun_ty, FunctionType(arg_ty, res)(
-          prov
+          hintProv(prov)
           // funProv // TODO: better?
           ), res)
         resTy
@@ -671,7 +717,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           val res = freshVar(prov, Opt.when(!fieldName.name.startsWith("_"))(fieldName.name))
           val obj_ty = mkProxy(o_ty, tp(obj.toCoveringLoc, "receiver"))
           val rcd_ty = RecordType.mk(
-            fieldName -> res.toUpper(tp(fieldName.toLoc, "field selector")) :: Nil)(prov)
+            fieldName -> res.toUpper(tp(fieldName.toLoc, "field selector")) :: Nil)(hintProv(prov))
           con(obj_ty, rcd_ty, res)
         }
         def mthCallOrSel(obj: Term, fieldName: Var) = 

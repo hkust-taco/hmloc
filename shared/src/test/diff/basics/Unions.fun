@@ -25,15 +25,15 @@ f (0 as Int)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.20: 	f 3
 //│ ║        	^^^
-//│ ╟── integer literal of type `3` does not match type `0 | 1`
+//│ ╟── integer literal of type `3` does not match type `?a`
 //│ ║  l.20: 	f 3
 //│ ║        	  ^
-//│ ╟── Note: constraint arises from type union:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.9: 	let f(x) = x as 0 | 1
-//│ ║       	                ^^^^^
-//│ ╟── from reference:
+//│ ║       	           ^
+//│ ╟── from type union:
 //│ ║  l.9: 	let f(x) = x as 0 | 1
-//│ ╙──     	           ^
+//│ ╙──     	                ^^^^^
 //│ res: 0 | 1 | error
 //│ ╔══[ERROR] Type mismatch in 'as' binding:
 //│ ║  l.21: 	f (0 as 1 | 3)
@@ -47,34 +47,34 @@ f (0 as Int)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.21: 	f (0 as 1 | 3)
 //│ ║        	^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `3` does not match type `0 | 1`
+//│ ╟── integer literal of type `3` does not match type `?a`
 //│ ║  l.21: 	f (0 as 1 | 3)
 //│ ║        	            ^
-//│ ╟── but it flows into type union with expected type `0 | 1`
+//│ ╟── but it flows into type union with expected type `?b`
 //│ ║  l.21: 	f (0 as 1 | 3)
 //│ ║        	        ^^^^^
-//│ ╟── Note: constraint arises from type union:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.9: 	let f(x) = x as 0 | 1
-//│ ║       	                ^^^^^
-//│ ╟── from reference:
+//│ ║       	           ^
+//│ ╟── from type union:
 //│ ║  l.9: 	let f(x) = x as 0 | 1
-//│ ╙──     	           ^
+//│ ╙──     	                ^^^^^
 //│ res: 0 | 1 | error
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.22: 	f (0 as 0 | 3)
 //│ ║        	^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `3` does not match type `0 | 1`
+//│ ╟── integer literal of type `3` does not match type `?a`
 //│ ║  l.22: 	f (0 as 0 | 3)
 //│ ║        	            ^
-//│ ╟── but it flows into type union with expected type `0 | 1`
+//│ ╟── but it flows into type union with expected type `?b`
 //│ ║  l.22: 	f (0 as 0 | 3)
 //│ ║        	        ^^^^^
-//│ ╟── Note: constraint arises from type union:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.9: 	let f(x) = x as 0 | 1
-//│ ║       	                ^^^^^
-//│ ╟── from reference:
+//│ ║       	           ^
+//│ ╟── from type union:
 //│ ║  l.9: 	let f(x) = x as 0 | 1
-//│ ╙──     	           ^
+//│ ╙──     	                ^^^^^
 //│ res: 0 | 1 | error
 //│ ╔══[ERROR] Type mismatch in 'as' binding:
 //│ ║  l.23: 	f (0 as 3 | 4)
@@ -88,34 +88,34 @@ f (0 as Int)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.23: 	f (0 as 3 | 4)
 //│ ║        	^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `3` does not match type `0 | 1`
+//│ ╟── integer literal of type `3` does not match type `?a`
 //│ ║  l.23: 	f (0 as 3 | 4)
 //│ ║        	        ^
-//│ ╟── but it flows into type union with expected type `0 | 1`
+//│ ╟── but it flows into type union with expected type `?b`
 //│ ║  l.23: 	f (0 as 3 | 4)
 //│ ║        	        ^^^^^
-//│ ╟── Note: constraint arises from type union:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.9: 	let f(x) = x as 0 | 1
-//│ ║       	                ^^^^^
-//│ ╟── from reference:
+//│ ║       	           ^
+//│ ╟── from type union:
 //│ ║  l.9: 	let f(x) = x as 0 | 1
-//│ ╙──     	           ^
+//│ ╙──     	                ^^^^^
 //│ res: 0 | 1 | error
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.24: 	f (0 as Int)
 //│ ║        	^^^^^^^^^^^^
-//│ ╟── reference of type `int` does not match type `0 | 1`
+//│ ╟── reference of type `int` does not match type `?a`
 //│ ║  l.24: 	f (0 as Int)
 //│ ║        	        ^^^
-//│ ╟── but it flows into argument with expected type `0 | 1`
+//│ ╟── but it flows into argument with expected type `?b`
 //│ ║  l.24: 	f (0 as Int)
 //│ ║        	  ^^^^^^^^^^
-//│ ╟── Note: constraint arises from type union:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.9: 	let f(x) = x as 0 | 1
-//│ ║       	                ^^^^^
-//│ ╟── from reference:
+//│ ║       	           ^
+//│ ╟── from type union:
 //│ ║  l.9: 	let f(x) = x as 0 | 1
-//│ ╙──     	           ^
+//│ ╙──     	                ^^^^^
 //│ res: 0 | 1 | error
 
 
@@ -215,7 +215,7 @@ f 2
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.214: 	f 2
 //│ ║         	^^^
-//│ ╟── integer literal of type `2` does not match type `0 | 1`
+//│ ╟── integer literal of type `2` does not match type `?a`
 //│ ║  l.214: 	f 2
 //│ ║         	  ^
 //│ ╟── Note: constraint arises from reference:
@@ -264,18 +264,18 @@ baz(0)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.263: 	baz(0)
 //│ ║         	^^^^^^
-//│ ╟── integer literal of type `0` does not have field '_2'
+//│ ╟── integer literal of type `0` is not a 1-element tuple
 //│ ║  l.263: 	baz(0)
 //│ ║         	    ^
-//│ ╟── but it flows into argument with expected type `{_2: ?a}`
+//│ ╟── but it flows into argument with expected type `(r: ?a,)`
 //│ ║  l.263: 	baz(0)
 //│ ║         	   ^^^
-//│ ╟── Note: constraint arises from field selection:
+//│ ╟── Note: constraint arises from binding:
 //│ ║  l.259: 	let baz(r: (0, 0) | _) = if r._1 < 1 then r._1 else r._2
-//│ ║         	                                                     ^^^
-//│ ╟── from binding:
+//│ ║         	        ^^^^^^^^^^^^^
+//│ ╟── from receiver:
 //│ ║  l.259: 	let baz(r: (0, 0) | _) = if r._1 < 1 then r._1 else r._2
-//│ ╙──       	        ^^^^^^^^^^^^^
+//│ ╙──       	                                                    ^
 //│ res: error
 
 
@@ -309,18 +309,18 @@ baz(0, 1)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.307: 	baz(0)
 //│ ║         	^^^^^^
-//│ ╟── integer literal of type `0` does not have field '_2'
+//│ ╟── integer literal of type `0` is not a 1-element tuple
 //│ ║  l.307: 	baz(0)
 //│ ║         	    ^
-//│ ╟── but it flows into argument with expected type `{_2: ?a}`
+//│ ╟── but it flows into argument with expected type `(r: ?a,)`
 //│ ║  l.307: 	baz(0)
 //│ ║         	   ^^^
-//│ ╟── Note: constraint arises from field selection:
+//│ ╟── Note: constraint arises from binding:
 //│ ║  l.303: 	let baz(r: (0, 0) | (1, _)) = if r._1 < 1 then r._1 else r._2
-//│ ║         	                                                          ^^^
-//│ ╟── from binding:
+//│ ║         	        ^^^^^^^^^^^^^^^^^^
+//│ ╟── from receiver:
 //│ ║  l.303: 	let baz(r: (0, 0) | (1, _)) = if r._1 < 1 then r._1 else r._2
-//│ ╙──       	        ^^^^^^^^^^^^^^^^^^
+//│ ╙──       	                                                         ^
 //│ res: error
 //│ res: 0 | 1
 

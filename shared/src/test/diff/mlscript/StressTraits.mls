@@ -41,7 +41,7 @@ def arg: A[int]
 foo arg
 //│ arg: A[int]
 //│ res: int
-//│ constrain calls  : 19
+//│ constrain calls  : 17
 //│ annoying  calls  : 9
 //│ subtyping calls  : 640
 
@@ -53,17 +53,22 @@ foo arg
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.51: 	foo arg
 //│ ║        	^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int} & #A | {fB: int} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.22: 	  | A -> x.fA
-//│ ║        	         ^^^^
-//│ ╟── from refined scrutinee:
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.50: 	def arg: A[int] | B[int]
+//│ ║        	                  ^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.51: 	foo arg
+//│ ║        	    ^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.21: 	def foo x = case x of {
-//│ ╙──      	                 ^
+//│ ║        	                 ^
+//│ ╟── from receiver:
+//│ ║  l.22: 	  | A -> x.fA
+//│ ╙──      	         ^
 //│ res: error | int
-//│ constrain calls  : 42
+//│ constrain calls  : 37
 //│ annoying  calls  : 32
-//│ subtyping calls  : 1414
+//│ subtyping calls  : 1901
 
 
 
@@ -74,19 +79,24 @@ def arg: A[int] | B[int] | C[int]
 foo arg
 //│ arg: A[int] | B[int] | C[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.74: 	foo arg
+//│ ║  l.79: 	foo arg
 //│ ║        	^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int} & #A | {fB: int} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.22: 	  | A -> x.fA
-//│ ║        	         ^^^^
-//│ ╟── from refined scrutinee:
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.78: 	def arg: A[int] | B[int] | C[int]
+//│ ║        	                  ^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.79: 	foo arg
+//│ ║        	    ^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.21: 	def foo x = case x of {
-//│ ╙──      	                 ^
+//│ ║        	                 ^
+//│ ╟── from receiver:
+//│ ║  l.22: 	  | A -> x.fA
+//│ ╙──      	         ^
 //│ res: error | int
-//│ constrain calls  : 94
+//│ constrain calls  : 81
 //│ annoying  calls  : 96
-//│ subtyping calls  : 3830
+//│ subtyping calls  : 5455
 
 
 
@@ -97,19 +107,24 @@ def arg: A[int] | B[int] | D[int]
 foo arg
 //│ arg: A[int] | B[int] | D[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.97: 	foo arg
-//│ ║        	^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int} & #A | {fB: int} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.22: 	  | A -> x.fA
-//│ ║        	         ^^^^
-//│ ╟── from refined scrutinee:
+//│ ║  l.107: 	foo arg
+//│ ║         	^^^^^^^
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.106: 	def arg: A[int] | B[int] | D[int]
+//│ ║         	                  ^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.107: 	foo arg
+//│ ║         	    ^^^
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.21: 	def foo x = case x of {
-//│ ╙──      	                 ^
+//│ ║        	                 ^
+//│ ╟── from receiver:
+//│ ║  l.22: 	  | A -> x.fA
+//│ ╙──      	         ^
 //│ res: error
-//│ constrain calls  : 141
+//│ constrain calls  : 120
 //│ annoying  calls  : 228
-//│ subtyping calls  : 17136
+//│ subtyping calls  : 19329
 
 
 
@@ -128,19 +143,24 @@ foo arg
 //│ foo: ({fA: 'fA} & #A | {fB: 'fA} & #B & ~#A) -> 'fA
 //│ arg: A[int] | B[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.127: 	foo arg
+//│ ║  l.142: 	foo arg
 //│ ║         	^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int} & #A | {fB: int} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.123: 	  | A -> x.fA
-//│ ║         	         ^^^^
-//│ ╟── from refined scrutinee:
-//│ ║  l.122: 	def foo x = case x of {
-//│ ╙──       	                 ^
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.141: 	def arg: A[int] | B[int]
+//│ ║         	                  ^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.142: 	foo arg
+//│ ║         	    ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.137: 	def foo x = case x of {
+//│ ║         	                 ^
+//│ ╟── from receiver:
+//│ ║  l.138: 	  | A -> x.fA
+//│ ╙──       	         ^
 //│ res: error | int
-//│ constrain calls  : 50
+//│ constrain calls  : 45
 //│ annoying  calls  : 32
-//│ subtyping calls  : 198
+//│ subtyping calls  : 210
 
 
 
@@ -160,19 +180,24 @@ foo arg
 //│ foo: ({fA: 'fA} & #A | ~#A & ({fB: 'fA} & #B | {fC: 'fA} & #C & ~#B)) -> 'fA
 //│ arg: A[int] | B[int] | C[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.159: 	foo arg
+//│ ║  l.179: 	foo arg
 //│ ║         	^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int} & #A | {fB: int} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.154: 	  | A -> x.fA
-//│ ║         	         ^^^^
-//│ ╟── from refined scrutinee:
-//│ ║  l.153: 	def foo x = case x of {
-//│ ╙──       	                 ^
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.178: 	def arg: A[int] | B[int] | C[int]
+//│ ║         	                  ^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.179: 	foo arg
+//│ ║         	    ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.173: 	def foo x = case x of {
+//│ ║         	                 ^
+//│ ╟── from receiver:
+//│ ║  l.174: 	  | A -> x.fA
+//│ ╙──       	         ^
 //│ res: error | int
-//│ constrain calls  : 105
+//│ constrain calls  : 92
 //│ annoying  calls  : 96
-//│ subtyping calls  : 2090
+//│ subtyping calls  : 2350
 
 
 
@@ -193,19 +218,24 @@ foo arg
 //│ foo: ({fA: 'fA} & #A | ~#A & ({fB: 'fA} & #B | ~#B & ({fC: 'fA} & #C | {fD: 'fA} & #D & ~#C))) -> 'fA
 //│ arg: A[int] | B[int] | C[int] | D[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.192: 	foo arg
+//│ ║  l.217: 	foo arg
 //│ ║         	^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int} & #A | {fB: int} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.186: 	  | A -> x.fA
-//│ ║         	         ^^^^
-//│ ╟── from refined scrutinee:
-//│ ║  l.185: 	def foo x = case x of {
-//│ ╙──       	                 ^
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.216: 	def arg: A[int] | B[int] | C[int] | D[int]
+//│ ║         	                  ^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.217: 	foo arg
+//│ ║         	    ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.210: 	def foo x = case x of {
+//│ ║         	                 ^
+//│ ╟── from receiver:
+//│ ║  l.211: 	  | A -> x.fA
+//│ ╙──       	         ^
 //│ res: error
-//│ constrain calls  : 129
+//│ constrain calls  : 113
 //│ annoying  calls  : 138
-//│ subtyping calls  : 2771
+//│ subtyping calls  : 4434
 
 
 
@@ -214,19 +244,24 @@ foo arg
 :e
 foo (arg with { x = 1} with { y = 2 })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.215: 	foo (arg with { x = 1} with { y = 2 })
+//│ ║  l.245: 	foo (arg with { x = 1} with { y = 2 })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int, x: 1, y: 2} & #A | {fB: int, x: 1, y: 2} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.186: 	  | A -> x.fA
-//│ ║         	         ^^^^
-//│ ╟── from refined scrutinee:
-//│ ║  l.185: 	def foo x = case x of {
-//│ ╙──       	                 ^
+//│ ╟── `with` extension of type `#B & ({fB: int, x: 1, y: 2} & #A | {fB: int, x: 1, y: 2} & ~?a)` is not a 1-element tuple
+//│ ║  l.245: 	foo (arg with { x = 1} with { y = 2 })
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into argument with expected type `(?b,)`
+//│ ║  l.245: 	foo (arg with { x = 1} with { y = 2 })
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.210: 	def foo x = case x of {
+//│ ║         	                 ^
+//│ ╟── from receiver:
+//│ ║  l.211: 	  | A -> x.fA
+//│ ╙──       	         ^
 //│ res: error
-//│ constrain calls  : 104
+//│ constrain calls  : 88
 //│ annoying  calls  : 135
-//│ subtyping calls  : 2429
+//│ subtyping calls  : 5671
 
 
 
@@ -235,19 +270,24 @@ foo (arg with { x = 1} with { y = 2 })
 :e
 foo (arg with { x = 1; y = 2; z = 3 })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.236: 	foo (arg with { x = 1; y = 2; z = 3 })
+//│ ║  l.271: 	foo (arg with { x = 1; y = 2; z = 3 })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int, x: 1, y: 2, z: 3} & #A | {fB: int, x: 1, y: 2, z: 3} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.186: 	  | A -> x.fA
-//│ ║         	         ^^^^
-//│ ╟── from refined scrutinee:
-//│ ║  l.185: 	def foo x = case x of {
-//│ ╙──       	                 ^
+//│ ╟── `with` extension of type `#B & ({fB: int, x: 1, y: 2, z: 3} & #A | {fB: int, x: 1, y: 2, z: 3} & ~?a)` is not a 1-element tuple
+//│ ║  l.271: 	foo (arg with { x = 1; y = 2; z = 3 })
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into argument with expected type `(?b,)`
+//│ ║  l.271: 	foo (arg with { x = 1; y = 2; z = 3 })
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.210: 	def foo x = case x of {
+//│ ║         	                 ^
+//│ ╟── from receiver:
+//│ ║  l.211: 	  | A -> x.fA
+//│ ╙──       	         ^
 //│ res: error
-//│ constrain calls  : 104
+//│ constrain calls  : 88
 //│ annoying  calls  : 135
-//│ subtyping calls  : 2417
+//│ subtyping calls  : 5515
 
 
 
@@ -269,19 +309,24 @@ foo arg
 //│ foo: ({fA: 'fA} & #A | ~#A & ({fB: 'fA} & #B | ~#B & ({fC: 'fA} & #C | ~#C & ({fD: 'fA} & #D | {fE: 'fA} & #E & ~#D)))) -> 'fA
 //│ arg: A[int] | B[int] | C[int] | D[int] | E[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.268: 	foo arg
+//│ ║  l.308: 	foo arg
 //│ ║         	^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int} & #A | {fB: int} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.261: 	  | A -> x.fA
-//│ ║         	         ^^^^
-//│ ╟── from refined scrutinee:
-//│ ║  l.260: 	def foo x = case x of {
-//│ ╙──       	                 ^
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.307: 	def arg: A[int] | B[int] | C[int] | D[int] | E[int]
+//│ ║         	                  ^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.308: 	foo arg
+//│ ║         	    ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.300: 	def foo x = case x of {
+//│ ║         	                 ^
+//│ ╟── from receiver:
+//│ ║  l.301: 	  | A -> x.fA
+//│ ╙──       	         ^
 //│ res: error
-//│ constrain calls  : 133
+//│ constrain calls  : 117
 //│ annoying  calls  : 138
-//│ subtyping calls  : 3175
+//│ subtyping calls  : 5218
 
 
 
@@ -304,19 +349,24 @@ foo arg
 //│ foo: ({fA: 'fA} & #A | ~#A & ({fB: 'fA} & #B | ~#B & ({fC: 'fA} & #C | ~#C & ({fD: 'fA} & #D | ~#D & ({fE: 'fA} & #E | {fF: 'fA} & #F & ~#E))))) -> 'fA
 //│ arg: A[int] | B[int] | C[int] | D[int] | E[int] | F[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.303: 	foo arg
+//│ ║  l.348: 	foo arg
 //│ ║         	^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int} & #A | {fB: int} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.295: 	  | A -> x.fA
-//│ ║         	         ^^^^
-//│ ╟── from refined scrutinee:
-//│ ║  l.294: 	def foo x = case x of {
-//│ ╙──       	                 ^
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.347: 	def arg: A[int] | B[int] | C[int] | D[int] | E[int] | F[int]
+//│ ║         	                  ^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.348: 	foo arg
+//│ ║         	    ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.339: 	def foo x = case x of {
+//│ ║         	                 ^
+//│ ╟── from receiver:
+//│ ║  l.340: 	  | A -> x.fA
+//│ ╙──       	         ^
 //│ res: error
-//│ constrain calls  : 137
+//│ constrain calls  : 121
 //│ annoying  calls  : 138
-//│ subtyping calls  : 3764
+//│ subtyping calls  : 6331
 
 
 
@@ -340,19 +390,24 @@ foo arg
 //│ foo: ({fA: 'fA} & #A | ~#A & ({fB: 'fA} & #B | ~#B & ({fC: 'fA} & #C | ~#C & ({fD: 'fA} & #D | ~#D & ({fE: 'fA} & #E | ~#E & ({fF: 'fA} & #F | {fG: 'fA} & #G & ~#F)))))) -> 'fA
 //│ arg: A[int] | B[int] | C[int] | D[int] | E[int] | F[int] | G[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.339: 	foo arg
+//│ ║  l.389: 	foo arg
 //│ ║         	^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int} & #A | {fB: int} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.330: 	  | A -> x.fA
-//│ ║         	         ^^^^
-//│ ╟── from refined scrutinee:
-//│ ║  l.329: 	def foo x = case x of {
-//│ ╙──       	                 ^
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.388: 	def arg: A[int] | B[int] | C[int] | D[int] | E[int] | F[int] | G[int]
+//│ ║         	                  ^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.389: 	foo arg
+//│ ║         	    ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.379: 	def foo x = case x of {
+//│ ║         	                 ^
+//│ ╟── from receiver:
+//│ ║  l.380: 	  | A -> x.fA
+//│ ╙──       	         ^
 //│ res: error
-//│ constrain calls  : 141
+//│ constrain calls  : 125
 //│ annoying  calls  : 138
-//│ subtyping calls  : 4571
+//│ subtyping calls  : 7826
 
 
 
@@ -364,21 +419,21 @@ def foo_manual: ({fA: 'a} & a | {fB: 'a} & b & ~a | {fC: 'a} & c & ~a & ~b | {fD
 :e
 foo_manual arg
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.365: 	foo_manual arg
+//│ ║  l.420: 	foo_manual arg
 //│ ║         	^^^^^^^^^^^^^^
-//│ ╟── type `{fB: int} & #B` does not match type `{fA: ?a} & #A | ~#A & ({fB: ?a} & #B | ~#B & ({fC: ?a} & #C | ~#C & ({fD: ?a} & #D | ~#D & ({fE: ?a} & #E | ~#E & ({fF: ?a} & #F | {fG: ?a} & #G & ~#F)))))`
-//│ ║  l.338: 	def arg: A[int] | B[int] | C[int] | D[int] | E[int] | F[int] | G[int]
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.388: 	def arg: A[int] | B[int] | C[int] | D[int] | E[int] | F[int] | G[int]
 //│ ║         	                  ^^^^^^
-//│ ╟── but it flows into reference with expected type `{fA: ?a0} & #A | ~#A & ({fB: ?a0} & #B | ~#B & ({fC: ?a0} & #C | ~#C & ({fD: ?a0} & #D | ~#D & ({fE: ?a0} & #E | ~#E & ({fF: ?a0} & #F | {fG: ?a0} & #G & ~#F)))))`
-//│ ║  l.365: 	foo_manual arg
+//│ ╟── but it flows into reference with expected type `({fA: ?a} & #A | ~#A & ({fB: ?a} & #B | ~#B & ({fC: ?a} & #C | ~#C & ({fD: ?a} & #D | ~#D & ({fE: ?a} & #E | ~#E & ({fF: ?a} & #F | {fG: ?a} & #G & ~#F))))),)`
+//│ ║  l.420: 	foo_manual arg
 //│ ║         	           ^^^
-//│ ╟── Note: constraint arises from union type:
-//│ ║  l.360: 	def foo_manual: ({fA: 'a} & a | {fB: 'a} & b & ~a | {fC: 'a} & c & ~a & ~b | {fD: 'a} & d & ~a & ~b & ~c | {fE: 'a} & e & ~a & ~b & ~c & ~d | {fF: 'a} & f & ~a & ~b & ~c & ~d & ~e | {fG: 'a} & g & ~a & ~b & ~c & ~d & ~e & ~f) -> 'a
+//│ ╟── Note: constraint arises from tuple type:
+//│ ║  l.415: 	def foo_manual: ({fA: 'a} & a | {fB: 'a} & b & ~a | {fC: 'a} & c & ~a & ~b | {fD: 'a} & d & ~a & ~b & ~c | {fE: 'a} & e & ~a & ~b & ~c & ~d | {fF: 'a} & f & ~a & ~b & ~c & ~d & ~e | {fG: 'a} & g & ~a & ~b & ~c & ~d & ~e & ~f) -> 'a
 //│ ╙──       	                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ res: error
-//│ constrain calls  : 23
+//│ constrain calls  : 22
 //│ annoying  calls  : 67
-//│ subtyping calls  : 4984
+//│ subtyping calls  : 3584
 
 
 
@@ -389,7 +444,7 @@ foo_manual = foo
 //│ ({fA: 'fA} & #A | ~#A & ({fB: 'fA} & #B | ~#B & ({fC: 'fA} & #C | ~#C & ({fD: 'fA} & #D | ~#D & ({fE: 'fA} & #E | ~#E & ({fF: 'fA} & #F | {fG: 'fA} & #G & ~#F)))))) -> 'fA
 //│   <:  foo_manual:
 //│ ({fA: 'a} & #A | ~#A & ({fB: 'a} & #B | ~#B & ({fC: 'a} & #C | ~#C & ({fD: 'a} & #D | ~#D & ({fE: 'a} & #E | ~#E & ({fF: 'a} & #F | {fG: 'a} & #G & ~#F)))))) -> 'a
-//│ constrain calls  : 96
+//│ constrain calls  : 89
 //│ annoying  calls  : 183
 //│ subtyping calls  : 4292
 
@@ -413,19 +468,24 @@ foo arg
 //│ foo: ({fA: 'fA} & #A | ~#A & ({fB: 'fA} & #B | ~#B & ({fC: 'fA} & #C | ~#C & ({fD: 'fA} & #D | ~#D & ({fE: 'fA} & #E | ~#E & ({fF: 'fA} & #F | ~#F & ({fG: 'fA} & #G | {fH: 'fA} & #H & ~#G))))))) -> 'fA
 //│ arg: A[int] | B[int] | C[int] | D[int] | E[int] | F[int] | G[int] | H[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.412: 	foo arg
+//│ ║  l.467: 	foo arg
 //│ ║         	^^^^^^^
-//│ ╟── expression of type `#B & ({fB: int} & #A | {fB: int} & ~?a)` does not have field 'fA'
-//│ ╟── Note: constraint arises from field selection:
-//│ ║  l.402: 	  | A -> x.fA
-//│ ║         	         ^^^^
-//│ ╟── from refined scrutinee:
-//│ ║  l.401: 	def foo x = case x of {
-//│ ╙──       	                 ^
+//│ ╟── type `{fB: int} & #B` is not a 1-element tuple
+//│ ║  l.466: 	def arg: A[int] | B[int] | C[int] | D[int] | E[int] | F[int] | G[int] | H[int]
+//│ ║         	                  ^^^^^^
+//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ║  l.467: 	foo arg
+//│ ║         	    ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.456: 	def foo x = case x of {
+//│ ║         	                 ^
+//│ ╟── from receiver:
+//│ ║  l.457: 	  | A -> x.fA
+//│ ╙──       	         ^
 //│ res: error
-//│ constrain calls  : 145
+//│ constrain calls  : 129
 //│ annoying  calls  : 138
-//│ subtyping calls  : 5629
+//│ subtyping calls  : 9756
 
 
 

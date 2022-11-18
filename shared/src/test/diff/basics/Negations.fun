@@ -23,29 +23,29 @@ jesus(water: w)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.21: 	jesus w
 //│ ║        	^^^^^^^
-//│ ╟── reference of type `Wine` does not match type `~Wine`
+//│ ╟── reference of type `Wine` is not a 1-element tuple
 //│ ║  l.14: 	let jesus = (water: neg Wine) => Wine
 //│ ║        	                                 ^^^^
-//│ ╟── but it flows into reference with expected type `~Wine`
+//│ ╟── but it flows into reference with expected type `(water: ?a,)`
 //│ ║  l.21: 	jesus w
 //│ ║        	      ^
-//│ ╟── Note: constraint arises from application:
+//│ ╟── Note: constraint arises from binding:
 //│ ║  l.14: 	let jesus = (water: neg Wine) => Wine
-//│ ║        	                    ^^^^^^^^
-//│ ╟── from binding:
+//│ ║        	             ^^^^^^^^^^^^^^^
+//│ ╟── from application:
 //│ ║  l.14: 	let jesus = (water: neg Wine) => Wine
-//│ ╙──      	             ^^^^^^^^^^^^^^^
+//│ ╙──      	                    ^^^^^^^^
 //│ res: error | Wine
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.22: 	jesus(water: w)
 //│ ║        	^^^^^^^^^^^^^^^
-//│ ╟── reference of type `Wine` does not match type `~Wine`
+//│ ╟── reference of type `Wine` does not match type `?a`
 //│ ║  l.14: 	let jesus = (water: neg Wine) => Wine
 //│ ║        	                                 ^^^^
-//│ ╟── but it flows into reference with expected type `~Wine`
+//│ ╟── but it flows into reference with expected type `?b`
 //│ ║  l.22: 	jesus(water: w)
 //│ ║        	             ^
-//│ ╟── Note: constraint arises from application:
+//│ ╟── Note: constraint arises from parameter type:
 //│ ║  l.14: 	let jesus = (water: neg Wine) => Wine
 //│ ╙──      	                    ^^^^^^^^
 //│ res: error | Wine

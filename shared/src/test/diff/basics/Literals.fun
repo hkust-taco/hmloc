@@ -116,10 +116,10 @@ f false
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.115: 	f false
 //│ ║         	^^^^^^^
-//│ ╟── reference of type `false` is not an instance of type `int`
+//│ ╟── reference of type `false` does not match type `?a`
 //│ ║  l.115: 	f false
 //│ ║         	  ^^^^^
-//│ ╟── Note: constraint arises from argument:
+//│ ╟── Note: constraint arises from reference:
 //│ ║  l.104: 	  if pred n then n else f (n + 1)
 //│ ╙──       	                           ^
 //│ res: error | false | int

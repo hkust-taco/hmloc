@@ -60,12 +60,17 @@ def r: (1,2,3) \ _12345
 
 def arr: Array[int]
 def arr = (1,2)
-//│ arr: Array[int]
-//│    = <missing implementation>
-//│ (1, 2,)
-//│   <:  arr:
-//│ Array[int]
-//│    = [Function: arr]
+//│ /!!!\ Uncaught error: java.lang.Exception: Cannot update counter for uninitialized location
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateCounter$1(ConstraintSolver.scala:864)
+//│ 	at: scala.collection.mutable.HashMap.updateWith(HashMap.scala:154)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateCounter(ConstraintSolver.scala:857)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3(ConstraintSolver.scala:914)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3$adapted(ConstraintSolver.scala:914)
+//│ 	at: scala.Option.foreach(Option.scala:437)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2(ConstraintSolver.scala:914)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2$adapted(ConstraintSolver.scala:914)
+//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateChainCount(ConstraintSolver.scala:914)
 
 fr = f r
 fr : Array[int] & {b: int}
@@ -79,27 +84,30 @@ fr : Array[int] & {b: int}
 :e
 arr._1
 //│ ╔══[ERROR] Type mismatch in field selection:
-//│ ║  l.80: 	arr._1
+//│ ║  l.85: 	arr._1
 //│ ║        	^^^^^^
 //│ ╟── type `Array[int]` does not have field '_1'
 //│ ║  l.61: 	def arr: Array[int]
 //│ ║        	         ^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `{_1: ?a}`
-//│ ║  l.80: 	arr._1
+//│ ║  l.85: 	arr._1
 //│ ╙──      	^^^
 //│ res: error
-//│    = undefined
+//│ Code generation encountered an error:
+//│   unresolved symbol arr
 
 
 
 
 rr = arr with { x = 1 }
 //│ rr: Array[int] & {x: 1}
-//│   = [ 1, 2, x: 1 ]
+//│ Code generation encountered an error:
+//│   unresolved symbol arr
 
 rr.x
 //│ res: 1
-//│    = 1
+//│ Code generation encountered an error:
+//│   unresolved symbol rr
 
 
 
@@ -143,10 +151,10 @@ def test: {x: 1} & (1, 2, 3)
 :e
 f(1,2,3) : 1 | 2 | 3
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.144: 	f(1,2,3) : 1 | 2 | 3
+//│ ║  l.152: 	f(1,2,3) : 1 | 2 | 3
 //│ ║         	^^^^^^^^
 //│ ╟── tuple literal of type `(1, 2, 3,)` does not match type `(?a,)`
-//│ ║  l.144: 	f(1,2,3) : 1 | 2 | 3
+//│ ║  l.152: 	f(1,2,3) : 1 | 2 | 3
 //│ ╙──       	 ^^^^^^^
 //│ res: 1 | 2 | 3
 //│    = [Number: 1] { b: 2 }
@@ -156,23 +164,23 @@ f(1,2,3) : 1 | 2 | 3
 :e
 (arr[0])[1][2]
 //│ ╔══[ERROR] Type mismatch in array access:
-//│ ║  l.157: 	(arr[0])[1][2]
+//│ ║  l.165: 	(arr[0])[1][2]
 //│ ║         	^^^^^^^^^^^
 //│ ╟── type `int` does not match type `Array[?a]`
 //│ ║  l.61: 	def arr: Array[int]
 //│ ║        	               ^^^
 //│ ╟── but it flows into array access with expected type `Array[?b]`
-//│ ║  l.157: 	(arr[0])[1][2]
+//│ ║  l.165: 	(arr[0])[1][2]
 //│ ╙──       	 ^^^^^^
 //│ ╔══[ERROR] Type mismatch in array access:
-//│ ║  l.157: 	(arr[0])[1][2]
+//│ ║  l.165: 	(arr[0])[1][2]
 //│ ║         	^^^^^^^^^^^^^^
 //│ ╟── possibly-undefined array access of type `undefined` does not match type `Array[?a]`
-//│ ║  l.157: 	(arr[0])[1][2]
+//│ ║  l.165: 	(arr[0])[1][2]
 //│ ╙──       	^^^^^^^^^^^
 //│ res: error | undefined
-//│ Runtime error:
-//│   TypeError: Cannot read properties of undefined (reading '2')
+//│ Code generation encountered an error:
+//│   unresolved symbol arr
 
 
 
@@ -325,13 +333,13 @@ a2.x
 :e
 a2._1
 //│ ╔══[ERROR] Type mismatch in field selection:
-//│ ║  l.326: 	a2._1
+//│ ║  l.334: 	a2._1
 //│ ║         	^^^^^
-//│ ╟── type `Array[?a]` does not match type `{_1: ?b} | ~{_2: true, x: "haha"}`
-//│ ║  l.303: 	def rep5: 'a -> Array['a]
+//│ ╟── type `Array[?a]` does not have field '_1'
+//│ ║  l.311: 	def rep5: 'a -> Array['a]
 //│ ║         	                ^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `{_1: ?b} | ~{_2: true, x: "haha"}`
-//│ ║  l.326: 	a2._1
+//│ ╟── but it flows into reference with expected type `{_1: ?b}`
+//│ ║  l.334: 	a2._1
 //│ ╙──       	^^
 //│ res: error
 //│    = undefined

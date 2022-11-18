@@ -12,15 +12,15 @@ T {}
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.11: 	T {}
 //│ ║        	^^^^
-//│ ╟── record literal of type `anything` is not an instance of type `A`
+//│ ╟── record literal of type `anything` is not a 1-element tuple
 //│ ║  l.11: 	T {}
 //│ ║        	  ^^
-//│ ╟── Note: constraint arises from type reference:
+//│ ╟── Note: constraint arises from intersection type:
 //│ ║  l.7: 	trait T: A & B
-//│ ║       	         ^
-//│ ╟── from intersection type:
+//│ ║       	         ^^^^^
+//│ ╟── from type reference:
 //│ ║  l.7: 	trait T: A & B
-//│ ╙──     	         ^^^^^
+//│ ╙──     	         ^
 //│ res: error | #T
 //│    = {}
 
@@ -37,18 +37,18 @@ T a
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.36: 	T a
 //│ ║        	^^^
-//│ ╟── application of type `A` is not an instance of type `B`
+//│ ╟── application of type `A` is not a 1-element tuple
 //│ ║  l.31: 	def a = A{}
 //│ ║        	        ^^^
-//│ ╟── but it flows into reference with expected type `B`
+//│ ╟── but it flows into reference with expected type `(?a,)`
 //│ ║  l.36: 	T a
 //│ ║        	  ^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.7: 	trait T: A & B
-//│ ║       	             ^
-//│ ╟── from intersection type:
+//│ ╟── Note: constraint arises from intersection type:
 //│ ║  l.7: 	trait T: A & B
 //│ ║       	         ^^^^^
+//│ ╟── from type reference:
+//│ ║  l.7: 	trait T: A & B
+//│ ║       	             ^
 //│ ╟── Note: class A is defined at:
 //│ ║  l.1: 	class A
 //│ ╙──     	      ^
@@ -70,15 +70,15 @@ T A
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.66: 	T A
 //│ ║        	^^^
-//│ ╟── reference of type `anything -> A` is not an instance of type `A`
+//│ ╟── reference of type `anything -> A` is not a 1-element tuple
 //│ ║  l.66: 	T A
 //│ ║        	  ^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.7: 	trait T: A & B
-//│ ║       	         ^
-//│ ╟── from intersection type:
+//│ ╟── Note: constraint arises from intersection type:
 //│ ║  l.7: 	trait T: A & B
 //│ ║       	         ^^^^^
+//│ ╟── from type reference:
+//│ ║  l.7: 	trait T: A & B
+//│ ║       	         ^
 //│ ╟── Note: class constructor A is defined at:
 //│ ║  l.1: 	class A
 //│ ╙──     	      ^
@@ -95,15 +95,18 @@ T (B {})
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.94: 	T (B {})
 //│ ║        	^^^^^^^^
-//│ ╟── application of type `B` is not an instance of type `A`
+//│ ╟── application of type `B` is not a 1-element tuple
 //│ ║  l.94: 	T (B {})
 //│ ║        	   ^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.7: 	trait T: A & B
-//│ ║       	         ^
-//│ ╟── from intersection type:
+//│ ╟── but it flows into argument with expected type `(?a,)`
+//│ ║  l.94: 	T (B {})
+//│ ║        	  ^^^^^^
+//│ ╟── Note: constraint arises from intersection type:
 //│ ║  l.7: 	trait T: A & B
 //│ ║       	         ^^^^^
+//│ ╟── from type reference:
+//│ ║  l.7: 	trait T: A & B
+//│ ║       	         ^
 //│ ╟── Note: class B is defined at:
 //│ ║  l.2: 	class B
 //│ ╙──     	      ^
@@ -138,14 +141,14 @@ t: Als
 :e
 class D0: T
 //│ ╔══[ERROR] class D0 cannot inherit from class B as it already inherits from class A
-//│ ║  l.139: 	class D0: T
+//│ ║  l.142: 	class D0: T
 //│ ╙──       	      ^^^^^
 
 
 :e
 class D1: B & T
 //│ ╔══[ERROR] class D1 cannot inherit from class A as it already inherits from class B
-//│ ║  l.146: 	class D1: B & T
+//│ ║  l.149: 	class D1: B & T
 //│ ╙──       	      ^^^^^^^^^
 
 
@@ -164,13 +167,13 @@ t = s: s
 :e
 t.x
 //│ ╔══[ERROR] Type mismatch in field selection:
-//│ ║  l.165: 	t.x
+//│ ║  l.168: 	t.x
 //│ ║         	^^^
 //│ ╟── type `#S` does not have field 'x'
-//│ ║  l.160: 	t = s: s
+//│ ║  l.163: 	t = s: s
 //│ ║         	       ^
 //│ ╟── but it flows into reference with expected type `{x: ?x}`
-//│ ║  l.165: 	t.x
+//│ ║  l.168: 	t.x
 //│ ╙──       	^
 //│ res: error
 //│    = 1
@@ -199,14 +202,14 @@ class Hey
 :e
 class H: Lol & Hey
 //│ ╔══[ERROR] An overriding method definition must be given when inheriting from multiple method definitions
-//│ ║  l.200: 	class H: Lol & Hey
+//│ ║  l.203: 	class H: Lol & Hey
 //│ ║         	      ^
 //│ ╟── Definitions of method Foo inherited from:
 //│ ╟── • Lol
-//│ ║  l.191: 	  method Foo = 1
+//│ ║  l.194: 	  method Foo = 1
 //│ ║         	         ^^^^^^^
 //│ ╟── • Hey
-//│ ║  l.193: 	  method Foo = "oops"
+//│ ║  l.196: 	  method Foo = "oops"
 //│ ╙──       	         ^^^^^^^^^^^^
 //│ Defined class H
 
@@ -223,10 +226,10 @@ h = Hey{}
 :e
 l = Lol h
 //│ ╔══[ERROR] Instantiation of an abstract type is forbidden
-//│ ║  l.224: 	l = Lol h
+//│ ║  l.227: 	l = Lol h
 //│ ║         	    ^^^
 //│ ╟── Note that traits with methods are always considered abstract
-//│ ║  l.190: 	trait Lol
+//│ ║  l.193: 	trait Lol
 //│ ╙──       	      ^^^
 //│ l: error
 //│  = Hey {}
@@ -237,10 +240,10 @@ l = Lol h
 e = Lol
 e
 //│ ╔══[ERROR] Instantiation of an abstract type is forbidden
-//│ ║  l.237: 	e = Lol
+//│ ║  l.240: 	e = Lol
 //│ ║         	    ^^^
 //│ ╟── Note that traits with methods are always considered abstract
-//│ ║  l.190: 	trait Lol
+//│ ║  l.193: 	trait Lol
 //│ ╙──       	      ^^^
 //│ e: error
 //│  = [Function: build]
@@ -264,10 +267,10 @@ trait Lol2: Lol
 :e
 Lol2
 //│ ╔══[ERROR] Instantiation of an abstract type is forbidden
-//│ ║  l.265: 	Lol2
+//│ ║  l.268: 	Lol2
 //│ ║         	^^^^
 //│ ╟── Note that traits with methods are always considered abstract
-//│ ║  l.261: 	trait Lol2: Lol
+//│ ║  l.264: 	trait Lol2: Lol
 //│ ╙──       	      ^^^^^^^^^
 //│ res: error
 //│    = [Function: build]

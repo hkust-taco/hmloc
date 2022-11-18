@@ -53,13 +53,13 @@ res.value
 //│ ╔══[ERROR] Type mismatch in type ascription:
 //│ ║  l.49: 	42: Option[int, int]
 //│ ║        	^^
-//│ ╟── integer literal of type `42` does not match type `None | Some[int]`
-//│ ╟── Note: constraint arises from union type:
-//│ ║  l.21: 	type Option[A] = Some[A] | None
-//│ ║        	                 ^^^^^^^^^^^^^^
-//│ ╟── from applied type reference:
+//│ ╟── integer literal of type `42` is not an instance of `Option[int]`
+//│ ╟── Note: constraint arises from applied type reference:
 //│ ║  l.49: 	42: Option[int, int]
-//│ ╙──      	    ^^^^^^^^^^^^^^^^
+//│ ║        	    ^^^^^^^^^^^^^^^^
+//│ ╟── from union type:
+//│ ║  l.21: 	type Option[A] = Some[A] | None
+//│ ╙──      	                 ^^^^^^^^^^^^^^
 //│ res: Option[int]
 //│    = 42
 
@@ -91,23 +91,44 @@ res.x
 //│    = 42
 
 g: Foo1['a]: Foo1[int]
-//│ res: Foo1[int]
-//│    = Bar1 { x: 42 }
+//│ /!!!\ Uncaught error: java.lang.Exception: Cannot update counter for uninitialized location
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateCounter$1(ConstraintSolver.scala:864)
+//│ 	at: scala.collection.mutable.HashMap.updateWith(HashMap.scala:154)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateCounter(ConstraintSolver.scala:857)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3(ConstraintSolver.scala:914)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3$adapted(ConstraintSolver.scala:914)
+//│ 	at: scala.Option.foreach(Option.scala:437)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2(ConstraintSolver.scala:914)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2$adapted(ConstraintSolver.scala:914)
+//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
+//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateChainCount(ConstraintSolver.scala:914)
 
 res.x
-//│ res: int
-//│    = 42
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.106: 	res.x
+//│ ║         	^^^^^
+//│ ╟── integer literal of type `42` does not have field 'x'
+//│ ║  l.81: 	g = Bar1 { x = 42 }
+//│ ║        	               ^^
+//│ ╟── but it flows into reference with expected type `{x: ?x}`
+//│ ║  l.106: 	res.x
+//│ ╙──       	^^^
+//│ res: error
+//│    = undefined
 
 :e
 g: Foo1['a]: Foo1[string]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.102: 	g: Foo1['a]: Foo1[string]
+//│ ║  l.120: 	g: Foo1['a]: Foo1[string]
 //│ ║         	^
-//│ ╟── type `int` is not an instance of type `string`
+//│ ╟── type `int` is not an instance of `string`
 //│ ║  l.73: 	class Bar1: Foo1[int]
 //│ ║        	                 ^^^
+//│ ╟── but it flows into reference with expected type `string`
+//│ ║  l.120: 	g: Foo1['a]: Foo1[string]
+//│ ║         	^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.102: 	g: Foo1['a]: Foo1[string]
+//│ ║  l.120: 	g: Foo1['a]: Foo1[string]
 //│ ╙──       	                  ^^^^^^
 //│ res: Foo1[string]
 //│    = Bar1 { x: 42 }
@@ -177,25 +198,34 @@ mrg: Foo2[int]
 :e
 mrg = Foo2{}
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.178: 	mrg = Foo2{}
+//│ ║  l.199: 	mrg = Foo2{}
 //│ ║         	^^^^^^^^^^^^
-//│ ╟── type `string` is not an instance of type `int`
-//│ ║  l.168: 	def mrg: Foo2[int] & Foo2[string]
+//│ ╟── type `string` does not match type `Foo2[in int | string out nothing]`
+//│ ║  l.189: 	def mrg: Foo2[int] & Foo2[string]
 //│ ║         	                          ^^^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.168: 	def mrg: Foo2[int] & Foo2[string]
-//│ ║         	              ^^^
-//│ ╟── Note: class type parameter A is defined at:
-//│ ║  l.120: 	class Foo2[A]
-//│ ╙──       	           ^
+//│ ╟── but it flows into application with expected type `Foo2[in int | string out nothing]`
+//│ ║  l.199: 	mrg = Foo2{}
+//│ ║         	      ^^^^^^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.189: 	def mrg: Foo2[int] & Foo2[string]
+//│ ║         	         ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from type reference:
+//│ ║  l.189: 	def mrg: Foo2[int] & Foo2[string]
+//│ ╙──       	              ^^^
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.178: 	mrg = Foo2{}
+//│ ║  l.199: 	mrg = Foo2{}
 //│ ║         	^^^^^^^^^^^^
-//│ ╟── type `int` is not an instance of type `string`
-//│ ║  l.168: 	def mrg: Foo2[int] & Foo2[string]
+//│ ╟── type `int` does not match type `Foo2[in int | string out nothing]`
+//│ ║  l.189: 	def mrg: Foo2[int] & Foo2[string]
 //│ ║         	              ^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.168: 	def mrg: Foo2[int] & Foo2[string]
+//│ ╟── but it flows into application with expected type `Foo2[in int | string out nothing]`
+//│ ║  l.199: 	mrg = Foo2{}
+//│ ║         	      ^^^^^^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.189: 	def mrg: Foo2[int] & Foo2[string]
+//│ ║         	         ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from type reference:
+//│ ║  l.189: 	def mrg: Foo2[int] & Foo2[string]
 //│ ╙──       	                          ^^^^^^
 //│ Foo2['A]
 //│   <:  mrg:
@@ -288,10 +318,10 @@ def mrg: Foo2_Co[int] | Foo2_Co[string]
 class Foo2_Bi[A]
 //│ Defined class Foo2_Bi[±A]
 //│ ╔══[WARNING] Type definition Foo2_Bi has bivariant type parameters:
-//│ ║  l.288: 	class Foo2_Bi[A]
+//│ ║  l.318: 	class Foo2_Bi[A]
 //│ ║         	      ^^^^^^^
 //│ ╟── A is irrelevant and may be removed
-//│ ║  l.288: 	class Foo2_Bi[A]
+//│ ║  l.318: 	class Foo2_Bi[A]
 //│ ╙──       	              ^
 
 

@@ -158,6 +158,10 @@ class DiffTests
       showRepl: Bool = false,
       allowEscape: Bool = false,
       ocamlParser: Bool = false,
+      // capture nested prov, apply hueristics and find faulty locations
+      simplifyError: Bool = false,
+      // print suspicious location after block
+      suspiciousLocation: Bool = false,
       // noProvs: Bool = false,
     ) extends ModeType {
       def isDebugging: Bool = dbg || dbgSimplif
@@ -290,6 +294,8 @@ class DiffTests
             ctx = libCtx
             declared = libDeclared
             mode
+          case "simplifyError" => mode.copy(simplifyError = true)
+          case "sus" => mode.copy(suspiciousLocation = true)
           case _ =>
             failures += allLines.size - lines.size
             output("/!\\ Unrecognized option " + line)
@@ -480,8 +486,11 @@ class DiffTests
             typer.dbg = mode.dbg
 
             typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors
+            // typer.recordProvenances = !noProvs
+            typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors || mode.simplifyError
             typer.verbose = mode.verbose
             typer.explainErrors = mode.explainErrors
+            typer.setErrorSimplification(mode.simplifyError)
             stdout = mode.stdout
 
             // In parseOnly mode file only parse and print desugared blocks for file
@@ -788,6 +797,8 @@ class DiffTests
             }
             // generate typescript typegen block
             if (mode.generateTsDeclarations) outputSourceCode(tsTypegenCodeBuilder.toSourceCode())
+            // show a list of suspicious locations found in above block
+            if (mode.suspiciousLocation) typer.showSuspiciousLocations()(raise)
             
             if (mode.stats) {
               val (co, an, su, ty) = typer.stats
