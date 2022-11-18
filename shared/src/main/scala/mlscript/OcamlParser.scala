@@ -489,7 +489,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def tyParams[p: P]: P[Ls[TypeName]] =
     ("[" ~ tyName.rep(0, ",") ~ "]").?.map(_.toList.flatten)
   def ocamlTyParams[p: P]: P[Ls[TypeName]] =
-    (ocamlTyParam.rep(0, ",")).?.map(_.toList.flatten)
+    ocamlTyParam.map(_ :: Nil) |
+    ("(" ~ ocamlTyParam.rep(0, ",") ~ ")").?.map(_.toList.flatten)
   def mthDecl[p: P](prt: TypeName): P[R[MethodDef[Right[Term, Type]]]] = 
     P(kw("method") ~ variable ~ tyParams ~ ":" ~/ ty map {
       case (id, ts, t) => R(MethodDef[Right[Term, Type]](true, prt, id, ts, R(t)))

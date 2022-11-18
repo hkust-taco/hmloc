@@ -132,9 +132,9 @@ type stmt = Skip | Assign of string * exp
 
 // parameterized type definitions
 type 'a heapA = HeapA of 'a
-type 'a, 'b heapB = HeapB of ('a * 'b)
-type 'a, 'b heapC = HeapC of ('a * 'b) list
-type 'a, 'b heapD = HeapD of 'a * 'b list
+type ('a, 'b) heapB = HeapB of ('a * 'b)
+type ('a, 'b) heapC = HeapC of ('a * 'b) list
+type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│ Defined type alias heapA[+'a]
 //│ Defined class HeapA[+'a]
 //│ Defined type alias heapB[+'a, +'b]
@@ -165,18 +165,16 @@ let interp2 = (fun (env:env) opt ->
   match opt with
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.163: 	fun (env: env) _ -> []
+//│ ║  l.152: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
 //│ res: error -> Nil
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.164: 	let interp2 = (fun (env:env) opt ->
+//│ ║  l.153: 	let interp2 = (fun (env:env) opt ->
 //│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
-//│ ║  l.165: 	  match opt with
+//│ ║  l.154: 	  match opt with
 //│ ╙──       	        ^^^
 //│ interp2: error -> 0
-
-
 
 let head xs = match xs with
   Cons(x, xs) -> x
@@ -189,17 +187,16 @@ let head xs = match xs with
   | _ -> raise Error
 //│ head: ((Cons[?] with {_0: 'a}) | ~Cons[?]) -> 'a
 
-
 // FIXME
 // TODO: NonsHeap should have ['a, 'b] parameters because
 // alias otherList is used in it
-type 'a, 'b bigHeap =
+type ('a, 'b) bigHeap =
   NoHeap of 'a list
   | NonHeap of otherList
   | NonsHeap of (otherList * 'a) list
   and otherList = 'b list
 //│ ╔══[ERROR] type identifier not found: 'b
-//│ ║  l.200: 	  and otherList = 'b list
+//│ ║  l.186: 	  and otherList = 'b list
 //│ ╙──       	                  ^^
 //│ Defined type alias bigHeap[+'a, ±'b]
 //│ Defined class NoHeap[+'a]
@@ -207,11 +204,11 @@ type 'a, 'b bigHeap =
 //│ Defined class NonsHeap[+'a]
 //│ Defined type alias otherList
 //│ ╔══[WARNING] Type definition bigHeap has bivariant type parameters:
-//│ ║  l.196: 	type 'a, 'b bigHeap =
-//│ ║         	            ^^^^^^^
+//│ ║  l.182: 	type ('a, 'b) bigHeap =
+//│ ║         	              ^^^^^^^
 //│ ╟── 'b is irrelevant and may be removed
-//│ ║  l.196: 	type 'a, 'b bigHeap =
-//│ ╙──       	         ^^
+//│ ║  l.182: 	type ('a, 'b) bigHeap =
+//│ ╙──       	          ^^
 //│ NoHeap: (list['a] & '_0) -> (NoHeap['a] with {_0: '_0})
 //│ NonHeap: (otherList & '_0) -> (NonHeap with {_0: '_0})
 //│ NonsHeap: (list[{_0: otherList, _1: 'a}] & '_0) -> (NonsHeap['a] with {_0: '_0})
