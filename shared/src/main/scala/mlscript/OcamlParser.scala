@@ -342,7 +342,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     // type parameters like 'a, 'b
   | ocamlTyParam.map(param => (Set(param), param))
     // type bodies like type names, parameter, applied types or tuples
-  | ("(" ~ ocamlTypeAliasBody ~ ")")
+  | ("(" ~ ocamlTypeAlias ~ ")")
       .map {
         case (tparams, tupTypes) =>
           val tupleType = Tuple(tupTypes.map(t => N -> Field(N, t)))
@@ -365,7 +365,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     }
 
   /** Type alias body made of parts in a product type */
-  def ocamlTypeAliasBody[p: P]: P[(Set[TypeName], Ls[Type])] =
+  def ocamlTypeAlias[p: P]: P[(Set[TypeName], Ls[Type])] =
     ocamlTypeAliasPart.rep(1, "*").map {
       case Seq(t) => (t._1, t._2 :: Nil)
       case parts =>
@@ -415,22 +415,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   // https://v2.ocaml.org/manual/typedecl.html#ss:typedefs
   // TODO: handle record style type representation
   // type 'a lst = [Null | Cons of 'a * 'a lst]
-  def ocamlTypeRepresentation[p: P]: P[List[TypeDef]] = ocamlConstructorDecl.rep(1, "|").map(_.toList)
-  
-  /** Parse type alias like heap in the example below
-   * TODO: temporary fix to parse aliases in parallel type declaration
-   * 
-    * type heapVar = HeapInt of int | Heap of heap and
-    *   [heap = (string * int) list] => type alias Heap = (string * int) list
-    */
-  def ocamlTyDeclTyAlias[p: P]: P[TypeDef] =
-    P((tyName ~ "=" ~/ ocamlTypeAliasBody).map {
-      case (nme, (alsParams, t :: Nil)) =>
-        TypeDef(Als, nme, alsParams.toList, t, Nil, Nil, Nil)
-      case (nme, (alsParams, tupTypes)) =>
-        val alsBody = Tuple(tupTypes.map(t => N -> Field(N, t)))
-        TypeDef(Als, nme, alsParams.toList, alsBody, Nil, Nil, Nil)
-    })
+  def ocamlDataConstructor[p: P]: P[List[TypeDef]] = ocamlConstructorDecl.rep(1, "|").map(_.toList)
   
   def tyKind[p: P]: P[TypeDefKind] = (kw("class") | kw("trait") | kw("type")).! map {
     case "class" => Cls
@@ -442,8 +427,14 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     * list
     */
   def ocamlTyDecl[p: P]: P[Ls[TypeDef]] =
-    P((kw("type") ~/ ocamlTyParams ~ tyName ~ "=" ~/ ocamlTypeRepresentation ~ ("and" ~ ocamlTyDeclTyAlias).?)
-      .map { case (tparams, tname, bodies, alias) =>
+    P((ocamlTyParams ~ tyName ~ "=" ~/
+        // either a sum type with data constructors or a type alias
+        (ocamlDataConstructor.map(L.apply) | ocamlTypeAlias.map(R.apply))
+        ~ ("and" ~ ocamlTyDecl).?
+    ).map {
+      // parsed data constructors create classes and helper functions
+      // create an alias for the type itself
+      case (tparams, tname, L(bodies), moreTypes) =>
         val paramSet = tparams.toSet
         val unionType: TypeDef => Type = (tyDef) => {
           val appliedParams = tyDef.tparams.filter(paramSet(_))
@@ -453,14 +444,19 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
           }
         }
         val initialBody = unionType(bodies(0))
-        // TODO: apply if parameters are common to alias
-        // otherwise just use type name
         val aliasBody = bodies.foldLeft[Type](initialBody){
           case (union, tdef) => Union(unionType(tdef), union)
         }
-        val result = TypeDef(Als, tname, tparams, aliasBody, Nil, Nil, Nil) :: bodies
-        alias.fold(result)(als => als :: result)
-    })
+        TypeDef(Als, tname, tparams, aliasBody, Nil, Nil, Nil) :: bodies ::: moreTypes.getOrElse(Nil)
+      // a type name, variable or applied type as alias
+      case (tparams, tname, R((_, t :: Nil)), moreTypes) =>
+        TypeDef(Als, tname, tparams.toList, t, Nil, Nil, Nil) :: moreTypes.getOrElse(Nil)
+      // a product type as alias
+      case (tparams, tname, R((_, tupTypes)), moreTypes) =>
+        val alsBody = Tuple(tupTypes.map(t => N -> Field(N, t)))
+        TypeDef(Als, tname, tparams.toList, alsBody, Nil, Nil, Nil) :: moreTypes.getOrElse(Nil)
+      }
+    )
   // create a helper function for a class constructor
   // for e.g. Cons[A] = {_0: A; _1: List[A]} gets
   // def Cons (a, b) = Cons {_0 = a; _1 = b}
@@ -485,7 +481,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case _ => N
     }
   }
-  def ocamlTyDeclAndHelper[p:P]: P[Ls[Statement]] = ocamlTyDecl.map(tyDefs => {
+  def ocamlTyDeclAndHelper[p:P]: P[Ls[Statement]] = (kw("type") ~/ ocamlTyDecl).map(tyDefs => {
     // only create helpers for classes
     val helpers = tyDefs.flatMap(ocamlTyDeclHelper)
     tyDefs ::: helpers
