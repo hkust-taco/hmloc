@@ -401,11 +401,13 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       (tparams, Record(fields))
     })
     
+  def constructorName[p: P]: P[TypeName] =
+    locate(P( uppercase ~~ (letter | digit | "_" | "'").repX ).!.filter(!keywords(_)).map(TypeName))
   /** data constructor declaration
    *  type 'a, 'b tup = [Tup of 'a * 'b]
    */
   def ocamlConstructorDecl[p: P]: P[TypeDef] =
-    P((tyName ~ ("of" ~/ ocamlConstructorBody).?).map {
+    P((constructorName ~ ("of" ~/ ocamlConstructorBody).?).map {
       case (id, Some((params, body))) =>
         val positionals = body.fields.map(_._1)
         TypeDef(Cls, id, params.toList, body, Nil, Nil, positionals)
@@ -522,6 +524,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   }) | tyNeg | tyName | tyVar | tyWild | litTy
   def tyNeg[p: P]: P[Type] = locate(P("~" ~/ tyNoFun map { t => Neg(t) }))
   def tyName[p: P]: P[TypeName] = locate(P(ident map TypeName))
+  def cons[p: P]: P[TypeName] = locate(P(ident map TypeName))
   def ocamlTyParam[p: P]: P[TypeName] = locate(P(("'" ~~ lowercase.!).map(param =>
       TypeName("'" + param)
     )))

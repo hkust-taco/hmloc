@@ -165,14 +165,14 @@ let interp2 = (fun (env:env) opt ->
   match opt with
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.152: 	fun (env: env) _ -> []
+//│ ║  l.163: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
 //│ res: error -> Nil
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.153: 	let interp2 = (fun (env:env) opt ->
+//│ ║  l.164: 	let interp2 = (fun (env:env) opt ->
 //│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
-//│ ║  l.154: 	  match opt with
+//│ ║  l.165: 	  match opt with
 //│ ╙──       	        ^^^
 //│ interp2: error -> 0
 
@@ -181,34 +181,21 @@ let head xs = match xs with
   | _ -> raise Error
 //│ head: ((Cons[?] with {_0: 'a}) | ~Cons[?]) -> 'a
 
-// FIXME
 let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
 //│ head: ((Cons[?] with {_0: 'a}) | ~Cons[?]) -> 'a
 
-// FIXME
-// TODO: NonsHeap should have ['a, 'b] parameters because
-// alias otherList is used in it
-type ('a, 'b) bigHeap =
+type ('a) bigHeap =
   NoHeap of 'a list
   | NonHeap of otherList
   | NonsHeap of (otherList * 'a) list
-  and otherList = 'b list
-//│ ╔══[ERROR] type identifier not found: 'b
-//│ ║  l.186: 	  and otherList = 'b list
-//│ ╙──       	                  ^^
-//│ Defined type alias bigHeap[+'a, ±'b]
+  and otherList = int list
+//│ Defined type alias bigHeap[+'a]
 //│ Defined class NoHeap[+'a]
 //│ Defined class NonHeap
 //│ Defined class NonsHeap[+'a]
 //│ Defined type alias otherList
-//│ ╔══[WARNING] Type definition bigHeap has bivariant type parameters:
-//│ ║  l.182: 	type ('a, 'b) bigHeap =
-//│ ║         	              ^^^^^^^
-//│ ╟── 'b is irrelevant and may be removed
-//│ ║  l.182: 	type ('a, 'b) bigHeap =
-//│ ╙──       	          ^^
 //│ NoHeap: (list['a] & '_0) -> (NoHeap['a] with {_0: '_0})
 //│ NonHeap: (otherList & '_0) -> (NonHeap with {_0: '_0})
 //│ NonsHeap: (list[{_0: otherList, _1: 'a}] & '_0) -> (NonsHeap['a] with {_0: '_0})
