@@ -332,47 +332,41 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
    * this is one part of a type alias separated by `*`
    * e.g.
    * 'a
+   * int
+   * string
    * int list
    * ('a * 'b) list
    * ('a * int) list
+   * ('a * int, 'b * string) list
    */
   def ocamlTypeAliasPart[p: P]: P[(Set[TypeName], Type)] = (
-    // type names like list, int
-    tyName.map(tname => (Set.empty[TypeName], tname))
-    // type parameters like 'a, 'b
-  | ocamlTyParam.map(param => (Set(param), param))
-    // type bodies like type names, parameter, applied types or tuples
-  | ("(" ~ ocamlTypeAlias ~ ")")
-      .map {
-        case (tparams, tupTypes) =>
-          val tupleType = Tuple(tupTypes.map(t => N -> Field(N, t)))
-          (tparams, tupleType)
-      }
-  ).rep(1)
-    .map {
-      case Seq(b) => b
-      case parts =>
+    // multiple type parameters applied to a type
+    ("(" ~/ ocamlTypeAlias.rep(1, ",") ~ ")" ~/ tyName).map {
+      case ((Seq(), t)) => (Set.empty[TypeName], t)
+      case ((parts, t)) =>
         val tparams = parts.flatMap(_._1).toSet
-        parts.last._2 match {
-          case tname: TypeName =>
-            val args = parts.init.toList.map(_._2).toList
-            (tparams, AppliedType(tname, args))
-          case t =>
-            // last parameter has to be a type name when there are
-            // multiple parameters being applied
-            throw new Error(s"Parameters applied to non-TypeName $t")
-        }
+        val args = parts.map(_._2).toList
+        (tparams, AppliedType(t, args))
+    } |
+    // type name or variable optionally applied to a type
+    ((tyName.map(L.apply) | ocamlTyParam.map(R.apply)) ~ tyName.?).map {
+      case (L(tname), N) => (Set.empty[TypeName], tname)
+      case (R(tparam), N) => (Set(tparam), tparam)
+      case (L(tparam), S(t)) => (Set.empty[TypeName], AppliedType(t, tparam :: Nil))
+      case (R(tparam), S(t)) => (Set(tparam), AppliedType(t, tparam :: Nil))
     }
+  )
 
   /** Type alias body made of parts in a product type */
-  def ocamlTypeAlias[p: P]: P[(Set[TypeName], Ls[Type])] =
+  def ocamlTypeAlias[p: P]: P[(Set[TypeName], Type)] =
     ocamlTypeAliasPart.rep(1, "*").map {
-      case Seq(t) => (t._1, t._2 :: Nil)
+      case Seq(t) => (t._1, t._2)
       case parts =>
         val tparams = parts.flatMap(_._1).toSet
-        (tparams, parts.map(_._2).toList)
+        val tupBody = Tuple(parts.map(t => N -> Field(N, t._2)).toList)
+        (tparams, tupBody)
     }
-  
+
   /** data constructor body
     * type 'a, 'b tup = Tup of ['a * 'b] => ('a, 'b)
     * type 'a, 'b tup = Tup of ['a list * 'b] => (List['a], 'b)
@@ -451,12 +445,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         }
         TypeDef(Als, tname, tparams, aliasBody, Nil, Nil, Nil) :: bodies ::: moreTypes.getOrElse(Nil)
       // a type name, variable or applied type as alias
-      case (tparams, tname, R((_, t :: Nil)), moreTypes) =>
+      case (tparams, tname, R((_, t)), moreTypes) =>
         TypeDef(Als, tname, tparams.toList, t, Nil, Nil, Nil) :: moreTypes.getOrElse(Nil)
-      // a product type as alias
-      case (tparams, tname, R((_, tupTypes)), moreTypes) =>
-        val alsBody = Tuple(tupTypes.map(t => N -> Field(N, t)))
-        TypeDef(Als, tname, tparams.toList, alsBody, Nil, Nil, Nil) :: moreTypes.getOrElse(Nil)
       }
     )
   // create a helper function for a class constructor
