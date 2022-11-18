@@ -150,7 +150,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   ).map {
     case (withs, ascs, equateTerm, tupleTerm) =>
       val trm1 = ascs.foldLeft(withs)(Asc)
-      val trm2 = equateTerm.fold(trm1)(App(OpApp("==", trm1), _))
+      val trm2 = equateTerm.fold(trm1)(rhs => App(OpApp("eq", toParams(trm1)), toParams(rhs)))
       tupleTerm.fold(trm2)(trm3 => toParams(trm2 :: trm3))
   }
   /** Inner call to withsAsc term which parses a list of terms optionally
@@ -190,12 +190,24 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       val newLhs = argSub(lhs)
       val newRhs = argSub(rhs)
       App(op.copy(name = "Cons"), toParams(newLhs :: newRhs :: Nil))
-    // substitute a <> b which is ocaml operator for structural equality
-    // with this the equality check in mlscript
+    // substitute structural and refernce inequality for `ne` in mlscript
     case o@App(i@App(op@Var("<>"), lhs), rhs) =>
       val newLhs = appSubstitution(lhs)
       val newRhs = appSubstitution(rhs)
-      o.copy(lhs = i.copy(lhs = op.copy(name = "=="), rhs = newLhs), rhs = newRhs)
+      o.copy(lhs = i.copy(lhs = op.copy(name = "ne"), rhs = newLhs), rhs = newRhs)
+    case o@App(i@App(op@Var("!="), lhs), rhs) =>
+      val newLhs = appSubstitution(lhs)
+      val newRhs = appSubstitution(rhs)
+      o.copy(lhs = i.copy(lhs = op.copy(name = "ne"), rhs = newLhs), rhs = newRhs)
+    // substitute structural and refernce equality for `eq` in mlscript
+    case o@App(i@App(op@Var("=="), lhs), rhs) =>
+      val newLhs = appSubstitution(lhs)
+      val newRhs = appSubstitution(rhs)
+      o.copy(lhs = i.copy(lhs = op.copy(name = "eq"), rhs = newLhs), rhs = newRhs)
+    case o@App(i@App(op@Var("="), lhs), rhs) =>
+      val newLhs = appSubstitution(lhs)
+      val newRhs = appSubstitution(rhs)
+      o.copy(lhs = i.copy(lhs = op.copy(name = "eq"), rhs = newLhs), rhs = newRhs)
     case t@Tup(N -> Fld(false, false, value) :: Nil) =>
       t.copy(fields = N -> Fld(false, false, appSubstitution(value)) :: Nil)
     case t@Tup(fields) =>
