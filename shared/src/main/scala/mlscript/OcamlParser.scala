@@ -361,6 +361,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         (tparams, AppliedType(t, args))
     } |
     // type name or variable optionally applied to a type
+    // TODO: handle int list option
     ((tyName.map(L.apply) | ocamlTyParam.map(R.apply)) ~ tyName.?).map {
       case (L(tname), N) => (Set.empty[TypeName], tname)
       case (R(tparam), N) => (Set(tparam), tparam)
