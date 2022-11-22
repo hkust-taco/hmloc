@@ -77,10 +77,10 @@ let rec interp_e (h:heap) (e:exp) =
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.66: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `HeapInt & {_0: ?_0}` is not an instance of type `int`
+//│ ╟── application of type `HeapInt & {_0: ?_0}` does not match type `?a`
 //│ ║  l.54: 	    [] -> HeapInt(0) (* ############### *)
 //│ ║        	          ^^^^^^^^^
-//│ ╟── but it flows into application with expected type `int`
+//│ ╟── but it flows into application with expected type `?b`
 //│ ║  l.64: 	 |Var str     ->lookup h str
 //│ ║        	                ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
@@ -138,13 +138,16 @@ let rec interp_s (h:heap) (s:stmt) =
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.109: 	  |RestoreHeap(str) -> []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `HeapInt & {_0: ?_0}` is not an instance of type `int`
+//│ ╟── application of type `HeapInt & {_0: ?_0}` does not match type `?a`
 //│ ║  l.54: 	    [] -> HeapInt(0) (* ############### *)
 //│ ║        	          ^^^^^^^^^
-//│ ╟── but it flows into application with expected type `int`
+//│ ╟── but it flows into application with expected type `?b`
 //│ ║  l.103: 	  |Assign(str,e) -> update h str (interp_e h e)
 //│ ║         	                                  ^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from type reference:
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.105: 	                  then let h2 = interp_s h s1 in
+//│ ║         	                                ^^^^^^^^^^^^^
+//│ ╟── from type reference:
 //│ ║  l.18: 	type heapVar = HeapInt of int | Heap of heap and heap = ((string, int) Tuple2) list
 //│ ╙──      	                                                                  ^^^
 //│ interp_s: heap -> stmt -> ((Cons[Tup2[string, HeapInt & {_0: 0} | int] | Tuple2[string, int]] with {_0: Tup2[string, HeapInt & {_0: 0} | int], _1: heap}) | Nil | heap)

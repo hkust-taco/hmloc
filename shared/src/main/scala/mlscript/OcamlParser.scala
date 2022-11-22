@@ -361,12 +361,17 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         (tparams, AppliedType(t, args))
     } |
     // type name or variable optionally applied to a type
-    // TODO: handle int list option
-    ((tyName.map(L.apply) | ocamlTyParam.map(R.apply)) ~ tyName.?).map {
-      case (L(tname), N) => (Set.empty[TypeName], tname)
-      case (R(tparam), N) => (Set(tparam), tparam)
-      case (L(tparam), S(t)) => (Set.empty[TypeName], AppliedType(t, tparam :: Nil))
-      case (R(tparam), S(t)) => (Set(tparam), AppliedType(t, tparam :: Nil))
+    ((tyName.map(L.apply) | ocamlTyParam.map(R.apply)) ~ tyName.rep()).map {
+      case (L(tname), Seq()) => (Set.empty[TypeName], tname)
+      case (R(tparam), Seq()) => (Set(tparam), tparam)
+      case (L(tparam), types) =>
+        val appType = types.foldLeft(tparam: Type)
+          { case (appType, t) => AppliedType(t, appType :: Nil) }
+        (Set.empty[TypeName], appType)
+      case (R(tparam), types) =>
+        val appType = types.foldLeft(tparam: Type)
+          { case (appType, t) => AppliedType(t, appType :: Nil) }
+        (Set(tparam), appType)
     }
   )
 

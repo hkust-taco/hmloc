@@ -214,21 +214,32 @@ type 'a list = Cons of 'a * 'a list | Nil
 //│ Desugared: def Cons: a, b, => Cons ({_0: a, _1: b},)
 //│ Desugared: def Nil: Nil ({},)
 
-// TODO: NonsHeap should have ['a, 'b] parameters because
-// alias otherList is used in it
-type ('a, 'b) heap =
-  Heap of 'a list
+// parallel type definitions
+type ('a) bigHeap =
+  NoHeap of 'a list
   | NonHeap of otherList
   | NonsHeap of (otherList * 'a) list
-  and otherList = 'b list
-//│ Desugared: type alias heap['a, 'b] = NonsHeap['a] | NonHeap | Heap['a]
-//│ Desugared: class Heap['a](_0): {_0: list['a]}
+  and otherList = int list
+//│ Desugared: type alias bigHeap['a] = NonsHeap['a] | NonHeap | NoHeap['a]
+//│ Desugared: class NoHeap['a](_0): {_0: list['a]}
 //│ Desugared: class NonHeap(_0): {_0: otherList}
 //│ Desugared: class NonsHeap['a](_0): {_0: list[{_0: otherList, _1: 'a}]}
-//│ Desugared: type alias otherList = list['b]
-//│ Desugared: def Heap: a, => Heap ({_0: a},)
+//│ Desugared: type alias otherList = list[int]
+//│ Desugared: def NoHeap: a, => NoHeap ({_0: a},)
 //│ Desugared: def NonHeap: a, => NonHeap ({_0: a},)
 //│ Desugared: def NonsHeap: a, => NonsHeap ({_0: a},)
+
+type biglist = int option list
+type listoflists = int list list
+type stringintlist = ((string * int) list * int) list
+//│ Desugared: type alias biglist = list[option[int]]
+//│ Desugared: type alias listoflists = list[list[int]]
+//│ Desugared: type alias stringintlist = list[(list[(string, int,)], int,)]
+
+:dp
+type ('a, 'b) paramlist = (('a * int) list * 'b) list
+//│ Parsed: TypeDef(Als, TypeName(paramlist), List(TypeName('a), TypeName('b)), AppliedType(TypeName(list),List(Tuple(List((None,Field(None,AppliedType(TypeName(list),List(Tuple(List((None,Field(None,TypeName('a))), (None,Field(None,TypeName(int))))))))), (None,Field(None,TypeName('b))))))), List())
+//│ Desugared: type alias paramlist['a, 'b] = list[(list[('a, int,)], 'b,)]
 
 
 type 'a list = Cons of 'a * 'a list | Nil
