@@ -577,7 +577,12 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   ).map(name => Def(false, Var(name), L(Rcd(Nil)), false))
   def toplvl[p: P]: P[Ls[Statement]] =
     P(ocamlDefDecl.map(_ :: Nil) | ocamlTyDeclAndHelper | ocamlExceptionDef.map(_ :: Nil) | termOrAssign.map(_ :: Nil))
-  def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ toplvl ~ topLevelSep.rep).rep.map(_.toList.flatten) ~ End ).map(Pgrm)
+  /** the program consists of multiple top level blocks separated by ";"
+   * however sometimes a block can be empty with just a comment
+   * in such a case it is must that there must be atleast one separator
+   * between it and the next block
+   */
+  def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ (toplvl ~ ";".rep | ";".rep(1).map(_ => Nil))).rep.map(_.toList.flatten) ~ End ).map(Pgrm)
   def topLevelSep[p: P]: P[Unit] = ";"
 }
 
