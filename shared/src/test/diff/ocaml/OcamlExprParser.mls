@@ -149,7 +149,7 @@ let head xs = match xs with
 
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) List
-type exp = EInt of int | Var of string | Plus of exp * exp | Times of exp * exp
+type exp = Int of int | Var of string | Plus of exp * exp | Times of exp * exp
 type stmt = Skip | Assign of string * exp
          | Seq of stmt * stmt 
          | If of exp * stmt * stmt
@@ -160,8 +160,8 @@ type stmt = Skip | Assign of string * exp
 //│ Desugared: class HeapInt(_0): {_0: int}
 //│ Desugared: class Heap(_0): {_0: heap}
 //│ Desugared: type alias heap = List[(string, int,)]
-//│ Desugared: type alias exp = Times | Plus | Var | EInt
-//│ Desugared: class EInt(_0): {_0: int}
+//│ Desugared: type alias exp = Times | Plus | Var | Int
+//│ Desugared: class Int(_0): {_0: int}
 //│ Desugared: class Var(_0): {_0: string}
 //│ Desugared: class Plus(_0, _1): {_0: exp, _1: exp}
 //│ Desugared: class Times(_0, _1): {_0: exp, _1: exp}
@@ -175,7 +175,7 @@ type stmt = Skip | Assign of string * exp
 //│ Desugared: class RestoreHeap(_0): {_0: string}
 //│ Desugared: def HeapInt: a, => HeapInt ({_0: a},)
 //│ Desugared: def Heap: a, => Heap ({_0: a},)
-//│ Desugared: def EInt: a, => EInt ({_0: a},)
+//│ Desugared: def Int: a, => Int ({_0: a},)
 //│ Desugared: def Var: a, => Var ({_0: a},)
 //│ Desugared: def Plus: a, b, => Plus ({_0: a, _1: b},)
 //│ Desugared: def Times: a, b, => Times ({_0: a, _1: b},)
@@ -249,6 +249,10 @@ type ('a, 'b) paramlist = (('a * int) list * 'b) list
 //│ Parsed: TypeDef(Als, TypeName(paramlist), List(TypeName('a), TypeName('b)), AppliedType(TypeName(list),List(Tuple(List((None,Field(None,AppliedType(TypeName(list),List(Tuple(List((None,Field(None,TypeName('a))), (None,Field(None,TypeName(int))))))))), (None,Field(None,TypeName('b))))))), List())
 //│ Desugared: type alias paramlist['a, 'b] = list[(list[('a, int,)], 'b,)]
 
+type ('a, 'b) heapB = HeapB of ('a * 'b)
+//│ Desugared: type alias heapB['a, 'b] = HeapB['a, 'b]
+//│ Desugared: class HeapB['a, 'b](_0): {_0: {_0: 'a, _1: 'b}}
+//│ Desugared: def HeapB: a, => HeapB ({_0: a},)
 
 type 'a list = Cons of 'a * 'a list | Nil
 let (::) a b = Cons {_0 = a; _1 = b}

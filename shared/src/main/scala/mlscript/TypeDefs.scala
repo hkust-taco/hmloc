@@ -39,7 +39,7 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
     positionals: Ls[Str],
   ) {
     def allBaseClasses(ctx: Ctx)(implicit traversed: Set[TypeName]): Set[TypeName] =
-      baseClasses.map(v => TypeName(v.name.decapitalize)) ++
+      baseClasses.map(v => TypeName(v.name)) ++
         baseClasses.iterator.filterNot(traversed).flatMap(v =>
           ctx.tyDefs.get(v.name).fold(Set.empty[TypeName])(_.allBaseClasses(ctx)(traversed + v)))
     val (tparams: List[TypeName], targs: List[TypeVariable]) = tparamsargs.unzip
