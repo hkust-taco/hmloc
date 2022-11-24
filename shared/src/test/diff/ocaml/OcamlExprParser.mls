@@ -231,7 +231,7 @@ type ('a) bigHeap =
 //│ Desugared: type alias bigHeap['a] = NonsHeap['a] | NonHeap | NoHeap['a]
 //│ Desugared: class NoHeap['a](_0): {_0: list['a]}
 //│ Desugared: class NonHeap(_0): {_0: otherList}
-//│ Desugared: class NonsHeap['a](_0): {_0: list[{_0: otherList, _1: 'a}]}
+//│ Desugared: class NonsHeap['a](_0): {_0: list[(otherList, 'a,)]}
 //│ Desugared: type alias otherList = list[int]
 //│ Desugared: def NoHeap: a, => NoHeap ({_0: a},)
 //│ Desugared: def NonHeap: a, => NonHeap ({_0: a},)
@@ -249,10 +249,18 @@ type ('a, 'b) paramlist = (('a * int) list * 'b) list
 //│ Parsed: TypeDef(Als, TypeName(paramlist), List(TypeName('a), TypeName('b)), AppliedType(TypeName(list),List(Tuple(List((None,Field(None,AppliedType(TypeName(list),List(Tuple(List((None,Field(None,TypeName('a))), (None,Field(None,TypeName(int))))))))), (None,Field(None,TypeName('b))))))), List())
 //│ Desugared: type alias paramlist['a, 'b] = list[(list[('a, int,)], 'b,)]
 
-type ('a, 'b) heapB = HeapB of ('a * 'b)
+type ('a, 'b) paramlist = ('a * int) list
+//│ Desugared: type alias paramlist['a, 'b] = list[('a, int,)]
+
+type ('a, 'b) heapC = HeapC of ('a * 'b)
+//│ Desugared: type alias heapC['a, 'b] = HeapC['a, 'b]
+//│ Desugared: class HeapC['a, 'b](_0): {_0: ('a, 'b,)}
+//│ Desugared: def HeapC: a, => HeapC ({_0: a},)
+
+type ('a, 'b) heapB = HeapB of 'a * 'b
 //│ Desugared: type alias heapB['a, 'b] = HeapB['a, 'b]
-//│ Desugared: class HeapB['a, 'b](_0): {_0: {_0: 'a, _1: 'b}}
-//│ Desugared: def HeapB: a, => HeapB ({_0: a},)
+//│ Desugared: class HeapB['a, 'b](_0, _1): {_0: 'a, _1: 'b}
+//│ Desugared: def HeapB: a, b, => HeapB ({_0: a, _1: b},)
 
 type 'a list = Cons of 'a * 'a list | Nil
 let (::) a b = Cons {_0 = a; _1 = b}

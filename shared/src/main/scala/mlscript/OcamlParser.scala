@@ -342,6 +342,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   /** Type parameters and types separated by white space
    * this is one part of a type alias separated by `*`
+   * 
+   * Can return TypeName or AppliedType or a Tuple
+   * 
    * e.g.
    * 'a
    * int
@@ -351,11 +354,23 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
    * ('a * int) list
    * ('a * int, 'b * string) list
    */
-  def ocamlTypeAliasPart[p: P]: P[(Set[TypeName], Type)] = (
+  def ocamlTypeExpression[p: P]: P[(Set[TypeName], Type)] = (
     // multiple type parameters applied to a type
-    ("(" ~/ ocamlTypeAlias.rep(1, ",") ~ ")" ~/ tyName).map {
-      case ((Seq(), t)) => (Set.empty[TypeName], t)
-      case ((parts, t)) =>
+    ("(" ~ ocamlTypeAlias.rep(1, ",") ~ ")" ~ tyName.?).map {
+      case ((Seq(), N)) => throw new Exception("Ocaml type expression without any parameters or types is not allowed")
+      case ((Seq(t), N)) => t
+      // cases where the type is a tuple like
+      // Class of ('a, 'b)
+      case (parts, N) =>
+        val tparams = parts.flatMap(_._1).toSet
+        val tupBody = Tuple(parts.map(t => N -> Field(N, t._2)).toList)
+        (tparams, tupBody)
+      // cases where the type is applied to type parameters or no parameters
+      // int
+      // int list
+      // (int, string) tup2
+      case ((Seq(), S(t))) => (Set.empty[TypeName], t)
+      case ((parts, S(t))) =>
         val tparams = parts.flatMap(_._1).toSet
         val args = parts.map(_._2).toList
         (tparams, AppliedType(t, args))
@@ -375,10 +390,14 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     }
   )
 
-  /** Type alias body made of parts in a product type */
+  /** Type alias body made of parts in a product type
+   * Can return TypeName or a Tuple
+  */
   def ocamlTypeAlias[p: P]: P[(Set[TypeName], Type)] =
-    ocamlTypeAliasPart.rep(1, "*").map {
-      case Seq(t) => (t._1, t._2)
+    // (("(" ~/ ocamlTypeExpression ~ ")") | ocamlTypeExpression).rep(1, "*")
+    (ocamlTypeExpression | ("(" ~/ ocamlTypeExpression ~ ")")).rep(1, "*")
+    .map {
+      case Seq(t) => t
       case parts =>
         val tparams = parts.flatMap(_._1).toSet
         val tupBody = Tuple(parts.map(t => N -> Field(N, t._2)).toList)
@@ -392,27 +411,19 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     * type 'a, 'b tup = Tup of [('a * 'b) list] => (List[('a, 'b)])
     */
   def ocamlConstructorBody[p: P]: P[(Set[TypeName], Record)] =
-    ocamlTypeBodyPart.rep(1, "*")
-    .map(args => {
-      val fields = args.zipWithIndex.map {
-        // Heap of [string]
-        case ((isEmpty, tname), i) =>
-          (Var("_" + i.toString()), Field(None, tname))
-        // if the type name is the parameter itself don't apply it
-        // Heap of ['a]
-        case ((tparams, tname: TypeName), i) if tparams(tname) =>
-          (Var("_" + i.toString()), Field(None, tname))
-        // Heap of ['a list]
-        case ((tparams, tname: TypeName), i) =>
-          (Var("_" + i.toString()), Field(None, AppliedType(tname, tparams.toList)))
-        // Heap of ['a * 'b list]
-        case ((tparams, tbody), i) =>
-          (Var("_" + i.toString()), Field(None, tbody))
-      }.toList
-      val tparams = args.flatMap(_._1).toSet
-      (tparams, Record(fields))
-    })
-    
+    ocamlTypeExpression.rep(1, "*")
+    .map {
+      case Seq((tparams, tbody)) =>
+        val rcdBody = Record(Var("_0") -> Field(N, tbody) :: Nil)
+        (tparams, rcdBody)
+      case parts =>
+        val tparams = parts.flatMap(_._1).toSet
+        val rcdBody = parts.zipWithIndex.map {
+          case (t, i) => Var(s"_$i") -> Field(N, t._2)
+        }.toList
+        (tparams, Record(rcdBody))
+    }
+
   def constructorName[p: P]: P[TypeName] =
     locate(P( uppercase ~~ (letter | digit | "_" | "'").repX ).!.filter(!keywords(_)).map(TypeName))
   /** data constructor declaration
