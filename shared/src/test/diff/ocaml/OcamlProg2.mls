@@ -234,37 +234,7 @@ let rec translate varlist exp =
 let ex1 = (Apply(Apply(Lam("x",Lam("y", Plus(Var"x",Var "y"),None),None), 
 		      Int 17),
 		Int 19))
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.234: 	let ex1 = (Apply(Apply(Lam("x",Lam("y", Plus(Var"x",Var "y"),None),None), 
-//│ ║         	                                        ^^^^^^^^^^^^^^^^^^^
-//│ ╟── string literal of type `"x"` does not match type `?a`
-//│ ║  l.234: 	let ex1 = (Apply(Apply(Lam("x",Lam("y", Plus(Var"x",Var "y"),None),None), 
-//│ ║         	                                             ^^^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.48: 		 | Plus of exp * exp
-//│ ║        	            ^^^
-//│ ╟── from union type:
-//│ ║  l.43: 	type exp = Var of string 
-//│ ║        	           ^^^^^^^^^^^^^^
-//│ ║  l.44: 	         | Lam of string * exp * (string list option)(*last part for problem3*)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.45: 	         | Apply of exp * exp
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.46: 	         | Closure of string * exp * env
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.47: 		 | Int of int
-//│ ║        	^^^^^^^^^^^^^^
-//│ ║  l.48: 		 | Plus of exp * exp
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.49: 		 | If of exp * exp * exp
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.50: 		 | Pair of exp * exp
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.51: 		 | First of exp
-//│ ║        	^^^^^^^^^^^^^^^^
-//│ ║  l.52: 		 | Second of exp
-//│ ╙──      	^^^^^^^^^^
-//│ ex1: Apply with {_0: Apply with {_0: Lam with {_0: "x", _1: Lam with {_0: "y", _1: error | (Plus with {_0: "x", _1: Var & {_0: "y"}}), _2: None}, _2: None}, _1: int & {_0: 17}}, _1: int & {_0: 19}}
+//│ ex1: Apply with {_0: Apply with {_0: Lam with {_0: "x", _1: Lam with {_0: "y", _1: Plus with {_0: Var & {_0: "x"}, _1: Var & {_0: "y"}}, _2: None}, _2: None}, _1: int & {_0: 17}}, _1: int & {_0: 19}}
 
 (* #####################################################################
 ################################# *)
@@ -292,12 +262,12 @@ let sum =
   lam "f" (lam "x" (If(vx,
 		       Plus(vx, app vf (Plus(vx, Int (-1)))),
 		       Int 0)))
-//│ /!\ Parse error: Expected ")":3:41, found "-1)))),\n\t\t" at l.293:41: 		       Plus(vx, app vf (Plus(vx, Int (-1)))),
+//│ /!\ Parse error: Expected ")":3:41, found "-1)))),\n\t\t" at l.263:41: 		       Plus(vx, app vf (Plus(vx, Int (-1)))),
 
 (* ############################################################### *)
 let ex2 = (app (app fix sum) (Int 1000))
 //│ ╔══[ERROR] identifier not found: sum
-//│ ║  l.298: 	let ex2 = (app (app fix sum) (Int 1000))
+//│ ║  l.268: 	let ex2 = (app (app fix sum) (Int 1000))
 //│ ╙──       	                        ^^^
 //│ ex2: Apply with {_0: Apply with {_0: Lam with {_0: "f", _1: Apply with {_0: Lam with {_0: "x", _1: Apply with {_0: Var & {_0: "f"}, _1: Lam with {_0: "y", _1: Apply with {_0: Apply with {_0: Var & {_0: "x"}, _1: Var & {_0: "x"}}, _1: Var & {_0: "y"}}, _2: None}}, _2: None}, _1: Lam with {_0: "x", _1: Apply with {_0: Var & {_0: "f"}, _1: Lam with {_0: "y", _1: Apply with {_0: Apply with {_0: Var & {_0: "x"}, _1: Var & {_0: "x"}}, _1: Var & {_0: "y"}}, _2: None}}, _2: None}}, _2: None}, _1: error}, _1: int & {_0: 1000}}
 
@@ -310,22 +280,34 @@ let ans2 = interp1 [] ex2
 
 let ans3 = interp2 [] (fst (computeFreeVars ex1))
 let ans4 = interp2 [] (fst (computeFreeVars ex2))
-//│ ╔══[ERROR] identifier not found: fst
-//│ ║  l.311: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
-//│ ╙──       	                       ^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.281: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
+//│ ║         	                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` does not match type `(?b, ?c,)`
+//│ ║  l.281: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
+//│ ║         	                            ^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from tuple literal:
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;type 'a option = None | Some of 'a;let raise a = nothing;let fst (a, b) = a;let snd (a, b) = b;
+//│ ╙──     	                                                                                                            ^^^^
 //│ ans3: error
-//│ ╔══[ERROR] identifier not found: fst
-//│ ║  l.312: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
-//│ ╙──       	                       ^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.282: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
+//│ ║         	                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` does not match type `(?b, ?c,)`
+//│ ║  l.282: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
+//│ ║         	                            ^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from tuple literal:
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;type 'a option = None | Some of 'a;let raise a = nothing;let fst (a, b) = a;let snd (a, b) = b;
+//│ ╙──     	                                                                                                            ^^^^
 //│ ans4: error
 
 let ans5 = interp3 [] (translate [] ex1)
 let ans6 = interp3 [] (translate [] ex2)
 //│ ╔══[ERROR] identifier not found: translate
-//│ ║  l.322: 	let ans5 = interp3 [] (translate [] ex1)
+//│ ║  l.304: 	let ans5 = interp3 [] (translate [] ex1)
 //│ ╙──       	                       ^^^^^^^^^
 //│ ans5: error
 //│ ╔══[ERROR] identifier not found: translate
-//│ ║  l.323: 	let ans6 = interp3 [] (translate [] ex2)
+//│ ║  l.305: 	let ans6 = interp3 [] (translate [] ex2)
 //│ ╙──       	                       ^^^^^^^^^
 //│ ans6: error

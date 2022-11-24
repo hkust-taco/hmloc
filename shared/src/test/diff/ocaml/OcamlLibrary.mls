@@ -1,0 +1,36 @@
+// ocaml standard definitions for type checking before import
+// After typechecking copy changes to OcamlLibrary.mls.txt
+// for actual import
+:NoJS
+:OcamlParser
+
+type 'a list = Cons of 'a * 'a list | Nil
+type 'a option = None | Some of 'a
+let raise a = nothing
+let fst (a, b) = a
+let snd (a, b) = b
+//│ Defined type alias list[+'a]
+//│ Defined class Cons[+'a]
+//│ Defined class Nil
+//│ Defined type alias option[+'a]
+//│ Defined class None
+//│ Defined class Some[+'a]
+//│ Cons: ('_0 & 'a, list['a] & '_1,) -> (Cons['a] with {_0: '_0, _1: '_1})
+//│ Nil: Nil
+//│ None: None
+//│ Some: '_0 -> Some['_0]
+//│ raise: anything -> nothing
+//│ fst: ('a, anything,) -> 'a
+//│ snd: (anything, 'a,) -> 'a
+
+List.mem: a -> b
+//│ ╔══[ERROR] identifier not found: List
+//│ ║  l.26: 	List.mem: a -> b
+//│ ╙──      	^^^^
+//│ ╔══[ERROR] type identifier not found: a
+//│ ║  l.26: 	List.mem: a -> b
+//│ ╙──      	          ^
+//│ ╔══[ERROR] type identifier not found: b
+//│ ║  l.26: 	List.mem: a -> b
+//│ ╙──      	               ^
+//│ res: error -> error

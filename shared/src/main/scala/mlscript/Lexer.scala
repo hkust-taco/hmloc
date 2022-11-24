@@ -81,7 +81,7 @@ object Lexer {
     ) ~ !OpChar
   }.opaque("SymbolicKeywords")
   
-  def stringliteral[p: P]: P[String] = P( stringprefix.? ~ (longstring | shortstring) )
+  def stringliteral[p: P]: P[String] = P(longstring | shortstring)
   def stringprefix[p: P]: P[Unit] = identifier
   def shortstring[p: P]: P[String] = P( shortstring0("'") | shortstring0("\"") )
   def shortstring0[p: P](delimiter: String) = P( delimiter ~ shortstringitem(delimiter).rep.! ~ delimiter)
