@@ -231,6 +231,13 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def matchArms[p:P]: P[Ls[IfBody]] = P(
    (
     ("_" ~ "->" ~ term).map(IfElse(_) :: Nil)
+    // In ocaml Tup _ -> desugars to Tup(_, _) -> i.e. matching the constructor
+    // but ignoring the values. In UCS this is represented by matching on
+    // just the data constructor Tup ->
+    | (variable ~ "_" ~ "->" ~ term ~ matchArms2).map {
+        case (t, b, rest) =>
+          IfThen(t, b) :: rest
+      }
     | (term ~ "->" ~ term ~ matchArms2).map {
         case (t, b, rest) =>
           IfThen(t, b) :: rest
