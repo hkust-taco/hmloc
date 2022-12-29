@@ -101,6 +101,10 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def level: Int
     def uninstantiatedBody: SimpleType = this
     def instantiate(implicit lvl: Int) = this
+    // store type that causes unification
+    // true if type flows into connecting type i.e. tv <: con tp and false
+    // if type flows from connecting type i.e. con tp <: tv
+    var prev: Opt[(ST, Bool)] = None
     constructedTypes += 1
   }
   type ST = SimpleType

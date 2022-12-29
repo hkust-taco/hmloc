@@ -942,7 +942,128 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       } else TupleType(fields.reverseIterator.mapValues(_.toUpper(noProv)))(prov)
   }
   
+  case class UnificationStore() {
+    val store: MutMap[ST, ST] = MutMap()
+    
+    def getUnifiedType(st: ST): ST = {
+      store.get(st).map(getUnifiedType(_)).getOrElse(st)
+    }
+    
+    def getTypeErrorPath(a: ST, b: ST): Ls[(ST, Bool)] = {
+      getTypeErrorPath(a) ::: getTypeErrorPath(b)
+    }
+    
+    def getTypeErrorPathLevel(path: Ls[(ST, Bool)]): Int = {
+      path match {
+        case immutable.Nil => ???
+        case head :: Nil => 1
+        case _ :: next => {
+          // add a level when there is a change in flow or two adjacent nodes
+          // are the same indicating a conflluence error of diverging or
+          // converging nature
+          (path zip next).foldLeft(0) { case (level, ((tv1, dir1), (tv2, dir2))) =>
+            if (tv1 === tv2 && dir1 === dir2) level + 1
+            else if (dir1 =/= dir2) level + 1
+            else level
+          }
+        }
+      }
+    }
+    
+    def getTypeErrorPath(a: ST): Ls[(ST, Bool)] = {
+      a.prev match {
+        case None => Nil
+        case Some(value) => value :: getTypeErrorPath(value._1)
+      }
+    }
+    
+    /** Unify so that type variable map to concrete types - Functions, Records,
+     * Class tags into/from which it flows
+     */
+    def unify(a: ST, b: ST)(implicit ctx: Ctx): Unit = {
+      val aType = getUnifiedType(a)
+      val bType = getUnifiedType(b)
+      
+      (aType, bType) match {
+        case (ProvType(u), t) =>
+          unify(u, t)
+        case (t, ProvType(u)) =>
+          unify(t, u)
+        case (tv1: TypeVariable, tv2: TypeVariable) =>
+          // unify in any order
+          store += ((tv1, tv2))
+        case (tv1: TypeVariable, st: ST) =>
+          // unify where tv1 maps to st
+          store += ((tv1, st))
+        case (st: ST, tv2: TypeVariable) =>
+          // unify where tv2 maps to st
+          store += ((tv2, st))
+        case (f1@FunctionType(lhs1, rhs1), f2@FunctionType(lhs2, rhs2)) =>
+          // recursively unify type argument types
+          store += ((f1, f2))
+          unify(lhs1, lhs2)
+          unify(rhs1, rhs2)
+        case (ClassTag(id1, _), ClassTag(id2, _)) =>
+          // throw type error
+          if (id1 =/= id2) {
+            val path = getTypeErrorPath(aType, bType)
+            System.out.println(s"Cannot unify $id1 and $id2")
+            System.out.println(getTypeErrorPathLevel(path))
+          }
+        case (tv1, tv2) =>
+          // these types can't be unified. Raise a unification error
+          // show and how it happened
+      }
+    }
+    
+    def unifyTypeBounds(st: ST)(implicit ctx: Ctx, prev: Opt[(ST, Bool)] = None): Unit = {
+      // skip if a type has been visited before otherwise set it's previous
+      // type variable which shows why it's being unified
+      if (st.prev.isDefined) return ()
+      else st.prev = prev
+      
+      st match {
+        // type variable with upper and lower type bounds that need to be
+        // unified. We track why two variable are being unified by keeping
+        // storing their common predecessor which causes their unification
+        case tv: TypeVariable =>
+          tv.lowerBounds.foreach(unifyTypeBounds(_)(ctx, S(st, true)))
+          tv.upperBounds.foreach(unifyTypeBounds(_)(ctx, S(st, false)))
+          (tv.lowerBounds ++ tv.upperBounds).fold(st)((a, b) => {unify(a, b); b})
+        // maintain the unification mapping across the independent unification
+        // calls for these two type variables
+        case FunctionType(lhs, rhs) =>
+          unifyTypeBounds(lhs)
+          unifyTypeBounds(rhs)
+        case TupleType(fields) =>
+          fields.foreach(fld => unifyTypeBounds(fld._2.ub))
+        case ProvType(underlying) =>
+          // pass on the prev type variable information to underlying
+          unifyTypeBounds(underlying)(ctx, st.prev)
+        case NegTrait(tt) =>
+        case NegVar(tv) =>
+        case TraitTag(id) =>
+        case WithType(base, rcd) =>
+        case ClassTag(id, _parents) =>
+          // ignore subclassing
+        case ArrayType(inner) =>
+        case SpliceType(elems) =>
+        case Without(base, names) =>
+        case ComposedType(pol, lhs, rhs) =>
+        case NegType(negated) =>
+        case RecordType(fields) =>
+        case TypeBounds(lb, ub) =>
+        case TypeRef(defn, targs) =>
+        case ExtrType(pol) =>
+      }
+    }
+  }
   
+  def unifyType(st: ST)(implicit ctx: Ctx) = {
+    val unificationStore = UnificationStore()
+    unificationStore.unifyTypeBounds(st)(ctx, N)
+  }
+
   /** Convert an inferred SimpleType into the immutable Type representation. */
   def expandType(st: SimpleType, stopAtTyVars: Bool = false)(implicit ctx: Ctx): Type = {
     val expandType = ()

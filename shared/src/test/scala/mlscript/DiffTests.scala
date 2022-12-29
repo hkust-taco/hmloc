@@ -163,6 +163,7 @@ class DiffTests
       // print suspicious location after block
       suspiciousLocation: Bool = false,
       // noProvs: Bool = false,
+      unify: Bool = false,
     ) extends ModeType {
       def isDebugging: Bool = dbg || dbgSimplif
     }
@@ -296,6 +297,8 @@ class DiffTests
             mode
           case "simplifyError" => mode.copy(simplifyError = true)
           case "sus" => mode.copy(suspiciousLocation = true)
+          // unify type bounds to find errors for HM style type system
+          case "unify" => mode.copy(unify = true)
           case _ =>
             failures += allLines.size - lines.size
             output("/!\\ Unrecognized option " + line)
@@ -518,6 +521,9 @@ class DiffTests
               if (mode.isDebugging) output(s"⬤ Typed as: $wty")
               if (mode.isDebugging) output(s" where: ${wty.showBounds}")
               typer.dbg = mode.dbgSimplif
+              if (mode.unify) {
+                typer.unifyType(wty)(ctx)
+              }
               if (mode.noSimplification) typer.expandType(wty)(ctx)
               else {
                 object SimplifyPipeline extends typer.SimplifyPipeline {
