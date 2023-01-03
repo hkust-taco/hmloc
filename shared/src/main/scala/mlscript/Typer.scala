@@ -946,11 +946,20 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     val store: MutMap[ST, ST] = MutMap()
     
     def getUnifiedType(st: ST): ST = {
-      store.get(st).map(getUnifiedType(_)).getOrElse(st)
+      store.get(st).map(getUnifiedType).getOrElse(st)
     }
     
     def getTypeErrorPath(a: ST, b: ST): Ls[(ST, Bool)] = {
-      getTypeErrorPath(a) ::: getTypeErrorPath(b)
+      val aPath = getTypeErrorPath(a)
+      val bPath = getTypeErrorPath(b)
+      val bPathSet = bPath.iterator.map(_._1).toSet
+
+      val commonUnifier = aPath.find(st => bPathSet(st._1))
+        .getOrElse(throw new Exception("No common type in unification error"))
+      val aIndex = aPath.indexWhere(_._1 === commonUnifier._1)
+      val bIndex = bPath.indexWhere(_._1 === commonUnifier._1)
+
+      aPath.take(aIndex + 1) ::: bPath.take(bIndex + 1).reverse
     }
     
     def getTypeErrorPathLevel(path: Ls[(ST, Bool)]): Int = {
@@ -970,6 +979,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       }
     }
     
+    /** Get types that lead to unification of this type.
+      * Closest unifier type first
+      */
     def getTypeErrorPath(a: ST): Ls[(ST, Bool)] = {
       a.prev match {
         case None => Nil
