@@ -8,6 +8,7 @@ import scala.annotation.tailrec
 import mlscript.utils._, shorthands._
 import mlscript.Message._
 import scala.collection.immutable
+import mlscript.Diagnostic._
 
 /** A class encapsulating type inference state.
  *  It uses its own internal representation of types and type variables, using mutable data structures.
@@ -946,7 +947,14 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     val store: MutMap[ST, ST] = MutMap()
     
     def getUnifiedType(st: ST): ST = {
-      store.get(st).map(getUnifiedType).getOrElse(st)
+      store.get(st).map(next => {
+        // recursive type is unified with itself
+        if (next === st) {
+          st
+        } else {
+          getUnifiedType(next)
+        }
+      }).getOrElse(st)
     }
     
     def getTypeErrorPath(a: ST, b: ST): Ls[(ST, Bool)] = {
@@ -992,10 +1000,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     /** Unify so that type variable map to concrete types - Functions, Records,
      * Class tags into/from which it flows
      */
-    def unify(a: ST, b: ST)(implicit ctx: Ctx): Unit = {
+    def unify(a: ST, b: ST)(implicit ctx: Ctx, raise: Raise): Unit = {
       val aType = getUnifiedType(a)
       val bType = getUnifiedType(b)
       
+      if (aType === bType) return
+  
       (aType, bType) match {
         case (ProvType(u), t) =>
           unify(u, t)
@@ -1012,15 +1022,24 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           store += ((tv2, st))
         case (f1@FunctionType(lhs1, rhs1), f2@FunctionType(lhs2, rhs2)) =>
           // recursively unify type argument types
-          store += ((f1, f2))
           unify(lhs1, lhs2)
           unify(rhs1, rhs2)
+          store += ((f1, f2))
         case (ClassTag(id1, _), ClassTag(id2, _)) =>
-          // throw type error
+          // raise warning with path and level info
           if (id1 =/= id2) {
             val path = getTypeErrorPath(aType, bType)
-            System.out.println(s"Cannot unify $id1 and $id2")
-            System.out.println(getTypeErrorPathLevel(path))
+            val pathLevel = getTypeErrorPathLevel(path)
+            val report =
+              msg"Level ${pathLevel.toString} unification error with ${id1.toString} and ${id2.toString}" -> N ::
+              path.map { case (st, fwd) =>
+                if (fwd) {
+                  msg"Lower bound of ${st.toString}" -> st.prov.loco
+                } else {
+                  msg"Upper bound of ${st.toString}" -> st.prov.loco
+                }
+              }
+            raise(WarningReport(report))
           }
         case (tv1, tv2) =>
           // these types can't be unified. Raise a unification error
@@ -1028,10 +1047,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       }
     }
     
-    def unifyTypeBounds(st: ST)(implicit ctx: Ctx, prev: Opt[(ST, Bool)] = None): Unit = {
+    def unifyTypeBounds(st: ST, prev: Opt[(ST, Bool)] = None)(implicit ctx: Ctx, raise: Raise): Unit = {
       // skip if a type has been visited before otherwise set it's previous
       // type variable which shows why it's being unified
-      if (st.prev.isDefined) return ()
+      if (st.prev.isDefined) return
       else st.prev = prev
       
       st match {
@@ -1039,9 +1058,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // unified. We track why two variable are being unified by keeping
         // storing their common predecessor which causes their unification
         case tv: TypeVariable =>
-          tv.lowerBounds.foreach(unifyTypeBounds(_)(ctx, S(st, true)))
-          tv.upperBounds.foreach(unifyTypeBounds(_)(ctx, S(st, false)))
-          (tv.lowerBounds ++ tv.upperBounds).fold(st)((a, b) => {unify(a, b); b})
+          tv.lowerBounds.foreach(unifyTypeBounds(_, S(st, true)))
+          tv.upperBounds.foreach(unifyTypeBounds(_, S(st, true)))
+          val _ = (tv.lowerBounds ++ tv.upperBounds).fold(st)((a, b) => {unify(a, b); b})
         // maintain the unification mapping across the independent unification
         // calls for these two type variables
         case FunctionType(lhs, rhs) =>
@@ -1051,7 +1070,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           fields.foreach(fld => unifyTypeBounds(fld._2.ub))
         case ProvType(underlying) =>
           // pass on the prev type variable information to underlying
-          unifyTypeBounds(underlying)(ctx, st.prev)
+          unifyTypeBounds(underlying, st.prev)
         case NegTrait(tt) =>
         case NegVar(tv) =>
         case TraitTag(id) =>
@@ -1071,9 +1090,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     }
   }
   
-  def unifyType(st: ST)(implicit ctx: Ctx) = {
+  def unifyType(st: ST)(implicit ctx: Ctx, raise: Raise) = {
     val unificationStore = UnificationStore()
-    unificationStore.unifyTypeBounds(st)(ctx, N)
+    unificationStore.unifyTypeBounds(st)
   }
 
   /** Convert an inferred SimpleType into the immutable Type representation. */

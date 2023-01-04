@@ -1,6 +1,10 @@
 :ns
 :unify
-def s x = if x then x else 3
+ def s x = if x then x else 3
+//│ ╔══[WARNING] Level 1 unification error with 3 and bool
+//│ ╟── Lower bound of α25'
+//│ ╟── Lower bound of α24'
+//│ ╙── Lower bound of α24'
 //│ s: 'a -> 'b
 //│   where
 //│     'a <: 'c & bool
@@ -11,10 +15,13 @@ def s x = if x then x else 3
 
 :ns
 :unify
-rec def clone x n =
-  let rec helper acc n' =
-    if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
-  helper x (n - 1)
+ rec def clone x n =
+   let rec helper acc n' =
+     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
+   helper x (n - 1)
+//│ ╔══[WARNING] Level 1 unification error with int and number
+//│ ╟── Lower bound of α48'
+//│ ╙── Lower bound of α48'
 //│ clone: 'clone
 //│   where
 //│     'clone :> 'a -> 'b -> 'c
@@ -31,8 +38,16 @@ rec def clone x n =
 //│     'c :> int
 //│      = [Function: clone]
 
-// FIXME
 :ns
 :unify
 let rec l = fun a -> fun a -> l in let rec r = fun a -> r in if true then l else r
-//│ /!!!\ Uncaught error: java.lang.StackOverflowError
+//│ res: 'a
+//│   where
+//│     'a :> 'b -> 'c -> 'l | 'd -> 'r
+//│     'l :> 'b -> 'c -> 'l
+//│        <: 'e
+//│     'e :> 'd -> 'r | 'b -> 'c -> 'l
+//│        <: 'a
+//│     'r :> 'd -> 'r
+//│        <: 'e
+//│    = [Function: l]

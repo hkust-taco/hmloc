@@ -522,7 +522,7 @@ class DiffTests
               if (mode.isDebugging) output(s" where: ${wty.showBounds}")
               typer.dbg = mode.dbgSimplif
               if (mode.unify) {
-                typer.unifyType(wty)(ctx)
+                typer.unifyType(wty)(ctx, raise)
               }
               if (mode.noSimplification) typer.expandType(wty)(ctx)
               else {
