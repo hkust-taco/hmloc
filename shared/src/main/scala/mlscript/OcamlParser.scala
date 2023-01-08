@@ -25,10 +25,13 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case (i0, n, i1) => n.withLoc(i0, i1, origin)
   }
   
+  /** Implicitly tupled function argument is marked differently so that
+   * type checking and error reporting can ignore it
+   */
   def toParams(t: Term): Tup = t match {
     case t: Tup => t
     case Bra(false, t) => toParams(t)
-    case _ => Tup((N, Fld(false, false, t)) :: Nil)
+    case _ => new ImplicitTup((N, Fld(false, false, t)) :: Nil)
   }
   def toParams(t: Ls[Term]): Tup = {
     val fields = t.map(t => (N, Fld(false, false, t)))
@@ -317,8 +320,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
    *  let :: a b = Cons a b
   */
   def ocamlDefDecl[p: P]: P[Def] =
-    locate(P((kw("let") ~ ocamlLabelName ~ tyParams ~ ":" ~/ ty map {
-      case (id, tps, t) => Def(true, id, R(PolyType(tps, t)), true)
+    locate(P((kw("let") ~ kw("rec").!.?.map(_.isDefined) ~ ocamlLabelName ~ ":" ~/ ocamlFnTy map {
+      case (rec, id, (tps, t)) => Def(rec, id, R(PolyType(tps.toList, t)), true)
     }) | (kw("let") ~ kw("rec").!.?.map(_.isDefined) ~/ ocamlLabelName ~ subterm.rep ~ "=" ~ term map {
       case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), true)
     })))
@@ -410,6 +413,14 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         val tupBody = Tuple(parts.map(t => N -> Field(N, t._2)).toList)
         (tparams, tupBody)
     }
+  
+  /** Type alias body if it includes a function type
+  */
+  def ocamlFnTy[p: P]: P[(Set[TypeName], Type)] = (ocamlTypeAlias ~ ("->" ~/ ocamlFnTy).?).map {
+    case (tps, ty, S((retTps, retTy))) => (tps ++ retTps, Function(toParamsTy(ty), retTy))
+    case (tps, ty, N) => (tps, ty)
+    case args => throw new Exception(s"Incorrect defintion for ocaml type with $args")
+  }
 
   /** data constructor body
     * type 'a, 'b tup = Tup of ['a * 'b] => ('a, 'b)

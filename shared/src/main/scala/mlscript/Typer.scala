@@ -1050,6 +1050,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case FunctionType(lhs, rhs) =>
           unifyTypeBounds(lhs, UnificationReason(st, true, s"$lhs is argument type of function $st") :: prev)
           unifyTypeBounds(rhs, UnificationReason(st, true, s"$rhs is return type of function $st") :: prev)
+        // skip implicit tupling info
+        case tup@TupleType(fields) if tup.implicitTuple =>
+          fields match {
+            case (v -> fldTy) :: Nil => unifyTypeBounds(fldTy.ub, prev)
+            case _ => throw new Exception("Implicit tuple can only have one field")
+          }
         case TupleType(fields) =>
           fields.zipWithIndex.foreach{ case (v -> fldTy, i) =>
             unifyTypeBounds(fldTy.ub, UnificationReason(st, true, s"${fldTy.ub} is type of index $i in tuple type $st") :: prev)
