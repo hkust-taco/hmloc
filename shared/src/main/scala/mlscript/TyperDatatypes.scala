@@ -95,6 +95,14 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       body.fold(PolymorphicType(0, errType))(b => PolymorphicType(level, ProvType(b._2)(prov)))
   }
   
+  /** Unification happens because of previous type for the given reason. Level
+    * changes if flow passes through a constructor.
+    */
+  case class UnificationReason(prev: ST, levelChange: Bool, info: String) {
+    override def toString = s"unifies with $prev because $info"
+  }
+  type UR = UnificationReason
+  
   /** A type without universally quantified type variables. */
   sealed abstract class SimpleType extends TypeScheme with SimpleTypeImpl {
     val prov: TypeProvenance
@@ -104,7 +112,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     // store type that causes unification
     // true if type flows into connecting type i.e. tv <: con tp and false
     // if type flows from connecting type i.e. con tp <: tv
-    var prev: Opt[(ST, Bool)] = None
+    var prev: Ls[UnificationReason] = Nil
     constructedTypes += 1
   }
   type ST = SimpleType

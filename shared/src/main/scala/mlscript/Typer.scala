@@ -957,44 +957,33 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       }).getOrElse(st)
     }
     
-    def getTypeErrorPath(a: ST, b: ST): Ls[(ST, Bool)] = {
-      val aPath = getTypeErrorPath(a)
-      val bPath = getTypeErrorPath(b)
-      val bPathSet = bPath.iterator.map(_._1).toSet
+    def getTypeErrorPath(a: ST, b: ST): Ls[UnificationReason] = {
+      val bPathSet = b.prev.iterator.map(_.prev).toSet
 
-      val commonUnifier = aPath.find(st => bPathSet(st._1))
+      val commonUnifier = a.prev.find(ur => bPathSet(ur.prev))
         .getOrElse(throw new Exception("No common type in unification error"))
-      val aIndex = aPath.indexWhere(_._1 === commonUnifier._1)
-      val bIndex = bPath.indexWhere(_._1 === commonUnifier._1)
+      val aIndex = a.prev.indexWhere(_.prev === commonUnifier.prev)
+      val bIndex = b.prev.indexWhere(_.prev === commonUnifier.prev)
 
-      aPath.take(aIndex + 1) ::: bPath.take(bIndex + 1).reverse
+      a.prev.take(aIndex + 1) ::: b.prev.take(bIndex + 1).reverse
     }
     
-    def getTypeErrorPathLevel(path: Ls[(ST, Bool)]): Int = {
-      path match {
-        case immutable.Nil => ???
-        case head :: Nil => 1
-        case _ :: next => {
-          // add a level when there is a change in flow or two adjacent nodes
-          // are the same indicating a conflluence error of diverging or
-          // converging nature
-          (path zip next).foldLeft(0) { case (level, ((tv1, dir1), (tv2, dir2))) =>
-            if (tv1 === tv2 && dir1 === dir2) level + 1
-            else if (dir1 =/= dir2) level + 1
-            else level
-          }
-        }
-      }
-    }
-    
-    /** Get types that lead to unification of this type.
-      * Closest unifier type first
-      */
-    def getTypeErrorPath(a: ST): Ls[(ST, Bool)] = {
-      a.prev match {
-        case None => Nil
-        case Some(value) => value :: getTypeErrorPath(value._1)
-      }
+    def getTypeErrorPathLevel(path: Ls[UnificationReason]): Int = {
+      path.length
+      // path match {
+      //   case immutable.Nil => ???
+      //   case head :: Nil => 1
+      //   case _ :: next => {
+      //     // add a level when there is a change in flow or two adjacent nodes
+      //     // are the same indicating a conflluence error of diverging or
+      //     // converging nature
+      //     (path zip next).foldLeft(0) { case (level, ((tv1, dir1), (tv2, dir2))) =>
+      //       if (tv1 === tv2 && dir1 === dir2) level + 1
+      //       else if (dir1 =/= dir2) level + 1
+      //       else level
+      //     }
+      //   }
+      // }
     }
     
     /** Unify so that type variable map to concrete types - Functions, Records,
@@ -1028,17 +1017,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case (ClassTag(id1, _), ClassTag(id2, _)) =>
           // raise warning with path and level info
           if (id1 =/= id2) {
-            val path = getTypeErrorPath(aType, bType)
+            val path = aType.prev ::: bType.prev.reverse
+            // val path = getTypeErrorPath(aType, bType)
             val pathLevel = getTypeErrorPathLevel(path)
             val report =
               msg"Level ${pathLevel.toString} unification error with ${id1.toString} and ${id2.toString}" -> N ::
-              path.map { case (st, fwd) =>
-                if (fwd) {
-                  msg"Lower bound of ${st.toString}" -> st.prov.loco
-                } else {
-                  msg"Upper bound of ${st.toString}" -> st.prov.loco
-                }
-              }
+              path.map(ur => msg"${ur.toString}" -> ur.prev.prov.loco)
             raise(WarningReport(report))
           }
         case (tv1, tv2) =>
@@ -1047,10 +1031,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       }
     }
     
-    def unifyTypeBounds(st: ST, prev: Opt[(ST, Bool)] = None)(implicit ctx: Ctx, raise: Raise): Unit = {
+    def unifyTypeBounds(st: ST, prev: Ls[UnificationReason] = Nil)(implicit ctx: Ctx, raise: Raise): Unit = {
       // skip if a type has been visited before otherwise set it's previous
       // type variable which shows why it's being unified
-      if (st.prev.isDefined) return
+      if (!st.prev.isEmpty) return
       else st.prev = prev
       
       st match {
@@ -1058,16 +1042,18 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // unified. We track why two variable are being unified by keeping
         // storing their common predecessor which causes their unification
         case tv: TypeVariable =>
-          tv.lowerBounds.foreach(unifyTypeBounds(_, S(st, true)))
-          tv.upperBounds.foreach(unifyTypeBounds(_, S(st, true)))
+          tv.lowerBounds.foreach(lb => unifyTypeBounds(lb, UnificationReason(st, false, s"$lb flows into $st") :: prev))
+          tv.upperBounds.foreach(ub => unifyTypeBounds(ub, UnificationReason(st, false, s"$st flows into $ub") :: prev))
           val _ = (tv.lowerBounds ++ tv.upperBounds).fold(st)((a, b) => {unify(a, b); b})
         // maintain the unification mapping across the independent unification
         // calls for these two type variables
         case FunctionType(lhs, rhs) =>
-          unifyTypeBounds(lhs)
-          unifyTypeBounds(rhs)
+          unifyTypeBounds(lhs, UnificationReason(st, true, s"$lhs is argument type of function $st") :: prev)
+          unifyTypeBounds(rhs, UnificationReason(st, true, s"$rhs is return type of function $st") :: prev)
         case TupleType(fields) =>
-          fields.foreach(fld => unifyTypeBounds(fld._2.ub))
+          fields.zipWithIndex.foreach{ case (v -> fldTy, i) =>
+            unifyTypeBounds(fldTy.ub, UnificationReason(st, true, s"${fldTy.ub} is type of index $i in tuple type $st") :: prev)
+          }
         case ProvType(underlying) =>
           // pass on the prev type variable information to underlying
           unifyTypeBounds(underlying, st.prev)
