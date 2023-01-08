@@ -211,6 +211,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       val newLhs = appSubstitution(lhs)
       val newRhs = appSubstitution(rhs)
       o.copy(lhs = i.copy(lhs = op.copy(name = "eq"), rhs = newLhs), rhs = newRhs)
+    case o@App(i@App(op@Var("@"), lhs), rhs) =>
+      val newLhs = appSubstitution(lhs)
+      val newRhs = appSubstitution(rhs)
+      o.copy(lhs = i.copy(lhs = op.copy(name = "List_append"), rhs = newLhs), rhs = newRhs)
     case t@Tup(N -> Fld(false, false, value) :: Nil) =>
       t.copy(fields = N -> Fld(false, false, appSubstitution(value)) :: Nil)
     case t@Tup(fields) =>
@@ -309,7 +313,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       "~",
       ";", "=>", "=", "->", "<-",
       ":",
-      "#", "@", "\\", "\u21d2", "\u2190"
+      // "#", "@", "\\", "\u21d2", "\u2190"
+      "#", "\\", "\u21d2", "\u2190" // "@" is the infix operator for "List_append"
     ) ~~ !OpChar
   }.opaque("symbolic keywords")
   
