@@ -1022,7 +1022,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             val pathLevel = getTypeErrorPathLevel(path)
             val report =
               msg"Level ${pathLevel.toString} unification error with ${id1.toString} and ${id2.toString}" -> N ::
-              path.map(ur => msg"${ur.toString}" -> ur.prev.prov.loco)
+              path.map(_.toDiagnotic)
             raise(WarningReport(report))
           }
         case (tv1, tv2) =>
@@ -1042,14 +1042,14 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // unified. We track why two variable are being unified by keeping
         // storing their common predecessor which causes their unification
         case tv: TypeVariable =>
-          tv.lowerBounds.foreach(lb => unifyTypeBounds(lb, UnificationReason(st, false, s"$lb flows into $st") :: prev))
-          tv.upperBounds.foreach(ub => unifyTypeBounds(ub, UnificationReason(st, false, s"$st flows into $ub") :: prev))
+          tv.lowerBounds.foreach(lb => unifyTypeBounds(lb, UnificationReason(st, s"$lb flows into $st") :: prev))
+          tv.upperBounds.foreach(ub => unifyTypeBounds(ub, UnificationReason(st, s"$st flows into $ub") :: prev))
           val _ = (tv.lowerBounds ++ tv.upperBounds).fold(st)((a, b) => {unify(a, b); b})
         // maintain the unification mapping across the independent unification
         // calls for these two type variables
         case FunctionType(lhs, rhs) =>
-          unifyTypeBounds(lhs, UnificationReason(st, true, s"$lhs is argument type of function $st") :: prev)
-          unifyTypeBounds(rhs, UnificationReason(st, true, s"$rhs is return type of function $st") :: prev)
+          unifyTypeBounds(lhs, UnificationReason(st, s"$lhs is argument type of function $st") :: prev)
+          unifyTypeBounds(rhs, UnificationReason(st, s"$rhs is return type of function $st") :: prev)
         // skip implicit tupling info
         case tup@TupleType(fields) if tup.implicitTuple =>
           fields match {
@@ -1058,11 +1058,13 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           }
         case TupleType(fields) =>
           fields.zipWithIndex.foreach{ case (v -> fldTy, i) =>
-            unifyTypeBounds(fldTy.ub, UnificationReason(st, true, s"${fldTy.ub} is type of index $i in tuple type $st") :: prev)
+            unifyTypeBounds(fldTy.ub, UnificationReason(st, s"${fldTy.ub} is type of index $i in tuple type $st") :: prev)
           }
         case ProvType(underlying) =>
           // pass on the prev type variable information to underlying
-          unifyTypeBounds(underlying, st.prev)
+          unifyTypeBounds(underlying, UnificationReason(st, s"$st flows through $underlying") :: st.prev)
+          // don't pass on addtional prov info
+          // unifyTypeBounds(underlying, st.prev)
         case NegTrait(tt) =>
         case NegVar(tv) =>
         case TraitTag(id) =>

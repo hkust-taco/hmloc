@@ -95,11 +95,11 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       body.fold(PolymorphicType(0, errType))(b => PolymorphicType(level, ProvType(b._2)(prov)))
   }
   
-  /** Unification happens because of previous type for the given reason. Level
-    * changes if flow passes through a constructor.
+  /** Unification happens because of previous type for the given reason.
     */
-  case class UnificationReason(prev: ST, levelChange: Bool, info: String) {
-    override def toString = s"unifies with $prev because $info"
+  case class UnificationReason(prev: ST, info: String, levelChange: Bool = false) {
+    override def toString = info
+    def toDiagnotic = msg"$info ${prev.prov.desc}" -> prev.prov.loco
   }
   type UR = UnificationReason
   
