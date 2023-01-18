@@ -62,6 +62,11 @@ let check e =
 //│ Desugared: def check: e, => if e is ‹(Something (here,)) then let nothere = here in nothere; (Nothing) then beat (it,)›
 //│ Desugared: def check: e, => if e is ‹(Cons (a, b,)) then Nil; (Nil) then Nil›
 
+match n < 0 with
+  | true -> 1
+  | false -> 0
+//│ Desugared: if < (n,) (0,) is ‹(true) then 1; (false) then 0›
+
 // define lambdas using fun
 fun (env: env) _ -> []
 let interp2 = interp (fun (env:env) opt ->
@@ -74,7 +79,7 @@ let interp2 = interp (fun (env:env) opt ->
 2.0
 let b = 3.0
 let c = 3.0 +. 4.0 *. 6.0
-//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):1:3, found "0;let b = " at l.74:3: 2.0
+//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):1:3, found "0;let b = " at l.79:3: 2.0
 
 // make tuples from comma separated terms
 1, 2, 3
@@ -156,7 +161,7 @@ let head xs = match xs with
 let head xs = match xs with
   (::) x xs -> x
   | _ -> raise Error
-//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.157:4:   (::) x xs -> x
+//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.162:4:   (::) x xs -> x
 
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) List

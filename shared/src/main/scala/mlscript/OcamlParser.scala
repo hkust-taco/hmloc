@@ -230,7 +230,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def apps[p: P]: P[Term] = P( subterm.rep(1).map(_.reduce(mkApp)) )
   
   def _match[p: P]: P[If] =
-    locate(P( kw("match") ~/ term ~ "with" ~ matchArms).map {
+    locate(P( kw("match") ~/ term ~ "with" ~ "|".? ~ matchArms).map {
       case (matchVar, branches) =>
         val ifBlocks = IfBlock(branches.map(L.apply))
         If(IfOpApp(matchVar, Var("is"), ifBlocks), N)
