@@ -1,141 +1,29 @@
-:ns
+:NoJS
+
 :unify
- def s x = if x then x else 3
-//│ ╔══[WARNING] Level 17 unification error with 3 and bool
-//│ ╟── [3<int,number>] flows through 3<int,number>
-//│ ║  l.3: 	 def s x = if x then x else 3
-//│ ║       	                            ^
-//│ ╟── [[3<int,number>]] flows through [3<int,number>]
-//│ ║  l.3: 	 def s x = if x then x else 3
-//│ ║       	                            ^
-//│ ╟── [[[3<int,number>]]] flows through [[3<int,number>]]
-//│ ╟── [[[3<int,number>]]] flows into α25'
-//│ ╟── [α25'] flows through α25'
-//│ ╟── [[α25']] flows through [α25']
-//│ ║  l.3: 	 def s x = if x then x else 3
-//│ ║       	                     ^
-//│ ╟── [[[α25']]] flows through [[α25']]
-//│ ║  l.3: 	 def s x = if x then x else 3
-//│ ║       	                     ^
-//│ ╟── [[[[α25']]]] flows through [[[α25']]]
-//│ ╟── α24' flows into [[[[α25']]]]
-//│ ╟── (α24',) is argument type of function (α24' -> α28')
-//│ ║  l.3: 	 def s x = if x then x else 3
-//│ ║       	       ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (α24',) is argument type of function (α24' -> α28')
-//│ ║  l.3: 	 def s x = if x then x else 3
-//│ ║       	       ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── α24' flows into [[[[[bool<>]]]]]
-//│ ╟── [[[[[bool<>]]]]] flows through [[[[bool<>]]]]
-//│ ╟── [[[[bool<>]]]] flows through [[[bool<>]]]
-//│ ║  l.3: 	 def s x = if x then x else 3
-//│ ║       	              ^
-//│ ╟── [[[bool<>]]] flows through [[bool<>]]
-//│ ║  l.3: 	 def s x = if x then x else 3
-//│ ║       	              ^
-//│ ╟── [[bool<>]] flows through [bool<>]
-//│ ╙── [bool<>] flows through bool<>
-//│ s: 'a -> 'b
-//│   where
-//│     'a <: 'c & bool
-//│     'c :> 3
-//│        <: 'b
-//│     'b :> 3
-//│  = [Function: s]
+// 0 1
+
+:unify
+let temp = if true then 0 else "oops" in 0
+//│ res: int
+
+:unify
+def s x = if x then x else 3
+//│ ╔══[WARNING] Unification error (level 2): Int and bool<> cannot be unified
+//│ ╟── [[[Int]]] flows into α29' expression
+//│ ╟── α28' flows into [[[[α29']]]] variable
+//│ ╙── α28' flows into [[[[[bool<>]]]]] variable
+//│ s: (bool & 'a) -> (int | 'a)
 
 :ns
 :unify
-// rec def clone x n =
-//   let rec helper acc n' =
-//     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
-//   helper x (n - 1)
-//│ ╔══[WARNING] Level 38 unification error with int and number
-//│ ╟── [int<number>] flows through int<number>
-//│ ╟── [[int<number>]] flows through [int<number>]
-//│ ╟── [[[int<number>]]] flows through [[int<number>]]
-//│ ║  l.50: 	     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
-//│ ║        	                                       ^^^^^^^
-//│ ╟── [[[[int<number>]]]] flows through [[[int<number>]]]
-//│ ║  l.50: 	     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
-//│ ║        	                                      ^^^^^^^^^
-//│ ╟── [[[[[int<number>]]]]] flows through [[[[int<number>]]]]
-//│ ╟── [[[[[[int<number>]]]]]] flows through [[[[[int<number>]]]]]
-//│ ╟── [[[[[[[int<number>]]]]]]] flows through [[[[[[int<number>]]]]]]
-//│ ╟── [[[[[[[[int<number>]]]]]]]] flows through [[[[[[[int<number>]]]]]]]
-//│ ╟── [[[[[[[[[int<number>]]]]]]]]] flows through [[[[[[[[int<number>]]]]]]]]
-//│ ╟── [[[[[[[[[[int<number>]]]]]]]]]] flows through [[[[[[[[[int<number>]]]]]]]]]
-//│ ╟── [[[[[[[[[[int<number>]]]]]]]]]] flows into α48'
-//│ ╟── [α48'] flows through α48'
-//│ ╟── [[α48']] flows through [α48']
-//│ ╟── [[[α48']]] flows through [[α48']]
-//│ ╟── [[[[α48']]]] flows through [[[α48']]]
-//│ ║  l.51: 	   helper x (n - 1)
-//│ ║        	          ^
-//│ ╟── [[[[[α48']]]]] flows through [[[[α48']]]]
-//│ ║  l.51: 	   helper x (n - 1)
-//│ ║        	          ^
-//│ ╟── [[[[[[α48']]]]]] flows through [[[[[α48']]]]]
-//│ ╟── α30' flows into [[[[[[α48']]]]]]
-//│ ╟── (α30',) is argument type of function (α30' -> (α31' -> α59'))
-//│ ║  l.48: 	 rec def clone x n =
-//│ ║        	               ^^^^^
-//│ ║  l.49: 	   let rec helper acc n' =
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.50: 	     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.51: 	   helper x (n - 1)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [(α30' -> (α31' -> α59'))] flows through (α30' -> (α31' -> α59'))
-//│ ║  l.48: 	 rec def clone x n =
-//│ ║        	               ^^^^^
-//│ ║  l.49: 	   let rec helper acc n' =
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.50: 	     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.51: 	   helper x (n - 1)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [(α30' -> (α31' -> α59'))] flows into clone29'
-//│ ╟── [(α30' -> (α31' -> α59'))] flows into clone29'
-//│ ╟── [(α30' -> (α31' -> α59'))] flows through (α30' -> (α31' -> α59'))
-//│ ║  l.48: 	 rec def clone x n =
-//│ ║        	               ^^^^^
-//│ ║  l.49: 	   let rec helper acc n' =
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.50: 	     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.51: 	   helper x (n - 1)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (α30',) is argument type of function (α30' -> (α31' -> α59'))
-//│ ║  l.48: 	 rec def clone x n =
-//│ ║        	               ^^^^^
-//│ ║  l.49: 	   let rec helper acc n' =
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.50: 	     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.51: 	   helper x (n - 1)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^
-//│ ╟── α30' flows into [[[[[[α48']]]]]]
-//│ ╟── [[[[[[α48']]]]]] flows through [[[[[α48']]]]]
-//│ ╟── [[[[[α48']]]]] flows through [[[[α48']]]]
-//│ ║  l.51: 	   helper x (n - 1)
-//│ ║        	          ^
-//│ ╟── [[[[α48']]]] flows through [[[α48']]]
-//│ ║  l.51: 	   helper x (n - 1)
-//│ ║        	          ^
-//│ ╟── [[[α48']]] flows through [[α48']]
-//│ ╟── [[α48']] flows through [α48']
-//│ ╟── [α48'] flows through α48'
-//│ ╟── α48' flows into [[[[[[number<>]]]]]]
-//│ ╟── [[[[[[number<>]]]]]] flows through [[[[[number<>]]]]]
-//│ ╟── [[[[[number<>]]]]] flows through [[[[number<>]]]]
-//│ ║  l.50: 	     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
-//│ ║        	        ^^^
-//│ ╟── [[[[number<>]]]] flows through [[[number<>]]]
-//│ ║  l.50: 	     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
-//│ ║        	        ^^^
-//│ ╟── [[[number<>]]] flows through [[number<>]]
-//│ ╟── [[number<>]] flows through [number<>]
-//│ ╙── [number<>] flows through number<>
+rec def clone x n =
+  let rec helper acc n' =
+    if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
+  helper x (n - 1)
+//│ ╔══[WARNING] Unification error (level 1): int<number> and number<> cannot be unified
+//│ ╟── [[[[[[[[[[int<number>]]]]]]]]]] flows into α57' variable
+//│ ╙── α57' flows into [[[[[[number<>]]]]]] variable
 //│ clone: 'clone
 //│   where
 //│     'clone :> 'a -> 'b -> 'c
@@ -150,20 +38,6 @@
 //│     'g :> int
 //│        <: 'e
 //│     'c :> int
-//│      = [Function: clone]
 
 :ns
-:unify
 //let rec l = fun a -> fun a -> l in let rec r = fun a -> r in if true then l else r
-//│ res: 'a
-//│   where
-//│     'a :> 'b -> 'c -> 'l | 'd -> 'r
-//│     'l :> 'b -> 'c -> 'l
-//│        <: 'e
-//│     'e :> 'd -> 'r | 'b -> 'c -> 'l
-//│        <: 'a
-//│     'r :> 'd -> 'r
-//│        <: 'e
-//│    = [Function: l]
-
-

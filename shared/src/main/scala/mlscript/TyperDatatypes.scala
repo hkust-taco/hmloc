@@ -95,24 +95,12 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       body.fold(PolymorphicType(0, errType))(b => PolymorphicType(level, ProvType(b._2)(prov)))
   }
   
-  /** Unification happens because of previous type for the given reason.
-    */
-  case class UnificationReason(prev: ST, info: String, levelChange: Bool = false) {
-    override def toString = info
-    def toDiagnotic = msg"$info ${prev.prov.desc}" -> prev.prov.loco
-  }
-  type UR = UnificationReason
-  
   /** A type without universally quantified type variables. */
   sealed abstract class SimpleType extends TypeScheme with SimpleTypeImpl {
     val prov: TypeProvenance
     def level: Int
     def uninstantiatedBody: SimpleType = this
     def instantiate(implicit lvl: Int) = this
-    // store type that causes unification
-    // true if type flows into connecting type i.e. tv <: con tp and false
-    // if type flows from connecting type i.e. con tp <: tv
-    var prev: Ls[UnificationReason] = Nil
     constructedTypes += 1
   }
   type ST = SimpleType
@@ -396,13 +384,19 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   type TV = TypeVariable
   private var freshCount = 0
   def freshVar(p: TypeProvenance, nameHint: Opt[Str] = N, lbs: Ls[ST] = Nil, ubs: Ls[ST] = Nil)
-        (implicit lvl: Int): TypeVariable =
-    new TypeVariable(lvl, lbs, ubs, nameHint)(p)
+        (implicit lvl: Int): TypeVariable = {
+          val tvar = new TypeVariable(lvl, lbs, ubs, nameHint)(p)
+          TypeVariable.createdTypeVars = tvar :: TypeVariable.createdTypeVars
+          tvar
+        }
   def resetState(): Unit = {
     freshCount = 0
   }
   trait CompactTypeOrVariable
   type PolarVariable = (TypeVariable, Boolean)
+  object TypeVariable {
+    var createdTypeVars: Ls[TypeVariable] = Nil
+  }
   
   case class NegVar(tv: TV) extends ProxyType with Factorizable {
     lazy val underlying: SimpleType = tv.neg()
