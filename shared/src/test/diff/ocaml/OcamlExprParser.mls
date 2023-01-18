@@ -91,6 +91,17 @@ app (2,3) 4 // TODO is the extra tupling correct?
 //│ Desugared: app (2,) (3,) (4,)
 //│ Desugared: app (2,), 3 (4,),
 
+let a = 1
+let b = 2
+[a, b]
+[a, b, [a, b]]
+[a, b, [a, b], 12]
+//│ Desugared: def a: 1
+//│ Desugared: def b: 2
+//│ Desugared: Cons (a, Cons (b, Nil,),)
+//│ Desugared: Cons (a, Cons (b, Cons (Cons (a, Cons (b, Nil,),), Nil,),),)
+//│ Desugared: Cons (a, Cons (b, Cons (Cons (a, Cons (b, Nil,),), Cons (12, Nil,),),),)
+
 // TODO sequential let
 let _ = 
   pr ansL; print_newline (); 
@@ -145,7 +156,7 @@ let head xs = match xs with
 let head xs = match xs with
   (::) x xs -> x
   | _ -> raise Error
-//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.146:4:   (::) x xs -> x
+//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.157:4:   (::) x xs -> x
 
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) List

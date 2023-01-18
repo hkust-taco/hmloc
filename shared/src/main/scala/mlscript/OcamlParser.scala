@@ -66,7 +66,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def lit[p: P]: P[Lit] =
     locate(number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
     | P(kw("undefined")).map(x => UnitLit(true)) | P(kw("null")).map(x => UnitLit(false)))
-  def ocamlList[p: P]: P[Term] = P("[" ~ lit.rep(0, ",") ~ "]").map(vals => {
+  def ocamlList[p: P]: P[Term] = P("[" ~ subtermNoSel.rep(0, ",") ~ "]").map(vals => {
     // assumes that the standard library defining list
     // also defines a helper function to create lists
     val emptyList: Term = Var("Nil")
