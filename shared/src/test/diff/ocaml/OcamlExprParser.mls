@@ -17,7 +17,7 @@ let d = e = f = g
 let a = []
 //│ Desugared: Cons (1, 2,)
 //│ Desugared: Cons (1, Cons (2, 3,),)
-//│ Desugared: Cons (1, Cons (2, Cons (3, Cons (4, Nil,),),),)
+//│ Desugared: Cons (1, 2, 3, 4,, Nil,)
 //│ Desugared: Nil
 //│ Desugared: def a: Nil
 
@@ -27,7 +27,7 @@ let a = []
 [1] <> [1, 2]
 //│ Desugared: ne (1,) (1,)
 //│ Desugared: ne (1,) (2,)
-//│ Desugared: ne (Cons (1, Nil,),) (Cons (1, Cons (2, Nil,),),)
+//│ Desugared: ne (Cons (1, Nil,),) (Cons (1, 2,, Nil,),)
 
 // FIXME where the substituted operation is not the top level operation
 a + 1 <> 1 + 1
@@ -92,7 +92,7 @@ app (2,3) 4 // TODO is the extra tupling correct?
 //│ Desugared: 1, 2, 3,
 //│ Desugared: def mktup: 1, 2, 3,
 //│ Desugared: def mktup: 1, '(' 2, 3, ')',
-//│ Desugared: def mktup: Cons (1, Cons (2, Cons (3, Nil,),),), 4, '(' 5, 6, ')',
+//│ Desugared: def mktup: Cons (1, 2, 3,, Nil,), 4, '(' 5, 6, ')',
 //│ Desugared: app (2,) (3,) (4,)
 //│ Desugared: app (2,), 3 (4,),
 
@@ -101,11 +101,13 @@ let b = 2
 [a, b]
 [a, b, [a, b]]
 [a, b, [a, b], 12]
+[a, b, [a + b / 2]]
 //│ Desugared: def a: 1
 //│ Desugared: def b: 2
-//│ Desugared: Cons (a, Cons (b, Nil,),)
-//│ Desugared: Cons (a, Cons (b, Cons (Cons (a, Cons (b, Nil,),), Nil,),),)
-//│ Desugared: Cons (a, Cons (b, Cons (Cons (a, Cons (b, Nil,),), Cons (12, Nil,),),),)
+//│ Desugared: Cons (a, b,, Nil,)
+//│ Desugared: Cons (a, b, Cons (a, b,, Nil,),, Nil,)
+//│ Desugared: Cons (a, b, Cons (a, b,, Nil,), 12,, Nil,)
+//│ Desugared: Cons (a, b, Cons (+ (a,) (/ (b,) (2,),), Nil,),, Nil,)
 
 // TODO sequential let
 let _ = 
@@ -161,7 +163,7 @@ let head xs = match xs with
 let head xs = match xs with
   (::) x xs -> x
   | _ -> raise Error
-//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.162:4:   (::) x xs -> x
+//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.163:4:   (::) x xs -> x
 
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) List
