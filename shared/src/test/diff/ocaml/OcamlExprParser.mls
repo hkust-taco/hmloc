@@ -163,7 +163,7 @@ let head xs = match xs with
 let head xs = match xs with
   (::) x xs -> x
   | _ -> raise Error
-//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.163:4:   (::) x xs -> x
+//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.164:4:   (::) x xs -> x
 
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) List
@@ -309,3 +309,14 @@ let List_append: 'a list -> 'a list -> 'a list
 
 Cons(1, Nil) @ Cons(2, Nil)
 //│ Desugared: List_append (Cons (1, Nil,),) (Cons (2, Nil,),)
+
+let rev_bind: ('a -> 'b list) -> 'a list -> 'b list
+let big_fun: 'a -> 'b -> 'c -> 'd
+//│ Desugared: def rev_bind: ['a, 'b] -> ('a -> list['b]) -> list['a] -> list['b]
+//│ Desugared: def big_fun: ['a, 'b, 'c, 'd] -> 'a -> 'b -> 'c -> 'd
+
+let List_map: ('a -> 'b) -> 'a list -> 'b list
+let List_fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│ Desugared: def List_map: ['a, 'b] -> ('a -> 'b) -> list['a] -> list['b]
+//│ Desugared: def List_fold_left: ['a, 'b] -> ('a -> 'b -> 'a) -> 'a -> list['b] -> 'a
+

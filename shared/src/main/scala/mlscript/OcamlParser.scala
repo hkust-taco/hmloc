@@ -404,13 +404,24 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         (Set(tparam), appType)
     }
   )
+  
+  def ocamlTypeFun[p: P]: P[(Set[TypeName], Type)] =
+    (ocamlTypeExpression | ("(" ~/ ocamlTypeExpression ~ ")")).rep(1, "->")
+    .map {
+      case Seq(t) => t
+      case parts =>
+        val tparams = parts.flatMap(_._1).toSet
+        val funBody = parts.init.map(_._2).foldRight(parts.last._2){ case (arg, ret) => Function(arg, ret)}
+        (tparams, funBody)
+    }
 
-  /** Type alias body made of parts in a product type
-   * Can return TypeName or a Tuple
+  /** Type alias body made of parts in a product type. each part can be a type
+   * or a function.
+   * Can return TypeName or a Tuple or a Function
   */
   def ocamlTypeAlias[p: P]: P[(Set[TypeName], Type)] =
     // (("(" ~/ ocamlTypeExpression ~ ")") | ocamlTypeExpression).rep(1, "*")
-    (ocamlTypeExpression | ("(" ~/ ocamlTypeExpression ~ ")")).rep(1, "*")
+    (ocamlTypeFun | ("(" ~/ ocamlTypeFun ~ ")")).rep(1, "*")
     .map {
       case Seq(t) => t
       case parts =>
