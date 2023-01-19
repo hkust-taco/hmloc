@@ -30,7 +30,7 @@ let List_append: 'a list -> 'a list -> 'a list
 //│ List_append: list['a] -> list['a] -> list['a]
 
 Cons(1, Nil) @ Cons(2, Nil)
-//│ res: list[1 | 2]
+//│ res: list[int]
 
 // equality check
 // FIXME
@@ -45,25 +45,25 @@ let a b c d = b = c = d
 [1, 2, 3, 4]
 []
 // let a = []
-//│ res: Cons[1] with {_1: Nil}
-//│ res: Cons[1 | 2] with {_0: 1, _1: Cons[2] with {_1: Nil}}
-//│ res: Cons[1 | 2 | 3 | 4] with {_0: 1, _1: Cons[2 | 3 | 4] with {_0: 2, _1: Cons[3 | 4] with {_0: 3, _1: Cons[4] with {_1: Nil}}}}
+//│ res: Cons[int] with {_1: Nil}
+//│ res: Cons[int] with {_1: Cons[int] with {_1: Nil}}
+//│ res: Cons[int] with {_1: Cons[int] with {_1: Cons[int] with {_1: Cons[int] with {_1: Nil}}}}
 //│ res: Nil
 
 // let without in as definitions
 let a = 1
 let a = a + 1
 let a = a + a + 1
-//│ a: 1
+//│ a: int
 //│ a: int
 //│ a: int
 
 let a = ("hi", 2)
 let b = ("bye", 3)
 let data = Cons (a, Cons (b, Nil))
-//│ a: ("hi", 2,)
-//│ b: ("bye", 3,)
-//│ data: Cons[("bye" | "hi", 2 | 3,)] with {_0: ("hi", 2,), _1: Cons[("bye", 3,)] with {_1: Nil}}
+//│ a: (string, int,)
+//│ b: (string, int,)
+//│ data: Cons[(string, int,)] with {_1: Cons[(string, int,)] with {_1: Nil}}
 
 // TODO floats and floating point operators
 // FIXME
@@ -77,10 +77,10 @@ let c = 3.0 +. 4.0 *. 6.0
 let mktup = 1, 2, 3
 let mktup = 1, (2, 3)
 let mktup = [1, 2, 3], 4, (5, 6)
-//│ res: (1, 2, 3,)
-//│ mktup: (1, 2, 3,)
-//│ mktup: (1, (2, 3,),)
-//│ mktup: (Cons[1 | 2 | 3] with {_0: 1, _1: Cons[2 | 3] with {_0: 2, _1: Cons[3] with {_1: Nil}}}, 4, (5, 6,),)
+//│ res: (int, int, int,)
+//│ mktup: (int, int, int,)
+//│ mktup: (int, (int, int,),)
+//│ mktup: (Cons[int] with {_1: Cons[int] with {_1: Cons[int] with {_1: Nil}}}, int, (int, int,),)
 
 // create classes for exceptions
 exception Unimplemented
@@ -155,7 +155,7 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 (("hi", 1) :: Nil)
 (("hi", 1) :: Nil):heap
 (("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ res: Cons[("hi", 1,)] with {_1: Nil}
+//│ res: Cons[(string, int,)] with {_1: Nil}
 //│ res: heap
 //│ res: heap
 
@@ -178,7 +178,7 @@ let interp2 = (fun (env:env) opt ->
 //│ ╔══[ERROR] identifier not found: opt
 //│ ║  l.169: 	  match opt with
 //│ ╙──       	        ^^^
-//│ interp2: error -> 0
+//│ interp2: error -> int
 
 let head xs = match xs with
   Cons(x, xs) -> x
@@ -233,3 +233,19 @@ let checkagain (v: (int, int, (int, int))) =
 //│ ╔══[ERROR] type identifier not found: Tuple#3
 //│ ╙──
 //│ checkagain: (int, int, (int, int,),) -> error
+
+// TODO
+// FIXME
+:dp
+match n < 0 with
+  true  -> 0
+  | false  -> 1
+//│ Parsed: If(IfOpApp(App(App(Var(<), Tup(_: Var(n))), Tup(_: IntLit(0))), Var(is), IfBlock(IfThen(Var(true), IntLit(0);IfThen(Var(false), IntLit(1)), None)
+//│ ╔══[ERROR] Missing the otherwise case of test == (< (n,) (0,),) (false,)
+//│ ║  l.240: 	match n < 0 with
+//│ ║         	      ^^^^^^^^^^
+//│ ║  l.241: 	  true  -> 0
+//│ ║         	^^^^^^^^^^^^
+//│ ║  l.242: 	  | false  -> 1
+//│ ╙──       	^^^^^^^^^
+//│ res: error
