@@ -411,7 +411,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case Seq(t) => t
       case parts =>
         val tparams = parts.flatMap(_._1).toSet
-        val funBody = parts.init.map(_._2).foldRight(parts.last._2){ case (arg, ret) => Function(arg, ret)}
+        val funBody = parts.init.map(_._2).foldRight(parts.last._2){
+          case (arg, ret) => Function(toParamsTy(arg), ret)
+        }
         (tparams, funBody)
     }
 
