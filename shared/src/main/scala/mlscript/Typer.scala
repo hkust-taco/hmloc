@@ -946,13 +946,54 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   }
   
   case class UnificationStore() {
-    /** Unification happens because of previous type variable. The type is an
-     * upper bound (true) or a lower bound (false) to the previous type variable.
-     * Additional info makes a helpful error message.
+    /** List of valid locations a type has been used at. This includes all
+      * the locations of a prov type.
+      */
+    def typeUseLocations(st: ST): Ls[TypeProvenance] = st match {
+      case pv: ProvType => pv.prov.loco match {
+        case None => typeUseLocations(pv.underlying)
+        case Some(value) => pv.prov :: typeUseLocations(pv.underlying)
+      }
+      case st => st.prov.loco match {
+        case None => Nil
+        case Some(value) => st.prov :: Nil
+      }
+    }
+    def firstAndLastUseLocation(t: ST): Ls[Message -> Opt[Loc]] = {
+      val stUseLocation = typeUseLocations(t)
+      val st = getUnderlying(t)
+      (stUseLocation.headOption, stUseLocation.lastOption) match {
+        // only show one location in case of duplicates
+        case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.toString} is used as ${prov1.desc}" -> prov1.loco :: Nil
+        case ((S(prov1), S(prov2))) =>
+          msg"${st.toString} is used as ${prov1.desc}" -> prov1.loco ::
+          msg"${st.toString} is used as ${prov2.desc}" -> prov2.loco ::
+            Nil
+        case ((S(prov), N)) => msg"${st.toString} is used as ${prov.desc}" -> prov.loco :: Nil
+        case (N, (S(prov))) => msg"${st.toString} is used as ${prov.desc}" -> prov.loco :: Nil
+        case ((N, N)) => Nil
+      }
+    }
+    def getUnderlying(st: ST): ST = st match {
+      case ProvType(underlying) => getUnderlying(underlying)
+      case st => st
+    }
+  /** Unification happens because of previous type variable. Dir indicates
+   * if the st is an lb of the prev (true) or an ub of prev (false)
      */
-    case class UnificationReason(prev: TypeVariable, info: String, bound: Bool = true) {
-      override def toString = info
-      def toDiagnostic = msg"$info ${prev.prov.desc}" -> prev.prov.loco
+    case class UnificationReason(st: ST, prev: ST, dir: Bool) {
+      def toDiagnostic: Ls[Message -> Opt[Loc]] = {
+        val stUnder = getUnderlying(st)
+        val prevUnder = getUnderlying(prev)
+        dir match {
+          // st is lower bound to prev
+          case true => msg"${stUnder.toString} flows into ${prevUnder.toString}" -> N ::
+            firstAndLastUseLocation(prev) ::: firstAndLastUseLocation(st)
+          // st is upper bound to prev
+          case false => msg"${prevUnder.toString} flows into ${stUnder.toString}" -> N ::
+            firstAndLastUseLocation(st) ::: firstAndLastUseLocation(prev)
+        }
+      }
     }
     type UR = UnificationReason
     
@@ -989,9 +1030,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case _ :: next => {
           // add a level to the type error where two flows converge or diverge
           // this happens when 
-          (path zip next).foldLeft(0) { case (level, ((UnificationReason(tv1, _, dir1), UnificationReason(tv2, _, dir2)))) =>
-            if (tv1 === tv2 && dir1 === dir2) level + 1
-            else if (dir1 =/= dir2) level + 1
+          (path zip next).foldLeft(0) { case (level, ((UnificationReason(st1, prev1, dir1), UnificationReason(st2, prev2, dir2)))) =>
+            if (prev1 === prev2 && dir1 === dir2) level + 1
+            else if ((st1 === prev2 || st2 === prev1) && dir1 =/= dir2) level + 1
             else level
           }
         }
@@ -1053,7 +1094,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       
       val report =
         msg"Unification error (level ${errorLevel.toString}): ${a.toString} and ${b.toString} cannot be unified" -> N ::
-          errorPath.map(_.toDiagnostic)
+          errorPath.flatMap(_.toDiagnostic)
       raise(WarningReport(report))
     }
     
@@ -1071,8 +1112,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           if (chain.contains(st)) return
           else chain.put(st, reason)
 
-          tv.lowerBounds.foreach(lb => unifyTypeBounds(lb, UnificationReason(tv, s"$lb flows into $tv", false) :: reason))
-          tv.upperBounds.foreach(ub => unifyTypeBounds(ub, UnificationReason(tv, s"$tv flows into $ub", true) :: reason))
+          tv.lowerBounds.foreach(lb => unifyTypeBounds(lb, UnificationReason(lb, tv, true) :: reason))
+          tv.upperBounds.foreach(ub => unifyTypeBounds(ub, UnificationReason(ub, tv, false) :: reason))
           tv.lowerBounds.foreach(lb => unify(tv, lb))
           tv.upperBounds.foreach(ub => unify(tv, ub))
         case pv: ProvType => unifyTypeBounds(pv.underlying, reason)

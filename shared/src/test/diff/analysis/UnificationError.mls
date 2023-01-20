@@ -9,9 +9,18 @@
 :unify
 def s x = if x then x else 3
 //│ ╔══[WARNING] Unification error (level 2): int<number> and bool<> cannot be unified
-//│ ╟── [[[int<number>]]] flows into α25' expression
-//│ ╟── α24' flows into [[[[α25']]]] variable
-//│ ╙── α24' flows into [[[[[bool<>]]]]] variable
+//│ ╟── int<number> flows into α25'
+//│ ╟── int<number> is used as argument
+//│ ║  l.10: 	def s x = if x then x else 3
+//│ ║        	                           ^
+//│ ╟── α24' flows into α25'
+//│ ╟── α25' is used as reference
+//│ ║  l.10: 	def s x = if x then x else 3
+//│ ║        	                    ^
+//│ ╟── α24' flows into bool<>
+//│ ╟── bool<> is used as reference
+//│ ║  l.10: 	def s x = if x then x else 3
+//│ ╙──      	             ^
 //│ s: (bool & 'a) -> (int | 'a)
 
 :ns
@@ -20,9 +29,18 @@ rec def clone x n =
   let rec helper acc n' =
     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
   helper x (n - 1)
-//│ ╔══[WARNING] Unification error (level 1): int<number> and number<> cannot be unified
-//│ ╟── [[[[[[[[[[int<number>]]]]]]]]]] flows into α53' variable
-//│ ╙── α53' flows into [[[[[[number<>]]]]]] variable
+//│ ╔══[WARNING] Unification error (level 0): int<number> and number<> cannot be unified
+//│ ╟── int<number> flows into α53'
+//│ ╟── int<number> is used as argument
+//│ ║  l.30: 	    if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
+//│ ║        	                                     ^^^^^^^^^
+//│ ╟── int<number> is used as operator application
+//│ ║  l.30: 	    if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
+//│ ║        	                                      ^^^^^^^
+//│ ╟── α53' flows into number<>
+//│ ╟── number<> is used as reference
+//│ ║  l.30: 	    if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
+//│ ╙──      	       ^^^
 //│ clone: 'clone
 //│   where
 //│     'clone :> 'a -> 'b -> 'c
