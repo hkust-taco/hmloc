@@ -64,7 +64,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def term[p: P]: P[Term] = P(let | fun | ite | ocamlWithAsc | _match)
 
   def lit[p: P]: P[Lit] =
-    locate(number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
+    locate(floatnumber.map(x => DecLit(x)) | number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
     | P(kw("undefined")).map(x => UnitLit(true)) | P(kw("null")).map(x => UnitLit(false)))
   def ocamlList[p: P]: P[Term] = P("[" ~ term.rep(0, ",") ~ "]").map(vals => {
     // assumes that the standard library defining list
@@ -325,7 +325,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
    *  let :: a b = Cons a b
   */
   def ocamlDefDecl[p: P]: P[Def] =
-    locate(P((kw("let") ~ kw("rec").!.?.map(_.isDefined) ~ ocamlLabelName ~ ":" ~/ ocamlFnTy map {
+    locate(P((kw("let") ~ kw("rec").!.?.map(_.isDefined) ~ ("(" ~ operator.!.map(Var) ~ ")" | ocamlLabelName) ~ ":" ~/ ocamlFnTy map {
       case (rec, id, (tps, t)) => Def(rec, id, R(PolyType(tps.toList, t)), true)
     }) | (kw("let") ~ kw("rec").!.?.map(_.isDefined) ~/ ocamlLabelName ~ subterm.rep ~ "=" ~ term map {
       case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), true)

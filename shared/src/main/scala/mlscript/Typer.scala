@@ -115,19 +115,20 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   val BoolType: ClassTag = ClassTag(Var("bool"), Set.empty)(noTyProv)
   val TrueType: ClassTag = ClassTag(Var("true"), Set.single(TypeName("bool")))(noTyProv)
   val FalseType: ClassTag = ClassTag(Var("false"), Set.single(TypeName("bool")))(noTyProv)
-  val IntType: ClassTag = ClassTag(Var("int"), Set.single(TypeName("number")))(noTyProv)
+  val IntType: ClassTag = ClassTag(Var("int"), Set.empty)(noTyProv)
   val DecType: ClassTag = ClassTag(Var("number"), Set.empty)(noTyProv)
   val StrType: ClassTag = ClassTag(Var("string"), Set.empty)(noTyProv)
   // Add class tags for list constructors
   val ConsType: ClassTag = ClassTag(Var("Cons"), Set.empty)(noTyProv)
   val NilType: ClassTag = ClassTag(Var("Nil"), Set.empty)(noTyProv)
+  val FloatType: ClassTag = ClassTag(Var("float"), Set.empty)(noTyProv)
   
   val ErrTypeId: SimpleTerm = Var("error")
   
   // TODO rm this obsolete definition (was there for the old frontend)
   private val primTypes =
     List("unit" -> UnitType, "bool" -> BoolType, "int" -> IntType, "number" -> DecType, "string" -> StrType,
-      "anything" -> TopType, "nothing" -> BotType)
+      "anything" -> TopType, "nothing" -> BotType, "float" -> FloatType)
   
   val builtinTypes: Ls[TypeDef] =
     TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Nil, Nil, Set.single(TypeName("number")), N, Nil) ::
@@ -162,6 +163,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.in))
       tyDef
     } ::
+    TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
     Nil
   val primitiveTypes: Set[Str] =
     builtinTypes.iterator.map(_.nme.name).toSet
@@ -173,6 +175,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     val tv = freshVar(noProv)(1)
     import FunctionType.{ apply => fun }
     val intBinOpTy = fun(singleTup(IntType), fun(singleTup(IntType), IntType)(noProv))(noProv)
+    val intBinPred = fun(singleTup(IntType), fun(singleTup(IntType), BoolType)(noProv))(noProv)
     val numberBinOpTy = fun(singleTup(DecType), fun(singleTup(DecType), DecType)(noProv))(noProv)
     val numberBinPred = fun(singleTup(DecType), fun(singleTup(DecType), BoolType)(noProv))(noProv)
     val listConsTy: TypeScheme = {
@@ -224,12 +227,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       "-" -> intBinOpTy,
       "*" -> intBinOpTy,
       "%" -> intBinOpTy,
-      "/" -> numberBinOpTy,
-      "<" -> numberBinPred,
-      ">" -> numberBinPred,
-      "<=" -> numberBinPred,
-      ">=" -> numberBinPred,
-      "==" -> numberBinPred,
+      "/" -> intBinOpTy,
+      "<" -> intBinPred,
+      ">" -> intBinPred,
+      "<=" -> intBinPred,
+      ">=" -> intBinPred,
+      "==" -> intBinPred,
       "&&" -> fun(singleTup(BoolType), fun(singleTup(BoolType), BoolType)(noProv))(noProv),
       "||" -> fun(singleTup(BoolType), fun(singleTup(BoolType), BoolType)(noProv))(noProv),
       "id" -> {
@@ -567,8 +570,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // ^ TODO maybe use a description passed in param?
         // currently we get things like "flows into variable reference"
         // but we used to get the better "flows into object receiver" or "flows into applied expression"...
-      case intlit: IntLit => ClassTag(Var("int"), Set(TypeName("number")))(prov)
-      case strlit: StrLit => ClassTag(Var("string"), Set())(prov)
+      case intlit: IntLit => ClassTag(Var("int"), Set.empty)(prov)
+      case strlit: StrLit => ClassTag(Var("string"), Set.empty)(prov)
+      case declit: DecLit => ClassTag(Var("float"), Set.empty)(prov)
       case lit: Lit => ClassTag(lit, lit.baseClasses)(prov)
       case App(Var("neg" | "~"), trm) => typeTerm(trm).neg(prov)
       case App(App(Var("|"), lhs), rhs) =>

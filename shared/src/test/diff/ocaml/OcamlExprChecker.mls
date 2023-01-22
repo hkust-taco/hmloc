@@ -47,8 +47,34 @@ let a b c d = b = c = d
 // let a = []
 //│ res: Cons[int] with {_1: Nil}
 //│ res: Cons[int] with {_1: Cons[int] with {_1: Nil}}
-//│ res: Cons[int] with {_1: Cons[int] with {_1: Cons[int] with {_1: Cons[int] with {_1: Nil}}}}
+//│ res: Cons[(int, int, int, int,)] with {_1: Nil}
 //│ res: Nil
+
+let (+.): float -> float -> float
+let (-.): float -> float -> float
+let ( *. ): float -> float -> float
+let ( /. ): float -> float -> float
+let ( ** ): float -> float -> float
+//│ +.: float -> float -> float
+//│ -.: float -> float -> float
+//│ *.: float -> float -> float
+//│ /.: float -> float -> float
+//│ **: float -> float -> float
+
+1.0 +. 1.0 -. 1.0 *. 2.0 /. 3.0 ** 5.0
+//│ res: float
+
+1.0 :: Nil
+2.0 :: 3.223 :: Nil
+//│ res: Cons[float] with {_1: Nil}
+//│ res: Cons[float] with {_1: Cons[float] with {_1: Nil}}
+
+let f = 3.14
+let f = f +. 1.0
+let f = f +. f +. 1.0
+//│ f: float
+//│ f: float
+//│ f: float
 
 // let without in as definitions
 let a = 1
@@ -65,12 +91,12 @@ let data = Cons (a, Cons (b, Nil))
 //│ b: (string, int,)
 //│ data: Cons[(string, int,)] with {_1: Cons[(string, int,)] with {_1: Nil}}
 
-// TODO floats and floating point operators
-// FIXME
 2.0
 let b = 3.0
 let c = 3.0 +. 4.0 *. 6.0
-//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):1:3, found "0;let b = " at l.70:3: 2.0
+//│ res: float
+//│ b: float
+//│ c: float
 
 // make tuples from comma separated terms
 1, 2, 3
@@ -80,7 +106,7 @@ let mktup = [1, 2, 3], 4, (5, 6)
 //│ res: (int, int, int,)
 //│ mktup: (int, int, int,)
 //│ mktup: (int, (int, int,),)
-//│ mktup: (Cons[int] with {_1: Cons[int] with {_1: Cons[int] with {_1: Nil}}}, int, (int, int,),)
+//│ mktup: (Cons[(int, int, int,)] with {_1: Nil}, int, (int, int,),)
 
 // create classes for exceptions
 exception Unimplemented
@@ -156,7 +182,25 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 (("hi", 1) :: Nil):heap
 (("hi", 1) :: ("bye", 2) :: Nil):heap
 //│ res: Cons[(string, int,)] with {_1: Nil}
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.182: 	(("hi", 1) :: Nil):heap
+//│ ║         	^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of type `int`
+//│ ║  l.182: 	(("hi", 1) :: Nil):heap
+//│ ║         	        ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.122: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ╙──       	                                                                  ^^^
 //│ res: heap
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.183: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of type `int`
+//│ ║  l.183: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ ║         	        ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.122: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ╙──       	                                                                  ^^^
 //│ res: heap
 
 let update h str i = (str,i)::h
@@ -169,14 +213,14 @@ let interp2 = (fun (env:env) opt ->
   match opt with
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.167: 	fun (env: env) _ -> []
+//│ ║  l.211: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
 //│ res: error -> Nil
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.168: 	let interp2 = (fun (env:env) opt ->
+//│ ║  l.212: 	let interp2 = (fun (env:env) opt ->
 //│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
-//│ ║  l.169: 	  match opt with
+//│ ║  l.213: 	  match opt with
 //│ ╙──       	        ^^^
 //│ interp2: error -> int
 
@@ -242,10 +286,10 @@ match n < 0 with
   | false  -> 1
 //│ Parsed: If(IfOpApp(App(App(Var(<), Tup(_: Var(n))), Tup(_: IntLit(0))), Var(is), IfBlock(IfThen(Var(true), IntLit(0);IfThen(Var(false), IntLit(1)), None)
 //│ ╔══[ERROR] Missing the otherwise case of test == (< (n,) (0,),) (false,)
-//│ ║  l.240: 	match n < 0 with
+//│ ║  l.284: 	match n < 0 with
 //│ ║         	      ^^^^^^^^^^
-//│ ║  l.241: 	  true  -> 0
+//│ ║  l.285: 	  true  -> 0
 //│ ║         	^^^^^^^^^^^^
-//│ ║  l.242: 	  | false  -> 1
+//│ ║  l.286: 	  | false  -> 1
 //│ ╙──       	^^^^^^^^^
 //│ res: error
