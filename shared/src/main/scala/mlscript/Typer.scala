@@ -131,7 +131,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       "anything" -> TopType, "nothing" -> BotType, "float" -> FloatType)
   
   val builtinTypes: Ls[TypeDef] =
-    TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Nil, Nil, Set.single(TypeName("number")), N, Nil) ::
+    TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("number"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("bool"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("true"), Nil, Nil, TopType, Nil, Nil, Set.single(TypeName("bool")), N, Nil) ::
@@ -209,10 +209,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       "mul" -> intBinOpTy,
       "div" -> intBinOpTy,
       "sqrt" -> fun(singleTup(IntType), IntType)(noProv),
-      "lt" -> numberBinPred,
-      "le" -> numberBinPred,
-      "gt" -> numberBinPred,
-      "ge" -> numberBinPred,
+      "lt" -> intBinPred,
+      "le" -> intBinPred,
+      "gt" -> intBinPred,
+      "ge" -> intBinPred,
       "concat" -> fun(singleTup(StrType), fun(singleTup(StrType), StrType)(noProv))(noProv),
       "eq" -> {
         val v = freshVar(noProv)(1)
