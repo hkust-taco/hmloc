@@ -1133,10 +1133,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     * @param ctx
     * @param raise
     */
-  def unifyType(st: ST)(implicit ctx: Ctx, raise: Raise) = {
+  def unifyType()(implicit ctx: Ctx, raise: Raise) = {
     val unificationStore = UnificationStore()
-  //  val tvars = TypeVariable.createdTypeVars
-    val tvars = st.getVars
+    val tvars = TypeVariable.createdTypeVars
     tvars.foreach(unificationStore.unifyTypeBounds(_, Nil))
   }
   

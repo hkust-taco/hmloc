@@ -395,7 +395,10 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   def freshVar(p: TypeProvenance, nameHint: Opt[Str] = N, lbs: Ls[ST] = Nil, ubs: Ls[ST] = Nil)
         (implicit lvl: Int): TypeVariable = {
           val tvar = new TypeVariable(lvl, lbs, ubs, nameHint)(p)
-          TypeVariable.createdTypeVars = tvar :: TypeVariable.createdTypeVars
+          // only collect type variables if the flag is activated
+          if (TypeVariable.collectTypeVars) {
+            TypeVariable.createdTypeVars = tvar :: TypeVariable.createdTypeVars
+          }
           tvar
         }
   def resetState(): Unit = {
@@ -404,7 +407,9 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   trait CompactTypeOrVariable
   type PolarVariable = (TypeVariable, Boolean)
   object TypeVariable {
+    var collectTypeVars: Bool = false
     var createdTypeVars: Ls[TypeVariable] = Nil
+    def clearCollectedTypeVars(): Unit = createdTypeVars = Nil
   }
   
   case class NegVar(tv: TV) extends ProxyType with Factorizable {

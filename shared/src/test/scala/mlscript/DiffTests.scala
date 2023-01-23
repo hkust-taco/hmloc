@@ -67,8 +67,8 @@ class DiffTests
   protected lazy val files = allFiles.filter { file =>
       val fileName = file.baseName
       // validExt(file.ext) && filter(fileName)
- validExt(file.ext) && filter(file.relativeTo(pwd))
-          //  validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("UnificationError")
+//  validExt(file.ext) && filter(file.relativeTo(pwd))
+           validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("UnificationError")
   }
   
   val timeLimit = TimeLimit
@@ -517,14 +517,17 @@ class DiffTests
               typer.processTypeDefs(typeDefs)(ctx, raise)
             
             def getType(ty: typer.TypeScheme): Type = {
+              // switch of type variable collection during simplification
+              // because it adds many duplicate type variables
+              var prevVal = typer.TypeVariable.collectTypeVars
+              typer.TypeVariable.collectTypeVars = false
+              
               val wty = ty.uninstantiatedBody
               if (mode.isDebugging) output(s"⬤ Typed as: $wty")
               if (mode.isDebugging) output(s" where: ${wty.showBounds}")
               typer.dbg = mode.dbgSimplif
-              if (mode.unify) {
-                typer.unifyType(wty)(ctx, raise)
-              }
-              if (mode.noSimplification) typer.expandType(wty)(ctx)
+              
+              val exp = if (mode.noSimplification) typer.expandType(wty)(ctx)
               else {
                 object SimplifyPipeline extends typer.SimplifyPipeline {
                   def debugOutput(msg: => Str): Unit =
@@ -535,6 +538,9 @@ class DiffTests
                 if (mode.dbgSimplif) output(s"⬤ Expanded: ${exp}")
                 exp
               }
+              
+              typer.TypeVariable.collectTypeVars = prevVal
+              exp
             }
             // initialize ts typegen code builder and
             // declare all type definitions for current block
@@ -640,6 +646,13 @@ class DiffTests
               diagLineBuffers.clear()
             }
             
+            // clear existing type variables so that only type variables
+            // created while typing the current block are retained
+            if (mode.unify) {
+              typer.TypeVariable.clearCollectedTypeVars()
+              typer.TypeVariable.collectTypeVars = true
+            }
+            
             // process statements and output mlscript types
             // all `Def`s and `Term`s are processed here
             // generate typescript types if generateTsDeclarations flag is
@@ -710,6 +723,13 @@ class DiffTests
                       typingOutputs += R[Ls[Str], Str -> Ls[Str]]("" -> Nil)
                     )
                 }
+            }
+            
+            // generate unification for the type variables created in the current
+            // typing unit.
+            if (mode.unify) {
+              typer.unifyType()(ctx, raise)
+              typer.TypeVariable.clearCollectedTypeVars()
             }
             
             var results: JSTestBackend.Result \/ Ls[ReplHost.Reply] = if (!allowTypeErrors &&
