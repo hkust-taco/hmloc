@@ -65,10 +65,10 @@ class DiffTests
   // scala test will not execute a test if the test class has constructor parameters.
   // override this to get the correct paths of test files.
   protected lazy val files = allFiles.filter { file =>
-      val fileName = file.baseName
-      // validExt(file.ext) && filter(fileName)
-//  validExt(file.ext) && filter(file.relativeTo(pwd))
-           validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("UnificationError")
+    val fileName = file.baseName
+    // validExt(file.ext) && filter(fileName)
+    validExt(file.ext) && filter(file.relativeTo(pwd))
+    // validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("UnificationError")
   }
   
   val timeLimit = TimeLimit
