@@ -964,7 +964,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       }
     }
     def firstAndLastUseLocation(t: ST): Ls[Message -> Opt[Loc]] = {
-      val stUseLocation = typeUseLocations(t)
+      val stUseLocation = t.getUseLocation.filter(_.loco.isDefined)
       val st = t.getUnderlying
       (stUseLocation.headOption, stUseLocation.lastOption) match {
         // only show one location in case of duplicates

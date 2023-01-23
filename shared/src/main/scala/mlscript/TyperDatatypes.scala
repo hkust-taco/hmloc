@@ -102,7 +102,13 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def uninstantiatedBody: SimpleType = this
     def instantiate(implicit lvl: Int) = this
     constructedTypes += 1
+    /** Get underlying type for the simple type. For provenance type this
+     * recursively calls getUnderlying to get the actual type */
     def getUnderlying: ST = this
+    /** Get all the provenances where this type is used. For provenance
+     * type it builds a list of use locations starting ending with provenance
+     * of the actual type */
+    def getUseLocation: Ls[TypeProvenance] = prov :: Nil
   }
   type ST = SimpleType
   
@@ -223,6 +229,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   case class ProvType(underlying: SimpleType)(val prov: TypeProvenance) extends ProxyType {
     override def toString = if (prov is NestedTypeProvenance) s"[$underlying] prov: $prov" else s"[$underlying]"
     override def getUnderlying = underlying.getUnderlying
+    override def getUseLocation: Ls[TypeProvenance] = prov :: underlying.getUseLocation
     // override def toString = s"$underlying[${prov.desc.take(5)}]"
     // override def toString = s"$underlying[${prov.toString.take(5)}]"
     // override def toString = s"$underlying@${prov}"
