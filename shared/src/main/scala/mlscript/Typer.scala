@@ -965,7 +965,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     }
     def firstAndLastUseLocation(t: ST): Ls[Message -> Opt[Loc]] = {
       val stUseLocation = typeUseLocations(t)
-      val st = getUnderlying(t)
+      val st = t.getUnderlying
       (stUseLocation.headOption, stUseLocation.lastOption) match {
         // only show one location in case of duplicates
         case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.toString} is used as ${prov1.desc}" -> prov1.loco :: Nil
@@ -978,17 +978,13 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case ((N, N)) => Nil
       }
     }
-    def getUnderlying(st: ST): ST = st match {
-      case ProvType(underlying) => getUnderlying(underlying)
-      case st => st
-    }
   /** Unification happens because of previous type variable. Dir indicates
    * if the st is an lb of the prev (true) or an ub of prev (false)
      */
     case class UnificationReason(st: ST, prev: ST, dir: Bool) {
       def toDiagnostic: Ls[Message -> Opt[Loc]] = {
-        val stUnder = getUnderlying(st)
-        val prevUnder = getUnderlying(prev)
+        val stUnder = st.getUnderlying
+        val prevUnder = prev.getUnderlying
         dir match {
           // st is lower bound to prev
           case true => msg"${stUnder.toString} flows into ${prevUnder.toString}" -> N ::
