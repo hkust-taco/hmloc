@@ -3,8 +3,28 @@
 :unify
 // 0 1
 
-:unify
+:unifyDbg
 let temp = if true then 0 else "oops" in 0
+//│ [UNIFICATION] unifying the following types: List(α28', α27', α26', α25')
+//│ α28' traverse bounds
+//│ | :> [[[[[int<>]]]]], [[[[[string<>]]]]]
+//│ | <: 
+//│ | [[[[[int<>]]]]] traverse bounds
+//│ | | int<> traverse bounds
+//│ | | reason: int<> <: α28'
+//│ | reason: int<> <: α28'
+//│ | [[[[[string<>]]]]] traverse bounds
+//│ | | string<> traverse bounds
+//│ | | reason: string<> <: α28'
+//│ | reason: string<> <: α28'
+//│ | unify(α28', int<>) because int<> <: α28'
+//│ | | with store: HashMap()
+//│ | | add entry: α28' -> int<>
+//│ | unify(α28', string<>) because string<> <: α28'
+//│ | | with store: HashMap(α28' -> int<>)
+//│ | | ERROR int<> = string<>
+//│ | | REASON for int<> is int<> <: α28'
+//│ | | REASON for string<> is string<> <: α28'
 //│ ╔══[WARNING] Unification error (level 1): int<> and string<> cannot be unified
 //│ ╟── int<> flows into α28'
 //│ ╟── α28' is used as application
@@ -26,6 +46,64 @@ let temp = if true then 0 else "oops" in 0
 //│ ╟── string<> is used as string literal
 //│ ║  l.7: 	let temp = if true then 0 else "oops" in 0
 //│ ╙──     	                               ^^^^^^
+//│ reason: 
+//│ α27' traverse bounds
+//│ | :> [[(α25' -> α25')]]
+//│ | <: [([string<>] -> α28')]
+//│ | [[(α25' -> α25')]] traverse bounds
+//│ | | (α25' -> α25') traverse bounds
+//│ | | reason: (α25' -> α25') <: α27'
+//│ | reason: (α25' -> α25') <: α27'
+//│ | [([string<>] -> α28')] traverse bounds
+//│ | | ([string<>] -> α28') traverse bounds
+//│ | | reason: ([string<>] -> α28') :> α27'
+//│ | reason: ([string<>] -> α28') :> α27'
+//│ | unify(α27', (α25' -> α25')) because (α25' -> α25') <: α27'
+//│ | | with store: HashMap(α28' -> int<>)
+//│ | | add entry: α27' -> (α25' -> α25')
+//│ | unify(α27', ([string<>] -> α28')) because ([string<>] -> α28') :> α27'
+//│ | | with store: HashMap(α27' -> (α25' -> α25'), α28' -> int<>)
+//│ reason: 
+//│ α26' traverse bounds
+//│ | :> [[(α25' -> (α25' -> α25'))]]
+//│ | <: [([int<>] -> α27')]
+//│ | [[(α25' -> (α25' -> α25'))]] traverse bounds
+//│ | | (α25' -> (α25' -> α25')) traverse bounds
+//│ | | reason: (α25' -> (α25' -> α25')) <: α26'
+//│ | reason: (α25' -> (α25' -> α25')) <: α26'
+//│ | [([int<>] -> α27')] traverse bounds
+//│ | | ([int<>] -> α27') traverse bounds
+//│ | | reason: ([int<>] -> α27') :> α26'
+//│ | reason: ([int<>] -> α27') :> α26'
+//│ | unify(α26', (α25' -> (α25' -> α25'))) because (α25' -> (α25' -> α25')) <: α26'
+//│ | | with store: HashMap(α27' -> (α25' -> α25'), α28' -> int<>)
+//│ | | add entry: α26' -> (α25' -> (α25' -> α25'))
+//│ | unify(α26', ([int<>] -> α27')) because ([int<>] -> α27') :> α26'
+//│ | | with store: HashMap(α26' -> (α25' -> (α25' -> α25')), α27' -> (α25' -> α25'), α28' -> int<>)
+//│ reason: 
+//│ α25' traverse bounds
+//│ | :> [[[string<>]]], [[[int<>]]]
+//│ | <: [[α28']]
+//│ | [[[string<>]]] traverse bounds
+//│ | | string<> traverse bounds
+//│ | | | string<> has been visited before
+//│ | reason: string<> <: α25'
+//│ | [[[int<>]]] traverse bounds
+//│ | | int<> traverse bounds
+//│ | | | int<> has been visited before
+//│ | reason: int<> <: α25'
+//│ | [[α28']] traverse bounds
+//│ | | α28' traverse bounds
+//│ | | | α28' has been visited before
+//│ | reason: α28' :> α25'
+//│ | unify(α25', string<>) because string<> <: α28'
+//│ | | with store: HashMap(α26' -> (α25' -> (α25' -> α25')), α27' -> (α25' -> α25'), α28' -> int<>)
+//│ | | add entry: α25' -> string<>
+//│ | unify(α25', int<>) because int<> <: α28'
+//│ | | with store: HashMap(α25' -> string<>, α26' -> (α25' -> (α25' -> α25')), α27' -> (α25' -> α25'), α28' -> int<>)
+//│ | | ERROR string<> = int<>
+//│ | | REASON for string<> is string<> <: α28'
+//│ | | REASON for int<> is int<> <: α28'
 //│ ╔══[WARNING] Unification error (level 1): string<> and int<> cannot be unified
 //│ ╟── string<> flows into α28'
 //│ ╟── α28' is used as application
@@ -47,6 +125,11 @@ let temp = if true then 0 else "oops" in 0
 //│ ╟── int<> is used as integer literal
 //│ ║  l.7: 	let temp = if true then 0 else "oops" in 0
 //│ ╙──     	                        ^
+//│ | unify(α25', α28') because 
+//│ | | with store: HashMap(α25' -> string<>, α26' -> (α25' -> (α25' -> α25')), α27' -> (α25' -> α25'), α28' -> int<>)
+//│ | | ERROR string<> = int<>
+//│ | | REASON for string<> is string<> <: α28'
+//│ | | REASON for int<> is int<> <: α28'
 //│ ╔══[WARNING] Unification error (level 1): string<> and int<> cannot be unified
 //│ ╟── string<> flows into α28'
 //│ ╟── α28' is used as application
@@ -68,11 +151,133 @@ let temp = if true then 0 else "oops" in 0
 //│ ╟── int<> is used as integer literal
 //│ ║  l.7: 	let temp = if true then 0 else "oops" in 0
 //│ ╙──     	                        ^
+//│ reason: 
 //│ res: int
 
-:unify
+:unifyDbg
+:d
 def s x = if x then x else 3
-//│ s: (bool & 'a) -> (int | 'a)
+//│ 1. Typing term x, => if x x 3
+//│ | 1. Typing pattern x,
+//│ | | 1. Typing pattern x
+//│ | | 1. : α29'
+//│ | 1. : (α29',)
+//│ | 1. Typing term if x x 3
+//│ | | 1. Typing term if x x
+//│ | | | 1. Typing term if x
+//│ | | | | 1. Typing term if
+//│ | | | | 1. : (bool<> -> (α30' -> (α30' -> α30')))
+//│ | | | | 1. Typing term x
+//│ | | | | 1. : α29'
+//│ | | | | CONSTRAIN (bool<> -> (α30' -> (α30' -> α30'))) <! (α29' -> α31')
+//│ | | | |   where 
+//│ | | | | C (bool<> -> (α30' -> (α30' -> α30'))) <! (α29' -> α31')    (0) where FunctionType <: FunctionType}
+//│ | | | | | C α29' <! bool<>    (1) where TypeVariable <: ClassTag}
+//│ | | | | | C (α30' -> (α30' -> α30')) <! α31'    (2) where FunctionType <: TypeVariable}
+//│ | | | 1. : α31'
+//│ | | | 1. Typing term x
+//│ | | | 1. : α29'
+//│ | | | CONSTRAIN α31' <! (α29' -> α32')
+//│ | | |   where 
+//│ 		α29' <: bool<>
+//│ 		α31' :> (α30' -> (α30' -> α30'))
+//│ | | | C α31' <! (α29' -> α32')    (0) where TypeVariable <: FunctionType}
+//│ | | | | C (α30' -> (α30' -> α30')) <! (α29' -> α32')    (1) where FunctionType <: FunctionType}
+//│ | | | | | C α29' <! α30'    (2) where TypeVariable <: TypeVariable}
+//│ | | | | | C (α30' -> α30') <! α32'    (3) where FunctionType <: TypeVariable}
+//│ | | 1. : α32'
+//│ | | 1. Typing term 3
+//│ | | 1. : int<>
+//│ | | CONSTRAIN α32' <! (int<> -> α33')
+//│ | |   where 
+//│ 		α32' :> (α30' -> α30')
+//│ | | C α32' <! (int<> -> α33')    (0) where TypeVariable <: FunctionType}
+//│ | | | C (α30' -> α30') <! (int<> -> α33')    (1) where FunctionType <: FunctionType}
+//│ | | | | C int<> <! α30'    (2) where ClassTag <: TypeVariable}
+//│ | | | | C α30' <! α33'    (3) where TypeVariable <: TypeVariable}
+//│ | | | | | C int<> <! α33'    (4) where ClassTag <: TypeVariable}
+//│ | 1. : α33'
+//│ 1. : (α29' -> α33')
+//│ ⬤ Typed as: (α29' -> α33')
+//│  where: 
+//│ 		α29' <: α30' & bool<>
+//│ 		α30' :> int<> <: α33'
+//│ 		α33' :> int<>
+//│ [UNIFICATION] unifying the following types: List(α33', α32', α31', α30', α29')
+//│ α33' traverse bounds
+//│ | :> int<>
+//│ | <: 
+//│ | int<> traverse bounds
+//│ | reason: int<> <: α33'
+//│ | unify(α33', int<>) because int<> <: α33'
+//│ | | with store: HashMap()
+//│ | | add entry: α33' -> int<>
+//│ reason: 
+//│ α32' traverse bounds
+//│ | :> (α30' -> α30')
+//│ | <: (int<> -> α33')
+//│ | (α30' -> α30') traverse bounds
+//│ | reason: (α30' -> α30') <: α32'
+//│ | (int<> -> α33') traverse bounds
+//│ | reason: (int<> -> α33') :> α32'
+//│ | unify(α32', (α30' -> α30')) because (α30' -> α30') <: α32'
+//│ | | with store: HashMap(α33' -> int<>)
+//│ | | add entry: α32' -> (α30' -> α30')
+//│ | unify(α32', (int<> -> α33')) because (int<> -> α33') :> α32'
+//│ | | with store: HashMap(α32' -> (α30' -> α30'), α33' -> int<>)
+//│ reason: 
+//│ α31' traverse bounds
+//│ | :> (α30' -> (α30' -> α30'))
+//│ | <: (α29' -> α32')
+//│ | (α30' -> (α30' -> α30')) traverse bounds
+//│ | reason: (α30' -> (α30' -> α30')) <: α31'
+//│ | (α29' -> α32') traverse bounds
+//│ | reason: (α29' -> α32') :> α31'
+//│ | unify(α31', (α30' -> (α30' -> α30'))) because (α30' -> (α30' -> α30')) <: α31'
+//│ | | with store: HashMap(α32' -> (α30' -> α30'), α33' -> int<>)
+//│ | | add entry: α31' -> (α30' -> (α30' -> α30'))
+//│ | unify(α31', (α29' -> α32')) because (α29' -> α32') :> α31'
+//│ | | with store: HashMap(α32' -> (α30' -> α30'), α33' -> int<>, α31' -> (α30' -> (α30' -> α30')))
+//│ reason: 
+//│ α30' traverse bounds
+//│ | :> int<>
+//│ | <: α33'
+//│ | int<> traverse bounds
+//│ | | int<> has been visited before
+//│ | α33' traverse bounds
+//│ | | α33' has been visited before
+//│ | unify(α30', int<>) because int<> <: α33'
+//│ | | with store: HashMap(α32' -> (α30' -> α30'), α33' -> int<>, α31' -> (α30' -> (α30' -> α30')))
+//│ | | add entry: α30' -> int<>
+//│ | unify(α30', α33') because 
+//│ | | with store: HashMap(α32' -> (α30' -> α30'), α33' -> int<>, α30' -> int<>, α31' -> (α30' -> (α30' -> α30')))
+//│ reason: 
+//│ α29' traverse bounds
+//│ | :> 
+//│ | <: α30', bool<>
+//│ | α30' traverse bounds
+//│ | | α30' has been visited before
+//│ | bool<> traverse bounds
+//│ | reason: bool<> :> α29'
+//│ | unify(α29', α30') because 
+//│ | | with store: HashMap(α32' -> (α30' -> α30'), α33' -> int<>, α30' -> int<>, α31' -> (α30' -> (α30' -> α30')))
+//│ | | add entry: α29' -> int<>
+//│ | unify(α29', bool<>) because bool<> :> α29'
+//│ | | with store: HashMap(α32' -> (α30' -> α30'), α33' -> int<>, α29' -> int<>, α30' -> int<>, α31' -> (α30' -> (α30' -> α30')))
+//│ | | ERROR int<> = bool<>
+//│ | | REASON for int<> is int<> <: α33'
+//│ | | REASON for bool<> is bool<> :> α29'
+//│ /!!!\ Uncaught error: java.lang.Exception: No common type variable in unification error
+//│ 	at: mlscript.Typer$UnificationStore.$anonfun$reportUnificationError$8(Typer.scala:1101)
+//│ 	at: scala.Option.getOrElse(Option.scala:201)
+//│ 	at: mlscript.Typer$UnificationStore.reportUnificationError(Typer.scala:1101)
+//│ 	at: mlscript.Typer$UnificationStore.$anonfun$unify$3(Typer.scala:1083)
+//│ 	at: scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
+//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:30)
+//│ 	at: mlscript.Typer$UnificationStore.unify(Typer.scala:1051)
+//│ 	at: mlscript.Typer$UnificationStore.$anonfun$traverseTypeBounds$9(Typer.scala:1137)
+//│ 	at: mlscript.Typer$UnificationStore.$anonfun$traverseTypeBounds$9$adapted(Typer.scala:1137)
+//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
 
 :ns
 :unify

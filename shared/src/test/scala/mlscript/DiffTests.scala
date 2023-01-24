@@ -164,6 +164,7 @@ class DiffTests
       suspiciousLocation: Bool = false,
       // noProvs: Bool = false,
       unify: Bool = false,
+      unifyDbg: Bool = false,
     ) extends ModeType {
       def isDebugging: Bool = dbg || dbgSimplif
     }
@@ -299,6 +300,7 @@ class DiffTests
           case "sus" => mode.copy(suspiciousLocation = true)
           // unify type bounds to find errors for HM style type system
           case "unify" => mode.copy(unify = true)
+          case "unifyDbg" => mode.copy(unifyDbg = true, unify = true)
           case _ =>
             failures += allLines.size - lines.size
             output("/!\\ Unrecognized option " + line)
@@ -728,8 +730,11 @@ class DiffTests
             // generate unification for the type variables created in the current
             // typing unit.
             if (mode.unify) {
+              val temp = typer.dbg
+              typer.dbg = mode.unifyDbg
               typer.unifyType()(ctx, raise)
               typer.TypeVariable.clearCollectedTypeVars()
+              typer.dbg = temp
             }
             
             var results: JSTestBackend.Result \/ Ls[ReplHost.Reply] = if (!allowTypeErrors &&

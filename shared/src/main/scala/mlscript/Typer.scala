@@ -545,7 +545,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // Note: only look at ctx.env, and not the outer ones!
         ctx.env.get(nme).collect { case VarSymbol(ts, dv) => assert(v.uid.isDefined); v.uid = dv.uid; ts.instantiate }
           .getOrElse {
-            val res = new TypeVariable(lvl, Nil, Nil)(prov)
+            val res = freshVar(prov)(lvl)
             v.uid = S(nextUid)
             ctx += nme -> VarSymbol(res, v)
             res
@@ -982,6 +982,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
    * if the st is an lb of the prev (true) or an ub of prev (false)
      */
     case class UnificationReason(st: ST, prev: ST, dir: Bool) {
+      override def toString: String = dir match {
+        case true => s"${st.getUnderlying} <: ${prev}"
+        case false => s"${st.getUnderlying} :> ${prev}"
+      }
       def toDiagnostic: Ls[Message -> Opt[Loc]] = {
         val stUnder = st.getUnderlying
         val prevUnder = prev.getUnderlying
@@ -1042,7 +1046,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     /** Unify so that type variable map to concrete types - Functions, Records,
      * Class tags into/from which it flows
      */
-    def unify(a: ST, b: ST)(implicit ctx: Ctx, raise: Raise): Unit = {
+    def unify(a: ST, b: ST)(implicit ctx: Ctx, raise: Raise): Unit = 
+      trace(s"unify(${a}, ${b}) because ${chain.getOrElse(b, Nil).mkString(", ")}")
+    {
+      println(s"with store: ${store}")
       val aType = getUnifiedType(a)
       val bType = getUnifiedType(b)
       
@@ -1050,18 +1057,21 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   
       (aType, bType) match {
         case (ProvType(u), t) =>
-          unify(u, t)
+          unify(u.getUnderlying, t)
         case (t, ProvType(u)) =>
-          unify(t, u)
+          unify(t, u.getUnderlying)
         case (tv1: TypeVariable, tv2: TypeVariable) =>
           // unify in any order
           store += ((tv1, tv2))
+          println(s"add entry: ${tv1} -> ${tv2}")
         case (tv1: TypeVariable, st: ST) =>
           // unify where tv1 maps to st
           store += ((tv1, st))
+          println(s"add entry: ${tv1} -> ${st}")
         case (st: ST, tv2: TypeVariable) =>
           // unify where tv2 maps to st
           store += ((tv2, st))
+          println(s"add entry: ${tv2} -> ${st}")
         case (f1@FunctionType(lhs1, rhs1), f2@FunctionType(lhs2, rhs2)) =>
           // TODO: recursively unify type argument types
           // unify(lhs1, lhs2)
@@ -1077,12 +1087,15 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           // show and how it happened
           reportUnificationError(aType, bType)
       }
-    }
+    } ()
     
     def reportUnificationError(a: ST, b: ST)(implicit ctx: Ctx, raise: Raise): Unit = {
       val aPath = chain.getOrElse(a, Nil)
       val bPath = chain.getOrElse(b, Nil)
       val bPathSet = bPath.iterator.map(_.prev).toSet
+      println(s"ERROR ${a} = ${b}")
+      println(s"REASON for ${a} is ${aPath.mkString(", ")}")
+      println(s"REASON for ${b} is ${bPath.mkString(", ")}")
 
       val commonUnifier = aPath.find(ur => bPathSet(ur.prev))
         .getOrElse(throw new Exception("No common type variable in unification error"))
@@ -1101,7 +1114,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     /** Traverse type variable bounds and store the chain of reasons for
       * unifying those types.
       */
-    def unifyTypeBounds(st: SimpleType, reason: Ls[UnificationReason])(implicit ctx: Ctx, raise: Raise): Unit = {
+    def traverseTypeBounds(st: SimpleType, reason: Ls[UnificationReason])(implicit ctx: Ctx, raise: Raise): Unit = 
+      trace(s"${st} traverse bounds")
+    {
       st match {
         // type variable with upper and lower type bounds that need to be
         // unified. We track why two variable are being unified by keeping
@@ -1109,21 +1124,27 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case tv: TypeVariable =>
           // skip if a type variable has been visited before otherwise set it's previous
           // type variable which shows why it's being unified
-          if (chain.contains(st)) return
-          else chain.put(st, reason)
+          if (chain.contains(st)) {
+            println(s"${st} has been visited before")
+            return
+          } else chain.put(st, reason)
 
-          tv.lowerBounds.foreach(lb => unifyTypeBounds(lb, UnificationReason(lb, tv, true) :: reason))
-          tv.upperBounds.foreach(ub => unifyTypeBounds(ub, UnificationReason(ub, tv, false) :: reason))
-          tv.lowerBounds.foreach(lb => unify(tv, lb))
-          tv.upperBounds.foreach(ub => unify(tv, ub))
-        case pv: ProvType => unifyTypeBounds(pv.underlying, reason)
+          println(s":> ${tv.lowerBounds.mkString(", ")}")
+          println(s"<: ${tv.upperBounds.mkString(", ")}")
+          tv.lowerBounds.foreach(lb => traverseTypeBounds(lb, UnificationReason(lb, tv, true) :: reason))
+          tv.upperBounds.foreach(ub => traverseTypeBounds(ub, UnificationReason(ub, tv, false) :: reason))
+          tv.lowerBounds.foreach(lb => unify(tv, lb.getUnderlying))
+          tv.upperBounds.foreach(ub => unify(tv, ub.getUnderlying))
+        case pv: ProvType => traverseTypeBounds(pv.getUnderlying, reason)
         case _ =>
           // skip if a type variable has been visited before otherwise set it's previous
           // type variable which shows why it's being unified
-          if (chain.contains(st)) return
-          else chain.put(st, reason)
+          if (chain.contains(st)) {
+            println(s"${st} has been visited before")
+            return
+          } else chain.put(st, reason)
       }
-    }
+    } (_ => s"reason: ${reason.mkString(", ")}")
   }
   
   /** Unifies type bounds to find unification errors. These errors are not
@@ -1136,7 +1157,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   def unifyType()(implicit ctx: Ctx, raise: Raise) = {
     val unificationStore = UnificationStore()
     val tvars = TypeVariable.createdTypeVars
-    tvars.foreach(unificationStore.unifyTypeBounds(_, Nil))
+    println(s"[UNIFICATION] unifying the following types: ${tvars}")
+    tvars.foreach(unificationStore.traverseTypeBounds(_, Nil))
   }
   
   /** Convert an inferred SimpleType into the immutable Type representation. */
