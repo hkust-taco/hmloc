@@ -562,7 +562,7 @@ class ConstraintSolver extends NormalForms { self: Typer =>
       val lhsChain: List[ST] = cctx._1
       val rhsChain: List[ST] = cctx._2
       val lhs = cctx._1.head
-      val rhs = cctx._2.head
+      val rhs = cctx._2.last  // right hand chain is reversed
       
       // println(s"context part 1 -\n  $cctx._1\n and part 2 -\n $cctx._2\n")
       // println(s"CONSTRAINT FAILURE: $lhs <: $rhs")
