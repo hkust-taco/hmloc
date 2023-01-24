@@ -965,7 +965,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     }
     def firstAndLastUseLocation(t: ST): Ls[Message -> Opt[Loc]] = {
       val stUseLocation = t.getUseLocation.filter(_.loco.isDefined)
-      val st = t.getUnderlying
+      val st = t.unwrapProvs
       (stUseLocation.headOption, stUseLocation.lastOption) match {
         // only show one location in case of duplicates
         case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.toString} is used as ${prov1.desc}" -> prov1.loco :: Nil
@@ -983,12 +983,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
      */
     case class UnificationReason(st: ST, prev: ST, dir: Bool) {
       override def toString: String = dir match {
-        case true => s"${st.getUnderlying} <: ${prev}"
-        case false => s"${st.getUnderlying} :> ${prev}"
+        case true => s"${st.unwrapProvs} <: ${prev}"
+        case false => s"${st.unwrapProvs} :> ${prev}"
       }
       def toDiagnostic: Ls[Message -> Opt[Loc]] = {
-        val stUnder = st.getUnderlying
-        val prevUnder = prev.getUnderlying
+        val stUnder = st.unwrapProvs
+        val prevUnder = prev.unwrapProvs
         dir match {
           // st is lower bound to prev
           case true => msg"${stUnder.toString} flows into ${prevUnder.toString}" -> N ::
@@ -1057,9 +1057,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   
       (aType, bType) match {
         case (ProvType(u), t) =>
-          unify(u.getUnderlying, t)
+          unify(u.unwrapProvs, t)
         case (t, ProvType(u)) =>
-          unify(t, u.getUnderlying)
+          unify(t, u.unwrapProvs)
         case (tv1: TypeVariable, tv2: TypeVariable) =>
           // unify in any order
           store += ((tv1, tv2))
@@ -1133,9 +1133,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           println(s"<: ${tv.upperBounds.mkString(", ")}")
           tv.lowerBounds.foreach(lb => traverseTypeBounds(lb, UnificationReason(lb, tv, true) :: reason))
           tv.upperBounds.foreach(ub => traverseTypeBounds(ub, UnificationReason(ub, tv, false) :: reason))
-          tv.lowerBounds.foreach(lb => unify(tv, lb.getUnderlying))
-          tv.upperBounds.foreach(ub => unify(tv, ub.getUnderlying))
-        case pv: ProvType => traverseTypeBounds(pv.getUnderlying, reason)
+          tv.lowerBounds.foreach(lb => unify(tv, lb.unwrapProvs))
+          tv.upperBounds.foreach(ub => unify(tv, ub.unwrapProvs))
+        case pv: ProvType => traverseTypeBounds(pv.unwrapProvs, reason)
         case _ =>
           // skip if a type variable has been visited before otherwise set it's previous
           // type variable which shows why it's being unified
