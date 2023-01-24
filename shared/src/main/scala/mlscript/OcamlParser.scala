@@ -482,8 +482,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   /** Modified type declaration that parses type constructor
     * and data constructor and returns them all together as a
     * list
+    * 
+    * Handle aliases and data constructors differently.
     */
-  def ocamlTyDecl[p: P]: P[Ls[TypeDef]] =
+  def ocamlTyDecl[p: P]: P[Ls[Statement]] =
     P((ocamlTyParams ~ tyName ~ "=" ~/
         // either a sum type with data constructors or a type alias
         (ocamlDataConstructor.map(L.apply) | ocamlTypeAlias.map(R.apply))
@@ -504,29 +506,40 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         val aliasBody = bodies.foldLeft[Type](initialBody){
           case (union, tdef) => Union(unionType(tdef), union)
         }
-        TypeDef(Als, tname, tparams, aliasBody, Nil, Nil, Nil) :: bodies ::: moreTypes.getOrElse(Nil)
+        val helpers = bodies.flatMap(cls => ocamlTyDeclHelper(cls, tname, tparams)).toList
+        TypeDef(Als, tname, tparams, aliasBody, Nil, Nil, Nil) :: bodies ::: helpers ::: moreTypes.getOrElse(Nil)
       // a type name, variable or applied type as alias
       case (tparams, tname, R((_, t)), moreTypes) =>
         TypeDef(Als, tname, tparams.toList, t, Nil, Nil, Nil) :: moreTypes.getOrElse(Nil)
       }
     )
+  
   // create a helper function for a class constructor
-  // for e.g. Cons[A] = {_0: A; _1: List[A]} gets
-  // def Cons (a, b) = Cons {_0 = a; _1 = b}
-  def ocamlTyDeclHelper(tyDef: TypeDef): Opt[Def] = {
+  //
+  // Data constructor helper functions need to be typed as returning the alias
+  // type 'a, 'b either = left of 'a | right of 'b
+  // will create
+  // * alias either['a, 'b]
+  // * class left['a']
+  // * class right['b']
+  // * constructor left(a): either['a, 'b]
+  // * constructor right(b): either['a, 'b]
+  def ocamlTyDeclHelper(tyDef: TypeDef, alsName: TypeName, alsParams: Ls[TypeName]): Opt[Def] = {
+    val alsTy = alsParams match {
+      case Nil => alsName
+      case params => AppliedType(alsName, params)
+    }
     tyDef.kind match {
       case Cls => {
         tyDef.body match {
           case Record(Nil) =>
-            val funApp = mkApp(Var(tyDef.nme.name), Rcd(Nil))
-            val fun = Def(false, Var(tyDef.nme.name), L(funApp), true)
+            val funAppTy = PolyType(alsParams, alsTy)
+            val fun = Def(false, Var(tyDef.nme.name), R(funAppTy), true)
             S(fun)
           case Record(fields) =>
-            val numArgs = fields.length
-            val args = Range(0, numArgs).map(i => Var((97+i).toChar.toString)).toList
-            val funBody = Rcd(args.zipWithIndex.map{ case (arg, i) => Var("_" + i.toString) -> Fld(false, false, arg) })
-            val funApp = mkApp(Var(tyDef.nme.name), funBody)
-            val fun = Def(false, Var(tyDef.nme.name), L(Lam(toParams(args), funApp)), true)
+            val funArg = Tuple(fields.map(N -> _._2))
+            val funTy = PolyType(alsParams, Function(toParamsTy(funArg), alsTy))
+            val fun = Def(false, Var(tyDef.nme.name), R(funTy), true)
             S(fun)
           case _ => N
         }
@@ -534,11 +547,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case _ => N
     }
   }
-  def ocamlTyDeclAndHelper[p:P]: P[Ls[Statement]] = (kw("type") ~/ ocamlTyDecl).map(tyDefs => {
-    // only create helpers for classes
-    val helpers = tyDefs.flatMap(ocamlTyDeclHelper)
-    tyDefs ::: helpers
-  })
   def tyParams[p: P]: P[Ls[TypeName]] =
     ("[" ~ tyName.rep(0, ",") ~ "]").?.map(_.toList.flatten)
   def ocamlTyParams[p: P]: P[Ls[TypeName]] =
@@ -619,7 +627,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     "exception" ~ ident
   ).map(name => Def(false, Var(name), L(Rcd(Nil)), false))
   def toplvl[p: P]: P[Ls[Statement]] =
-    P(ocamlDefDecl.map(_ :: Nil) | ocamlTyDeclAndHelper | ocamlExceptionDef.map(_ :: Nil) | termOrAssign.map(_ :: Nil))
+    P(ocamlDefDecl.map(_ :: Nil) | (kw("type") ~/ ocamlTyDecl) | ocamlExceptionDef.map(_ :: Nil) | termOrAssign.map(_ :: Nil))
   /** the program consists of multiple top level blocks separated by ";"
    * however sometimes a block can be empty with just a comment
    * in such a case it is must that there must be atleast one separator

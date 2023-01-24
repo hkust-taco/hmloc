@@ -172,6 +172,15 @@ let head xs = match xs with
   | _ -> raise Error
 //│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.171:4:   (::) x xs -> x
 
+:dp
+type h = H of int
+//│ Parsed: TypeDef(Als, TypeName(h), List(), Union(TypeName(H),TypeName(H)), List())
+//│ TypeDef(Cls, TypeName(H), List(), Record(List((_0,Field(None,TypeName(int))))), List(_0))
+//│ Def(false, H, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(int))))),TypeName(h))), true)
+//│ Desugared: type alias h = H
+//│ Desugared: class H(_0): {_0: int}
+//│ Desugared: def H: [] -> int -> h
+
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) List
 type exp = Int of int | Var of string | Plus of exp * exp | Times of exp * exp
@@ -198,54 +207,54 @@ type stmt = Skip | Assign of string * exp
 //│ Desugared: class While(_0, _1): {_0: exp, _1: stmt}
 //│ Desugared: class SaveHeap(_0): {_0: string}
 //│ Desugared: class RestoreHeap(_0): {_0: string}
-//│ Desugared: def HeapInt: a, => HeapInt ({_0: a},)
-//│ Desugared: def Heap: a, => Heap ({_0: a},)
-//│ Desugared: def Int: a, => Int ({_0: a},)
-//│ Desugared: def Var: a, => Var ({_0: a},)
-//│ Desugared: def Plus: a, b, => Plus ({_0: a, _1: b},)
-//│ Desugared: def Times: a, b, => Times ({_0: a, _1: b},)
-//│ Desugared: def Skip: Skip ({},)
-//│ Desugared: def Assign: a, b, => Assign ({_0: a, _1: b},)
-//│ Desugared: def Seq: a, b, => Seq ({_0: a, _1: b},)
-//│ Desugared: def If: a, b, c, => If ({_0: a, _1: b, _2: c},)
-//│ Desugared: def While: a, b, => While ({_0: a, _1: b},)
-//│ Desugared: def SaveHeap: a, => SaveHeap ({_0: a},)
-//│ Desugared: def RestoreHeap: a, => RestoreHeap ({_0: a},)
+//│ Desugared: def HeapInt: [] -> int -> heapVar
+//│ Desugared: def Heap: [] -> heap -> heapVar
+//│ Desugared: def Int: [] -> int -> exp
+//│ Desugared: def Var: [] -> string -> exp
+//│ Desugared: def Plus: [] -> (exp, exp,) -> exp
+//│ Desugared: def Times: [] -> (exp, exp,) -> exp
+//│ Desugared: def Skip: [] -> stmt
+//│ Desugared: def Assign: [] -> (string, exp,) -> stmt
+//│ Desugared: def Seq: [] -> (stmt, stmt,) -> stmt
+//│ Desugared: def If: [] -> (exp, stmt, stmt,) -> stmt
+//│ Desugared: def While: [] -> (exp, stmt,) -> stmt
+//│ Desugared: def SaveHeap: [] -> string -> stmt
+//│ Desugared: def RestoreHeap: [] -> string -> stmt
 
 :dp
 // parameterized type definitions
 type 'a heap = HeapA of 'a
-type ('a, 'b) heap = HeapB of 'a
-type ('a, 'b) heap = HeapC of 'a list
+type ('a, 'b) heapb = HeapB of 'a
+type ('a, 'b) heapc = HeapC of 'a list
 type 'a list = Cons of 'a * 'a list | Nil
 //│ Parsed: TypeDef(Als, TypeName(heap), List(TypeName('a)), Union(AppliedType(TypeName(HeapA),List(TypeName('a))),AppliedType(TypeName(HeapA),List(TypeName('a)))), List())
 //│ TypeDef(Cls, TypeName(HeapA), List(TypeName('a)), Record(List((_0,Field(None,TypeName('a))))), List(_0))
-//│ Def(false, HeapA, Lam(Tup(_: Var(a)), App(Var(HeapA), Tup(_: Rcd(Var(_0) = Var(a))))), true)
-//│ TypeDef(Als, TypeName(heap), List(TypeName('a), TypeName('b)), Union(AppliedType(TypeName(HeapB),List(TypeName('a))),AppliedType(TypeName(HeapB),List(TypeName('a)))), List())
+//│ Def(false, HeapA, PolyType(List(TypeName('a)),Function(Tuple(List((None,Field(None,TypeName('a))))),AppliedType(TypeName(heap),List(TypeName('a))))), true)
+//│ TypeDef(Als, TypeName(heapb), List(TypeName('a), TypeName('b)), Union(AppliedType(TypeName(HeapB),List(TypeName('a))),AppliedType(TypeName(HeapB),List(TypeName('a)))), List())
 //│ TypeDef(Cls, TypeName(HeapB), List(TypeName('a)), Record(List((_0,Field(None,TypeName('a))))), List(_0))
-//│ Def(false, HeapB, Lam(Tup(_: Var(a)), App(Var(HeapB), Tup(_: Rcd(Var(_0) = Var(a))))), true)
-//│ TypeDef(Als, TypeName(heap), List(TypeName('a), TypeName('b)), Union(AppliedType(TypeName(HeapC),List(TypeName('a))),AppliedType(TypeName(HeapC),List(TypeName('a)))), List())
+//│ Def(false, HeapB, PolyType(List(TypeName('a), TypeName('b)),Function(Tuple(List((None,Field(None,TypeName('a))))),AppliedType(TypeName(heapb),List(TypeName('a), TypeName('b))))), true)
+//│ TypeDef(Als, TypeName(heapc), List(TypeName('a), TypeName('b)), Union(AppliedType(TypeName(HeapC),List(TypeName('a))),AppliedType(TypeName(HeapC),List(TypeName('a)))), List())
 //│ TypeDef(Cls, TypeName(HeapC), List(TypeName('a)), Record(List((_0,Field(None,AppliedType(TypeName(list),List(TypeName('a))))))), List(_0))
-//│ Def(false, HeapC, Lam(Tup(_: Var(a)), App(Var(HeapC), Tup(_: Rcd(Var(_0) = Var(a))))), true)
+//│ Def(false, HeapC, PolyType(List(TypeName('a), TypeName('b)),Function(Tuple(List((None,Field(None,AppliedType(TypeName(list),List(TypeName('a))))))),AppliedType(TypeName(heapc),List(TypeName('a), TypeName('b))))), true)
 //│ TypeDef(Als, TypeName(list), List(TypeName('a)), Union(TypeName(Nil),Union(AppliedType(TypeName(Cons),List(TypeName('a))),AppliedType(TypeName(Cons),List(TypeName('a))))), List())
 //│ TypeDef(Cls, TypeName(Cons), List(TypeName('a)), Record(List((_0,Field(None,TypeName('a))), (_1,Field(None,AppliedType(TypeName(list),List(TypeName('a))))))), List(_0, _1))
 //│ TypeDef(Cls, TypeName(Nil), List(), Record(List()), List())
-//│ Def(false, Cons, Lam(Tup(_: Var(a), _: Var(b)), App(Var(Cons), Tup(_: Rcd(Var(_0) = Var(a), Var(_1) = Var(b))))), true)
-//│ Def(false, Nil, App(Var(Nil), Tup(_: Rcd())), true)
+//│ Def(false, Cons, PolyType(List(TypeName('a)),Function(Tuple(List((None,Field(None,TypeName('a))), (None,Field(None,AppliedType(TypeName(list),List(TypeName('a))))))),AppliedType(TypeName(list),List(TypeName('a))))), true)
+//│ Def(false, Nil, PolyType(List(TypeName('a)),AppliedType(TypeName(list),List(TypeName('a)))), true)
 //│ Desugared: type alias heap['a] = HeapA['a]
 //│ Desugared: class HeapA['a](_0): {_0: 'a}
-//│ Desugared: type alias heap['a, 'b] = HeapB['a]
+//│ Desugared: type alias heapb['a, 'b] = HeapB['a]
 //│ Desugared: class HeapB['a](_0): {_0: 'a}
-//│ Desugared: type alias heap['a, 'b] = HeapC['a]
+//│ Desugared: type alias heapc['a, 'b] = HeapC['a]
 //│ Desugared: class HeapC['a](_0): {_0: list['a]}
 //│ Desugared: type alias list['a] = Nil | Cons['a]
 //│ Desugared: class Cons['a](_0, _1): {_0: 'a, _1: list['a]}
 //│ Desugared: class Nil: {}
-//│ Desugared: def HeapA: a, => HeapA ({_0: a},)
-//│ Desugared: def HeapB: a, => HeapB ({_0: a},)
-//│ Desugared: def HeapC: a, => HeapC ({_0: a},)
-//│ Desugared: def Cons: a, b, => Cons ({_0: a, _1: b},)
-//│ Desugared: def Nil: Nil ({},)
+//│ Desugared: def HeapA: ['a] -> 'a -> heap['a]
+//│ Desugared: def HeapB: ['a, 'b] -> 'a -> heapb['a, 'b]
+//│ Desugared: def HeapC: ['a, 'b] -> list['a] -> heapc['a, 'b]
+//│ Desugared: def Cons: ['a] -> ('a, list['a],) -> list['a]
+//│ Desugared: def Nil: ['a] -> list['a]
 
 // parallel type definitions
 type ('a) bigHeap =
@@ -258,9 +267,9 @@ type ('a) bigHeap =
 //│ Desugared: class NonHeap(_0): {_0: otherList}
 //│ Desugared: class NonsHeap['a](_0): {_0: list[(otherList, 'a,)]}
 //│ Desugared: type alias otherList = list[int]
-//│ Desugared: def NoHeap: a, => NoHeap ({_0: a},)
-//│ Desugared: def NonHeap: a, => NonHeap ({_0: a},)
-//│ Desugared: def NonsHeap: a, => NonsHeap ({_0: a},)
+//│ Desugared: def NoHeap: ['a] -> list['a] -> bigHeap['a]
+//│ Desugared: def NonHeap: ['a] -> otherList -> bigHeap['a]
+//│ Desugared: def NonsHeap: ['a] -> list[(otherList, 'a,)] -> bigHeap['a]
 
 type biglist = int option list
 type listoflists = int list list
@@ -280,12 +289,12 @@ type ('a, 'b) paramlist = ('a * int) list
 type ('a, 'b) heapC = HeapC of ('a * 'b)
 //│ Desugared: type alias heapC['a, 'b] = HeapC['a, 'b]
 //│ Desugared: class HeapC['a, 'b](_0): {_0: ('a, 'b,)}
-//│ Desugared: def HeapC: a, => HeapC ({_0: a},)
+//│ Desugared: def HeapC: ['a, 'b] -> ('a, 'b,) -> heapC['a, 'b]
 
 type ('a, 'b) heapB = HeapB of 'a * 'b
 //│ Desugared: type alias heapB['a, 'b] = HeapB['a, 'b]
 //│ Desugared: class HeapB['a, 'b](_0, _1): {_0: 'a, _1: 'b}
-//│ Desugared: def HeapB: a, b, => HeapB ({_0: a, _1: b},)
+//│ Desugared: def HeapB: ['a, 'b] -> ('a, 'b,) -> heapB['a, 'b]
 
 type 'a list = Cons of 'a * 'a list | Nil
 let (::) a b = Cons {_0 = a; _1 = b}
@@ -297,11 +306,11 @@ let raise a = nothing
 //│ Desugared: type alias option['a] = Some['a] | None
 //│ Desugared: class None: {}
 //│ Desugared: class Some['a](_0): {_0: 'a}
-//│ Desugared: def Cons: a, b, => Cons ({_0: a, _1: b},)
-//│ Desugared: def Nil: Nil ({},)
+//│ Desugared: def Cons: ['a] -> ('a, list['a],) -> list['a]
+//│ Desugared: def Nil: ['a] -> list['a]
 //│ Desugared: def ::: a, => b, => Cons ({_0: a, _1: b},)
-//│ Desugared: def None: None ({},)
-//│ Desugared: def Some: a, => Some ({_0: a},)
+//│ Desugared: def None: ['a] -> option['a]
+//│ Desugared: def Some: ['a] -> 'a -> option['a]
 //│ Desugared: def raise: a, => nothing
 
 fun (env: env) _ -> []
@@ -363,10 +372,11 @@ let ( ** ): float -> float -> float
 type heapVar = Heap of heap and heap = (string * int) List
 //│ Parsed: TypeDef(Als, TypeName(heapVar), List(), Union(TypeName(Heap),TypeName(Heap)), List())
 //│ TypeDef(Cls, TypeName(Heap), List(), Record(List((_0,Field(None,TypeName(heap))))), List(_0))
+//│ Def(false, Heap, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(heap))))),TypeName(heapVar))), true)
 //│ TypeDef(Als, TypeName(heap), List(), AppliedType(TypeName(List),List(Tuple(List((None,Field(None,TypeName(string))), (None,Field(None,TypeName(int))))))), List())
-//│ Def(false, Heap, Lam(Tup(_: Var(a)), App(Var(Heap), Tup(_: Rcd(Var(_0) = Var(a))))), true)
 //│ Desugared: type alias heapVar = Heap
 //│ Desugared: class Heap(_0): {_0: heap}
 //│ Desugared: type alias heap = List[(string, int,)]
-//│ Desugared: def Heap: a, => Heap ({_0: a},)
+//│ Desugared: def Heap: [] -> heap -> heapVar
+
 

@@ -14,11 +14,11 @@ exception Error
 //│ Defined type alias option[+'a]
 //│ Defined class None
 //│ Defined class Some[+'a]
-//│ Cons: ('_0 & 'a, list['a] & '_1,) -> (Cons['a] with {_0: '_0, _1: '_1})
-//│ Nil: Nil
-//│ ::: ('_0 & 'a) -> (list['a] & '_1) -> (Cons['a] with {_0: '_0, _1: '_1})
-//│ None: None
-//│ Some: '_0 -> Some['_0]
+//│ Cons: ('a, list['a],) -> list['a]
+//│ Nil: list[nothing]
+//│ ::: 'a -> list['a] -> list['a]
+//│ None: option[nothing]
+//│ Some: 'a -> option['a]
 //│ raise: anything -> nothing
 //│ Error: anything
 
@@ -47,10 +47,10 @@ let a b c d = b = c = d
 [1, 2, 3, 4]
 []
 // let a = []
-//│ res: Cons[int] with {_1: Nil}
-//│ res: Cons[int] with {_1: Cons[int] with {_1: Nil}}
-//│ res: Cons[(int, int, int, int,)] with {_1: Nil}
-//│ res: Nil
+//│ res: list[int]
+//│ res: list[int]
+//│ res: list[(int, int, int, int,)]
+//│ res: list[nothing]
 
 let (+.): float -> float -> float
 let (-.): float -> float -> float
@@ -68,8 +68,8 @@ let ( ** ): float -> float -> float
 
 1.0 :: Nil
 2.0 :: 3.223 :: Nil
-//│ res: Cons[float] with {_1: Nil}
-//│ res: Cons[float] with {_1: Cons[float] with {_1: Nil}}
+//│ res: list[float]
+//│ res: list[float]
 
 let f = 3.14
 let f = f +. 1.0
@@ -91,7 +91,7 @@ let b = ("bye", 3)
 let data = Cons (a, Cons (b, Nil))
 //│ a: (string, int,)
 //│ b: (string, int,)
-//│ data: Cons[(string, int,)] with {_1: Cons[(string, int,)] with {_1: Nil}}
+//│ data: list[(string, int,)]
 
 2.0
 let b = 3.0
@@ -108,7 +108,7 @@ let mktup = [1, 2, 3], 4, (5, 6)
 //│ res: (int, int, int,)
 //│ mktup: (int, int, int,)
 //│ mktup: (int, (int, int,),)
-//│ mktup: (Cons[(int, int, int,)] with {_1: Nil}, int, (int, int,),)
+//│ mktup: (list[(int, int, int,)], int, (int, int,),)
 
 // create classes for exceptions
 exception Unimplemented
@@ -126,8 +126,8 @@ type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
 //│ Defined class HeapInt
 //│ Defined class Heap
 //│ Defined type alias heap
-//│ HeapInt: (int & '_0) -> (HeapInt with {_0: '_0})
-//│ Heap: (heap & '_0) -> (Heap with {_0: '_0})
+//│ HeapInt: int -> heapVar
+//│ Heap: heap -> heapVar
 
 type exp = Int of int | Var of string | Plus of exp * exp | Times of exp * exp
 //│ Defined type alias exp
@@ -135,10 +135,10 @@ type exp = Int of int | Var of string | Plus of exp * exp | Times of exp * exp
 //│ Defined class Var
 //│ Defined class Plus
 //│ Defined class Times
-//│ Int: (int & '_0) -> (int & {_0: '_0})
-//│ Var: (string & '_0) -> (Var with {_0: '_0})
-//│ Plus: (exp & '_0, exp & '_1,) -> (Plus with {_0: '_0, _1: '_1})
-//│ Times: (exp & '_0, exp & '_1,) -> (Times with {_0: '_0, _1: '_1})
+//│ Int: int -> exp
+//│ Var: string -> exp
+//│ Plus: (exp, exp,) -> exp
+//│ Times: (exp, exp,) -> exp
 
 type stmt = Skip | Assign of string * exp
          | Seq of stmt * stmt 
@@ -154,13 +154,13 @@ type stmt = Skip | Assign of string * exp
 //│ Defined class While
 //│ Defined class SaveHeap
 //│ Defined class RestoreHeap
-//│ Skip: Skip
-//│ Assign: (string & '_0, exp & '_1,) -> (Assign with {_0: '_0, _1: '_1})
-//│ Seq: (stmt & '_0, stmt & '_1,) -> (Seq with {_0: '_0, _1: '_1})
-//│ If: (exp & '_0, stmt & '_1, stmt & '_2,) -> (If with {_0: '_0, _1: '_1, _2: '_2})
-//│ While: (exp & '_0, stmt & '_1,) -> (While with {_0: '_0, _1: '_1})
-//│ SaveHeap: (string & '_0) -> (SaveHeap with {_0: '_0})
-//│ RestoreHeap: (string & '_0) -> (RestoreHeap with {_0: '_0})
+//│ Skip: stmt
+//│ Assign: (string, exp,) -> stmt
+//│ Seq: (stmt, stmt,) -> stmt
+//│ If: (exp, stmt, stmt,) -> stmt
+//│ While: (exp, stmt,) -> stmt
+//│ SaveHeap: string -> stmt
+//│ RestoreHeap: string -> stmt
 
 // parameterized type definitions
 type 'a heapA = HeapA of 'a
@@ -175,38 +175,20 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│ Defined class HeapC[+'a, +'b]
 //│ Defined type alias heapD[+'a, +'b]
 //│ Defined class HeapD[+'a, +'b]
-//│ HeapA: '_0 -> HeapA['_0]
-//│ HeapB: (('a, 'b,) & '_0) -> (HeapB['a, 'b] with {_0: '_0})
-//│ HeapC: (list[('a, 'b,)] & '_0) -> (HeapC['a, 'b] with {_0: '_0})
-//│ HeapD: ('_0, list['b] & '_1,) -> (HeapD['_0, 'b] with {_1: '_1})
+//│ HeapA: 'a -> heapA['a]
+//│ HeapB: ('a, 'b,) -> heapB['a, 'b]
+//│ HeapC: list[('a, 'b,)] -> heapC['a, 'b]
+//│ HeapD: ('a, list['b],) -> heapD['a, 'b]
 
 (("hi", 1) :: Nil)
 (("hi", 1) :: Nil):heap
 (("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ res: Cons[(string, int,)] with {_1: Nil}
-//│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.184: 	(("hi", 1) :: Nil):heap
-//│ ║         	^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `int` is not an instance of type `int`
-//│ ║  l.184: 	(("hi", 1) :: Nil):heap
-//│ ║         	        ^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.124: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
-//│ ╙──       	                                                                  ^^^
+//│ res: list[(string, int,)]
 //│ res: heap
-//│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.185: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `int` is not an instance of type `int`
-//│ ║  l.185: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ ║         	        ^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.124: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
-//│ ╙──       	                                                                  ^^^
 //│ res: heap
 
 let update h str i = (str,i)::h
-//│ update: (list['a] & '_1) -> 'b -> 'c -> (Cons['a | ('b, 'c,)] with {_0: ('b, 'c,), _1: '_1})
+//│ update: list['a] -> 'b -> 'c -> list[('b, 'c,) | 'a]
 
 /// FIXME
 // define lambdas using fun
@@ -215,14 +197,14 @@ let interp2 = (fun (env:env) opt ->
   match opt with
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.213: 	fun (env: env) _ -> []
+//│ ║  l.195: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
-//│ res: error -> Nil
+//│ res: error -> list[nothing]
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.214: 	let interp2 = (fun (env:env) opt ->
+//│ ║  l.196: 	let interp2 = (fun (env:env) opt ->
 //│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
-//│ ║  l.215: 	  match opt with
+//│ ║  l.197: 	  match opt with
 //│ ╙──       	        ^^^
 //│ interp2: error -> int
 
@@ -246,9 +228,9 @@ type ('a) bigHeap =
 //│ Defined class NonHeap
 //│ Defined class NonsHeap[+'a]
 //│ Defined type alias otherList
-//│ NoHeap: (list['a] & '_0) -> (NoHeap['a] with {_0: '_0})
-//│ NonHeap: (otherList & '_0) -> (NonHeap with {_0: '_0})
-//│ NonsHeap: (list[(otherList, 'a,)] & '_0) -> (NonsHeap['a] with {_0: '_0})
+//│ NoHeap: list['a] -> bigHeap['a]
+//│ NonHeap: otherList -> bigHeap[nothing]
+//│ NonsHeap: list[(otherList, 'a,)] -> bigHeap['a]
 
 :dp
 type biglist = int option list
@@ -288,10 +270,10 @@ match n < 0 with
   | false  -> 1
 //│ Parsed: If(IfOpApp(App(App(Var(<), Tup(_: Var(n))), Tup(_: IntLit(0))), Var(is), IfBlock(IfThen(Var(true), IntLit(0);IfThen(Var(false), IntLit(1)), None)
 //│ ╔══[ERROR] Missing the otherwise case of test == (< (n,) (0,),) (false,)
-//│ ║  l.286: 	match n < 0 with
+//│ ║  l.268: 	match n < 0 with
 //│ ║         	      ^^^^^^^^^^
-//│ ║  l.287: 	  true  -> 0
+//│ ║  l.269: 	  true  -> 0
 //│ ║         	^^^^^^^^^^^^
-//│ ║  l.288: 	  | false  -> 1
+//│ ║  l.270: 	  | false  -> 1
 //│ ╙──       	^^^^^^^^^
 //│ res: error
