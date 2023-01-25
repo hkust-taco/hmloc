@@ -1049,7 +1049,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     def unify(a: ST, b: ST)(implicit ctx: Ctx, raise: Raise): Unit = 
       trace(s"unify(${a}, ${b}) because ${chain.getOrElse(b, Nil).mkString(", ")}")
     {
-      println(s"with store: ${store}")
+      println(s"with store: ${store.mkString(", ")}")
       val aType = getUnifiedType(a)
       val bType = getUnifiedType(b)
       
@@ -1115,7 +1115,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       * unifying those types.
       */
     def traverseTypeBounds(st: SimpleType, reason: Ls[UnificationReason])(implicit ctx: Ctx, raise: Raise): Unit = 
-      trace(s"${st} traverse bounds")
+      trace(s"${st} traverse bounds because ${reason.headOption.map(_.toString).getOrElse("")}")
     {
       st match {
         // type variable with upper and lower type bounds that need to be
@@ -1131,8 +1131,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
 
           println(s":> ${tv.lowerBounds.mkString(", ")}")
           println(s"<: ${tv.upperBounds.mkString(", ")}")
-          tv.lowerBounds.foreach(lb => traverseTypeBounds(lb, UnificationReason(lb, tv, true) :: reason))
-          tv.upperBounds.foreach(ub => traverseTypeBounds(ub, UnificationReason(ub, tv, false) :: reason))
+          tv.lowerBounds.foreach(lb => traverseTypeBounds(lb.unwrapProvs, UnificationReason(lb, tv, true) :: reason))
+          tv.upperBounds.foreach(ub => traverseTypeBounds(ub.unwrapProvs, UnificationReason(ub, tv, false) :: reason))
           tv.lowerBounds.foreach(lb => unify(tv, lb.unwrapProvs))
           tv.upperBounds.foreach(ub => unify(tv, ub.unwrapProvs))
         case pv: ProvType => traverseTypeBounds(pv.unwrapProvs, reason)
@@ -1144,7 +1144,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             return
           } else chain.put(st, reason)
       }
-    } (_ => s"reason: ${reason.mkString(", ")}")
+    } ()
   }
   
   /** Unifies type bounds to find unification errors. These errors are not
