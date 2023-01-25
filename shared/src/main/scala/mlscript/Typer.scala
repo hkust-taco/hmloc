@@ -1042,7 +1042,67 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         }
       }
     }
-    
+
+    def unifyTypes(a: ST, b: ST, u: Unification)(implicit cache: MutSet[(ST, ST)]): Unit = {
+      val st1 = a.unwrapProvs
+      val st2 = b.unwrapProvs
+
+      if (cache((st1, st2))) return
+      else cache += ((st1, st2))
+
+      (st1, st2) match {
+        case (c1: ClassTag, c2: ClassTag) =>
+          if (c1 =/= c2) {
+            // report error
+            println(s"[ERROR] ${c1} != ${c2} unifying because ${u}")
+          }
+        case (tr1: TypeRef, tr2: TypeRef) =>
+          if (tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length) {
+            tr1.targs.zip(tr2.targs).zipWithIndex.foreach {
+              case ((arg1, arg2), i) => unifyTypes(arg1, arg2, TypeRefArg(arg1, arg2, tr1.defn, i, tr1, tr2))
+            }
+          } else {
+            // report error
+            println(s"[ERROR] ${tr1} != ${tr2} unifying because ${u}")
+          }
+        case (tup1: TupleType, tup2: TupleType) if (tup1.implicitTuple && tup2.implicitTuple) =>
+          // implicit tuple can be considered as transparent
+          unifyTypes(tup1.fields.head._2.ub, tup2.fields.head._2.ub, u)
+        case (tup1: TupleType, tup2: TupleType) =>
+          if (tup1.fields.length === tup2.fields.length) {
+            tup1.fields.map(_._2.ub).zip(tup2.fields.map(_._2.ub)).zipWithIndex.foreach {
+              case ((t1, t2), i) => unifyTypes(t1, t2, TupleField(t1, t2, i, tup1, tup2))
+            }
+          } else {
+            // report error
+            println(s"[ERROR] ${tup1} != ${tup2} unifying because ${u}")
+          }
+        case (f1@FunctionType(arg1, res1), f2@FunctionType(arg2, res2)) =>
+          unifyTypes(arg1, arg2, FunctionArg(arg1, arg2, f1, f2))
+          unifyTypes(res1, res2, FunctionArg(res1, res2, f1, f2))
+        case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
+          () // report error
+        case (tv1: TypeVariable, tv2: TypeVariable) => unifyWithTypeVar(tv1, tv2, u)
+        case (tv1: TypeVariable, st2) => unifyWithTypeVar(tv1, st2, u)
+        case (st1, tv2: TypeVariable) => unifyWithTypeVar(tv2, st1, u)
+        case (st1, st2) =>
+          // report error
+          println(s"[ERROR] ${st1} != ${st2} unifying because ${u}")
+      }
+    }
+
+    def unifyWithTypeVar(tv: TV, st: ST, u: Unification)(implicit cache: MutSet[(ST, ST)]) = {
+      tv.unification.foreach(prevU => (prevU, u) match {
+        case (LowerBound(_, lb), _: LowerBound) => unifyTypes(lb, st, CommonLower(tv, lb, st))
+        case (UpperBound(_, ub), _: UpperBound) => unifyTypes(ub, st, CommonUpper(tv, ub, st))
+        // Information is lost int <: a <: b, b does not know it was unified with int through a
+        case (LowerBound(_, lb), _: UpperBound) => unifyTypes(lb, st, Connector(lb, st, u))
+        case (UpperBound(_, ub), _: LowerBound) => unifyTypes(ub, st, Connector(ub, st, u))
+        case _ => unifyTypes(prevU.unifiedWith, st, Connector(prevU.unifiedWith, st, u))
+      })
+      tv.unification = u :: tv.unification
+    }
+
     /** Unify so that type variable map to concrete types - Functions, Records,
      * Class tags into/from which it flows
      */
@@ -1114,7 +1174,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     /** Traverse type variable bounds and store the chain of reasons for
       * unifying those types.
       */
-    def traverseTypeBounds(st: SimpleType, reason: Ls[UnificationReason])(implicit ctx: Ctx, raise: Raise): Unit = 
+    def traverseTypeBounds(st: SimpleType, reason: Ls[UnificationReason])(implicit ctx: Ctx, raise: Raise): Unit =
       trace(s"${st} traverse bounds because ${reason.headOption.map(_.toString).getOrElse("")}")
     {
       st match {
@@ -1157,8 +1217,17 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   def unifyType()(implicit ctx: Ctx, raise: Raise) = {
     val unificationStore = UnificationStore()
     val tvars = TypeVariable.createdTypeVars.reverse
-    println(s"[UNIFICATION] unifying the following types: ${tvars}")
-    tvars.foreach(unificationStore.traverseTypeBounds(_, Nil))
+    val cache: MutSet[(ST, ST)] = MutSet()
+//    println(s"[UNIFICATION] unifying the following types: ${tvars}")
+//    tvars.foreach(unificationStore.traverseTypeBounds(_, Nil))
+    tvars.foreach(tv => {
+      tv.upperBounds.foreach(ub => unificationStore.unifyTypes(tv, ub, UpperBound(tv, ub))(cache))
+      tv.lowerBounds.foreach(lb => unificationStore.unifyTypes(tv, lb, LowerBound(tv, lb))(cache))
+    })
+    tvars.foreach(tv => {
+      println(s"unified ${tv}")
+      tv.unification.foreach(u => println(s" ${u}"))
+    })
   }
   
   /** Convert an inferred SimpleType into the immutable Type representation. */

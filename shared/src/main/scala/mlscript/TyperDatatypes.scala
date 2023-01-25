@@ -359,7 +359,49 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     override def toString =
       lb.fold(s"$ub")(lb => s"mut ${if (lb === BotType) "" else lb}..$ub")
   }
-  
+
+
+  /** Unification meta data records why a unification happened
+    *
+    * It is named from the perspective of the type variable storing the unification.
+    * As in LowerBound(tv, st) stored in a type variable is meant to be read as -
+    * tv has lower bound st
+    */
+  sealed abstract class Unification {
+    override def toString: Str = this match {
+      case LowerBound(tv, st) => s"${tv} :> ${st}"
+      case UpperBound(tv, st) => s"${tv} <: ${st}"
+      case CommonLower(common, a, b) => s"${a} & ${b} :> ${common}"
+      case CommonUpper(common, a, b) => s"${a} | ${b} <: ${common}"
+      case TypeRefArg(a, b, name, index, tr1, tr2) => s"${a} and ${b} are index ${index} arg for typeref ${name}"
+      case TupleField(a, b, index, tr1, tr2) => s"${a} and ${b} are index ${index} type for tuple type"
+      case FunctionArg(a, b, fr1, fr2) => s"${a} and ${b} are function arg type"
+      case FunctionResult(a, b, fr1, fr2) => s"${a} and ${b} are function result type"
+      case Connector(a, b, u) => s"${a} and ${b} are connected by ${u}"
+    }
+
+    def unifiedWith: ST = this match {
+      case LowerBound(tv, st) => st
+      case UpperBound(tv, st) => st
+      case CommonLower(common, a, b) => b
+      case CommonUpper(common, a, b) => b
+      case TypeRefArg(a, b, name, index, tr1, tr2) => b
+      case TupleField(a, b, index, tr1, tr2) => b
+      case FunctionArg(a, b, fr1, fr2) => b
+      case FunctionResult(a, b, fr1, fr2) => b
+      case Connector(a, b, u) => b
+    }
+  }
+  final case class LowerBound(tv: TV, st: ST) extends Unification
+  final case class UpperBound(tv: TV, st: ST) extends Unification
+  final case class CommonLower(common: TV, a: ST, b: ST) extends Unification
+  final case class CommonUpper(common: TV, a: ST, b: ST) extends Unification
+  final case class TypeRefArg(a: ST, b: ST, name: TypeName, index: Int, tr1: TypeRef, tr2: TypeRef) extends Unification
+  final case class TupleField(a: ST, b: ST, index: Int, tr1: TupleType, tr2: TupleType) extends Unification
+  final case class FunctionArg(a: ST, b: ST, fr1: FunctionType, fr2: FunctionType) extends Unification
+  final case class FunctionResult(a: ST, b: ST, fr1: FunctionType, fr2: FunctionType) extends Unification
+  final case class Connector(a: ST, b: ST, u: Unification) extends Unification
+
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
     * Invariant: Types appearing in the bounds never have a level higher than this variable's `level`. */
   final class TypeVariable(
@@ -370,6 +412,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   )(val prov: TypeProvenance) extends SimpleType with CompactTypeOrVariable with Ordered[TypeVariable] with Factorizable {
     private[mlscript] val uid: Int = { freshCount += 1; freshCount - 1 }
     lazy val asTypeVar = new TypeVar(L(uid), nameHint)
+    var unification: Ls[Unification] = Nil
     def compare(that: TV): Int = this.uid compare that.uid
     
     def isRecursive_$(implicit ctx: Ctx) : Bool = (lbRecOccs_$, ubRecOccs_$) match {
