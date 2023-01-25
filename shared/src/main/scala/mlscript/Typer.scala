@@ -513,7 +513,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           // In other words, this is so that errors do not interfere too much
           //  with the rest of the (hopefully good) code.
           if (errorsCount === 0) {
-            constrain(errType, res)(_ => (), noProv, ctx)
+            // constrain(errType, res)(_ => (), noProv, ctx)
             // ^ This is just to get error types leak into the result
             raise(err)
           } else if (errorsCount < 3) {
