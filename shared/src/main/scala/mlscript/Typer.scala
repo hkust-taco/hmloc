@@ -1156,7 +1156,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     */
   def unifyType()(implicit ctx: Ctx, raise: Raise) = {
     val unificationStore = UnificationStore()
-    val tvars = TypeVariable.createdTypeVars
+    val tvars = TypeVariable.createdTypeVars.reverse
     println(s"[UNIFICATION] unifying the following types: ${tvars}")
     tvars.foreach(unificationStore.traverseTypeBounds(_, Nil))
   }
