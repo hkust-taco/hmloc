@@ -393,6 +393,56 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       case Connector(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
     }
 
+    /** The level of a unification is the number of tv's it has zig zagged through
+      *
+      * For e.g.
+      *
+      * int <: a <: bool = 0
+      * int | bool <: a = 1
+      * int | b <: a and
+      *       b <: bool = 2
+      *
+      * This is equal to the number of tvs that have unified two lbs or two ubs
+      * during a single unification
+      */
+    def level: Int = {
+      def updateCounter(st: ST, delta: (Int, Int))(implicit counter: MutMap[TV, (Int, Int)]): Unit = {
+        st.unwrapProvs match {
+          case tv: TypeVariable =>
+            counter.updateWith(tv) {
+              case Some((l, u)) => S(l + delta._1, u + delta._2)
+              case None => S(delta)
+            }
+          case _ => ()
+        }
+      }
+
+      def rec(u: Unification)(implicit counter: MutMap[TV, (Int, Int)]): Unit = u match {
+        case LowerBound(tv, st) =>
+          updateCounter(tv, (1, 0))
+          updateCounter(st, (0, 1))
+        case UpperBound(tv, st) =>
+            updateCounter(tv, (0, 1))
+            updateCounter(st, (1, 0))
+        case CommonLower(common, a, b) =>
+          updateCounter(common, (0, 2))
+          updateCounter(a, (1, 0))
+          updateCounter(b, (1, 0))
+        case CommonUpper(common, a, b) =>
+          updateCounter(common, (2, 0))
+          updateCounter(a, (0, 1))
+          updateCounter(b, (0, 1))
+        case Connector(_, _, uforB, uforA) =>
+          rec(uforA)
+          rec(uforB)
+        case _ => ()
+      }
+
+      val counter: MutMap[TV, (Int, Int)] = MutMap()
+      rec(this)(counter)
+      counter.count{ case (_, (l, r)) => l >= 2 || r >= 2}
+    }
+
     /** Replace the unified types in a unification reason
       *
       * Main usage is to update unification reason when unified tuples are paired

@@ -1054,7 +1054,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case (c1: ClassTag, c2: ClassTag) =>
           if (c1 =/= c2) {
             // report error
-            println(s"[ERROR] ${c1} != ${c2} unifying because ${u}")
+            println(s"[ERROR ${u.level}] ${c1} != ${c2} unifying because ${u}")
           }
         case (tr1: TypeRef, tr2: TypeRef) =>
           if (tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length) {
@@ -1063,7 +1063,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             }
           } else {
             // report error
-            println(s"[ERROR] ${tr1} != ${tr2} unifying because ${u}")
+            println(s"[ERROR ${u.level}] ${tr1} != ${tr2} unifying because ${u}")
           }
         case (tup1: TupleType, tup2: TupleType)
           if ((tup1.implicitTuple && tup2.implicitTuple) ||
@@ -1084,7 +1084,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             }
           } else {
             // report error
-            println(s"[ERROR] ${tup1} != ${tup2} unifying because ${u}")
+            println(s"[ERROR ${u.level}] ${tup1} != ${tup2} unifying because ${u}")
           }
         case (f1@FunctionType(arg1, res1), f2@FunctionType(arg2, res2)) =>
           unifyTypes(arg1, arg2, FunctionArg(arg1, arg2, f1, f2))
@@ -1096,14 +1096,14 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case (st1, tv2: TypeVariable) => unifyWithTypeVar(tv2, st1, u)
         case (st1, st2) =>
           // report error
-          println(s"[ERROR] ${st1} != ${st2} unifying because ${u}")
+          println(s"[ERROR ${u.level}] ${st1} != ${st2} unifying because ${u}")
       }
     }
 
     def unifyWithTypeVar(tv: TV, st: ST, u: Unification)(implicit cache: MutSet[(ST, ST)]) = {
       tv.unification.foreach(prevU => (prevU, u) match {
-        case (LowerBound(_, lb), _: LowerBound) => unifyTypes(lb, st, CommonLower(tv, lb, st))
-        case (UpperBound(_, ub), _: UpperBound) => unifyTypes(ub, st, CommonUpper(tv, ub, st))
+        case (LowerBound(_, lb), _: LowerBound) => unifyTypes(lb, st, CommonUpper(tv, lb, st))
+        case (UpperBound(_, ub), _: UpperBound) => unifyTypes(ub, st, CommonLower(tv, ub, st))
         // Information is lost int <: a <: b, b does not know it was unified with int through a
         case (LowerBound(_, lb), _: UpperBound) => unifyTypes(lb, st, Connector(lb, st, u, prevU))
         case (UpperBound(_, ub), _: LowerBound) => unifyTypes(ub, st, Connector(ub, st, u, prevU))
