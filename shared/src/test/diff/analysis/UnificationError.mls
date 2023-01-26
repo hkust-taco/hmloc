@@ -1,13 +1,10 @@
 :NoJS
 
-:unify
-// 0 1
-
 :unifyDbg
 let temp = if true then 0 else "oops" in 0
 //│ [ERROR] string<> != int<> unifying because [[[string<>]]] & int<> :> α25'
 //│ unified α25'
-//│  [int<>] and α25' are function arg type
+//│  [int<>] = α25' are arg type in ([int<>] -> α27') = (α25' -> (α25' -> α25'))
 //│  α25' :> [[[int<>]]]
 //│  α25' :> [[[string<>]]]
 //│  α25' <: [[α28']]
@@ -16,15 +13,15 @@ let temp = if true then 0 else "oops" in 0
 //│  α26' <: [([int<>] -> α27')]
 //│ unified α27'
 //│  α27' <: [([string<>] -> α28')]
-//│  α27' and (α25' -> α25') are function arg type
+//│  α27' = (α25' -> α25') are result type in ([int<>] -> α27') = (α25' -> (α25' -> α25'))
 //│ unified α28'
-//│  [[α28']] and int<> are connected by α25' :> [[[int<>]]]
-//│  [[α28']] and string<> are connected by α25' :> [[[string<>]]]
+//│  [[α28']] = int<> because α25' <: [[α28']] and α25' :> [[[int<>]]]
+//│  [[α28']] = string<> because α25' <: [[α28']] and α25' :> [[[string<>]]]
 //│ res: int
 
 :unifyDbg
 def s x = if x then x else 3
-//│ [ERROR] bool<> != int<> unifying because bool<> and int<> are connected by α30' :> [[[int<>]]]
+//│ [ERROR] bool<> != int<> unifying because bool<> = int<> because [[[[α30']]]] | bool<> <: α29' and α30' :> [[[int<>]]]
 //│ unified α29'
 //│  α29' <: [[[[[bool<>]]]]]
 //│  α29' <: [[[[α30']]]]
@@ -37,10 +34,10 @@ def s x = if x then x else 3
 //│  α31' <: [([[α29']] -> α32')]
 //│ unified α32'
 //│  α32' <: [([int<>] -> α33')]
-//│  α32' and (α30' -> α30') are function arg type
+//│  α32' = (α30' -> α30') are result type in ([[α29']] -> α32') = (α30' -> (α30' -> α30'))
 //│ unified α33'
-//│  [[α33']] and int<> are connected by α30' :> [[[int<>]]]
-//│  bool<> and α33' are connected by α30' <: [[α33']]
+//│  [[α33']] = int<> because α30' <: [[α33']] and α30' :> [[[int<>]]]
+//│  bool<> = α33' because [[[[α30']]]] | bool<> <: α29' and α30' <: [[α33']]
 //│ s: (bool & 'a) -> (int | 'a)
 
 :unifyDbg
@@ -48,12 +45,10 @@ rec def clone x n =
   let rec helper acc n' =
     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
   helper x (n - 1)
-//│ [ERROR] (α43'',) != int<> unifying because (α43'',) and int<> are connected by α51'' and int<> are function arg type
-//│ [ERROR] (α54'',) != int<> unifying because [(α54'',)] and int<> are connected by int<> and α44'' are connected by α54'' <: [[[[α44'']]]]
 //│ unified clone39'
 //│  clone39' :> [(α40' -> (α41' -> α69'))]
 //│ unified α40'
-//│  [α40'] and α63' are index 0 type for tuple type
+//│  [α40'] = α63' are arg type in ([([α40'],)] -> α66') = ([(α63',)] -> α64')
 //│  α40' <: [[[[[[α58']]]]]]
 //│ unified α41'
 //│  α41' <: [[[[[[int<>]]]]]]
@@ -64,11 +59,8 @@ rec def clone x n =
 //│  α43'' <: [[[[α45'']]]]
 //│  α43'' <: [[[[[[int<>]]]]]]
 //│ unified α44''
-//│  int<> and α44'' are connected by α54'' <: [[[[α44'']]]]
-//│  (α44'',) and [(α54'',)] are function arg type
 //│  α44'' <: [[[[[[int<>]]]]]]
 //│ unified α45''
-//│  α45'' and [α55''] are function arg type
 //│  α45'' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]
 //│  α45'' <: [[α56'']]
 //│  [[[[[[int<>]]]]]] | α45'' <: α43''
@@ -76,36 +68,35 @@ rec def clone x n =
 //│  α46'' :> [[(int<> -> bool<>)]]
 //│  α46'' <: [([(int<>,)] -> α47'')]
 //│ unified α47''
-//│  α47'' and bool<> are function arg type
+//│  α47'' = bool<> are result type in ([(int<>,)] -> α47'') = (int<> -> bool<>)
 //│ unified α48''
 //│  α48'' :> [[(α45'' -> (α45'' -> α45''))]]
 //│  α48'' <: [([[α43'']] -> α49'')]
 //│ unified α49''
 //│  α49'' <: [([α55''] -> α56'')]
-//│  α49'' and (α45'' -> α45'') are function arg type
+//│  α49'' = (α45'' -> α45'') are result type in ([[α43'']] -> α49'') = (α45'' -> (α45'' -> α45''))
 //│ unified α50''
 //│  α50'' :> [[(int<> -> int<>)]]
 //│  α50'' <: [([(int<>,)] -> α51'')]
 //│ unified α51''
-//│  α51'' and int<> are function arg type
-//│  [(α51'',)] and (α43'',) are function arg type
+//│  α51'' = int<> are result type in ([(int<>,)] -> α51'') = (int<> -> int<>)
+//│  α51'' = α43'' are arg type in ([(α51'',)] -> α52'') = (α43'' -> (α44'' -> α56''))
 //│ unified α52''
 //│  α52'' <: [([(α54'',)] -> α55'')]
-//│  α52'' and (α44'' -> α56'') are function arg type
+//│  α52'' = (α44'' -> α56'') are result type in ([(α51'',)] -> α52'') = (α43'' -> (α44'' -> α56''))
 //│ unified α53''
 //│  α53'' :> [[(int<> -> int<>)]]
 //│  α53'' <: [([(int<>,)] -> α54'')]
 //│ unified α54''
 //│  α54'' <: [[[[α44'']]]]
-//│  α54'' and int<> are function arg type
-//│  [[[[[[int<>]]]]]] and α54'' are connected by (α44'',) and [(α54'',)] are function arg type
+//│  α54'' = int<> are result type in ([(int<>,)] -> α54'') = (int<> -> int<>)
 //│ unified α55''
+//│  int<> = α55'' because [[α56'']] = int<> because α45'' <: [[α56'']] and α45'' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]] and α56'' <: [[[α55'']]]
 //│  α55'' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]
 //│  α55'' <: [[[α45'']]]
-//│  [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]] and α55'' are connected by α45'' and [α55''] are function arg type
 //│ unified α56''
-//│  [[α56'']] and α55'' are connected by α45'' and [α55''] are function arg type
-//│  [[α56'']] and int<> are connected by α45'' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]
+//│  α56'' <: [[[α55'']]]
+//│  [[α56'']] = int<> because α45'' <: [[α56'']] and α45'' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]
 //│ unified helper57'
 //│  helper57' :> [(α58' -> (α62' -> α60'))]
 //│  helper57' <: [([(α63',)] -> α64')]
@@ -113,54 +104,45 @@ rec def clone x n =
 //│ unified α58'
 //│  α58' <: [[[[α59']]]]
 //│  α58' <: [[[[[[int<>]]]]]]
-//│  [[[[[[α58']]]]]] and α63' are connected by [α40'] and α63' are index 0 type for tuple type
+//│  [[[[[[α58']]]]]] = α63' because α40' <: [[[[[[α58']]]]]] and [α40'] = α63' are arg type in ([([α40'],)] -> α66') = ([(α63',)] -> α64')
 //│ unified α59'
-//│  [[[α59']]] and α69' are connected by α61' and α69' are function arg type
 //│  α59' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]
 //│  α59' <: [[α60']]
 //│  [[[[[[int<>]]]]]] | α59' <: α58'
 //│ unified α60'
 //│  α60' <: [[[α61']]]
 //│  α60' <: [[[α69']]]
-//│  [[α60']] and int<> are connected by α59' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]
+//│  [[α60']] = int<> because α59' <: [[α60']] and α59' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]
 //│ unified α61'
-//│  α61' and α69' are function arg type
 //│  α61' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]
 //│  α61' <: [[[α59']]]
-//│  int<> and α61' are connected by α60' <: [[[α61']]]
+//│  int<> = α61' because [[α60']] = int<> because α59' <: [[α60']] and α59' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]] and α60' <: [[[α61']]]
 //│ unified α62'
-//│  int<> and α62' are connected by α68' <: [[[[α62']]]]
-//│  α62' and α68' are index 0 type for tuple type
-//│  α62' and α65' are index 0 type for tuple type
 //│  α62' <: [[[[[[int<>]]]]]]
 //│ unified α63'
-//│  α63' and α59' are connected by α58' <: [[[[α59']]]]
-//│  α63' and int<> are connected by α58' <: [[[[[[int<>]]]]]]
-//│  α63' and α58' are index 0 type for tuple type
+//│  α63' = α59' because [[[[[[α58']]]]]] = α63' because α40' <: [[[[[[α58']]]]]] and [α40'] = α63' are arg type in ([([α40'],)] -> α66') = ([(α63',)] -> α64') and α58' <: [[[[α59']]]]
+//│  α63' = int<> because [[[[[[α58']]]]]] = α63' because α40' <: [[[[[[α58']]]]]] and [α40'] = α63' are arg type in ([([α40'],)] -> α66') = ([(α63',)] -> α64') and α58' <: [[[[[[int<>]]]]]]
+//│  α63' = α58' are Tup(0) field type
 //│ unified α64'
-//│  α64' and ([(α68',)] -> α69') are connected by α66' <: [([(α68',)] -> α69')]
 //│  α64' <: [([(α65',)] -> α61')]
-//│  α64' and (α62' -> α60') are function arg type
+//│  α64' = (α62' -> α60') are result type in ([(α63',)] -> α64') = (α58' -> (α62' -> α60'))
 //│ unified α65'
-//│  α65' and α68' are connected by α62' and α68' are index 0 type for tuple type
 //│  α65' :> [[[int<>]]]
 //│  α65' <: [[[[α62']]]]
-//│  [[[[[[int<>]]]]]] and α65' are connected by α62' and α65' are index 0 type for tuple type
 //│ unified α66'
 //│  α66' <: [([(α68',)] -> α69')]
-//│  α66' and (α62' -> α60') are function arg type
-//│  α66' and α64' are function arg type
+//│  α66' = (α62' -> α60') are result type in ([([α40'],)] -> α66') = (α58' -> (α62' -> α60'))
+//│  α66' = α64' are result type in ([([α40'],)] -> α66') = ([(α63',)] -> α64')
 //│ unified α67'
 //│  α67' :> [[(int<> -> int<>)]]
 //│  α67' <: [([(int<>,)] -> α68')]
 //│ unified α68'
 //│  α68' <: [[[[α62']]]]
-//│  α68' and int<> are function arg type
-//│  [[[int<>]]] and α68' are connected by α65' and α68' are connected by α62' and α68' are index 0 type for tuple type
+//│  α68' = int<> are result type in ([(int<>,)] -> α68') = (int<> -> int<>)
 //│ unified α69'
 //│  α69' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]
 //│  [[[α69']]] | α61' <: α60'
-//│  int<> and α69' are connected by α60' <: [[[α69']]]
+//│  int<> = α69' because [[α60']] = int<> because α59' <: [[α60']] and α59' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]] and α60' <: [[[α69']]]
 //│ clone: int -> int -> int
 
 :unifyDbg
@@ -173,10 +155,9 @@ let rec l = fun a -> fun a -> l in let rec r = fun a -> r in if true then l else
 //│  r82' :> [(α83' -> [r82'])]
 //│ unified α83'
 //│ unified α84
-//│  (α88 -> [l86]) and α84 are connected by r90 <: [[[α84]]]
-//│  (α91 -> [r90]) and α84 are connected by r90 <: [[[α84]]]
-//│  α84 and [[r90]] are function arg type
-//│  α84 and (α88 -> [l86]) are connected by (α88 -> [l86]) and [l86] are function arg type
+//│  α84 = r90 because [[l86]] = α84 are arg type in ([[l86]] -> α89) = (α84 -> (α84 -> α84)) and [l86] = [r90] are result type in (α88 -> [l86]) = (α91 -> [r90])
+//│  (α88 -> [l86]) = α84 because [r90] = (α88 -> [l86]) are result type in (α91 -> [r90]) = (α87 -> (α88 -> [l86])) and r90 <: [[[α84]]]
+//│  α84 = (α88 -> [l86]) because [[l86]] = α84 are arg type in ([[l86]] -> α89) = (α84 -> (α84 -> α84)) and (α88 -> [l86]) = [l86] are result type in (α87 -> (α88 -> [l86])) = (α88 -> [l86])
 //│  α84 :> [[[[(α87 -> (α88 -> [l86]))]]]]
 //│  α84 :> [[[[(α91 -> [r90])]]]]
 //│  α84 <: [[α92]]
@@ -184,37 +165,38 @@ let rec l = fun a -> fun a -> l in let rec r = fun a -> r in if true then l else
 //│  α85 :> [[(α84 -> (α84 -> α84))]]
 //│  α85 <: [([[l86]] -> α89)]
 //│ unified l86
-//│  [l86] and (α91 -> [r90]) are connected by r90 and (α91 -> [r90]) are connected by [[[[(α91 -> [r90])]]]] and r90 are connected by α84 and [[r90]] are function arg type
-//│  [l86] and [r90] are function arg type
-//│  [l86] and (α88 -> [l86]) are function arg type
-//│  (α88 -> [l86]) and [l86] are function arg type
+//│  [l86] = [r90] are result type in (α88 -> [l86]) = (α91 -> [r90])
+//│  [l86] = (α91 -> [r90]) because [r90] = [l86] are result type in (α91 -> [r90]) = (α88 -> [l86]) and r90 :> [(α91 -> [r90])]
+//│  [l86] = (α88 -> [l86]) because [r90] = [l86] are result type in (α91 -> [r90]) = (α88 -> [l86]) and (α88 -> [l86]) = [r90] are result type in (α87 -> (α88 -> [l86])) = (α91 -> [r90])
+//│  (α88 -> [l86]) = [l86] are result type in (α87 -> (α88 -> [l86])) = (α88 -> [l86])
 //│  l86 :> [(α87 -> (α88 -> [l86]))]
-//│  [[l86]] and α84 are function arg type
+//│  [[l86]] = α84 are arg type in ([[l86]] -> α89) = (α84 -> (α84 -> α84))
 //│ unified α87
-//│  α87 and α91 are connected by α88 and α91 are index 0 type for tuple type
-//│  α87 and α88 are index 0 type for tuple type
+//│  α87 = α91 are Tup(0) field type
+//│  α87 = α88 are Tup(0) field type
 //│ unified α88
-//│  α88 and α91 are index 0 type for tuple type
-//│  α88 and α87 are index 0 type for tuple type
+//│  α88 = α87 are Tup(0) field type
+//│  α88 = α91 are Tup(0) field type
 //│ unified α89
 //│  α89 <: [([[r90]] -> α92)]
-//│  α89 and (α84 -> α84) are function arg type
+//│  α89 = (α84 -> α84) are result type in ([[l86]] -> α89) = (α84 -> (α84 -> α84))
 //│ unified r90
+//│  r90 :> [(α91 -> [r90])]
+//│  [(α87 -> (α88 -> [l86]))] = r90 because l86 :> [(α87 -> (α88 -> [l86]))] and [l86] = [r90] are result type in (α88 -> [l86]) = (α91 -> [r90])
+//│  r90 = (α87 -> (α88 -> [l86])) because (α91 -> [r90]) = r90 because [l86] = (α91 -> [r90]) because [r90] = [l86] are result type in (α91 -> [r90]) = (α88 -> [l86]) and r90 :> [(α91 -> [r90])] and [l86] = [r90] are result type in (α88 -> [l86]) = (α91 -> [r90]) and [(α87 -> (α88 -> [l86]))] = r90 because l86 :> [(α87 -> (α88 -> [l86]))] and [l86] = [r90] are result type in (α88 -> [l86]) = (α91 -> [r90])
+//│  (α91 -> [r90]) = r90 because [l86] = (α91 -> [r90]) because [r90] = [l86] are result type in (α91 -> [r90]) = (α88 -> [l86]) and r90 :> [(α91 -> [r90])] and [l86] = [r90] are result type in (α88 -> [l86]) = (α91 -> [r90])
+//│  (α88 -> [l86]) = [r90] are result type in (α87 -> (α88 -> [l86])) = (α91 -> [r90])
 //│  r90 <: [[[α84]]]
-//│  [[[[(α91 -> [r90])]]]] and r90 are connected by α84 and [[r90]] are function arg type
-//│  r90 and (α91 -> [r90]) are connected by [[[[(α91 -> [r90])]]]] and r90 are connected by α84 and [[r90]] are function arg type
-//│  (α88 -> [l86]) and r90 are connected by [l86] and [r90] are function arg type
-//│  [[[[(α87 -> (α88 -> [l86]))]]]] and r90 are connected by α84 and [[r90]] are function arg type
-//│  [r90] and [l86] are function arg type
-//│  [r90] and (α88 -> [l86]) are function arg type
+//│  [r90] = [l86] are result type in (α91 -> [r90]) = (α88 -> [l86])
+//│  [r90] = (α88 -> [l86]) are result type in (α91 -> [r90]) = (α87 -> (α88 -> [l86]))
 //│ unified α91
-//│  α91 and α88 are index 0 type for tuple type
-//│  α91 and α87 are index 0 type for tuple type
+//│  α91 = α88 are Tup(0) field type
+//│  α91 = α87 are Tup(0) field type
 //│ unified α92
-//│  [[α92]] and r90 are connected by α84 and [[r90]] are function arg type
-//│  [[α92]] and (α88 -> [l86]) are connected by α84 and (α88 -> [l86]) are connected by (α88 -> [l86]) and [l86] are function arg type
-//│  [[α92]] and (α87 -> (α88 -> [l86])) are connected by α84 :> [[[[(α87 -> (α88 -> [l86]))]]]]
-//│  [[α92]] and (α91 -> [r90]) are connected by α84 :> [[[[(α91 -> [r90])]]]]
+//│  [[α92]] = r90 because α84 <: [[α92]] and α84 = r90 because [[l86]] = α84 are arg type in ([[l86]] -> α89) = (α84 -> (α84 -> α84)) and [l86] = [r90] are result type in (α88 -> [l86]) = (α91 -> [r90])
+//│  [[α92]] = (α88 -> [l86]) because α84 <: [[α92]] and α84 = (α88 -> [l86]) because [[l86]] = α84 are arg type in ([[l86]] -> α89) = (α84 -> (α84 -> α84)) and (α88 -> [l86]) = [l86] are result type in (α87 -> (α88 -> [l86])) = (α88 -> [l86])
+//│  [[α92]] = (α87 -> (α88 -> [l86])) because α84 <: [[α92]] and α84 :> [[[[(α87 -> (α88 -> [l86]))]]]]
+//│  [[α92]] = (α91 -> [r90]) because α84 <: [[α92]] and α84 :> [[[[(α91 -> [r90])]]]]
 //│ res: 'l | 'r
 //│   where
 //│     'r :> anything -> 'r

@@ -1065,9 +1065,18 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             // report error
             println(s"[ERROR] ${tr1} != ${tr2} unifying because ${u}")
           }
-        case (tup1: TupleType, tup2: TupleType) if (tup1.implicitTuple && tup2.implicitTuple) =>
+        case (tup1: TupleType, tup2: TupleType)
+          if ((tup1.implicitTuple && tup2.implicitTuple) ||
+              (tup1.implicitTuple && tup2.fields.length == 1) ||
+              (tup2.implicitTuple && tup1.fields.length == 1)
+             ) =>
           // implicit tuple can be considered as transparent
-          unifyTypes(tup1.fields.head._2.ub, tup2.fields.head._2.ub, u)
+          // replace previous unification reasons types of
+          // the fields of these tuple types
+          val st1 = tup1.fields.head._2.ub
+          val st2 = tup2.fields.head._2.ub
+          val newU = u.replaceTypes(st1, st2)
+          unifyTypes(st1, st2, newU)
         case (tup1: TupleType, tup2: TupleType) =>
           if (tup1.fields.length === tup2.fields.length) {
             tup1.fields.map(_._2.ub).zip(tup2.fields.map(_._2.ub)).zipWithIndex.foreach {
@@ -1079,7 +1088,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           }
         case (f1@FunctionType(arg1, res1), f2@FunctionType(arg2, res2)) =>
           unifyTypes(arg1, arg2, FunctionArg(arg1, arg2, f1, f2))
-          unifyTypes(res1, res2, FunctionArg(res1, res2, f1, f2))
+          unifyTypes(res1, res2, FunctionResult(res1, res2, f1, f2))
         case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
           () // report error
         case (tv1: TypeVariable, tv2: TypeVariable) => unifyWithTypeVar(tv1, tv2, u)
@@ -1096,9 +1105,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case (LowerBound(_, lb), _: LowerBound) => unifyTypes(lb, st, CommonLower(tv, lb, st))
         case (UpperBound(_, ub), _: UpperBound) => unifyTypes(ub, st, CommonUpper(tv, ub, st))
         // Information is lost int <: a <: b, b does not know it was unified with int through a
-        case (LowerBound(_, lb), _: UpperBound) => unifyTypes(lb, st, Connector(lb, st, u))
-        case (UpperBound(_, ub), _: LowerBound) => unifyTypes(ub, st, Connector(ub, st, u))
-        case _ => unifyTypes(prevU.unifiedWith, st, Connector(prevU.unifiedWith, st, u))
+        case (LowerBound(_, lb), _: UpperBound) => unifyTypes(lb, st, Connector(lb, st, u, prevU))
+        case (UpperBound(_, ub), _: LowerBound) => unifyTypes(ub, st, Connector(ub, st, u, prevU))
+        case _ => unifyTypes(prevU.unifiedWith, st, Connector(prevU.unifiedWith, st, u, prevU))
       })
       tv.unification = u :: tv.unification
     }

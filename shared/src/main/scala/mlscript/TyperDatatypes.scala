@@ -373,23 +373,42 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       case UpperBound(tv, st) => s"${tv} <: ${st}"
       case CommonLower(common, a, b) => s"${a} & ${b} :> ${common}"
       case CommonUpper(common, a, b) => s"${a} | ${b} <: ${common}"
-      case TypeRefArg(a, b, name, index, tr1, tr2) => s"${a} and ${b} are index ${index} arg for typeref ${name}"
-      case TupleField(a, b, index, tr1, tr2) => s"${a} and ${b} are index ${index} type for tuple type"
-      case FunctionArg(a, b, fr1, fr2) => s"${a} and ${b} are function arg type"
-      case FunctionResult(a, b, fr1, fr2) => s"${a} and ${b} are function result type"
-      case Connector(a, b, u) => s"${a} and ${b} are connected by ${u}"
+      case TypeRefArg(a, b, name, index, tr1, tr2) => s"${a} = ${b} are ${name}(${index}) arg type"
+      case TupleField(a, b, index, tr1, tr2) => s"${a} = ${b} are Tup(${index}) field type"
+      case FunctionArg(a, b, fr1, fr2) => s"${a} = ${b} are arg type in ${fr1} = ${fr2}"
+      case FunctionResult(a, b, fr1, fr2) => s"${a} = ${b} are result type in ${fr1} = ${fr2}"
+      case Connector(a, b, uforB, uforA) => s"${a} = ${b} because ${uforA} and ${uforB}"
     }
 
     def unifiedWith: ST = this match {
       case LowerBound(tv, st) => st
       case UpperBound(tv, st) => st
-      case CommonLower(common, a, b) => b
-      case CommonUpper(common, a, b) => b
-      case TypeRefArg(a, b, name, index, tr1, tr2) => b
-      case TupleField(a, b, index, tr1, tr2) => b
-      case FunctionArg(a, b, fr1, fr2) => b
-      case FunctionResult(a, b, fr1, fr2) => b
-      case Connector(a, b, u) => b
+      // always prefer to unify with a type variable
+      case CommonLower(_, a, b) => if (a.isInstanceOf[TypeVariable]) a else b
+      case CommonUpper(_, a, b) => if (a.isInstanceOf[TypeVariable]) a else b
+      case TypeRefArg(a, b, _, _, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+      case TupleField(a, b, _, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+      case FunctionArg(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+      case FunctionResult(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+      case Connector(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+    }
+
+    /** Replace the unified types in a unification reason
+      *
+      * Main usage is to update unification reason when unified tuples are paired
+      */
+    def replaceTypes(newA: ST, newB: ST): Unification = {
+      this match {
+        case u: CommonLower => u.copy(a = newA, b = newB)
+        case u: CommonUpper => u.copy(a = newA, b = newB)
+        case u: TypeRefArg => u.copy(a = newA, b = newB)
+        case u: TupleField => u.copy(a = newA, b = newB)
+        case u: FunctionArg => u.copy(a = newA, b = newB)
+        case u: FunctionResult => u.copy(a = newA, b = newB)
+        case u: Connector => u.copy(a = newA, b = newB)
+        // replace should not be called with any other unification
+        case _ => ???
+      }
     }
   }
   final case class LowerBound(tv: TV, st: ST) extends Unification
@@ -400,7 +419,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   final case class TupleField(a: ST, b: ST, index: Int, tr1: TupleType, tr2: TupleType) extends Unification
   final case class FunctionArg(a: ST, b: ST, fr1: FunctionType, fr2: FunctionType) extends Unification
   final case class FunctionResult(a: ST, b: ST, fr1: FunctionType, fr2: FunctionType) extends Unification
-  final case class Connector(a: ST, b: ST, u: Unification) extends Unification
+  final case class Connector(a: ST, b: ST, uforB: Unification, uforA: Unification) extends Unification
 
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
     * Invariant: Types appearing in the bounds never have a level higher than this variable's `level`. */
