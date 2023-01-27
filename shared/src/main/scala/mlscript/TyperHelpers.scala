@@ -4,6 +4,7 @@ import scala.collection.mutable.{Map => MutMap, Set => MutSet, LinkedHashMap, Li
 import scala.collection.immutable.{SortedMap, SortedSet}
 import scala.annotation.tailrec
 import mlscript.utils._, shorthands._
+import mlscript.Message._
 
 /** Inessential methods used to help debugging. */
 abstract class TyperHelpers { Typer: Typer =>
@@ -656,10 +657,52 @@ abstract class TyperHelpers { Typer: Typer =>
       |> (normalizeTypes_!(_, pol)(ctx))
       |> (expandType(_, stopAtTyVars = true))
     )
-    
+
+    /** List of valid locations a type has been used at by collecting location from provenances.
+      * Tightest location last
+      */
+    def typeUseLocations: Ls[TypeProvenance] = this match {
+      case pv: ProvType => pv.prov.loco match {
+        case None => pv.underlying.typeUseLocations
+        case Some(_) => pv.prov :: pv.underlying.typeUseLocations
+      }
+      case st => st.prov.loco match {
+        case None => Nil
+        case Some(_) => st.prov :: Nil
+      }
+    }
+//    def firstAndLastUseLocation(t: ST): Ls[Opt[Loc]] = {
+//      val stUseLocation = t.getUseLocation.filter(_.loco.isDefined)
+//      val st = t.unwrapProvs
+//      (stUseLocation.headOption, stUseLocation.lastOption) match {
+//        // only show one location in case of duplicates
+//        case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => prov1.loco :: Nil
+//        case ((S(prov1), S(prov2))) => prov2.loco :: prov1.loco :: Nil
+//        case ((S(prov), N)) => prov.loco :: Nil
+//        case (N, (S(prov))) => prov.loco :: Nil
+//        case ((N, N)) => Nil
+//      }
+//    }
   }
-  
-  
+
+  /** Show the locations where a type is introduced and consumed
+    * Only show one location if they are the same location.
+    */
+  def firstAndLastUseLocation(st: ST)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+    val stUseLocation = st.typeUseLocations
+    (stUseLocation.headOption, stUseLocation.lastOption) match {
+      // only show one location in case of duplicates
+      case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.expPos} is here" -> prov1.loco :: Nil
+      case ((S(prov1), S(prov2))) =>
+        msg"${st.expPos} is used here" -> prov2.loco ::
+          msg"${st.expPos} is used here" -> prov1.loco ::
+          Nil
+      case ((S(prov), N)) => msg"${st.expPos} is used here" -> prov.loco :: Nil
+      case (N, (S(prov))) => msg"${st.expPos} is used here" -> prov.loco :: Nil
+      case ((N, N)) => Nil
+    }
+  }
+
   def shallowCopy(st: ST)(implicit cache: MutMap[TV, TV] = MutMap.empty): ST = st match {
     case tv: TV => cache.getOrElseUpdate(tv, freshVar(tv.prov, tv.nameHint, Nil, Nil)(tv.level))
     case _ => st.map(shallowCopy)

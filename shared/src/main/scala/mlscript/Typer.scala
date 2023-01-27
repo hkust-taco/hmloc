@@ -951,21 +951,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   }
   
   case class UnificationStore() {
-    /** List of valid locations a type has been used at. This includes all
-      * the locations of a prov type.
-      */
-    def typeUseLocations(st: ST): Ls[TypeProvenance] = st match {
-      case pv: ProvType => pv.prov.loco match {
-        case None => typeUseLocations(pv.underlying)
-        case Some(value) => pv.prov :: typeUseLocations(pv.underlying)
-      }
-      case st => st.prov.loco match {
-        case None => Nil
-        case Some(value) => st.prov :: Nil
-      }
-    }
+    // TODO: remove and use the one defined in TypeHelpers
     def firstAndLastUseLocation(t: ST): Ls[Message -> Opt[Loc]] = {
-      val stUseLocation = t.getUseLocation.filter(_.loco.isDefined)
+      val stUseLocation = t.typeUseLocations
       val st = t.unwrapProvs
       (stUseLocation.headOption, stUseLocation.lastOption) match {
         // only show one location in case of duplicates
@@ -1044,7 +1032,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       }
     }
 
-    def unifyTypes(a: ST, b: ST, u: Unification)(implicit cache: MutSet[(ST, ST)]): Unit = {
+    def unifyTypes(a: ST, b: ST, u: Unification)(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
       val st1 = a.unwrapProvs
       val st2 = b.unwrapProvs
 
@@ -1056,6 +1044,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           if (c1 =/= c2) {
             // report error
             println(s"[ERROR ${u.level}] ${c1} != ${c2} unifying because ${u}")
+            // TODO: type variables are unwrapped so no prov info is available
+            raise(WarningReport(u.createErrorMessage))
           }
         case (tr1: TypeRef, tr2: TypeRef) =>
           if (tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length) {
@@ -1065,6 +1055,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           } else {
             // report error
             println(s"[ERROR ${u.level}] ${tr1} != ${tr2} unifying because ${u}")
+            raise(WarningReport(u.createErrorMessage))
           }
         case (tup1: TupleType, tup2: TupleType)
           if ((tup1.implicitTuple && tup2.implicitTuple) ||
@@ -1086,22 +1077,25 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           } else {
             // report error
             println(s"[ERROR ${u.level}] ${tup1} != ${tup2} unifying because ${u}")
+            raise(WarningReport(u.createErrorMessage))
           }
         case (f1@FunctionType(arg1, res1), f2@FunctionType(arg2, res2)) =>
           unifyTypes(arg1, arg2, FunctionArg(arg1, arg2, f1, f2))
           unifyTypes(res1, res2, FunctionResult(res1, res2, f1, f2))
         case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
           () // report error
-        case (tv1: TypeVariable, tv2: TypeVariable) => unifyWithTypeVar(tv1, tv2, u)
-        case (tv1: TypeVariable, st2) => unifyWithTypeVar(tv1, st2, u)
-        case (st1, tv2: TypeVariable) => unifyWithTypeVar(tv2, st1, u)
-        case (st1, st2) =>
+        // pass prov wrapped types so that locations get stored in unification
+        case (tv1: TypeVariable, tv2: TypeVariable) => unifyWithTypeVar(tv1, b, u)
+        case (tv1: TypeVariable, _) => unifyWithTypeVar(tv1, b, u)
+        case (_, tv2: TypeVariable) => unifyWithTypeVar(tv2, a, u)
+        case (_, _) =>
           // report error
           println(s"[ERROR ${u.level}] ${st1} != ${st2} unifying because ${u}")
+          raise(WarningReport(u.createErrorMessage))
       }
     }
 
-    def unifyWithTypeVar(tv: TV, st: ST, u: Unification)(implicit cache: MutSet[(ST, ST)]) = {
+    def unifyWithTypeVar(tv: TV, st: ST, u: Unification)(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise) = {
       tv.unification.foreach(prevU => (prevU, u) match {
         case (LowerBound(_, lb), _: LowerBound) => unifyTypes(lb, st, CommonUpper(tv, lb, st))
         case (UpperBound(_, ub), _: UpperBound) => unifyTypes(ub, st, CommonLower(tv, ub, st))
@@ -1227,12 +1221,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   def unifyType()(implicit ctx: Ctx, raise: Raise) = {
     val unificationStore = UnificationStore()
     val tvars = TypeVariable.createdTypeVars.reverse
-    val cache: MutSet[(ST, ST)] = MutSet()
+    implicit val cache: MutSet[(ST, ST)] = MutSet()
 //    println(s"[UNIFICATION] unifying the following types: ${tvars}")
 //    tvars.foreach(unificationStore.traverseTypeBounds(_, Nil))
     tvars.foreach(tv => {
-      tv.upperBounds.foreach(ub => unificationStore.unifyTypes(tv, ub, UpperBound(tv, ub))(cache))
-      tv.lowerBounds.foreach(lb => unificationStore.unifyTypes(tv, lb, LowerBound(tv, lb))(cache))
+      tv.upperBounds.foreach(ub => unificationStore.unifyTypes(tv, ub, UpperBound(tv, ub)))
+      tv.lowerBounds.foreach(lb => unificationStore.unifyTypes(tv, lb, LowerBound(tv, lb)))
     })
     tvars.foreach(tv => {
       println(s"unified ${tv}")

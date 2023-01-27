@@ -102,10 +102,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def uninstantiatedBody: SimpleType = this
     def instantiate(implicit lvl: Int) = this
     constructedTypes += 1
-    /** Get all the provenances where this type is used. For provenance
-     * type it builds a list of use locations starting ending with provenance
-     * of the actual type */
-    def getUseLocation: Ls[TypeProvenance] = prov :: Nil
   }
   type ST = SimpleType
   
@@ -225,7 +221,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   /** The sole purpose of ProvType is to store additional type provenance info. */
   case class ProvType(underlying: SimpleType)(val prov: TypeProvenance) extends ProxyType {
     override def toString = if (prov is NestedTypeProvenance) s"[$underlying] prov: $prov" else s"[$underlying]"
-    override def getUseLocation: Ls[TypeProvenance] = prov :: underlying.getUseLocation
     // override def toString = s"$underlying[${prov.desc.take(5)}]"
     // override def toString = s"$underlying[${prov.toString.take(5)}]"
     // override def toString = s"$underlying@${prov}"
@@ -379,7 +374,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       case FunctionResult(a, b, fr1, fr2) => s"${a} = ${b} are result type in ${fr1} = ${fr2}"
       case Connector(a, b, uforB, uforA) => s"${a} = ${b} because ${uforA} and ${uforB}"
     }
-
     def unifiedWith: ST = this match {
       case LowerBound(tv, st) => st
       case UpperBound(tv, st) => st
@@ -393,23 +387,18 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       case Connector(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
     }
 
-    /** The level of a unification is the number of tv's it has zig zagged through
+    /** Unifying type variables that have unified two lb or ub types
       *
-      * For e.g.
-      *
-      * int <: a <: bool = 0
-      * int | bool <: a = 1
-      * int | b <: a and
-      *       b <: bool = 2
-      *
-      * This is equal to the number of tvs that have unified two lbs or two ubs
-      * during a single unification
+      * int | bool <: a = 1 => a is a unifying type
+      * int | b <: a and => a is a unifying type
+      *       b <: bool  => b is a unifying type through a
       */
-    def level: Int = {
-      def updateCounter(st: ST, delta: (Int, Int))(implicit counter: MutMap[TV, (Int, Int)]): Unit = {
+    def unifyingTypeVars: MutMap[ST, (Int, Int)] = {
+      def updateCounter(st: ST, delta: (Int, Int))(implicit counter: MutMap[ST, (Int, Int)]): Unit = {
         st.unwrapProvs match {
           case tv: TypeVariable =>
-            counter.updateWith(tv) {
+            // store type variable with all it's provenances
+            counter.updateWith(st) {
               case Some((l, u)) => S(l + delta._1, u + delta._2)
               case None => S(delta)
             }
@@ -417,13 +406,13 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         }
       }
 
-      def rec(u: Unification)(implicit counter: MutMap[TV, (Int, Int)]): Unit = u match {
+      def rec(u: Unification)(implicit counter: MutMap[ST, (Int, Int)]): Unit = u match {
         case LowerBound(tv, st) =>
           updateCounter(tv, (1, 0))
           updateCounter(st, (0, 1))
         case UpperBound(tv, st) =>
-            updateCounter(tv, (0, 1))
-            updateCounter(st, (1, 0))
+          updateCounter(tv, (0, 1))
+          updateCounter(st, (1, 0))
         case CommonLower(common, a, b) =>
           updateCounter(common, (0, 2))
           updateCounter(a, (1, 0))
@@ -438,10 +427,24 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         case _ => ()
       }
 
-      val counter: MutMap[TV, (Int, Int)] = MutMap()
+      val counter: MutMap[ST, (Int, Int)] = MutMap()
       rec(this)(counter)
-      counter.count{ case (_, (l, r)) => l >= 2 || r >= 2}
+      counter
     }
+
+    /** The level of a unification is the number of tv's it has zig zagged through
+      *
+      * For e.g.
+      *
+      * int <: a <: bool = 0
+      * int | bool <: a = 1
+      * int | b <: a and
+      *       b <: bool = 2
+      *
+      * This is equal to the number of tvs that have unified two lbs or two ubs
+      * during a single unification
+      */
+    def level: Int = unifyingTypeVars.count{ case (_, (l, r)) => l >= 2 || r >= 2}
 
     /** Replace the unified types in a unification reason
       *
@@ -460,6 +463,35 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         case _ => ???
       }
     }
+
+    /** A unification can create an message showing relevant locations */
+    def createErrorMessage(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = this match {
+      case LowerBound(tv, st) => firstAndLastUseLocation(st)
+      case UpperBound(tv, st) => firstAndLastUseLocation(st)
+      // A common lower bound is causing an error because a and b cannot be unified
+      case CommonLower(common, a, b) =>
+        msg"${a.expPos} != ${b.expPos} but flow into the same location" -> N ::
+          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(common) ::: firstAndLastUseLocation(b)
+      // A common upper bound is causing an error because a and b cannot be unified
+      case CommonUpper(common, a, b) =>
+        msg"${a.expPos} != ${b.expPos} but flow into the same location" -> N ::
+          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(common) ::: firstAndLastUseLocation(b)
+      case TypeRefArg(a, b, _, _, _, _) =>
+        msg"${a.expPos} and ${b.expPos} cannot be unified but flow into the same location" -> N ::
+          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b)
+      case TupleField(a, b, _, _, _) =>
+        msg"${a.expPos} and ${b.expPos} cannot be unified but flow into the same location" -> N ::
+          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b)
+      case FunctionArg(a, b, _, _) =>
+        msg"${a.expPos} and ${b.expPos} cannot be unified but flow into the same location" -> N ::
+          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b)
+      case FunctionResult(a, b, _, _) =>
+        msg"${a.expPos} and ${b.expPos} cannot be unified but flow into the same location" -> N ::
+          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b)
+      case Connector(a, b, uforB, uforA) =>
+        msg"${a.expPos} != ${b.expPos} but flow into the same location" -> N ::
+          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b) ::: uforB.createErrorMessage ::: uforA.createErrorMessage
+    }
   }
   final case class LowerBound(tv: TV, st: ST) extends Unification
   final case class UpperBound(tv: TV, st: ST) extends Unification
@@ -469,6 +501,8 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   final case class TupleField(a: ST, b: ST, index: Int, tr1: TupleType, tr2: TupleType) extends Unification
   final case class FunctionArg(a: ST, b: ST, fr1: FunctionType, fr2: FunctionType) extends Unification
   final case class FunctionResult(a: ST, b: ST, fr1: FunctionType, fr2: FunctionType) extends Unification
+
+  /** Unifying a and b with metadata about sequence of unification that led to this unification */
   final case class Connector(a: ST, b: ST, uforB: Unification, uforA: Unification) extends Unification
 
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
