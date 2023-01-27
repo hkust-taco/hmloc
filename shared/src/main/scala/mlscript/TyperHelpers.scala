@@ -688,17 +688,18 @@ abstract class TyperHelpers { Typer: Typer =>
   /** Show the locations where a type is introduced and consumed
     * Only show one location if they are the same location.
     */
-  def firstAndLastUseLocation(st: ST)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-    val stUseLocation = st.typeUseLocations
+  def firstAndLastUseLocation(t: ST)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+    val stUseLocation = t.typeUseLocations
+    val st = t.unwrapProvs
     (stUseLocation.headOption, stUseLocation.lastOption) match {
       // only show one location in case of duplicates
-      case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.expPos} is here" -> prov1.loco :: Nil
+      case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.toString} is here" -> prov1.loco :: Nil
       case ((S(prov1), S(prov2))) =>
-        msg"${st.expPos} is used here" -> prov2.loco ::
-          msg"${st.expPos} is used here" -> prov1.loco ::
+        msg"${st.toString} is here" -> prov2.loco ::
+          msg"${st.toString} is here" -> prov1.loco ::
           Nil
-      case ((S(prov), N)) => msg"${st.expPos} is used here" -> prov.loco :: Nil
-      case (N, (S(prov))) => msg"${st.expPos} is used here" -> prov.loco :: Nil
+      case ((S(prov), N)) => msg"${st.toString} is here" -> prov.loco :: Nil
+      case (N, (S(prov))) => msg"${st.toString} is here" -> prov.loco :: Nil
       case ((N, N)) => Nil
     }
   }

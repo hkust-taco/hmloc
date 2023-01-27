@@ -378,13 +378,20 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       case LowerBound(tv, st) => st
       case UpperBound(tv, st) => st
       // always prefer to unify with a type variable
-      case CommonLower(_, a, b) => if (a.isInstanceOf[TypeVariable]) a else b
-      case CommonUpper(_, a, b) => if (a.isInstanceOf[TypeVariable]) a else b
-      case TypeRefArg(a, b, _, _, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
-      case TupleField(a, b, _, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
-      case FunctionArg(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
-      case FunctionResult(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
-      case Connector(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+//      case CommonLower(_, a, b) => if (a.isInstanceOf[TypeVariable]) a else b
+//      case CommonUpper(_, a, b) => if (a.isInstanceOf[TypeVariable]) a else b
+//      case TypeRefArg(a, b, _, _, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+//      case TupleField(a, b, _, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+//      case FunctionArg(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+//      case FunctionResult(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+//      case Connector(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
+      case CommonLower(_, a, b) => b
+      case CommonUpper(_, a, b) => b
+      case TypeRefArg(a, b, _, _, _, _) => b
+      case TupleField(a, b, _, _, _) => b
+      case FunctionArg(a, b, _, _) => b
+      case FunctionResult(a, b, _, _) => b
+      case Connector(a, b, _, _) => b
     }
 
     /** Unifying type variables that have unified two lb or ub types
@@ -465,32 +472,29 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     }
 
     /** A unification can create an message showing relevant locations */
-    def createErrorMessage(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = this match {
-      case LowerBound(tv, st) => firstAndLastUseLocation(st)
-      case UpperBound(tv, st) => firstAndLastUseLocation(st)
-      // A common lower bound is causing an error because a and b cannot be unified
-      case CommonLower(common, a, b) =>
-        msg"${a.expPos} != ${b.expPos} but flow into the same location" -> N ::
-          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(common) ::: firstAndLastUseLocation(b)
-      // A common upper bound is causing an error because a and b cannot be unified
-      case CommonUpper(common, a, b) =>
-        msg"${a.expPos} != ${b.expPos} but flow into the same location" -> N ::
-          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(common) ::: firstAndLastUseLocation(b)
-      case TypeRefArg(a, b, _, _, _, _) =>
-        msg"${a.expPos} and ${b.expPos} cannot be unified but flow into the same location" -> N ::
-          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b)
-      case TupleField(a, b, _, _, _) =>
-        msg"${a.expPos} and ${b.expPos} cannot be unified but flow into the same location" -> N ::
-          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b)
-      case FunctionArg(a, b, _, _) =>
-        msg"${a.expPos} and ${b.expPos} cannot be unified but flow into the same location" -> N ::
-          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b)
-      case FunctionResult(a, b, _, _) =>
-        msg"${a.expPos} and ${b.expPos} cannot be unified but flow into the same location" -> N ::
-          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b)
-      case Connector(a, b, uforB, uforA) =>
-        msg"${a.expPos} != ${b.expPos} but flow into the same location" -> N ::
-          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b) ::: uforB.createErrorMessage ::: uforA.createErrorMessage
+    def createErrorMessage(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+      def helper(a: ST, b: ST, u: Unification): Ls[Message -> Opt[Loc]] = {
+        val tvars = u.unifyingTypeVars.filter{case (_, (l, r)) => l >= 2 || r >= 2}.keys
+        val tvarMessage: Ls[Message -> Opt[Loc]] = if (tvars.nonEmpty) {
+          msg"The following tvars cannot be resolved ${tvars.mkString(", ")}" -> N :: tvars.flatMap(firstAndLastUseLocation(_)).toList
+        } else {
+          Nil
+        }
+        msg"${a.toString} and ${b.toString} cannot be unified but they flow into the same locations" -> N ::
+          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b) ::: tvarMessage
+      }
+      this match {
+        case CommonLower(common, a, b) => helper(a, b, this)
+        case CommonUpper(common, a, b) => helper(a, b, this)
+        case TypeRefArg(a, b, _, _, _, _) => helper(a, b, this)
+        case TupleField(a, b, _, _, _) => helper(a, b, this)
+        case FunctionArg(a, b, _, _) => helper(a, b, this)
+        case FunctionResult(a, b, _, _) => helper(a, b, this)
+        case Connector(a, b, uforB, uforA) => helper(a, b, this)
+        // these unifications cannot produce an error by themselves
+        case LowerBound(tv, st) => firstAndLastUseLocation(st)
+        case UpperBound(tv, st) => firstAndLastUseLocation(st)
+      }
     }
   }
   final case class LowerBound(tv: TV, st: ST) extends Unification
