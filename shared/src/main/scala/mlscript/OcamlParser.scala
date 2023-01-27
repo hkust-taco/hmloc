@@ -131,7 +131,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     })
   
   def ite[p: P]: P[Term] = P( kw("if") ~/ term ~ kw("then") ~ term ~ kw("else") ~ term ).map(ite =>
-    App(App(App(Var("if"), ite._1), ite._2), ite._3))
+    // App(App(App(Var("if"), ite._1), ite._2), ite._3)
+    If(IfThen(ite._1, ite._2), S(ite._3))
+    )
   
   /** Parses an expression of the form `expr (: type) (= expr2)`. This is the
     * an important term parser because it is the one that actually parses the

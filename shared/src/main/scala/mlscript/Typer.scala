@@ -786,13 +786,14 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         (t_ty without rcd.fields.iterator.map(_._1).toSortedSet) & (rcd_ty, prov)
       case CaseOf(s, cs) =>
         val s_ty = typeTerm(s)
-        val (tys, cs_ty) = typeArms(s |>? {
+        val (tys, cs_ty_ls) = typeArms(s |>? {
           case v: Var => v
           case Asc(v: Var, _) => v
         }, cs)
         val req = tys.foldRight(BotType: SimpleType) {
           case ((a_ty, tv), req) => a_ty & tv | req & a_ty.neg()
         }
+        val cs_ty = freshVar(prov, lbs = cs_ty_ls)
         con(s_ty, req, cs_ty)
       case iff @ If(body, fallback) =>
         import mlscript.ucs._
@@ -826,8 +827,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   
   def typeArms(scrutVar: Opt[Var], arms: CaseBranches)
       (implicit ctx: Ctx, raise: Raise, lvl: Int)
-      : Ls[SimpleType -> SimpleType] -> SimpleType = arms match {
-    case NoCases => Nil -> BotType
+      : Ls[SimpleType -> SimpleType] -> Ls[SimpleType] = arms match {
+    case NoCases => Nil -> Nil
     case Wildcard(b) =>
       val fv = freshVar(tp(arms.toLoc, "wildcard pattern"))
       val newCtx = ctx.nest
@@ -835,9 +836,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case Some(v) =>
           newCtx += v.name -> VarSymbol(fv, v)
           val b_ty = typeTerm(b)(newCtx, raise)
-          (fv -> TopType :: Nil) -> b_ty
+          (fv -> TopType :: Nil) -> (b_ty :: Nil)
         case _ =>
-          (fv -> TopType :: Nil) -> typeTerm(b)
+          (fv -> TopType :: Nil) -> (typeTerm(b) :: Nil)
       }
     case Case(pat, bod, rest) =>
       val patTy = pat match {
@@ -849,7 +850,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             case None =>
               err("type identifier not found: " + nme, pat.toLoc)(raise)
               val e = ClassTag(ErrTypeId, Set.empty)(tpr)
-              return ((e -> e) :: Nil) -> e
+              return ((e -> e) :: Nil) -> (e :: Nil)
             case Some(td) =>
               td.kind match {
                 case Als => err(msg"can only match on classes and traits", pat.toLoc)(raise)
@@ -872,7 +873,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           val bod_ty = typeTerm(bod)(newCtx, raise)
           (patTy -> TopType, bod_ty, typeArms(scrutVar, rest))
       }
-      (req_ty :: tys) -> (bod_ty | rest_ty)
+      (req_ty :: tys) -> (bod_ty :: rest_ty)
   }
   
   def typeTerms(term: Ls[Statement], rcd: Bool, fields: List[Opt[Var] -> SimpleType])
