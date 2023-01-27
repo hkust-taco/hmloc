@@ -119,8 +119,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   val DecType: ClassTag = ClassTag(Var("number"), Set.empty)(noTyProv)
   val StrType: ClassTag = ClassTag(Var("string"), Set.empty)(noTyProv)
   // Add class tags for list constructors
-  val ConsType: ClassTag = ClassTag(Var("Cons"), Set.empty)(noTyProv)
-  val NilType: ClassTag = ClassTag(Var("Nil"), Set.empty)(noTyProv)
   val FloatType: ClassTag = ClassTag(Var("float"), Set.empty)(noTyProv)
   
   val ErrTypeId: SimpleTerm = Var("error")
@@ -178,21 +176,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     val intBinPred = fun(singleTup(IntType), fun(singleTup(IntType), BoolType)(noProv))(noProv)
     val numberBinOpTy = fun(singleTup(DecType), fun(singleTup(DecType), DecType)(noProv))(noProv)
     val numberBinPred = fun(singleTup(DecType), fun(singleTup(DecType), BoolType)(noProv))(noProv)
-    val listConsTy: TypeScheme = {
-      val listTyVar = freshVar(noProv, Some("A"))(1)
-      val headTyVar = freshVar(noProv, Some("_0"), Nil, listTyVar :: Nil)(1)
-      val tailTyVar = freshVar(noProv, Some("_1"), Nil, TypeRef(TypeName("List"), listTyVar :: Nil)(noProv) :: Nil)(1)
-      val consFnLhs = TupleType.apply(
-        (N, FieldType(None, headTyVar)(noProv)) ::
-        (N, FieldType(None, tailTyVar)(noProv)) :: Nil
-      )(noProv)
-      val consFnRhs = ComposedType(false, ConsType, RecordType.mk(
-        (Var("_0"), FieldType(None, headTyVar)(noProv)) ::
-        (Var("_1"), FieldType(None, tailTyVar)(noProv)) ::
-        (Var("Cons#A"), FieldType(Some(listTyVar), listTyVar)(noProv)) :: Nil)()
-      )(noProv)
-      PolymorphicType(0, fun(singleTup(consFnLhs), consFnRhs)(noProv))
-    }
     Map(
       "true" -> TrueType,
       "false" -> FalseType,
