@@ -1,4 +1,3 @@
-
 :p
 data Test a b
 //│ Defined class Test[+a, +b]
@@ -29,32 +28,32 @@ bar {}
 bar {name: "Bob"}
 bar {age: 1} // TODO B/E
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.28: 	bar {}
+//│ ║  l.27: 	bar {}
 //│ ║        	^^^^^^
-//│ ╟── tuple of type `anything` is not a 1-element tuple
-//│ ║  l.28: 	bar {}
+//│ ╟── tuple of type `anything` does not have field 'age'
+//│ ║  l.27: 	bar {}
 //│ ║        	    ^^
 //│ ╟── Note: constraint arises from binding:
-//│ ║  l.21: 	let bar (q: Person _) = q.age
+//│ ║  l.20: 	let bar (q: Person _) = q.age
 //│ ║        	         ^^^^^^^^^^^
 //│ ╟── from receiver:
-//│ ║  l.21: 	let bar (q: Person _) = q.age
+//│ ║  l.20: 	let bar (q: Person _) = q.age
 //│ ╙──      	                        ^
-//│ res: error
+//│ res: nothing
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.29: 	bar {name: "Bob"}
+//│ ║  l.28: 	bar {name: "Bob"}
 //│ ║        	^^^^^^^^^^^^^^^^^
-//│ ╟── record of type `{name: "Bob"}` is not a 1-element tuple
-//│ ║  l.29: 	bar {name: "Bob"}
+//│ ╟── record of type `{name: string}` does not have field 'age'
+//│ ║  l.28: 	bar {name: "Bob"}
 //│ ║        	    ^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from binding:
-//│ ║  l.21: 	let bar (q: Person _) = q.age
+//│ ║  l.20: 	let bar (q: Person _) = q.age
 //│ ║        	         ^^^^^^^^^^^
 //│ ╟── from receiver:
-//│ ║  l.21: 	let bar (q: Person _) = q.age
+//│ ║  l.20: 	let bar (q: Person _) = q.age
 //│ ╙──      	                        ^
-//│ res: error
-//│ res: 1
+//│ res: nothing
+//│ res: int
 
 
 
@@ -65,11 +64,11 @@ bar {age: 1} // TODO B/E
 
 
 let fake-p = { name: "Bob", age: 42 }
-//│ fake-p: {age: 42, name: "Bob"}
+//│ fake-p: {age: int, name: string}
 
 // :e // TODO B/E
 bar fake-p
-//│ res: 42
+//│ res: int
 
 data Wine(name: string, age: int)
 let w = Wine("Côtes du Rhône", 3)
@@ -92,13 +91,13 @@ let nested x =
   data Foo a // Note: we get one error for the synthetic class, and one for the synthetic def...
   Foo x
 //│ ╔══[ERROR] Illegal position for this type declaration statement.
-//│ ║  l.92: 	  data Foo a // Note: we get one error for the synthetic class, and one for the synthetic def...
+//│ ║  l.91: 	  data Foo a // Note: we get one error for the synthetic class, and one for the synthetic def...
 //│ ╙──      	       ^^^^^
 //│ ╔══[ERROR] Illegal position for this definition statement.
-//│ ║  l.92: 	  data Foo a // Note: we get one error for the synthetic class, and one for the synthetic def...
+//│ ║  l.91: 	  data Foo a // Note: we get one error for the synthetic class, and one for the synthetic def...
 //│ ╙──      	       ^^^^^
 //│ ╔══[ERROR] identifier not found: Foo
-//│ ║  l.93: 	  Foo x
+//│ ║  l.92: 	  Foo x
 //│ ╙──      	  ^^^
 //│ nested: error -> error
 

@@ -2,17 +2,13 @@
 
 def foo: ('a -> (~'a -> 'b) -> 'b) -> 'b
 //│ foo: (nothing -> (anything -> 'b) -> 'b) -> 'b
-//│    = <missing implementation>
 
 def foo: ('a -> (~'a -> 'a) -> 'a) -> 'a -> 'a
 //│ foo: ('a -> (~'a -> 'a) -> 'a) -> 'a -> 'a
-//│    = <missing implementation>
 
 :ns
 foo
 //│ res: ('a -> (~'a -> 'a) -> 'a) -> 'a -> 'a
-//│    = <no result>
-//│      foo is not implemented
 
 :ns
 r = foo (fun a -> fun f -> f a)
@@ -22,31 +18,25 @@ r = foo (fun a -> fun f -> f a)
 //│     'a <: 'c & 'd
 //│     'd <: ~'a
 //│     'c <: 'a
-//│  = <no result>
-//│    foo is not implemented
 
 r
 //│ res: 'a -> 'a
-//│    = <no result>
-//│      r and foo are not implemented
 
 :e
 r: anything -> nothing
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.34: 	r: anything -> nothing
+//│ ║  l.26: 	r: anything -> nothing
 //│ ║        	^
-//│ ╟── type `anything` does not match type `?a`
-//│ ║  l.34: 	r: anything -> nothing
+//│ ╟── type `anything` does not match type `nothing`
+//│ ║  l.26: 	r: anything -> nothing
 //│ ║        	   ^^^^^^^^
 //│ ╟── Note: constraint arises from type variable:
-//│ ║  l.7: 	def foo: ('a -> (~'a -> 'a) -> 'a) -> 'a -> 'a
+//│ ║  l.6: 	def foo: ('a -> (~'a -> 'a) -> 'a) -> 'a -> 'a
 //│ ║       	                                      ^^
 //│ ╟── from type negation:
-//│ ║  l.7: 	def foo: ('a -> (~'a -> 'a) -> 'a) -> 'a -> 'a
+//│ ║  l.6: 	def foo: ('a -> (~'a -> 'a) -> 'a) -> 'a -> 'a
 //│ ╙──     	                 ^^^
 //│ res: anything -> nothing
-//│    = <no result>
-//│      r and foo are not implemented
 
 
 
@@ -56,7 +46,6 @@ r: anything -> nothing
 
 def foo: ('a -> (~'a -> anything) -> anything) -> MutArray['a]
 //│ foo: ('a -> (~'a -> anything) -> anything) -> MutArray['a]
-//│    = <missing implementation>
 
 :ns
 r = foo (fun a -> fun f -> f a)
@@ -65,28 +54,24 @@ r = foo (fun a -> fun f -> f a)
 //│     'b :> MutArray['a]
 //│     'a <: 'c
 //│     'c <: ~'a
-//│  = <no result>
-//│    foo is not implemented
 
 :e
 r[0] <- "test"
 //│ ╔══[ERROR] Type mismatch in assignment:
-//│ ║  l.72: 	r[0] <- "test"
+//│ ║  l.59: 	r[0] <- "test"
 //│ ║        	^^^^^^^^^^^^^^
-//│ ╟── string literal of type `"test"` does not match type `?a`
-//│ ║  l.72: 	r[0] <- "test"
+//│ ╟── string literal of type `string` does not match type `~string`
+//│ ║  l.59: 	r[0] <- "test"
 //│ ║        	        ^^^^^^
-//│ ╟── but it flows into assigned array element with expected type `?b`
-//│ ║  l.72: 	r[0] <- "test"
+//│ ╟── but it flows into assigned array element with expected type `~string`
+//│ ║  l.59: 	r[0] <- "test"
 //│ ║        	^^^^
 //│ ╟── Note: constraint arises from assigned array element:
-//│ ║  l.72: 	r[0] <- "test"
+//│ ║  l.59: 	r[0] <- "test"
 //│ ║        	^^^^
 //│ ╟── from type negation:
-//│ ║  l.57: 	def foo: ('a -> (~'a -> anything) -> anything) -> MutArray['a]
+//│ ║  l.47: 	def foo: ('a -> (~'a -> anything) -> anything) -> MutArray['a]
 //│ ╙──      	                 ^^^
-//│ = <no result>
-//│   r and foo are not implemented
 
 
 
@@ -94,14 +79,12 @@ r[0] <- "test"
 :e
 r[0] + 1
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.95: 	r[0] + 1
+//│ ║  l.80: 	r[0] + 1
 //│ ║        	^^^^^^
-//│ ╟── possibly-undefined array access of type `undefined` is not a 1-element tuple
-//│ ║  l.95: 	r[0] + 1
+//│ ╟── possibly-undefined array access of type `undefined` is not an instance of type `int`
+//│ ║  l.80: 	r[0] + 1
 //│ ╙──      	^^^^
-//│ res: error | int
-//│    = <no result>
-//│      r and foo are not implemented
+//│ res: int
 
 
 
@@ -111,16 +94,12 @@ r[0] + 1
 :ns
 def bar: (('a & ~'a) -> 'b) -> 'b
 //│ bar: (nothing -> 'b) -> 'b
-//│    = <missing implementation>
 
 def bar: (('a & int & ~'a) -> 'b) -> 'b
 //│ bar: ((int & 'a & ~'a) -> 'b) -> 'b
-//│    = <missing implementation>
 
 r = bar (fun x -> (x, x + 1, not x, x x))
 //│ r: (int & 'a & ~'a, int, bool, nothing,)
-//│  = <no result>
-//│    bar is not implemented
 
 :ns
 r
@@ -132,21 +111,14 @@ r
 //│     'c :> 'a & int & ~'a
 //│        <: 'c -> 'f & bool & int
 //│     'a <: (int | ~(int & ~'a)) & (bool | ~(int & ~'a)) & ('c -> 'f | ~(int & ~'a))
-//│    = <no result>
-//│      r and bar are not implemented
 
 r._1 : nothing
 //│ res: nothing
-//│    = <no result>
-//│      r and bar are not implemented
 
 def impossible x = case x of {}
 //│ impossible: nothing -> nothing
-//│           = [Function: impossible]
 
 bar impossible
 //│ res: nothing
-//│    = <no result>
-//│      bar is not implemented
 
 

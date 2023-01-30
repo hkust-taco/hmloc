@@ -6,21 +6,17 @@ def foo x = case x of
   { Test -> x.value
   | _ -> 1
   }
-//│ foo: ((Test with {value: 'value}) | ~Test) -> (1 | 'value)
-//│    = [Function: foo]
+//│ foo: ((Test with {value: 'value}) | ~Test) -> (int | 'value)
 
 // Q: why type of `value` widened?
 def t = Test { value = 0 }
-//│ t: Test & {value: 0}
-//│  = [Function: t]
+//│ t: Test
 
 foo Test
-//│ res: 1
-//│    = 1
+//│ res: int
 
 foo t
-//│ res: 0 | 1
-//│    = 0
+//│ res: int
 
 
 class Toast: { name: string }
@@ -31,25 +27,22 @@ def bar x = case x of
   | Toast -> x.name
   }
 //│ bar: ((Test with {value: 'value}) | (Toast with {name: 'value})) -> 'value
-//│    = [Function: bar]
 
 :e
 bar Test
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.37: 	bar Test
+//│ ║  l.32: 	bar Test
 //│ ║        	^^^^^^^^
-//│ ╟── reference of type `{value: ?value} -> (Test & {value: ?value})` is not a 1-element tuple
-//│ ║  l.37: 	bar Test
+//│ ╟── reference of type `{value: ?value} -> (Test & {value: ?value})` does not match type `Test & ?a | Toast & ?b`
+//│ ║  l.32: 	bar Test
 //│ ║        	    ^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.29: 	def bar x = case x of
+//│ ║  l.25: 	def bar x = case x of
 //│ ║        	                 ^
 //│ ╟── Note: class constructor Test is defined at:
 //│ ║  l.2: 	class Test: { value: int }
 //│ ╙──     	      ^^^^
-//│ res: error
-//│ Runtime error:
-//│   Error: non-exhaustive case expression
+//│ res: nothing
 
 
 
@@ -58,17 +51,15 @@ bar Test
 :e
 bar "ops"
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.59: 	bar "ops"
+//│ ║  l.52: 	bar "ops"
 //│ ║        	^^^^^^^^^
-//│ ╟── string literal of type `"ops"` is not a 1-element tuple
-//│ ║  l.59: 	bar "ops"
+//│ ╟── string literal of type `string` does not match type `Test & ?a | Toast & ?b`
+//│ ║  l.52: 	bar "ops"
 //│ ║        	    ^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.29: 	def bar x = case x of
+//│ ║  l.25: 	def bar x = case x of
 //│ ╙──      	                 ^
-//│ res: error
-//│ Runtime error:
-//│   Error: non-exhaustive case expression
+//│ res: nothing
 
 
 
@@ -79,22 +70,19 @@ def baz x = case x of
   | Toast -> x
   }
 //│ baz: ('a & (Test | Toast)) -> 'a
-//│    = [Function: baz]
 
 :e
 baz "oops"
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.85: 	baz "oops"
+//│ ║  l.75: 	baz "oops"
 //│ ║        	^^^^^^^^^^
-//│ ╟── string literal of type `"oops"` is not a 1-element tuple
-//│ ║  l.85: 	baz "oops"
+//│ ╟── string literal of type `string` does not match type `Test & ?a | Toast & ?b`
+//│ ║  l.75: 	baz "oops"
 //│ ║        	    ^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.77: 	def baz x = case x of
+//│ ║  l.68: 	def baz x = case x of
 //│ ╙──      	                 ^
-//│ res: error
-//│ Runtime error:
-//│   Error: non-exhaustive case expression
+//│ res: nothing
 
 
 

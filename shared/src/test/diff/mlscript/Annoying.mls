@@ -1,4 +1,4 @@
-:NoJS
+
 // :NoProvs
 
 def foo: ~int\x
@@ -18,7 +18,7 @@ def foo: (~ 'a \ x) -> 'a -> 'a
 //│ foo: ~'a\x -> 'a -> 'a
 
 foo 1
-//│ res: ('a & ~1) -> 'a
+//│ res: ('a & ~int) -> 'a
 
 def foo: (~ 'a \ x) -> 'a
 //│ foo: anything -> nothing
@@ -64,7 +64,7 @@ def test x = case x of { int -> x.f | _ -> x.x }
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int & {x: 'a} | {x: 'a} & ~?a` does not match type `?b`
+//│ ╟── type `int & {x: 'a} | {x: 'a} & ~?a` does not have field 'f'
 //│ ║  l.59: 	def test: (int & { f: 'a } | { x: 'a } | { y: 'a }) -> 'a
 //│ ║        	                             ^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -76,7 +76,7 @@ def test x = case x of { int -> x.f | _ -> x.x }
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `{y: 'a} & ~int` does not match type `?a`
+//│ ╟── type `{y: 'a} & ~int` does not have field 'x'
 //│ ║  l.59: 	def test: (int & { f: 'a } | { x: 'a } | { y: 'a }) -> 'a
 //│ ║        	                                         ^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -88,7 +88,7 @@ def test x = case x of { int -> x.f | _ -> x.x }
 //│ ╔══[ERROR] Type mismatch in def definition:
 //│ ║  l.63: 	def test x = case x of { int -> x.f | _ -> x.x }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int & {y: 'a} | {y: 'a} & ~?a` does not match type `?b`
+//│ ╟── type `int & {y: 'a} | {y: 'a} & ~?a` does not have field 'f'
 //│ ║  l.59: 	def test: (int & { f: 'a } | { x: 'a } | { y: 'a }) -> 'a
 //│ ║        	                                         ^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -142,16 +142,16 @@ test (error: B & { c: int })
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.141: 	test (error: B & { c: int })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `B & {c: int}` is not a 1-element tuple
+//│ ╟── type `B & {c: int}` does not match type `A & {a: ?a} | B & {b: ?a} | C & {c: ?a}`
 //│ ║  l.141: 	test (error: B & { c: int })
 //│ ║         	             ^^^^^^^^^^^^^^
-//│ ╟── but it flows into argument with expected type `(A & {a: ?a} | B & {b: ?a} | C & {c: ?a},)`
+//│ ╟── but it flows into argument with expected type `A & {a: ?a} | B & {b: ?a} | C & {c: ?a}`
 //│ ║  l.141: 	test (error: B & { c: int })
 //│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from tuple type:
 //│ ║  l.130: 	def test: (A & { a: 'a } | B & { b: 'a } | C & { c: 'a }) -> 'a
 //│ ╙──       	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -172,16 +172,16 @@ test (error: A & { x: int })
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.171: 	test (error: A & { x: int })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `A & {x: int}` is not a 1-element tuple
+//│ ╟── type `A & {x: int}` does not match type `A & {x: ?a, y: ?b} | B & {x: ?a, y: ?b} | C & {x: ?a, y: ?b}`
 //│ ║  l.171: 	test (error: A & { x: int })
 //│ ║         	             ^^^^^^^^^^^^^^
-//│ ╟── but it flows into argument with expected type `(A & {x: ?a, y: ?b} | B & {x: ?a, y: ?b} | C & {x: ?a, y: ?b},)`
+//│ ╟── but it flows into argument with expected type `A & {x: ?a, y: ?b} | B & {x: ?a, y: ?b} | C & {x: ?a, y: ?b}`
 //│ ║  l.171: 	test (error: A & { x: int })
 //│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from tuple type:
 //│ ║  l.160: 	def test: (A & { x: 'a; y: 'b } | B & { x: 'a; y: 'b } | C & { x: 'a; y: 'b }) -> { l: 'a; r: 'b }
 //│ ╙──       	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ res: error | {l: int, r: nothing}
+//│ res: {l: int, r: nothing}
 
 
 
@@ -202,13 +202,13 @@ def negInt: ~int
 //│ negInt: ~int
 
 def v = negInt with { x = 1 }
-//│ v: ~int & {x: 1}
+//│ v: ~int & {x: int}
 
 v.x
-//│ res: 1
+//│ res: int
 
 (id v).x
-//│ res: 1
+//│ res: int
 
 :e
 negInt: A | { x: 'a }
@@ -231,10 +231,10 @@ negInt: A | { x: 'a }
 
 
 v: A | { x: 'a }
-//│ res: A | {x: 1}
+//│ res: A | {x: int}
 
 (error: A) with { x = 1 }
-//│ res: A\x & {x: 1}
+//│ res: A\x & {x: int}
 
 // Note that we get {x: nothing} because the LHS is a subtype of A so 'a is not constrained
 (error: A) with { x = 1 } : A | { x: 'a }
@@ -247,13 +247,13 @@ def negWeird: ~(~(~(A & { x: int })))
 //│ negWeird: ~A
 
 def v = negWeird with { x = 1 }
-//│ v: {x: 1} & ~{x: int} | ~A\x & {x: 1}
+//│ v: ~A\x & {x: int}
 
 def w: {x: 1} & ~{x: int} | ~A\x & {x: 1}
 //│ w: {x: 1} & ~A\x
 
 v: A | { x: 'a }
-//│ res: A | {x: 1}
+//│ res: A | {x: int}
 
 
 w: A | { x: 'a }
@@ -300,28 +300,28 @@ funny.x
 
 
 idx = id with { x = 1 }
-//│ idx: 'a -> 'a & {x: 1}
+//│ idx: 'a -> 'a & {x: int}
 
 idx idx.x
-//│ res: 1
+//│ res: int
 
 def indirect i = i i.x
 //│ indirect: ('x -> 'a & {x: 'x}) -> 'a
 
 indirect idx
-//│ res: 1
+//│ res: int
 
 if true then id else idx
 //│ res: 'a -> 'a
 
 r =  if true then id with { x = "a"; y = "b" } else idx
-//│ r: 'a -> 'a & {x: "a" | 1}
+//│ r: 'a -> 'a & {x: int | string}
 
 r r.x
-//│ res: "a" | 1
+//│ res: int | string
 
 indirect r
-//│ res: "a" | 1
+//│ res: int | string
 
 def takeFunOrRecord: (int -> int | { x: int }) -> int
 //│ takeFunOrRecord: anything -> int

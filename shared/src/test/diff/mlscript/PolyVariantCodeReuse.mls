@@ -10,16 +10,13 @@ class Success: { result: anything }
 def NotFound = NotFound {}
 def Success result = Success { result }
 //│ NotFound: NotFound
-//│         = [Function: NotFound1]
 //│ Success: 'result -> (Success with {result: 'result})
-//│        = [Function: Success1]
 
 type Tuple[A, B] = (A, B)
 //│ Defined type alias Tuple[+A, +B]
 
 def Tuple l r = (l, r)
 //│ Tuple: 'a -> 'b -> ('a, 'b,)
-//│      = [Function: Tuple]
 
 class Nil
 class Cons[A]: { head: A; tail: List[A] }
@@ -30,15 +27,12 @@ type List[A] = Nil | Cons[A]
 
 def Nil = Nil {}
 //│ Nil: Nil
-//│    = [Function: Nil1]
 
 def Cons head tail = Cons { head; tail }
 //│ Cons: ('head & 'A) -> (List['A] & 'tail) -> (Cons['A] with {head: 'head, tail: 'tail})
-//│     = [Function: Cons1]
 
 def eq: string -> string -> bool
 //│ eq: string -> string -> bool
-//│   = <missing implementation>
 
 rec def list_assoc s l = case l of {
   | Cons ->
@@ -49,13 +43,9 @@ rec def list_assoc s l = case l of {
 //│ list_assoc: string -> 'a -> (NotFound | (Success with {result: 'result}))
 //│   where
 //│     'a <: (Cons[?] with {head: {_1: string, _2: 'result}, tail: 'a}) | Nil
-//│           = <no result>
-//│             eq is not implemented
 
 list_assoc "2" (Cons (Tuple "2" 1) Nil )
-//│ res: NotFound | Success & {result: 1}
-//│    = <no result>
-//│      list_assoc and eq are not implemented
+//│ res: NotFound | Success & {result: int}
 
 // ***************************** Var *******************************
 
@@ -76,8 +66,6 @@ def eval_var sub v = case v of {
 //│ eval_var: 'a -> (Var & 'result) -> 'result
 //│   where
 //│     'a <: (Cons[?] with {head: {_1: string, _2: 'result}, tail: 'a}) | Nil
-//│         = <no result>
-//│           list_assoc and eq are not implemented
 
 // *************************** Lambda ********************************
 
@@ -87,24 +75,19 @@ class App[a]: Lambda & { lhs: a; rhs: a }
 //│ Defined class App[+a]
 
 :js
+//│ /!\ Unrecognized option :js
 def incr: {a: int} -> unit
 // def incr x = x.a <- x.a + 1
-//│ // Query 1 is empty
-//│ // End of generated code
 //│ incr: {a: int} -> unit
-//│     = <missing implementation>
 
 :js
+//│ /!\ Unrecognized option :js
 def gensym: () -> (unit, {a: 'a},)
 // def gensym = let n = { mut a = 0 } in fun () -> (incr n, n)
-//│ // Query 1 is empty
-//│ // End of generated code
 //│ gensym: () -> (unit, {a: nothing},)
-//│       = <missing implementation>
 
 def int_to_string: int -> string
 //│ int_to_string: int -> string
-//│              = <missing implementation>
 
 def eval_lambda eval_rec subst v = case v of {
   | Var -> eval_var subst v
@@ -118,28 +101,24 @@ def eval_lambda eval_rec subst v = case v of {
     Abs { name = new_name;
           body = eval_rec (Cons (Tuple v.name (Var { name = new_name })) subst) v.body }
   }
-//│ eval_lambda: (((Cons[('a, 'rhs | Var,) | 'A] with {head: ('a, 'rhs | Var,), tail: Nil | 'tail}) | 'tail) -> 'body -> ('result & 'rhs & ((Abs[?] with {body: 'body, name: 'a}) | 'lhs & ~#Abs))) -> ('b & List['A] & 'tail) -> ((Abs[?] with {body: 'body, name: 'a}) | (App[?] with {lhs: 'body, rhs: 'body}) | Var & 'result) -> (Abs['rhs] | (App['rhs] with {lhs: 'lhs, rhs: 'rhs}) | 'result)
+//│ eval_lambda: (((Cons[('a, 'rhs | Var,) | 'A] with {head: ('a, 'rhs | Var,), tail: Nil | 'tail}) | 'tail) -> 'body -> ('rhs & 'b & ((Abs[?] with {body: 'body, name: 'a}) | 'lhs & ~#Abs))) -> ('c & List['A] & 'tail) -> ((Abs[?] with {body: 'body, name: 'a}) | (App[?] with {lhs: 'body, rhs: 'body}) | Var & 'b) -> (Abs['rhs] | (App['rhs] with {lhs: 'lhs, rhs: 'rhs}) | 'b)
 //│   where
-//│     'b <: (Cons[?] with {head: {_1: string, _2: 'result}, tail: 'b}) | Nil
-//│            = <no result>
-//│              eval_var, list_assoc and eq are not implemented
+//│     'c <: (Cons[?] with {head: {_1: string, _2: 'b}, tail: 'c}) | Nil
 
 rec def eval1 subst = eval_lambda eval1 subst
-//│ eval1: (List[?] & 'tail) -> 'b -> 'a
+//│ eval1: (List[?] & 'tail) -> 'b -> ('rhs | 'c)
 //│   where
-//│     'tail <: (Cons[?] with {head: {_1: string, _2: 'result}, tail: 'tail}) | Nil
-//│     'result :> 'a | Var
-//│             <: 'b & (Abs[?] & 'c | 'lhs & ~#Abs)
-//│     'a :> Abs['a] | (App['a0] with {lhs: 'lhs, rhs: 'a}) | 'result | 'd
-//│     'a0 :> 'a | (App['a0] with {lhs: 'lhs, rhs: 'a}) | Var
-//│     'lhs :> (App['a0] with {lhs: 'lhs, rhs: 'a}) | Var
-//│          <: 'a0 & 'b
-//│     'b <: Abs[?] & {body: 'b} | App[?] & {lhs: 'b, rhs: 'b} | Var & 'd
-//│     'd :> Var
-//│        <: 'b & (Abs[?] & 'c | {name: string} & 'lhs & ~#Abs)
-//│     'c <: {body: 'b, name: string}
-//│      = <no result>
-//│        eval_lambda, eval_var, list_assoc and eq are not implemented
+//│     'tail <: (Cons[?] with {head: {_1: string, _2: 'd}, tail: 'tail}) | Nil
+//│     'd <: 'body & (Abs[?] & {body: 'b} | 'lhs & ~#Abs) & 'rhs
+//│     'body :> Var | 'c
+//│           <: 'd & 'b
+//│     'c :> Abs['body] & {body: 'body} | App['a] & {lhs: 'lhs, rhs: 'rhs}
+//│     'a :> App['a] & {lhs: 'lhs, rhs: 'rhs} | Var | 'c
+//│     'lhs :> App['a] & {lhs: 'lhs, rhs: 'rhs} | Var
+//│          <: 'a & 'b
+//│     'rhs :> Var | 'c
+//│          <: 'd & 'body & 'a & 'b
+//│     'b <: Abs[?] & {body: 'b} | App[?] & {lhs: 'b, rhs: 'b} | Var & 'rhs
 
 // ------------- OCaml's type -------------
 // val eval_lambda :
@@ -169,7 +148,6 @@ def map_expr f v = case v of {
   | Mul -> Mul { lhs = f v.lhs; rhs = f v.rhs }
   }
 //│ map_expr: ('rhs -> 'rhs0) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Mul[?] with {lhs: 'rhs, rhs: 'rhs}) | 'a & (Num | Var)) -> (Add['rhs0] | Mul['rhs0] | 'a)
-//│         = [Function: map_expr]
 
 rec def eval_expr eval_rec subst v =
   let vv = map_expr (eval_rec subst) v in
@@ -195,20 +173,21 @@ rec def eval_expr eval_rec subst v =
               }
     | Num -> vv // _ -> vv
     }
-//│ eval_expr: ('a -> 'lhs -> 'lhs0) -> ('a & 'b) -> ((Add[?] with {lhs: 'lhs, rhs: 'lhs}) | (Mul[?] with {lhs: 'lhs, rhs: 'lhs}) | Num & 'result | Var & 'result) -> (Add['lhs0] | Mul['lhs0] | Num | 'result)
+//│ eval_expr: ('a -> 'lhs -> 'lhs0) -> ('a & 'b) -> ((Add[?] with {lhs: 'lhs, rhs: 'lhs}) | (Mul[?] with {lhs: 'lhs, rhs: 'lhs}) | 'c & (Num | Var)) -> (Add['lhs0] | Mul['lhs0] | Num | 'c)
 //│   where
-//│     'b <: (Cons[?] with {head: {_1: string, _2: 'result}, tail: 'b}) | Nil
-//│          = <no result>
-//│            eval_var, list_assoc and eq are not implemented
+//│     'b <: (Cons[?] with {head: {_1: string, _2: 'c}, tail: 'b}) | Nil
 
 rec def eval2 subst = eval_expr eval2 subst
-//│ eval2: 'a -> 'b -> 'result
+//│ eval2: 'b -> 'c -> (Add['a] & {lhs: 'lhs, rhs: 'lhs} | Mul['a0] & {lhs: 'rhs, rhs: 'rhs} | Num | 'd)
 //│   where
-//│     'b <: Add[?] & {lhs: 'b, rhs: 'b} | Mul[?] & {lhs: 'b, rhs: 'b} | Num & 'result | Var & 'result
-//│     'a <: (Cons[?] with {head: {_1: string, _2: 'result & (Num | ~#Num)}, tail: 'a}) | Nil
-//│     'result :> Num | Add['result] | Mul['result]
-//│      = <no result>
-//│        eval_expr, eval_var, list_assoc and eq are not implemented
+//│     'c <: Add[?] & {lhs: 'c, rhs: 'c} | Mul[?] & {lhs: 'c, rhs: 'c} | 'd & 'rhs & 'lhs & (Num | Var)
+//│     'b <: (Cons[?] with {head: {_1: string, _2: 'd & 'rhs & 'lhs}, tail: 'b}) | Nil
+//│     'rhs :> Add['a] & {lhs: 'lhs, rhs: 'lhs} | Mul['a0] & {lhs: 'rhs, rhs: 'rhs} | Num
+//│          <: (Num | ~#Num) & 'a0 & (~#Num | Num)
+//│     'a :> Add['a] & {lhs: 'lhs, rhs: 'lhs} | Mul['a0] & {lhs: 'rhs, rhs: 'rhs} | Num | 'rhs
+//│     'lhs :> Add['a] & {lhs: 'lhs, rhs: 'lhs} | Mul['a0] & {lhs: 'rhs, rhs: 'rhs} | Num
+//│          <: 'a & (~#Num | Num) & 'rhs
+//│     'a0 :> Add['a] & {lhs: 'lhs, rhs: 'lhs} | Mul['a0] & {lhs: 'rhs, rhs: 'rhs} | Num | 'rhs
 
 
 // ------------- OCaml's type -------------
@@ -243,30 +222,110 @@ def eval_lexpr eval_rec subst v = case v of {
   | Lambda -> eval_lambda eval_rec subst v
   | Expr -> eval_expr eval_rec subst v
   }
-//│ eval_lexpr: (((Cons[('a, 'lhs | Var,) | 'A] with {head: ('a, 'lhs | Var,), tail: Nil | 'tail}) | 'tail) -> 'lhs0 -> ('lhs & 'result & ((Abs[?] with {body: 'lhs0, name: 'a}) | 'lhs1 & ~#Abs))) -> ('b & List['A] & 'tail) -> ((Abs[?] with {body: 'lhs0, name: 'a}) | (Add[?] with {lhs: 'lhs0, rhs: 'lhs0}) | (App[?] with {lhs: 'lhs0, rhs: 'lhs0}) | (Mul[?] with {lhs: 'lhs0, rhs: 'lhs0}) | Num & 'result | Var & 'result) -> (Abs['lhs] | Add['lhs] | (App['lhs] with {lhs: 'lhs1, rhs: 'lhs}) | Mul['lhs] | Num | 'result)
+//│ eval_lexpr: (((Cons[('b, 'a | Var,) | 'A] with {head: ('b, 'a | Var,), tail: Nil | 'tail}) | 'tail) -> 'body -> ('c & 'a & ((Abs[?] with {body: 'body, name: 'b}) | 'lhs & ~#Abs))) -> ('d & List['A] & 'tail) -> nothing -> (Abs['a] | Add['a] | (App['a] with {lhs: 'lhs, rhs: 'a}) | Mul['a] | Num | 'c)
 //│   where
-//│     'b <: (Cons[?] with {head: {_1: string, _2: 'result}, tail: 'b}) | Nil
-//│           = <no result>
-//│             eval_lambda, eval_var, list_assoc and eq are not implemented
+//│     'd <: (Cons[?] with {head: {_1: string, _2: 'c}, tail: 'd}) | Nil
 
 rec def eval3 subst = eval_lexpr eval3 subst
-//│ eval3: (List[?] & 'tail) -> 'b -> 'a
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.229: 	rec def eval3 subst = eval_lexpr eval3 subst
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Num` does not match type `Expr & ?a | Lambda & ?b`
+//│ ║  l.160: 	                | Num -> Num { num = vv1.num + vv2.num }
+//│ ║         	                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.95: 	    let l1 = eval_rec subst v.rhs in
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.229: 	rec def eval3 subst = eval_lexpr eval3 subst
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Add[?a] & {Add#a = ?a, lhs: ?lhs, rhs: ?rhs}` does not match type `Expr & ?b | Lambda & ?c`
+//│ ║  l.147: 	  | Add -> Add { lhs = f v.lhs; rhs = f v.rhs }
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.95: 	    let l1 = eval_rec subst v.rhs in
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.229: 	rec def eval3 subst = eval_lexpr eval3 subst
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Num` does not match type `Expr & ?a | Lambda & ?b`
+//│ ║  l.169: 	                | Num -> Num { num = vv1.num * vv2.num }
+//│ ║         	                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.95: 	    let l1 = eval_rec subst v.rhs in
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.229: 	rec def eval3 subst = eval_lexpr eval3 subst
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Mul[?a] & {Mul#a = ?a, lhs: ?lhs, rhs: ?rhs}` does not match type `Expr & ?b | Lambda & ?c`
+//│ ║  l.148: 	  | Mul -> Mul { lhs = f v.lhs; rhs = f v.rhs }
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.95: 	    let l1 = eval_rec subst v.rhs in
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.229: 	rec def eval3 subst = eval_lexpr eval3 subst
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `App[?a] & {App#a = ?a, lhs: ?lhs, rhs: ?rhs}` does not match type `Expr & ?b | Lambda & ?c`
+//│ ║  l.98: 	    | _ -> App { lhs = l1; rhs = l2 }
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.95: 	    let l1 = eval_rec subst v.rhs in
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.229: 	rec def eval3 subst = eval_lexpr eval3 subst
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Abs[?a] & {Abs#a = ?a, body: ?body}` does not match type `Expr & ?b | Lambda & ?c`
+//│ ║  l.101: 	    Abs { name = new_name;
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.102: 	          body = eval_rec (Cons (Tuple v.name (Var { name = new_name })) subst) v.body }
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.95: 	    let l1 = eval_rec subst v.rhs in
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.229: 	rec def eval3 subst = eval_lexpr eval3 subst
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Var` does not match type `Expr & ?a | Lambda & ?b`
+//│ ║  l.102: 	          body = eval_rec (Cons (Tuple v.name (Var { name = new_name })) subst) v.body }
+//│ ║         	                                               ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.95: 	    let l1 = eval_rec subst v.rhs in
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ eval3: (List[?] & 'tail) -> nothing -> 'b
 //│   where
-//│     'tail <: (Cons[?] with {head: {_1: string, _2: 'result}, tail: 'tail}) | Nil
-//│     'result :> 'a | Var | Num
-//│             <: 'b & (Abs[?] & 'c | 'lhs & (Num | ~#Abs & ~#Num))
-//│     'a :> Abs['a] | (App['a0] with {lhs: 'lhs, rhs: 'a}) | Num | 'result | 'd | 'e
-//│     'a0 :> 'a | (Add['a] with {lhs: 'a, rhs: 'a}) | (App['a0] with {lhs: 'lhs, rhs: 'a}) | (Mul['a] with {lhs: 'a, rhs: 'a}) | Num | Var
-//│     'lhs :> (Add['a] with {lhs: 'a, rhs: 'a}) | (App['a0] with {lhs: 'lhs, rhs: 'a}) | (Mul['a] with {lhs: 'a, rhs: 'a}) | Num | Var
-//│          <: 'b & 'a0
-//│     'b <: Abs[?] & {body: 'b} | Add[?] & {lhs: 'b, rhs: 'b} | App[?] & {lhs: 'b, rhs: 'b} | Mul[?] & {lhs: 'b, rhs: 'b} | Num & (Add[?] & 'e | Mul[?] & 'e | Num & 'result | Var & 'd) | Var & 'd
-//│     'd :> Var
-//│        <: 'b & (Abs[?] & 'c | 'lhs & (Num & {name: string} | {name: string} & ~#Abs & ~#Num))
-//│     'e :> (Mul['a] with {lhs: 'a, rhs: 'a}) | (Add['a] with {lhs: 'a, rhs: 'a})
-//│        <: 'b & (Abs[?] & {lhs: anything, rhs: anything} & 'c | 'lhs & (Num & {lhs: anything, rhs: anything} | {lhs: anything, rhs: anything} & ~#Abs & ~#Num))
-//│     'c <: {body: 'b, name: string}
-//│      = <no result>
-//│        eval_lexpr, eval_lambda, eval_var, list_assoc and eq are not implemented
+//│     'tail <: (Cons[?] with {head: {_1: string, _2: 'c}, tail: 'tail}) | Nil
+//│     'c <: 'body & 'b & (Abs[?] & {body: nothing} | 'lhs & ~#Abs)
+//│     'b :> Abs['body] | Add['a] & {lhs: 'body, rhs: 'body} | App['a0] & {lhs: 'lhs, rhs: 'body} | Mul['body] & {lhs: 'a, rhs: 'a} | Num | Var
+//│        <: 'c & 'body & 'a
+//│     'body :> Abs['body] | Add['a] & {lhs: 'body, rhs: 'body} | App['a0] & {lhs: 'lhs, rhs: 'body} | Mul['body] & {lhs: 'a, rhs: 'a} | Num | Var
+//│           <: nothing
+//│     'a :> Abs['body] | Add['a] & {lhs: 'body, rhs: 'body} | App['a0] & {lhs: 'lhs, rhs: 'body} | Mul['body] & {lhs: 'a, rhs: 'a} | Num | Var
+//│        <: 'body & (~#Num | Num)
+//│     'a0 :> Abs['body] | Add['a] & {lhs: 'body, rhs: 'body} | App['a0] & {lhs: 'lhs, rhs: 'body} | Mul['body] & {lhs: 'a, rhs: 'a} | Num | Var
+//│     'lhs :> Add['a] & {lhs: 'body, rhs: 'body} | App['a0] & {lhs: 'lhs, rhs: 'body} | Mul['body] & {lhs: 'a, rhs: 'a} | Num | Var
+//│          <: 'a0
 
 // ------------- OCaml's type -------------
 // val eval_lexpr :
@@ -309,62 +368,105 @@ eval3 Nil (Var { name = "s" })
 //     | `Num of int
 //     | `Var of string ] as 'a
 // = `Var "s"
-//│ res: 'result
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.362: 	eval3 Nil (Var { name = "s" })
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Var` does not match type `Expr & ?a | Lambda & ?b`
+//│ ║  l.362: 	eval3 Nil (Var { name = "s" })
+//│ ║         	           ^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into argument with expected type `Expr & ?c | Lambda & ?d`
+//│ ║  l.362: 	eval3 Nil (Var { name = "s" })
+//│ ║         	          ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ res: 'a
 //│   where
-//│     'result :> Abs['result] | (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | Var | 'b
-//│     'a :> (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | 'result | Var | 'b
-//│     'lhs :> (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | Var | 'b
-//│     'b :> Mul['result] | Add['result]
-//│    = <no result>
-//│      eval3, eval_lexpr, eval_lambda, eval_var, list_assoc and eq are not implemented
+//│     'a :> Abs['a] | (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
+//│     'lhs0 :> (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
+//│     'lhs :> 'a
 
 
 eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
-//│ res: 'result
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.390: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Abs[?a] & {Abs#a = ?a, body: ?body}` does not match type `Expr & ?b | Lambda & ?c`
+//│ ║  l.390: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into argument with expected type `Expr & ?d | Lambda & ?e`
+//│ ║  l.390: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
+//│ ║         	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ res: 'a
 //│   where
-//│     'result :> Abs['result] | (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | Var | 'b
-//│     'a :> (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | 'result | Var | 'b
-//│     'lhs :> (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | Var | 'b
-//│     'b :> Mul['result] | Add['result]
-//│    = <no result>
-//│      eval3, eval_lexpr, eval_lambda, eval_var, list_assoc and eq are not implemented
+//│     'a :> Abs['a] | (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
+//│     'lhs0 :> (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
+//│     'lhs :> 'a
 
 eval2 Nil (Num { num = 1 })
-//│ res: 'rhs
+//│ res: 'a
 //│   where
-//│     'rhs :> Mul['rhs] | Add['rhs] | Num
-//│    = <no result>
-//│      eval2, eval_expr, eval_var, list_assoc and eq are not implemented
+//│     'a :> Add['a] | Mul['a] | Num
 
 eval3 Nil (Num { num = 1 })
-//│ res: 'result
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.414: 	eval3 Nil (Num { num = 1 })
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Num` does not match type `Expr & ?a | Lambda & ?b`
+//│ ║  l.414: 	eval3 Nil (Num { num = 1 })
+//│ ║         	           ^^^^^^^^^^^^^^^
+//│ ╟── but it flows into argument with expected type `Expr & ?c | Lambda & ?d`
+//│ ║  l.414: 	eval3 Nil (Num { num = 1 })
+//│ ║         	          ^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ res: 'a
 //│   where
-//│     'result :> Abs['result] | (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | Var | 'b
-//│     'a :> (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | 'result | Var | 'b
-//│     'lhs :> (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | Var | 'b
-//│     'b :> Mul['result] | Add['result]
-//│    = <no result>
-//│      eval3, eval_lexpr, eval_lambda, eval_var, list_assoc and eq are not implemented
+//│     'a :> Abs['a] | (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
+//│     'lhs0 :> (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
+//│     'lhs :> 'a
 
 eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
-//│ res: 'result
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.433: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `App[?a] & {App#a = ?a, lhs: ?lhs, rhs: ?rhs}` does not match type `Expr & ?b | Lambda & ?c`
+//│ ║  l.433: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into argument with expected type `Expr & ?d | Lambda & ?e`
+//│ ║  l.433: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ║         	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ res: 'a
 //│   where
-//│     'result :> Abs['result] | (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | Var | 'b
-//│     'a :> (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | 'result | Var | 'b
-//│     'lhs :> (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | Var | 'b
-//│     'b :> Mul['result] | Add['result]
-//│    = <no result>
-//│      eval3, eval_lexpr, eval_lambda, eval_var, list_assoc and eq are not implemented
+//│     'a :> Abs['a] | (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
+//│     'lhs0 :> (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
+//│     'lhs :> 'a
 
 eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
-//│ res: 'result
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.452: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Abs[?a] & {Abs#a = ?a, body: ?body}` does not match type `Expr & ?b | Lambda & ?c`
+//│ ║  l.452: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into argument with expected type `Expr & ?d | Lambda & ?e`
+//│ ║  l.452: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ║         	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.221: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ╙──       	                                       ^
+//│ res: 'a
 //│   where
-//│     'result :> Abs['result] | (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | Var | 'b
-//│     'a :> (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | 'result | Var | 'b
-//│     'lhs :> (App['a] with {lhs: 'lhs, rhs: 'result}) | Num | Var | 'b
-//│     'b :> Mul['result] | Add['result]
-//│    = <no result>
-//│      eval3, eval_lexpr, eval_lambda, eval_var, list_assoc and eq are not implemented
+//│     'a :> Abs['a] | (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
+//│     'lhs0 :> (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
+//│     'lhs :> 'a
 
 
 // *************************************
@@ -377,8 +479,6 @@ def eval_lexpr' eval_rec subst v = case v of {
   | Add -> eval_expr eval_rec subst v
   | Mul -> eval_expr eval_rec subst v
   }
-//│ eval_lexpr': ((Cons[('a, 'lhs | Var,)] with {head: ('a, 'lhs | Var,), tail: Nil}) -> 'lhs0 -> ('lhs & 'result & ((Abs[?] with {body: 'lhs0, name: 'a}) | 'lhs1 & ((Abs[?] with {body: 'lhs0, name: 'a}) & ~#Abs | 'lhs1 & ~#Abs))) & 'b) -> nothing -> ((Abs[?] with {body: 'lhs0, name: 'a}) | (Add[?] with {lhs: 'lhs0, rhs: 'lhs0}) | (App[?] with {lhs: 'lhs0, rhs: 'lhs0}) | (Mul[?] with {lhs: 'lhs0, rhs: 'lhs0}) | Num & 'result | Var & 'c) -> (Abs['lhs] | Add['lhs] | (App['lhs] with {lhs: 'lhs1, rhs: 'lhs}) | Mul['lhs] | Num | 'result)
+//│ eval_lexpr': ((Cons[('b, 'a | Var,)] with {head: ('b, 'a | Var,), tail: Nil}) -> 'lhs -> ('a & 'c & ((Abs[?] with {body: 'lhs, name: 'b}) | 'lhs0 & ((Abs[?] with {body: 'lhs, name: 'b}) & ~#Abs | 'lhs0 & ~#Abs))) & 'd) -> nothing -> ((Abs[?] with {body: 'lhs, name: 'b}) | (Add[?] with {lhs: 'lhs, rhs: 'lhs}) | (App[?] with {lhs: 'lhs, rhs: 'lhs}) | (Mul[?] with {lhs: 'lhs, rhs: 'lhs}) | Num & 'c | Var & 'e) -> (Abs['a] | Add['a] | (App['a] with {lhs: 'lhs0, rhs: 'a}) | Mul['a] | Num | 'c)
 //│   where
-//│     'b <: (Cons[?] with {head: {_1: string, _2: 'c -> 'result}, tail: 'b}) | Nil
-//│            = <no result>
-//│              eval_var, list_assoc and eq are not implemented
+//│     'd <: (Cons[?] with {head: {_1: string, _2: 'e -> 'c}, tail: 'd}) | Nil

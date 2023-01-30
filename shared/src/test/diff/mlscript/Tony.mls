@@ -7,103 +7,84 @@ class None: {}
 
 def flatMap3 = fun f -> fun opt -> case opt of { Some -> f opt | _ -> opt }
 //│ flatMap3: ('a -> 'b) -> (Some[?] & 'a | 'b & ~#Some) -> 'b
-//│         = [Function: flatMap3]
 
 
 def arg = if true then Some{value = 42} with {payload = 23} else None {}
-//│ arg: None | Some[42] & {payload: 23}
-//│    = [Function: arg]
+//│ arg: None | Some[int] & {payload: int}
 
 // > TODO don't distribute neg inters + handle better at constraint top level
 :stats
 flatMap3 (fun x -> add x.value x.payload) arg
 //│ res: int | None
-//│    = 65
-//│ constrain calls  : 105
+//│ constrain calls  : 130
 //│ annoying  calls  : 23
-//│ subtyping calls  : 61
+//│ subtyping calls  : 59
 
 
 def arg = if true then Some{value = 42} else None {}
-//│ arg: None | Some[42]
-//│    = [Function: arg1]
+//│ arg: None | Some[int]
 
 flatMap3 (fun x -> x.value) arg
-//│ res: 42 | None
-//│    = 42
+//│ res: int | None
 
 
 def foo = flatMap3 (fun x -> x.value)
 //│ foo: ((Some[?] with {value: 'a}) | 'a & ~#Some) -> 'a
-//│    = [Function: foo]
 
 foo arg
-//│ res: 42 | None
-//│    = 42
+//│ res: int | None
 
 foo 1
-//│ res: 1
-//│    = 1
+//│ res: int
 
 def fn = foo None
 //│ fn: anything -> None
-//│   = [Function: fn]
 
 // :d
 fn{} // foo None {}
 //│ res: None
-//│    = None {}
 
 // :d
 foo (None{})
 //│ res: None
-//│    = None {}
 
 
 fun f -> flatMap3 f arg
-//│ res: (Some[42] -> 'a) -> (None | 'a)
-//│    = [Function: res]
+//│ res: (Some[int] -> 'a) -> (None | 'a)
 
 
 
 
 def foo = flatMap3 (fun x -> x)
 //│ foo: ('a & (Some[?] | ~#Some)) -> 'a
-//│    = [Function: foo1]
 
 foo 1
-//│ res: 1
-//│    = 1
+//│ res: int
 
 
 
 
 def simpler = fun f -> case None{} of { Some -> f 1 | _ -> None{} }
-//│ simpler: (1 -> 'a) -> (None | 'a)
-//│        = [Function: simpler]
+//│ simpler: (int -> 'a) -> (None | 'a)
 
 def simpler = fun f -> fun opt -> case opt of { Some -> f opt | None -> opt }
 //│ simpler: ('a -> 'b) -> (None & 'b | Some[?] & 'a) -> 'b
-//│        = [Function: simpler1]
 
 simpler (fun x -> x.value)
 //│ res: (None & 'a | (Some[?] with {value: 'a})) -> 'a
-//│    = [Function (anonymous)]
 
 :e
 res 1
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.94: 	res 1
+//│ ║  l.77: 	res 1
 //│ ║        	^^^^^
-//│ ╟── integer literal of type `1` is not a 1-element tuple
-//│ ║  l.94: 	res 1
+//│ ╟── integer literal of type `int` does not match type `None & ?a | Some[?] & ?b`
+//│ ║  l.77: 	res 1
 //│ ║        	    ^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.85: 	def simpler = fun f -> fun opt -> case opt of { Some -> f opt | None -> opt }
+//│ ║  l.70: 	def simpler = fun f -> fun opt -> case opt of { Some -> f opt | None -> opt }
 //│ ╙──      	                                       ^^^
-//│ res: error
-//│ Runtime error:
-//│   Error: non-exhaustive case expression
+//│ res: nothing
 
 
 
@@ -111,4 +92,3 @@ res 1
 
 def funny = fun f -> case f of { Some -> f f }
 //│ funny: nothing -> nothing
-//│      = [Function: funny]

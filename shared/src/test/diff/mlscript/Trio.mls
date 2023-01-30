@@ -5,28 +5,6 @@ class C: { fC: bool }
 //│ Defined class A
 //│ Defined class B
 //│ Defined class C
-//│ ┌ Block at Trio.mls:2
-//│ ├─┬ Prelude
-//│ │ ├── Code
-//│ │ │   let res;
-//│ │ │   class A {
-//│ │ │     constructor(fields) {
-//│ │ │       this.fA = fields.fA;
-//│ │ │     }
-//│ │ │   }
-//│ │ │   class B {
-//│ │ │     constructor(fields) {
-//│ │ │       this.fB = fields.fB;
-//│ │ │     }
-//│ │ │   }
-//│ │ │   class C {
-//│ │ │     constructor(fields) {
-//│ │ │       this.fC = fields.fC;
-//│ │ │     }
-//│ │ │   }
-//│ │ └── Reply
-//│ │     undefined
-//│ └── No queries
 
 def foo x = case x of {
   | A -> x.fA
@@ -34,51 +12,35 @@ def foo x = case x of {
   | C -> x.fC
   }
 //│ foo: ((A with {fA: 'fA}) | (B with {fB: 'fA}) | (C with {fC: 'fA})) -> 'fA
-//│    = [Function: foo]
 
 :ShowRepl
 b = B { fB = "test" }
-//│ ┌ Block at Trio.mls:40
-//│ ├── No prelude
-//│ └─┬ Query 1/1
-//│   ├── Prelude: <empty>
-//│   ├── Code:
-//│   ├──   globalThis.b = new B({ fB: "test" });
-//│   ├── Intermediate: B { fB: 'test' }
-//│   └── Reply: [success] B { fB: 'test' }
-//│ b: B & {fB: "test"}
-//│  = B { fB: 'test' }
+//│ b: B
 
 :stats
 foo b
-//│ res: "test"
-//│    = 'test'
-//│ constrain calls  : 22
+//│ res: string
+//│ constrain calls  : 48
 //│ annoying  calls  : 10
-//│ subtyping calls  : 25
+//│ subtyping calls  : 23
 
 
 def arg: A | B | C
 //│ arg: A | B | C
-//│    = <missing implementation>
 
 :stats
 foo arg
 //│ res: bool | int | string
-//│    = <no result>
-//│      arg is not implemented
-//│ constrain calls  : 35
+//│ constrain calls  : 88
 //│ annoying  calls  : 30
-//│ subtyping calls  : 87
+//│ subtyping calls  : 81
 
 :stats
 foo (arg with { fC = true })
 //│ res: int | string | true
-//│    = <no result>
-//│      arg is not implemented
-//│ constrain calls  : 28
+//│ constrain calls  : 72
 //│ annoying  calls  : 28
-//│ subtyping calls  : 115
+//│ subtyping calls  : 109
 
 def foo x = case x of {
   | A -> add x.fA x.payload
@@ -86,32 +48,29 @@ def foo x = case x of {
   | C -> { l = x.fC; r = x.payload }
   }
 //│ foo: (A & {payload: int} | (B with {fB: 'fB}) | (C with {fC: 'fC, payload: 'payload})) -> ('fB | int | {l: 'fC, r: 'payload})
-//│    = [Function: foo1]
 
 :e
 :stats
 foo arg
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.93: 	foo arg
+//│ ║  l.54: 	foo arg
 //│ ║        	^^^^^^^
-//│ ╟── type `A` is not a 1-element tuple
-//│ ║  l.61: 	def arg: A | B | C
+//│ ╟── type `A` does not have field 'payload'
+//│ ║  l.28: 	def arg: A | B | C
 //│ ║        	         ^
-//│ ╟── but it flows into reference with expected type `(?a,)`
-//│ ║  l.93: 	foo arg
+//│ ╟── but it flows into reference with expected type `{payload: ?payload}`
+//│ ║  l.54: 	foo arg
 //│ ║        	    ^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.83: 	def foo x = case x of {
+//│ ║  l.45: 	def foo x = case x of {
 //│ ║        	                 ^
 //│ ╟── from receiver:
-//│ ║  l.84: 	  | A -> add x.fA x.payload
+//│ ║  l.46: 	  | A -> add x.fA x.payload
 //│ ╙──      	                  ^
-//│ res: error | int | string | {l: bool, r: nothing}
-//│    = <no result>
-//│      arg is not implemented
-//│ constrain calls  : 45
+//│ res: int | string | {l: bool, r: nothing}
+//│ constrain calls  : 68
 //│ annoying  calls  : 40
-//│ subtyping calls  : 239
+//│ subtyping calls  : 102
 
 
 
@@ -120,10 +79,8 @@ foo arg
 
 :stats
 foo (arg with { payload = 1 })
-//│ res: int | string | {l: bool, r: 1}
-//│    = <no result>
-//│      arg is not implemented
-//│ constrain calls  : 43
+//│ res: int | string | {l: bool, r: int}
+//│ constrain calls  : 59
 //│ annoying  calls  : 38
-//│ subtyping calls  : 128
+//│ subtyping calls  : 123
 

@@ -1,44 +1,37 @@
 
 x = { a = 1 }
-//│ x: {a: 1}
-//│  = { a: 1 }
+//│ x: {a: int}
 
 x with { b = 2 }
-//│ res: {a: 1, b: 2}
-//│    = { a: 1, b: 2 }
+//│ res: {a: int, b: int}
 
 def f x = x with { b = 2 }
-//│ f: 'a -> ('a\b & {b: 2})
-//│  = [Function: f]
+//│ f: 'a -> ('a\b & {b: int})
 
 def r: {b: string; c: int}\b
 //│ r: {c: int}
-//│  = <missing implementation>
 
 (1,2,3) with { _4 = "oops" }
-//│ res: (1, 2, 3,) & {_4: "oops"}
-//│    = [ 1, 2, 3, _4: 'oops' ]
+//│ res: (int, int, int,) & {_4: string}
 
 (1,2,3) with { _1 = "oops" }
-//│ res: {_1: "oops", _2: 2, _3: 3}
-//│    = [ 1, 2, 3, _1: 'oops' ]
+//│ res: {_1: string, _2: int, _3: int}
 
 :e
 (res: (int,int,int,))._1
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.27: 	(res: (int,int,int,))._1
+//│ ║  l.21: 	(res: (int,int,int,))._1
 //│ ║        	 ^^^
-//│ ╟── `with` extension of type `{_1: "oops", _2: 2, _3: 3}` is not a 3-element tuple
-//│ ║  l.22: 	(1,2,3) with { _1 = "oops" }
+//│ ╟── `with` extension of type `{_1: string, _2: int, _3: int}` is not a 3-element tuple
+//│ ║  l.17: 	(1,2,3) with { _1 = "oops" }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `(int, int, int,)`
-//│ ║  l.27: 	(res: (int,int,int,))._1
+//│ ║  l.21: 	(res: (int,int,int,))._1
 //│ ║        	 ^^^
 //│ ╟── Note: constraint arises from tuple type:
-//│ ║  l.27: 	(res: (int,int,int,))._1
+//│ ║  l.21: 	(res: (int,int,int,))._1
 //│ ╙──      	      ^^^^^^^^^^^^^^
 //│ res: int
-//│    = 'oops'
 
 
 
@@ -47,67 +40,47 @@ def r: {b: string; c: int}\b
 
 def r: int \ _1
 //│ r: int
-//│  = <missing implementation>
 
 def r: (1,2,3) \ _1
 //│ r: {_2: 2, _3: 3}
-//│  = <missing implementation>
 // (1,2,3).toRecord \ _1
 
 def r: (1,2,3) \ _12345
 //│ r: (1, 2, 3,)
-//│  = <missing implementation>
 
 def arr: Array[int]
 def arr = (1,2)
-//│ /!!!\ Uncaught error: java.lang.Exception: Cannot update counter for uninitialized location
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateCounter$1(ConstraintSolver.scala:864)
-//│ 	at: scala.collection.mutable.HashMap.updateWith(HashMap.scala:154)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateCounter(ConstraintSolver.scala:857)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3(ConstraintSolver.scala:914)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3$adapted(ConstraintSolver.scala:914)
-//│ 	at: scala.Option.foreach(Option.scala:437)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2(ConstraintSolver.scala:914)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2$adapted(ConstraintSolver.scala:914)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateChainCount(ConstraintSolver.scala:914)
+//│ arr: Array[int]
+//│ (int, int,)
+//│   <:  arr:
+//│ Array[int]
 
 fr = f r
 fr : Array[int] & {b: int}
-//│ fr: (1, 2, 3,) & {b: 2}
-//│   = <no result>
-//│     r is not implemented
+//│ fr: (1, 2, 3,) & {b: int}
 //│ res: Array[int] & {b: int}
-//│    = <no result>
-//│      fr and r are not implemented
 
 :e
 arr._1
 //│ ╔══[ERROR] Type mismatch in field selection:
-//│ ║  l.85: 	arr._1
+//│ ║  l.64: 	arr._1
 //│ ║        	^^^^^^
 //│ ╟── type `Array[int]` does not have field '_1'
-//│ ║  l.61: 	def arr: Array[int]
+//│ ║  l.51: 	def arr: Array[int]
 //│ ║        	         ^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `{_1: ?a}`
-//│ ║  l.85: 	arr._1
+//│ ║  l.64: 	arr._1
 //│ ╙──      	^^^
-//│ res: error
-//│ Code generation encountered an error:
-//│   unresolved symbol arr
+//│ res: nothing
 
 
 
 
 rr = arr with { x = 1 }
-//│ rr: Array[int] & {x: 1}
-//│ Code generation encountered an error:
-//│   unresolved symbol arr
+//│ rr: Array[int] & {x: int}
 
 rr.x
-//│ res: 1
-//│ Code generation encountered an error:
-//│   unresolved symbol rr
+//│ res: int
 
 
 
@@ -116,25 +89,20 @@ rr.x
 
 t = (1, 2, 3) with {x = 1}
 // t = (1, 2, 3)
-//│ t: (1, 2, 3,) & {x: 1}
-//│  = [ 1, 2, 3, x: 1 ]
+//│ t: (int, int, int,) & {x: int}
 
 t._1
 t._2
 t.x
-//│ res: 1
-//│    = undefined
-//│ res: 2
-//│    = undefined
-//│ res: 1
-//│    = 1
+//│ res: int
+//│ res: int
+//│ res: int
 
 
 
 // :d
 def test: {x: 1} & (1, 2, 3)
 //│ test: (1, 2, 3,) & {x: 1}
-//│     = <missing implementation>
 
 
 // def f x = x[1]
@@ -151,36 +119,33 @@ def test: {x: 1} & (1, 2, 3)
 :e
 f(1,2,3) : 1 | 2 | 3
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.152: 	f(1,2,3) : 1 | 2 | 3
+//│ ║  l.120: 	f(1,2,3) : 1 | 2 | 3
 //│ ║         	^^^^^^^^
-//│ ╟── tuple literal of type `(1, 2, 3,)` does not match type `(?a,)`
-//│ ║  l.152: 	f(1,2,3) : 1 | 2 | 3
+//│ ╟── tuple literal of type `(int, int, int,)` does not match type `(?a,)`
+//│ ║  l.120: 	f(1,2,3) : 1 | 2 | 3
 //│ ╙──       	 ^^^^^^^
 //│ res: 1 | 2 | 3
-//│    = [Number: 1] { b: 2 }
 
 
 
 :e
 (arr[0])[1][2]
 //│ ╔══[ERROR] Type mismatch in array access:
-//│ ║  l.165: 	(arr[0])[1][2]
+//│ ║  l.132: 	(arr[0])[1][2]
 //│ ║         	^^^^^^^^^^^
 //│ ╟── type `int` does not match type `Array[?a]`
-//│ ║  l.61: 	def arr: Array[int]
+//│ ║  l.51: 	def arr: Array[int]
 //│ ║        	               ^^^
 //│ ╟── but it flows into array access with expected type `Array[?b]`
-//│ ║  l.165: 	(arr[0])[1][2]
+//│ ║  l.132: 	(arr[0])[1][2]
 //│ ╙──       	 ^^^^^^
 //│ ╔══[ERROR] Type mismatch in array access:
-//│ ║  l.165: 	(arr[0])[1][2]
+//│ ║  l.132: 	(arr[0])[1][2]
 //│ ║         	^^^^^^^^^^^^^^
 //│ ╟── possibly-undefined array access of type `undefined` does not match type `Array[?a]`
-//│ ║  l.165: 	(arr[0])[1][2]
+//│ ║  l.132: 	(arr[0])[1][2]
 //│ ╙──       	^^^^^^^^^^^
-//│ res: error | undefined
-//│ Code generation encountered an error:
-//│   unresolved symbol arr
+//│ res: undefined
 
 
 
@@ -193,7 +158,6 @@ class A: { x: int }
 
 def myval: A & { x: anything }
 //│ myval: A
-//│      = <missing implementation>
 
 // def myval: a & { x: string }
 // //│ myval: A with {x: string}
@@ -201,7 +165,6 @@ def myval: A & { x: anything }
 
 def tuuu: (1 | 2, true) & {_1: 2 | 3}
 //│ tuuu: (2, true,)
-//│     = <missing implementation>
 // tuuu: ((1 | 2) & (2 | 3), true,)
 // tuuu: (2, true,)
 
@@ -210,16 +173,13 @@ def tuuu: (1 | 2, true) & {_1: 2 | 3}
 
 def f(x: int, y: string) = x
 //│ f: (int, string,) -> int
-//│  = [Function: f1]
 
 // f(x = 1, y = "asf")
 
 def f x = x
 def f(x,) = x
 //│ f: 'a -> 'a
-//│  = [Function: f2]
 //│ f: 'a -> 'a
-//│  = [Function: f3]
 
 // (1, 2)
 // f((1, 2))
@@ -231,14 +191,11 @@ def f(x,) = x
 
 f(1)
 f 1
-//│ res: 1
-//│    = 1
-//│ res: 1
-//│    = 1
+//│ res: int
+//│ res: int
 
 f((1,2))
-//│ res: (1, 2,)
-//│    = [ 1, 2 ]
+//│ res: (int, int,)
 
 
 trait T: { x: int }
@@ -246,158 +203,118 @@ trait T: { x: int }
 
 def t: T
 //│ t: T
-//│  = <missing implementation>
 
 t.x
 //│ res: int
-//│    = <no result>
-//│      t is not implemented
 
 rcd = { x = 1 }
-//│ rcd: {x: 1}
-//│    = { x: 1 }
+//│ rcd: {x: int}
 
 T rcd
-//│ res: {x: 1} & #T
-//│    = { x: 1 }
+//│ res: {x: int} & #T
 
 res: { x: int }
 //│ res: {x: int}
-//│    = { x: 1 }
 
 
 (1,2, (true, false, ("hello", "world", "bye")))
-//│ res: (1, 2, (true, false, ("hello", "world", "bye",),),)
-//│    = [ 1, 2, [ true, false, [ 'hello', 'world', 'bye' ] ] ]
+//│ res: (int, int, (true, false, (string, string, string,),),)
 
 k1 = (6, "hi", false) with {_5=5; _6=true}
 k1._1
 k1._3
-//│ k1: (6, "hi", false,) & {_5: 5, _6: true}
-//│   = [ 6, 'hi', false, _5: 5, _6: true ]
-//│ res: 6
-//│    = undefined
+//│ k1: (int, string, false,) & {_5: int, _6: true}
+//│ res: int
 //│ res: false
-//│    = undefined
 
 (1,2,3) with {_2 = "hello"; _a = true; _4 = 4}
-//│ res: {_1: 1, _2: "hello", _3: 3, _4: 4, _a: true}
-//│    = [ 1, 2, 3, _2: 'hello', _a: true, _4: 4 ]
+//│ res: {_1: int, _2: string, _3: int, _4: int, _a: true}
 
 (1,2,3) with {_1 = true; _0 = 233}
-//│ res: {_0: 233, _1: true, _2: 2, _3: 3}
-//│    = [ 1, 2, 3, _1: true, _0: 233 ]
+//│ res: {_0: int, _1: true, _2: int, _3: int}
 
 (1, 2, true) with {_0 = "hello"}
-//│ res: (1, 2, true,) & {_0: "hello"}
-//│    = [ 1, 2, true, _0: 'hello' ]
+//│ res: (int, int, true,) & {_0: string}
 
 ta1 = (5, 6, true, false, "hahaha")
 ta2 = ta1 with {x = 123; _7 = "bye"; _1 = 0}
 ta1._1
 ta2._2
 ta2._3
-//│ ta1: (5, 6, true, false, "hahaha",)
-//│    = [ 5, 6, true, false, 'hahaha' ]
-//│ ta2: {_1: 0, _2: 6, _3: true, _4: false, _5: "hahaha", _7: "bye", x: 123}
-//│    = [ 5, 6, true, false, 'hahaha', x: 123, _7: 'bye', _1: 0 ]
-//│ res: 5
-//│    = undefined
-//│ res: 6
-//│    = undefined
+//│ ta1: (int, int, true, false, string,)
+//│ ta2: {_1: int, _2: int, _3: true, _4: false, _5: string, _7: string, x: int}
+//│ res: int
+//│ res: int
 //│ res: true
-//│    = undefined
 
 def rep5: 'a -> Array['a]
 def rep5 x = (x,x,x,x,x)
 //│ rep5: 'a -> Array['a]
-//│     = <missing implementation>
 //│ 'a -> ('a, 'a, 'a, 'a, 'a,)
 //│   <:  rep5:
 //│ 'a -> Array['a]
-//│     = [Function: rep5]
 
 rep5 1 with {_1 = 10}
 a2 = rep5 2 with {_2 = true; x = "haha"}
 a2._2
 a2.x
-//│ res: Array[1] & {_1: 10}
-//│    = [ 1, 1, 1, 1, 1, _1: 10 ]
-//│ a2: Array[2] & {_2: true, x: "haha"}
-//│   = [ 2, 2, 2, 2, 2, _2: true, x: 'haha' ]
+//│ res: Array[int] & {_1: int}
+//│ a2: Array[int] & {_2: true, x: string}
 //│ res: true
-//│    = true
-//│ res: "haha"
-//│    = 'haha'
+//│ res: string
 
 :e
 a2._1
 //│ ╔══[ERROR] Type mismatch in field selection:
-//│ ║  l.334: 	a2._1
+//│ ║  l.267: 	a2._1
 //│ ║         	^^^^^
 //│ ╟── type `Array[?a]` does not have field '_1'
-//│ ║  l.311: 	def rep5: 'a -> Array['a]
+//│ ║  l.250: 	def rep5: 'a -> Array['a]
 //│ ║         	                ^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `{_1: ?b}`
-//│ ║  l.334: 	a2._1
+//│ ║  l.267: 	a2._1
 //│ ╙──       	^^
-//│ res: error
-//│    = undefined
+//│ res: nothing
 
 
 
 
 (1,2,3,true) with {_a = 1; _b1 = false}
-//│ res: (1, 2, 3, true,) & {_a: 1, _b1: false}
-//│    = [ 1, 2, 3, true, _a: 1, _b1: false ]
+//│ res: (int, int, int, true,) & {_a: int, _b1: false}
 
 ht1 = (1,2,false) with {_1 = 'a'; _2 = 'hello'; _3 = false}
 ht1._1
-//│ ht1: {_1: "a", _2: "hello", _3: false}
-//│    = [ 1, 2, false, _1: 'a', _2: 'hello', _3: false ]
-//│ res: "a"
-//│    = 'a'
+//│ ht1: {_1: string, _2: string, _3: false}
+//│ res: string
 
 def hg1 t = (t._1, t._2)
 hg1 ht1
 hg1 ((5,5,5))
 (hg1 ht1)._2
 //│ hg1: {_1: 'a, _2: 'b} -> ('a, 'b,)
-//│    = [Function: hg1]
-//│ res: ("a", "hello",)
-//│    = [ 'a', 'hello' ]
-//│ res: (5, 5,)
-//│    = [ undefined, undefined ]
-//│ res: "hello"
-//│    = undefined
+//│ res: (string, string,)
+//│ res: (int, int,)
+//│ res: string
 
 def ta1: Array[int] | (int, bool)
 def test: (string, 1) & { _1: "hello" }
 def test2: (string, 1) & { _1: "hello"; _3: int }
 //│ ta1: Array[bool | int]
-//│    = <missing implementation>
 //│ test: ("hello", 1,)
-//│     = <missing implementation>
 //│ test2: ("hello", 1,) & {_3: int}
-//│      = <missing implementation>
 
 test: { _1: 'a }
 //│ res: {_1: "hello"}
-//│    = <no result>
-//│      test is not implemented
 
 // TODO: One could expect ("hello", 1,) here,
 //    but we currently don't recover the intersected positional field from the record
 //    when constraining refined tuples.
 test: ('a, 1)
 //│ res: (string, 1,)
-//│    = <no result>
-//│      test is not implemented
 
 // TODO in principe, we could narrow the refinement to ` & { _1: 1 }` here...
 def test3: Array[1] & { _1: int }
 //│ test3: Array[1] & {_1: int}
-//│      = <missing implementation>
 
 def fta1: Array[int | bool] -> int
 def tb1: (int, true)
@@ -405,19 +322,12 @@ fta1 tb1
 r1 = if true then (1,2,3) else (1, 2)
 fta1 r1
 //│ fta1: Array[bool | int] -> int
-//│     = <missing implementation>
 //│ tb1: (int, true,)
-//│    = <missing implementation>
 //│ res: int
-//│    = <no result>
-//│      fta1 is not implemented
-//│ r1: Array[1 | 2 | 3] & {_1: 1, _2: 2}
-//│   = [ 1, 2, 3 ]
+//│ r1: Array[int] & {_1: int, _2: int}
 //│ res: int
-//│    = <no result>
-//│      fta1 is not implemented
 
-:NoJS
+
 def p1: T | Array[bool] | (int, string) | (true, 3)
 def p2: T | (string, bool) | Array[int] | (2, 4)
 def pf t = (t[1], t._1)
@@ -425,4 +335,4 @@ pf((1,2,3))
 //│ p1: Array[bool | int | string] | T
 //│ p2: Array[bool | int | string] | T
 //│ pf: (Array['a & ~undefined] & {_1: 'b}) -> (undefined | 'a, 'b,)
-//│ res: (1 | 2 | 3 | undefined, 1,)
+//│ res: (int | undefined, int,)

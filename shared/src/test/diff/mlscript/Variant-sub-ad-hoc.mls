@@ -6,24 +6,18 @@ class Some
 def Some v = Some{} with {v}
 def None = None{}
 //│ Some: 'a -> (Some & {v: 'a})
-//│     = [Function: Some1]
 //│ None: None
-//│     = [Function: None1]
 
 def flatMap = fun f -> fun opt ->
   case opt of { Some -> f opt.v | _ -> opt }
 //│ flatMap: ('v -> 'a) -> (Some & {v: 'v} | 'a & ~#Some) -> 'a
-//│        = [Function: flatMap]
 
 f = fun x -> Some x
 res = flatMap f (Some 1)
 res = flatMap f None
 //│ f: 'a -> (Some & {v: 'a})
-//│  = [Function: f]
-//│ res: Some & {v: 1}
-//│    = Some { v: 1 }
+//│ res: Some & {v: int}
 //│ res: None | Some & {v: nothing}
-//│    = None {}
 
 class Lit
 class Neg
@@ -50,16 +44,14 @@ rec def evalOpt = fun x -> case x of {
 //│ evalOpt: 'a -> (None & {err: string} | Some & {v: int})
 //│   where
 //│     'a <: Lit & {v: int} | Neg & {sub: 'a} | Plus & {lhs: 'a, rhs: 'a} | Var & {nme: string}
-//│        = [Function: evalOpt]
-//│ constrain calls  : 665
+//│ constrain calls  : 741
 //│ annoying  calls  : 148
-//│ subtyping calls  : 722
+//│ subtyping calls  : 720
 
 :stats
 evalOpt (Plus{} with {lhs = Lit{} with {v=2}; rhs = Lit{} with {v=2}})
 //│ res: None & {err: string} | Some & {v: int}
-//│    = Some { v: 4 }
-//│ constrain calls  : 183
+//│ constrain calls  : 241
 //│ annoying  calls  : 34
-//│ subtyping calls  : 439
+//│ subtyping calls  : 394
 

@@ -5,52 +5,44 @@ class Foo[A]: { x: A; y: A }
 
 def foo: #Foo
 //│ foo: Foo[?]
-//│    = <missing implementation>
 
 foo12 = Foo { x = 1; y = 2 }
-//│ foo12: Foo[1 | 2] & {x: 1, y: 2}
-//│      = Foo { x: 1, y: 2 }
+//│ foo12: Foo[int]
 
 foo = foo12
-//│ Foo[1 | 2] & {x: 1, y: 2}
+//│ Foo[int]
 //│   <:  foo:
 //│ Foo[?]
-//│    = Foo { x: 1, y: 2 }
 
 def test1 f = case f of { Foo -> f }
 //│ test1: (Foo[?] & 'a) -> 'a
-//│      = [Function: test1]
 
 test1 foo
 //│ res: Foo[?]
-//│    = Foo { x: 1, y: 2 }
 
 def test2 f = case f of { Foo -> f.x }
 //│ test2: (Foo[?]\y with {x: 'x}) -> 'x
-//│      = [Function: test2]
 
 test2 foo12
-//│ res: 1
-//│    = 1
+//│ res: int
 
 
 // * Only has the tag in its type, not the field
 :e
 test2 foo
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.39: 	test2 foo
+//│ ║  l.32: 	test2 foo
 //│ ║        	^^^^^^^^^
-//│ ╟── reference of type `Foo[?]` is not a 1-element tuple
-//│ ║  l.39: 	test2 foo
+//│ ╟── reference of type `Foo[?]` does not have field 'x'
+//│ ║  l.32: 	test2 foo
 //│ ║        	      ^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.28: 	def test2 f = case f of { Foo -> f.x }
+//│ ║  l.23: 	def test2 f = case f of { Foo -> f.x }
 //│ ║        	                   ^
 //│ ╟── from receiver:
-//│ ║  l.28: 	def test2 f = case f of { Foo -> f.x }
+//│ ║  l.23: 	def test2 f = case f of { Foo -> f.x }
 //│ ╙──      	                                 ^
-//│ res: error
-//│    = 1
+//│ res: nothing
 
 
 
@@ -60,10 +52,10 @@ test2 foo
 :e
 foo = Foo
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.61: 	foo = Foo
+//│ ║  l.53: 	foo = Foo
 //│ ║        	^^^^^^^^^
 //│ ╟── reference of type `{x: ?x, y: ?y} -> (Foo[?A] with {Foo#A = ?A, x: ?x, y: ?y})` is not an instance of type `Foo`
-//│ ║  l.61: 	foo = Foo
+//│ ║  l.53: 	foo = Foo
 //│ ║        	      ^^^
 //│ ╟── Note: class constructor Foo is defined at:
 //│ ║  l.3: 	class Foo[A]: { x: A; y: A }
@@ -71,7 +63,6 @@ foo = Foo
 //│ {x: 'x & 'A, y: 'A & 'y} -> (Foo['A] with {x: 'x, y: 'y})
 //│   <:  foo:
 //│ Foo[?]
-//│    = [Function: foo1]
 
 
 

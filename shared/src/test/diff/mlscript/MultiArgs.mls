@@ -3,65 +3,49 @@ def foo(a, b, c) = add a (add b c)
 foo(1, 2, 3)
 foo(1, 2, 3,)
 //│ foo: (int, int, int,) -> int
-//│    = [Function: foo]
 //│ res: int
-//│    = 6
 //│ res: int
-//│    = 6
 
 def bar() = 1
 bar()
 bar(,)
-//│ bar: () -> 1
-//│    = [Function: bar]
-//│ res: 1
-//│    = 1
-//│ res: 1
-//│    = 1
+//│ bar: () -> int
+//│ res: int
+//│ res: int
 
 def bar(x) = x
 bar(1)
 bar(1,)
 //│ bar: 'a -> 'a
-//│    = [Function: bar1]
-//│ res: 1
-//│    = 1
-//│ res: 1
-//│    = 1
+//│ res: int
+//│ res: int
 
 def bar(x,) = x
 bar(1)
 bar(1,)
 //│ bar: 'a -> 'a
-//│    = [Function: bar2]
-//│ res: 1
-//│    = 1
-//│ res: 1
-//│    = 1
+//│ res: int
+//│ res: int
 
 def bar(x, y) = add x y
 bar(1, 2)
 bar(1, 2,)
 //│ bar: (int, int,) -> int
-//│    = [Function: bar3]
 //│ res: int
-//│    = 3
 //│ res: int
-//│    = 3
 
 :e
 bar((1, 2))
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.53: 	bar((1, 2))
+//│ ║  l.38: 	bar((1, 2))
 //│ ║        	^^^^^^^^^^^
-//│ ╟── argument of type `((1, 2,),)` does not match type `(?a, ?b,)`
-//│ ║  l.53: 	bar((1, 2))
+//│ ╟── argument of type `((int, int,),)` does not match type `(?a, ?b,)`
+//│ ║  l.38: 	bar((1, 2))
 //│ ║        	   ^^^^^^^^
 //│ ╟── Note: constraint arises from tuple literal:
-//│ ║  l.42: 	def bar(x, y) = add x y
+//│ ║  l.30: 	def bar(x, y) = add x y
 //│ ╙──      	       ^^^^^^
-//│ res: error | int
-//│    = '1,2undefined'
+//│ res: int
 
 
 
@@ -69,31 +53,26 @@ bar((1, 2))
 def bar((x, y)) = add x y
 bar((1, 2))
 //│ bar: (int, int,) -> int
-//│    = [Function: bar4]
 //│ res: int
-//│    = 3
 
 :p
 f = fun (x, y) -> add x y
 f(1, 2)
 //│ f: (int, int,) -> int
-//│  = [Function: f]
 //│ res: int
-//│    = 3
 
 :e
 f((1, 2))
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.85: 	f((1, 2))
+//│ ║  l.65: 	f((1, 2))
 //│ ║        	^^^^^^^^^
-//│ ╟── argument of type `((1, 2,),)` does not match type `(?a, ?b,)`
-//│ ║  l.85: 	f((1, 2))
+//│ ╟── argument of type `((int, int,),)` does not match type `(?a, ?b,)`
+//│ ║  l.65: 	f((1, 2))
 //│ ║        	 ^^^^^^^^
 //│ ╟── Note: constraint arises from tuple literal:
-//│ ║  l.77: 	f = fun (x, y) -> add x y
+//│ ║  l.59: 	f = fun (x, y) -> add x y
 //│ ╙──      	        ^^^^^^
-//│ res: error | int
-//│    = '1,2undefined'
+//│ res: int
 
 
 
@@ -101,19 +80,17 @@ f((1, 2))
 :e
 r = (1, 2)
 f r
-//│ r: (1, 2,)
-//│  = [ 1, 2 ]
+//│ r: (int, int,)
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.103: 	f r
-//│ ║         	^^^
-//│ ╟── argument of type `((1, 2,),)` does not match type `(?a, ?b,)`
-//│ ║  l.103: 	f r
-//│ ║         	  ^
+//│ ║  l.82: 	f r
+//│ ║        	^^^
+//│ ╟── argument of type `((int, int,),)` does not match type `(?a, ?b,)`
+//│ ║  l.82: 	f r
+//│ ║        	  ^
 //│ ╟── Note: constraint arises from tuple literal:
-//│ ║  l.77: 	f = fun (x, y) -> add x y
+//│ ║  l.59: 	f = fun (x, y) -> add x y
 //│ ╙──      	        ^^^^^^
-//│ res: error | int
-//│    = '1,2undefined'
+//│ res: int
 
 
 
@@ -122,28 +99,22 @@ f r
 f = fun ((x, y)) -> add x y
 f((1, 2))
 //│ f: (int, int,) -> int
-//│  = [Function: f1]
 //│ res: int
-//│    = 3
 
 :e
 f(1, 2)
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.130: 	f(1, 2)
+//│ ║  l.105: 	f(1, 2)
 //│ ║         	^^^^^^^
-//│ ╟── tuple literal of type `(1, 2,)` does not match type `((?a, ?b,),)`
-//│ ║  l.130: 	f(1, 2)
+//│ ╟── tuple literal of type `(int, int,)` does not match type `((?a, ?b,),)`
+//│ ║  l.105: 	f(1, 2)
 //│ ╙──       	 ^^^^^^
-//│ res: error | int
-//│ Runtime error:
-//│   TypeError: number 1 is not iterable (cannot read property Symbol(Symbol.iterator))
+//│ res: int
 
 
 
 r = (1, 2)
 f r
-//│ r: (1, 2,)
-//│  = [ 1, 2 ]
+//│ r: (int, int,)
 //│ res: int
-//│    = 3
 

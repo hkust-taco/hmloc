@@ -2,31 +2,22 @@ def toBool = fun x -> true
 def b = toBool true
 def bb = (fun a -> fun b -> toBool (if b then not a else not a)) true
 //│ toBool: anything -> true
-//│       = [Function: toBool]
 //│ b: true
-//│  = [Function: b]
 //│ bb: bool -> true
-//│   = [Function: bb]
 
 def isInt = fun x -> b
 //│ isInt: anything -> true
-//│      = [Function: isInt]
 
 def selectBoolOrInt = fun x -> if isInt x then 1 else true
 def r1 = selectBoolOrInt true
 def r2 = selectBoolOrInt 1
 def addOneI = fun x -> add x 1
 def addOneB = bb
-//│ selectBoolOrInt: anything -> (1 | true)
-//│                = [Function: selectBoolOrInt]
-//│ r1: 1 | true
-//│   = [Function: r1]
-//│ r2: 1 | true
-//│   = [Function: r2]
+//│ selectBoolOrInt: anything -> (int | true)
+//│ r1: int | true
+//│ r2: int | true
 //│ addOneI: int -> int
-//│        = [Function: addOneI]
 //│ addOneB: bool -> true
-//│        = [Function: addOneB]
 
 def addOne = fun x -> 
     if (isInt x) 
@@ -34,29 +25,26 @@ def addOne = fun x ->
     else addOneB x
 def r3 = isInt r2
 //│ addOne: nothing -> (int | true)
-//│       = [Function: addOne]
 //│ r3: true
-//│   = [Function: r3]
 
 :e
 def r4 = addOne (selectBoolOrInt 1)
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.42: 	def r4 = addOne (selectBoolOrInt 1)
+//│ ║  l.31: 	def r4 = addOne (selectBoolOrInt 1)
 //│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── reference of type `true` is not a 1-element tuple
-//│ ║  l.15: 	def selectBoolOrInt = fun x -> if isInt x then 1 else true
+//│ ╟── reference of type `true` is not an instance of type `int`
+//│ ║  l.11: 	def selectBoolOrInt = fun x -> if isInt x then 1 else true
 //│ ║        	                                                      ^^^^
-//│ ╟── but it flows into application with expected type `(?a,)`
-//│ ║  l.42: 	def r4 = addOne (selectBoolOrInt 1)
+//│ ╟── but it flows into application with expected type `int`
+//│ ║  l.31: 	def r4 = addOne (selectBoolOrInt 1)
 //│ ║        	                 ^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.33: 	    then addOneI x 
+//│ ║  l.24: 	    then addOneI x 
 //│ ║        	                 ^
 //│ ╟── from argument:
-//│ ║  l.18: 	def addOneI = fun x -> add x 1
+//│ ║  l.14: 	def addOneI = fun x -> add x 1
 //│ ╙──      	                           ^
-//│ r4: error | int | true
-//│   = [Function: r4]
+//│ r4: int | true
 
 
 
@@ -66,19 +54,18 @@ def r4 = addOne (selectBoolOrInt 1)
 :e
 def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp }
 //│ ╔══[ERROR] Type mismatch in `case` expression:
-//│ ║  l.67: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp }
+//│ ║  l.55: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp }
 //│ ║        	                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── reference of type `true` does not match type `int & ?a`
-//│ ║  l.15: 	def selectBoolOrInt = fun x -> if isInt x then 1 else true
+//│ ╟── reference of type `true` is not an instance of type `int`
+//│ ║  l.11: 	def selectBoolOrInt = fun x -> if isInt x then 1 else true
 //│ ║        	                                                      ^^^^
-//│ ╟── but it flows into reference with expected type `int & ?b`
-//│ ║  l.67: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp }
+//│ ╟── but it flows into reference with expected type `int`
+//│ ║  l.55: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp }
 //│ ║        	                                             ^^^
 //│ ╟── Note: constraint arises from class pattern:
-//│ ║  l.67: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp }
+//│ ║  l.55: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp }
 //│ ╙──      	                                                      ^^^
-//│ r4: error | int | true
-//│   = [Function: r41]
+//│ r4: int | true
 
 
 
@@ -92,22 +79,21 @@ def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp }
 :e
 def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp | _ -> 0 }
 //│ ╔══[ERROR] Type mismatch in `case` expression:
-//│ ║  l.93: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp | _ -> 0 }
+//│ ║  l.80: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp | _ -> 0 }
 //│ ║        	                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `1` does not match type `int & ?a | ?b & ~int`
-//│ ║  l.15: 	def selectBoolOrInt = fun x -> if isInt x then 1 else true
+//│ ╟── integer literal of type `int` is not an instance of type `bool`
+//│ ║  l.11: 	def selectBoolOrInt = fun x -> if isInt x then 1 else true
 //│ ║        	                                               ^
-//│ ╟── but it flows into reference with expected type `int & ?c | ?d & ~int`
-//│ ║  l.93: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp | _ -> 0 }
+//│ ╟── but it flows into reference with expected type `bool`
+//│ ║  l.80: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp | _ -> 0 }
 //│ ║        	                                             ^^^
 //│ ╟── Note: constraint arises from refined scrutinee:
-//│ ║  l.93: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp | _ -> 0 }
+//│ ║  l.80: 	def r4 = let tmp = selectBoolOrInt 1 in case tmp of { int -> addOne tmp | _ -> 0 }
 //│ ║        	                                             ^^^
 //│ ╟── from argument:
 //│ ║  l.3: 	def bb = (fun a -> fun b -> toBool (if b then not a else not a)) true
 //│ ╙──     	                                       ^
 //│ r4: int | true
-//│   = [Function: r42]
 
 
 
@@ -117,60 +103,50 @@ def addOne x = case x of {
   | bool -> addOneB x
   }
 //│ addOne: (bool | int) -> (int | true)
-//│       = [Function: addOne1]
 
 def r4 = addOne (selectBoolOrInt 1)
 //│ r4: int | true
-//│   = [Function: r43]
 
 
 
 
 def addOneS = fun x -> concat x "One"
 //│ addOneS: string -> string
-//│        = [Function: addOneS]
 
 addOneI 1
 addOneS "Two"
 //│ res: int
-//│    = 2
 //│ res: string
-//│    = 'TwoOne'
 
 
 // Attempt 1:
 
 def isInt = fun x -> case x of { int -> true | string -> false }
 //│ isInt: (int | string) -> bool
-//│      = [Function: isInt1]
 
 isInt 1
 isInt "Two"
 //│ res: bool
-//│    = true
 //│ res: bool
-//│    = false
 
 def addOne = fun x -> if isInt x then addOneI x else addOneS x
 //│ addOne: nothing -> (int | string)
-//│       = [Function: addOne2]
 
 :e
 addOne "hello"
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.159: 	addOne "hello"
+//│ ║  l.136: 	addOne "hello"
 //│ ║         	^^^^^^^^^^^^^^
-//│ ╟── string literal of type `"hello"` is not a 1-element tuple
-//│ ║  l.159: 	addOne "hello"
+//│ ╟── string literal of type `string` is not an instance of type `int`
+//│ ║  l.136: 	addOne "hello"
 //│ ║         	       ^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.154: 	def addOne = fun x -> if isInt x then addOneI x else addOneS x
+//│ ║  l.132: 	def addOne = fun x -> if isInt x then addOneI x else addOneS x
 //│ ║         	                                              ^
 //│ ╟── from argument:
-//│ ║  l.18: 	def addOneI = fun x -> add x 1
+//│ ║  l.14: 	def addOneI = fun x -> add x 1
 //│ ╙──      	                           ^
-//│ res: error | int | string
-//│    = 'helloOne'
+//│ res: int | string
 
 
 
@@ -183,40 +159,35 @@ def addOne = fun x -> case x of {
    int -> addOneI x | 
    string -> addOneS x }
 //│ addOne: (int | string) -> (int | string)
-//│       = [Function: addOne3]
 
 addOne 1
 addOne "Two"
 //│ res: int | string
-//│    = 2
 //│ res: int | string
-//│    = 'TwoOne'
 
 :e
 (addOne 1) + 1
 concat "Three" (addOne "Two")
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.196: 	(addOne 1) + 1
+//│ ║  l.169: 	(addOne 1) + 1
 //│ ║         	^^^^^^^^^^^^
-//│ ╟── application of type `string` is not a 1-element tuple
-//│ ║  l.129: 	def addOneS = fun x -> concat x "One"
+//│ ╟── application of type `string` is not an instance of type `int`
+//│ ║  l.113: 	def addOneS = fun x -> concat x "One"
 //│ ║         	                       ^^^^^^^^^^^^^^
-//│ ╟── but it flows into application with expected type `(int,)`
-//│ ║  l.196: 	(addOne 1) + 1
+//│ ╟── but it flows into application with expected type `int`
+//│ ║  l.169: 	(addOne 1) + 1
 //│ ╙──       	 ^^^^^^^^
-//│ res: error | int
-//│    = 3
+//│ res: int
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.197: 	concat "Three" (addOne "Two")
+//│ ║  l.170: 	concat "Three" (addOne "Two")
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `int` is not a 1-element tuple
-//│ ║  l.18: 	def addOneI = fun x -> add x 1
+//│ ╟── application of type `int` is not an instance of type `string`
+//│ ║  l.14: 	def addOneI = fun x -> add x 1
 //│ ║        	                       ^^^^^^^
-//│ ╟── but it flows into application with expected type `(string,)`
-//│ ║  l.197: 	concat "Three" (addOne "Two")
+//│ ╟── but it flows into application with expected type `string`
+//│ ║  l.170: 	concat "Three" (addOne "Two")
 //│ ╙──       	                ^^^^^^^^^^^^
-//│ res: error | string
-//│    = 'ThreeTwoOne'
+//│ res: string
 
 
 

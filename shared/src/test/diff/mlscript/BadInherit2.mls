@@ -16,7 +16,7 @@ class A0: S0[int] & T0[string]
 //│ ╔══[ERROR] Type mismatch in type definition:
 //│ ║  l.14: 	class A0: S0[int] & T0[string]
 //│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int` does not match type `nothing`
+//│ ╟── type `int` is not an instance of `string`
 //│ ║  l.14: 	class A0: S0[int] & T0[string]
 //│ ║        	             ^^^
 //│ ╟── Note: constraint arises from type reference:
@@ -25,7 +25,7 @@ class A0: S0[int] & T0[string]
 //│ ╔══[ERROR] Type mismatch in type definition:
 //│ ║  l.14: 	class A0: S0[int] & T0[string]
 //│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `string` does not match type `nothing`
+//│ ╟── type `string` is not an instance of `int`
 //│ ║  l.14: 	class A0: S0[int] & T0[string]
 //│ ║        	                       ^^^^^^
 //│ ╟── Note: constraint arises from type reference:
@@ -42,7 +42,6 @@ class A0: S0[int] & T0[string]
 //│ ║  l.14: 	class A0: S0[int] & T0[string]
 //│ ╙──      	      ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ res: 'A -> ('A | error)
-//│    = undefined
 
 
 
@@ -57,34 +56,34 @@ class A0: S0[int] & T0[string]
 class A0_2: S0[int] & T0[string]
   method Foo0 x = 1
 //│ ╔══[ERROR] Type mismatch in type definition:
-//│ ║  l.57: 	class A0_2: S0[int] & T0[string]
+//│ ║  l.56: 	class A0_2: S0[int] & T0[string]
 //│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int` does not match type `nothing`
-//│ ║  l.57: 	class A0_2: S0[int] & T0[string]
+//│ ╟── type `int` is not an instance of `string`
+//│ ║  l.56: 	class A0_2: S0[int] & T0[string]
 //│ ║        	               ^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.57: 	class A0_2: S0[int] & T0[string]
+//│ ║  l.56: 	class A0_2: S0[int] & T0[string]
 //│ ╙──      	                         ^^^^^^
 //│ ╔══[ERROR] Type mismatch in type definition:
-//│ ║  l.57: 	class A0_2: S0[int] & T0[string]
+//│ ║  l.56: 	class A0_2: S0[int] & T0[string]
 //│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `string` does not match type `nothing`
-//│ ║  l.57: 	class A0_2: S0[int] & T0[string]
+//│ ╟── type `string` is not an instance of `int`
+//│ ║  l.56: 	class A0_2: S0[int] & T0[string]
 //│ ║        	                         ^^^^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.57: 	class A0_2: S0[int] & T0[string]
+//│ ║  l.56: 	class A0_2: S0[int] & T0[string]
 //│ ╙──      	               ^^^
 //│ ╔══[ERROR] Type mismatch in method definition:
-//│ ║  l.58: 	  method Foo0 x = 1
+//│ ║  l.57: 	  method Foo0 x = 1
 //│ ║        	         ^^^^^^^^^^
-//│ ╟── integer literal of type `1` does not match type `nothing`
-//│ ║  l.58: 	  method Foo0 x = 1
+//│ ╟── integer literal of type `int` is not an instance of type `string`
+//│ ║  l.57: 	  method Foo0 x = 1
 //│ ║        	                  ^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.57: 	class A0_2: S0[int] & T0[string]
+//│ ║  l.56: 	class A0_2: S0[int] & T0[string]
 //│ ╙──      	                         ^^^^^^
 //│ Defined class A0_2
-//│ Defined A0_2.Foo0: A0_2 -> anything -> 1
+//│ Defined A0_2.Foo0: A0_2 -> anything -> int
 
 
 
@@ -96,8 +95,17 @@ class A0_2: S0[int] & T0[string]
 
 
 (A0_2{}).Foo0
-//│ res: ('A & (int | string)) -> 'A
-//│    = [Function: Foo0]
+//│ ╔══[ERROR] Implicit call to method Foo0 is forbidden because it is ambiguous.
+//│ ║  l.97: 	(A0_2{}).Foo0
+//│ ║        	^^^^^^^^^^^^^
+//│ ╟── Unrelated methods named Foo0 are defined by:
+//│ ╟── • trait S0
+//│ ║  l.6: 	trait S0[A]
+//│ ║       	      ^^
+//│ ╟── • class A0_2
+//│ ║  l.56: 	class A0_2: S0[int] & T0[string]
+//│ ╙──      	      ^^^^
+//│ res: error
 
 
 // ———
@@ -113,39 +121,39 @@ trait S1: R1[int]
 trait T1: R1[string]
   method Foo1 x = "a"
 //│ Defined trait S1
-//│ Defined S1.Foo1: S1 -> anything -> 1
+//│ Defined S1.Foo1: S1 -> anything -> int
 //│ Defined trait T1
-//│ Defined T1.Foo1: T1 -> anything -> "a"
+//│ Defined T1.Foo1: T1 -> anything -> string
 
 :e
 class A1: S1 & T1
 //│ ╔══[ERROR] Type mismatch in type definition:
-//│ ║  l.121: 	class A1: S1 & T1
+//│ ║  l.129: 	class A1: S1 & T1
 //│ ║         	      ^^^^^^^^^^^
-//│ ╟── type `int` does not match type `nothing`
-//│ ║  l.111: 	trait S1: R1[int]
+//│ ╟── type `int` is not an instance of `string`
+//│ ║  l.119: 	trait S1: R1[int]
 //│ ║         	             ^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.113: 	trait T1: R1[string]
+//│ ║  l.121: 	trait T1: R1[string]
 //│ ╙──       	             ^^^^^^
 //│ ╔══[ERROR] Type mismatch in type definition:
-//│ ║  l.121: 	class A1: S1 & T1
+//│ ║  l.129: 	class A1: S1 & T1
 //│ ║         	      ^^^^^^^^^^^
-//│ ╟── type `string` does not match type `nothing`
-//│ ║  l.113: 	trait T1: R1[string]
+//│ ╟── type `string` is not an instance of `int`
+//│ ║  l.121: 	trait T1: R1[string]
 //│ ║         	             ^^^^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.111: 	trait S1: R1[int]
+//│ ║  l.119: 	trait S1: R1[int]
 //│ ╙──       	             ^^^
 //│ ╔══[ERROR] An overriding method definition must be given when inheriting from multiple method definitions
-//│ ║  l.121: 	class A1: S1 & T1
+//│ ║  l.129: 	class A1: S1 & T1
 //│ ║         	      ^^
 //│ ╟── Definitions of method Foo1 inherited from:
 //│ ╟── • S1
-//│ ║  l.112: 	  method Foo1 x = 1
+//│ ║  l.120: 	  method Foo1 x = 1
 //│ ║         	         ^^^^^^^^^^
 //│ ╟── • T1
-//│ ║  l.114: 	  method Foo1 x = "a"
+//│ ║  l.122: 	  method Foo1 x = "a"
 //│ ╙──       	         ^^^^^^^^^^^^
 //│ Defined class A1
 
@@ -160,73 +168,126 @@ class A1: S1 & T1
 
 a1 = A1{}
 //│ a1: A1
-//│   = A1 { Foo1: [Function (anonymous)] }
 
 a1.Foo1
-//│ res: ('A & (int | string)) -> 'A
-//│    = [Function (anonymous)]
+//│ ╔══[ERROR] Implicit call to method Foo1 is forbidden because it is ambiguous.
+//│ ║  l.172: 	a1.Foo1
+//│ ║         	^^^^^^^
+//│ ╟── Unrelated methods named Foo1 are defined by:
+//│ ╟── • trait R1
+//│ ║  l.114: 	trait R1[A]
+//│ ║         	      ^^
+//│ ╟── • trait S1
+//│ ║  l.119: 	trait S1: R1[int]
+//│ ║         	      ^^
+//│ ╟── • trait T1
+//│ ║  l.121: 	trait T1: R1[string]
+//│ ╙──       	      ^^
+//│ res: error
 
 a1: S1
 a1: R1[int]
 a1: R1[string]
 a1: R1['_]
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.188: 	a1: S1
+//│ ║         	^^
+//│ ╟── application of type `A1` does not match type `R1[int] & #S1`
+//│ ║  l.169: 	a1 = A1{}
+//│ ║         	     ^^^^
+//│ ╟── but it flows into reference with expected type `R1[int] & #S1`
+//│ ║  l.188: 	a1: S1
+//│ ║         	^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.188: 	a1: S1
+//│ ╙──       	    ^^
 //│ res: S1
-//│    = A1 { Foo1: [Function (anonymous)] }
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.189: 	a1: R1[int]
+//│ ║         	^^
+//│ ╟── application of type `A1` does not match type `#R1`
+//│ ║  l.169: 	a1 = A1{}
+//│ ║         	     ^^^^
+//│ ╟── but it flows into reference with expected type `#R1`
+//│ ║  l.189: 	a1: R1[int]
+//│ ║         	^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.189: 	a1: R1[int]
+//│ ╙──       	    ^^^^^^^
 //│ res: R1[int]
-//│    = A1 { Foo1: [Function (anonymous)] }
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.190: 	a1: R1[string]
+//│ ║         	^^
+//│ ╟── application of type `A1` does not match type `#R1`
+//│ ║  l.169: 	a1 = A1{}
+//│ ║         	     ^^^^
+//│ ╟── but it flows into reference with expected type `#R1`
+//│ ║  l.190: 	a1: R1[string]
+//│ ║         	^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.190: 	a1: R1[string]
+//│ ╙──       	    ^^^^^^^^^^
 //│ res: R1[string]
-//│    = A1 { Foo1: [Function (anonymous)] }
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.191: 	a1: R1['_]
+//│ ║         	^^
+//│ ╟── application of type `A1` does not match type `#R1`
+//│ ║  l.169: 	a1 = A1{}
+//│ ║         	     ^^^^
+//│ ╟── but it flows into reference with expected type `#R1`
+//│ ║  l.191: 	a1: R1['_]
+//│ ║         	^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.191: 	a1: R1['_]
+//│ ╙──       	    ^^^^^^
 //│ res: R1['_]
 //│   where
 //│     '_ <: int | string
-//│    = A1 { Foo1: [Function (anonymous)] }
 
 :ns
 a1: R1['_]
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.248: 	a1: R1['_]
+//│ ║         	^^
+//│ ╟── application of type `A1` does not match type `#R1`
+//│ ║  l.169: 	a1 = A1{}
+//│ ║         	     ^^^^
+//│ ╟── but it flows into reference with expected type `#R1`
+//│ ║  l.248: 	a1: R1['_]
+//│ ║         	^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.248: 	a1: R1['_]
+//│ ╙──       	    ^^^^^^
 //│ res: R1['_]
 //│   where
 //│     '_ <: int | string
-//│    = A1 { Foo1: [Function (anonymous)] }
 
 
 :e
 :js
+//│ /!\ Unrecognized option :js
 class A1_2: S1 & T1
   method Foo1 = error
 //│ ╔══[ERROR] Type mismatch in type definition:
-//│ ║  l.194: 	class A1_2: S1 & T1
+//│ ║  l.269: 	class A1_2: S1 & T1
 //│ ║         	      ^^^^^^^^^^^^^
-//│ ╟── type `int` does not match type `nothing`
-//│ ║  l.111: 	trait S1: R1[int]
+//│ ╟── type `int` is not an instance of `string`
+//│ ║  l.119: 	trait S1: R1[int]
 //│ ║         	             ^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.113: 	trait T1: R1[string]
+//│ ║  l.121: 	trait T1: R1[string]
 //│ ╙──       	             ^^^^^^
 //│ ╔══[ERROR] Type mismatch in type definition:
-//│ ║  l.194: 	class A1_2: S1 & T1
+//│ ║  l.269: 	class A1_2: S1 & T1
 //│ ║         	      ^^^^^^^^^^^^^
-//│ ╟── type `string` does not match type `nothing`
-//│ ║  l.113: 	trait T1: R1[string]
+//│ ╟── type `string` is not an instance of `int`
+//│ ║  l.121: 	trait T1: R1[string]
 //│ ║         	             ^^^^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.111: 	trait S1: R1[int]
+//│ ║  l.119: 	trait S1: R1[int]
 //│ ╙──       	             ^^^
 //│ Defined class A1_2
 //│ Defined A1_2.Foo1: A1_2 -> nothing
-//│ // Prelude
-//│ function error() {
-//│   throw new Error("unexpected runtime error");
-//│ }
-//│ class A1_2 {
-//│   constructor(fields) {
-//│     S1.implement(this);
-//│     T1.implement(this);
-//│   }
-//│   get Foo1() {
-//│     return error();
-//│   }
-//│ }
-//│ // End of generated code
 
 
 
@@ -236,22 +297,33 @@ class A1_2: S1 & T1
 
 :re
 (A1_2{}).Foo1
-//│ res: ('A & (int | string)) -> 'A
-//│ Runtime error:
-//│   Error: unexpected runtime error
+//│ ╔══[ERROR] Implicit call to method Foo1 is forbidden because it is ambiguous.
+//│ ║  l.299: 	(A1_2{}).Foo1
+//│ ║         	^^^^^^^^^^^^^
+//│ ╟── Unrelated methods named Foo1 are defined by:
+//│ ╟── • trait R1
+//│ ║  l.114: 	trait R1[A]
+//│ ║         	      ^^
+//│ ╟── • trait S1
+//│ ║  l.119: 	trait S1: R1[int]
+//│ ║         	      ^^
+//│ ╟── • trait T1
+//│ ║  l.121: 	trait T1: R1[string]
+//│ ║         	      ^^
+//│ ╟── • class A1_2
+//│ ║  l.269: 	class A1_2: S1 & T1
+//│ ╙──       	      ^^^^
+//│ res: error
 
 
 def f = 0
-//│ f: 0
-//│  = [Function: f]
+//│ f: int
 
 def f' = 1
-//│ f': 1
-//│   = [Function: f$]
+//│ f': int
 
 f'
-//│ res: 1
-//│    = 1
+//│ res: int
 
 
 
@@ -262,37 +334,40 @@ class C0[A]: S0[A]
 
 def s0: S0['a] -> S0['a]
 //│ s0: S0['a] -> S0['a]
-//│   = <missing implementation>
 
 s0 (C0{})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.338: 	s0 (C0{})
+//│ ║         	^^^^^^^^^
+//│ ╟── application of type `C0[?A]` is not an instance of type `S0`
+//│ ║  l.338: 	s0 (C0{})
+//│ ║         	    ^^^^
+//│ ╟── but it flows into argument with expected type `#S0`
+//│ ║  l.338: 	s0 (C0{})
+//│ ║         	   ^^^^^^
+//│ ╟── Note: constraint arises from tuple type:
+//│ ║  l.335: 	def s0: S0['a] -> S0['a]
+//│ ╙──       	        ^^^^^^
 //│ res: S0['a]
-//│    = <no result>
-//│      s0 is not implemented
 
 def s0: S0[?] -> S0[?]
 //│ s0: S0[?] -> S0[?]
-//│   = <missing implementation>
 
 :e
 s0 (C0{})
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.277: 	s0 (C0{})
+//│ ║  l.357: 	s0 (C0{})
 //│ ║         	^^^^^^^^^
-//│ ╟── type `anything` is not a 1-element tuple
-//│ ║  l.272: 	def s0: S0[?] -> S0[?]
-//│ ║         	           ^
-//│ ╟── but it flows into application with expected type `(S0[?],)`
-//│ ║  l.277: 	s0 (C0{})
+//│ ╟── application of type `C0[?A]` is not an instance of type `S0`
+//│ ║  l.357: 	s0 (C0{})
 //│ ║         	    ^^^^
+//│ ╟── but it flows into argument with expected type `#S0`
+//│ ║  l.357: 	s0 (C0{})
+//│ ║         	   ^^^^^^
 //│ ╟── Note: constraint arises from tuple type:
-//│ ║  l.272: 	def s0: S0[?] -> S0[?]
-//│ ║         	        ^^^^^
-//│ ╟── from type wildcard:
-//│ ║  l.272: 	def s0: S0[?] -> S0[?]
-//│ ╙──       	           ^
-//│ res: error | S0[?]
-//│    = <no result>
-//│      s0 is not implemented
+//│ ║  l.353: 	def s0: S0[?] -> S0[?]
+//│ ╙──       	        ^^^^^
+//│ res: S0[?]
 
 
 

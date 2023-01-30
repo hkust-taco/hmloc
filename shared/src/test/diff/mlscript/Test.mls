@@ -3,7 +3,6 @@ class Person: { name: string; age: int }
 def Person = fun n -> fun a -> Person { name = n; age = a }
 //│ Defined class Person
 //│ Person: (string & 'name) -> (int & 'age) -> (Person with {age: 'age, name: 'name})
-//│       = [Function: Person1]
 
 class Animal: {}
 //│ Defined class Animal
@@ -12,51 +11,39 @@ def test = fun x -> case x of
   { Person -> x.age
   | Animal -> 0
   }
-//│ test: (Animal | (Person\name with {age: 'age})) -> (0 | 'age)
-//│     = [Function: test]
+//│ test: (Animal | (Person\name with {age: 'age})) -> ('age | int)
 
 test: Person & {age: 'a} | Animal -> 'a | 0
-//│ res: Animal -> 0 | 0 | Person & {age: 0}
-//│    = [Function: test]
+//│ res: Animal -> int | 0 | Person
 
 test: (Person & {age: int} | Animal) -> int
 //│ res: (Animal | Person) -> int
-//│    = [Function: test]
 
 def a = Animal{}
 //│ a: Animal
-//│  = [Function: a]
 
 a: {}
 //│ res: anything
-//│    = Animal {}
 
 def p = Person "Bob" 42
-//│ p: Person & {age: 42, name: "Bob"}
-//│  = [Function: p]
+//│ p: Person
 
 p: { age: int }
 //│ res: {age: int}
-//│    = Person { name: 'Bob', age: 42 }
 
 test a
-//│ res: 0
-//│    = 0
+//│ res: int
 
 test p
-//│ res: 0 | 42
-//│    = 42
+//│ res: int
 
 1: int
 //│ res: int
-//│    = 1
 
 
 def f: 'a -> 'a & string
 //│ f: nothing
-//│  = <missing implementation>
 
 def f: 'a -> ('a & string)
 //│ f: 'a -> (string & 'a)
-//│  = <missing implementation>
 

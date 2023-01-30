@@ -6,39 +6,31 @@ class Some[A]: { v: A }
 def Some v = Some{v}
 def None = None{}
 //│ Some: 'v -> Some['v]
-//│     = [Function: Some1]
 //│ None: None
-//│     = [Function: None1]
 
 def flatMap = fun f -> fun opt ->
   case opt of { Some -> f opt.v | None -> opt }
 //│ flatMap: ('v -> 'a) -> (None & 'a | (Some[?] with {v: 'v})) -> 'a
-//│        = [Function: flatMap]
 
 f x = Some x
 flatMap f (Some 1)
 flatMap f None
 //│ f: 'v -> Some['v]
-//│  = [Function: f]
-//│ res: Some[1]
-//│    = Some { v: 1 }
+//│ res: Some[int]
 //│ res: None | Some[nothing]
-//│    = None {}
 
 :e
 flatMap f "oops"
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.29: 	flatMap f "oops"
+//│ ║  l.23: 	flatMap f "oops"
 //│ ║        	^^^^^^^^^^^^^^^^
-//│ ╟── string literal of type `"oops"` is not a 1-element tuple
-//│ ║  l.29: 	flatMap f "oops"
+//│ ╟── string literal of type `string` does not match type `None & ?a | Some[?] & ?b`
+//│ ║  l.23: 	flatMap f "oops"
 //│ ║        	          ^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.14: 	  case opt of { Some -> f opt.v | None -> opt }
+//│ ║  l.12: 	  case opt of { Some -> f opt.v | None -> opt }
 //│ ╙──      	       ^^^
-//│ res: error | Some[nothing]
-//│ Runtime error:
-//│   Error: non-exhaustive case expression
+//│ res: Some[nothing]
 
 
 
@@ -46,8 +38,19 @@ flatMap f "oops"
 class NoneBecause: None & { reason: string }
 flatMap f (NoneBecause { reason = "uh uh" })
 //│ Defined class NoneBecause
-//│ res: NoneBecause & {reason: "uh uh"} | Some[nothing]
-//│    = NoneBecause { reason: 'uh uh' }
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.39: 	flatMap f (NoneBecause { reason = "uh uh" })
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `NoneBecause` does not match type `None & ?a | Some[?] & ?b`
+//│ ║  l.39: 	flatMap f (NoneBecause { reason = "uh uh" })
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into argument with expected type `None & ?a | Some[?] & ?c`
+//│ ║  l.39: 	flatMap f (NoneBecause { reason = "uh uh" })
+//│ ║        	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.12: 	  case opt of { Some -> f opt.v | None -> opt }
+//│ ╙──      	       ^^^
+//│ res: Some[nothing]
 
 type Expr = Lit | Neg | Var | Plus
 class Lit: {v: int}
@@ -77,18 +80,241 @@ rec def evalOpt x = case x of {
         Some (l + r)
       ) (evalOpt x.rhs)) (evalOpt x.lhs)
   }
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.67: 	rec def evalOpt x = case x of {
+//│ ║        	                ^^^^^^^^^^^^^^^
+//│ ║  l.68: 	  | Lit ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.69: 	      Some x.v
+//│ ║        	^^^^^^^^^^^^^^
+//│ ║  l.70: 	  | Neg ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.71: 	      // flatMap (fun s -> Some (neg x.sub)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.72: 	      flatMap (fun s -> Some (negate s)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.73: 	  | Var ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.74: 	      // None with {err = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.75: 	      NoneBecause {reason = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.76: 	      // None
+//│ ║        	^^^^^^^^^^^^^
+//│ ║  l.77: 	  | Plus ->
+//│ ║        	^^^^^^^^^^^
+//│ ║  l.78: 	      flatMap (fun l -> flatMap (fun r ->
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.79: 	        // Some (add x.lhs x.rhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.80: 	        Some (l + r)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.81: 	      ) (evalOpt x.rhs)) (evalOpt x.lhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.82: 	  }
+//│ ║        	^^^
+//│ ╟── application of type `NoneBecause` does not match type `None & ?a | Some[?] & ?b`
+//│ ║  l.75: 	      NoneBecause {reason = concat "free var: " x.nme}
+//│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into `case` expression with expected type `None & ?c | Some[?] & ?d`
+//│ ║  l.67: 	rec def evalOpt x = case x of {
+//│ ║        	                    ^^^^^^^^^^^
+//│ ║  l.68: 	  | Lit ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.69: 	      Some x.v
+//│ ║        	^^^^^^^^^^^^^^
+//│ ║  l.70: 	  | Neg ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.71: 	      // flatMap (fun s -> Some (neg x.sub)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.72: 	      flatMap (fun s -> Some (negate s)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.73: 	  | Var ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.74: 	      // None with {err = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.75: 	      NoneBecause {reason = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.76: 	      // None
+//│ ║        	^^^^^^^^^^^^^
+//│ ║  l.77: 	  | Plus ->
+//│ ║        	^^^^^^^^^^^
+//│ ║  l.78: 	      flatMap (fun l -> flatMap (fun r ->
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.79: 	        // Some (add x.lhs x.rhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.80: 	        Some (l + r)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.81: 	      ) (evalOpt x.rhs)) (evalOpt x.lhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.82: 	  }
+//│ ║        	^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.81: 	      ) (evalOpt x.rhs)) (evalOpt x.lhs)
+//│ ║        	                          ^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.12: 	  case opt of { Some -> f opt.v | None -> opt }
+//│ ╙──      	       ^^^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.67: 	rec def evalOpt x = case x of {
+//│ ║        	                ^^^^^^^^^^^^^^^
+//│ ║  l.68: 	  | Lit ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.69: 	      Some x.v
+//│ ║        	^^^^^^^^^^^^^^
+//│ ║  l.70: 	  | Neg ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.71: 	      // flatMap (fun s -> Some (neg x.sub)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.72: 	      flatMap (fun s -> Some (negate s)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.73: 	  | Var ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.74: 	      // None with {err = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.75: 	      NoneBecause {reason = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.76: 	      // None
+//│ ║        	^^^^^^^^^^^^^
+//│ ║  l.77: 	  | Plus ->
+//│ ║        	^^^^^^^^^^^
+//│ ║  l.78: 	      flatMap (fun l -> flatMap (fun r ->
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.79: 	        // Some (add x.lhs x.rhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.80: 	        Some (l + r)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.81: 	      ) (evalOpt x.rhs)) (evalOpt x.lhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.82: 	  }
+//│ ║        	^^^
+//│ ╟── application of type `NoneBecause` does not match type `None & ?a | Some[?] & ?b`
+//│ ║  l.75: 	      NoneBecause {reason = concat "free var: " x.nme}
+//│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into `case` expression with expected type `None & ?c | Some[?] & ?d`
+//│ ║  l.67: 	rec def evalOpt x = case x of {
+//│ ║        	                    ^^^^^^^^^^^
+//│ ║  l.68: 	  | Lit ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.69: 	      Some x.v
+//│ ║        	^^^^^^^^^^^^^^
+//│ ║  l.70: 	  | Neg ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.71: 	      // flatMap (fun s -> Some (neg x.sub)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.72: 	      flatMap (fun s -> Some (negate s)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.73: 	  | Var ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.74: 	      // None with {err = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.75: 	      NoneBecause {reason = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.76: 	      // None
+//│ ║        	^^^^^^^^^^^^^
+//│ ║  l.77: 	  | Plus ->
+//│ ║        	^^^^^^^^^^^
+//│ ║  l.78: 	      flatMap (fun l -> flatMap (fun r ->
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.79: 	        // Some (add x.lhs x.rhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.80: 	        Some (l + r)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.81: 	      ) (evalOpt x.rhs)) (evalOpt x.lhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.82: 	  }
+//│ ║        	^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.81: 	      ) (evalOpt x.rhs)) (evalOpt x.lhs)
+//│ ║        	         ^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.12: 	  case opt of { Some -> f opt.v | None -> opt }
+//│ ╙──      	       ^^^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.67: 	rec def evalOpt x = case x of {
+//│ ║        	                ^^^^^^^^^^^^^^^
+//│ ║  l.68: 	  | Lit ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.69: 	      Some x.v
+//│ ║        	^^^^^^^^^^^^^^
+//│ ║  l.70: 	  | Neg ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.71: 	      // flatMap (fun s -> Some (neg x.sub)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.72: 	      flatMap (fun s -> Some (negate s)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.73: 	  | Var ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.74: 	      // None with {err = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.75: 	      NoneBecause {reason = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.76: 	      // None
+//│ ║        	^^^^^^^^^^^^^
+//│ ║  l.77: 	  | Plus ->
+//│ ║        	^^^^^^^^^^^
+//│ ║  l.78: 	      flatMap (fun l -> flatMap (fun r ->
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.79: 	        // Some (add x.lhs x.rhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.80: 	        Some (l + r)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.81: 	      ) (evalOpt x.rhs)) (evalOpt x.lhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.82: 	  }
+//│ ║        	^^^
+//│ ╟── application of type `NoneBecause` does not match type `None & ?a | Some[?] & ?b`
+//│ ║  l.75: 	      NoneBecause {reason = concat "free var: " x.nme}
+//│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into `case` expression with expected type `None & ?c | Some[?] & ?d`
+//│ ║  l.67: 	rec def evalOpt x = case x of {
+//│ ║        	                    ^^^^^^^^^^^
+//│ ║  l.68: 	  | Lit ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.69: 	      Some x.v
+//│ ║        	^^^^^^^^^^^^^^
+//│ ║  l.70: 	  | Neg ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.71: 	      // flatMap (fun s -> Some (neg x.sub)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.72: 	      flatMap (fun s -> Some (negate s)) (evalOpt x.sub)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.73: 	  | Var ->
+//│ ║        	^^^^^^^^^^
+//│ ║  l.74: 	      // None with {err = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.75: 	      NoneBecause {reason = concat "free var: " x.nme}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.76: 	      // None
+//│ ║        	^^^^^^^^^^^^^
+//│ ║  l.77: 	  | Plus ->
+//│ ║        	^^^^^^^^^^^
+//│ ║  l.78: 	      flatMap (fun l -> flatMap (fun r ->
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.79: 	        // Some (add x.lhs x.rhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.80: 	        Some (l + r)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.81: 	      ) (evalOpt x.rhs)) (evalOpt x.lhs)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.82: 	  }
+//│ ║        	^^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.72: 	      flatMap (fun s -> Some (negate s)) (evalOpt x.sub)
+//│ ║        	                                          ^^^^^^^^^^^^^
+//│ ╟── from reference:
+//│ ║  l.12: 	  case opt of { Some -> f opt.v | None -> opt }
+//│ ╙──      	       ^^^
 //│ evalOpt: 'a -> (NoneBecause | Some[int])
 //│   where
 //│     'a <: Lit & {v: int} | (Neg with {sub: 'a}) | (Plus with {lhs: 'a, rhs: 'a}) | Var
-//│        = [Function: evalOpt]
-//│ constrain calls  : 629
-//│ annoying  calls  : 97
-//│ subtyping calls  : 543
+//│ constrain calls  : 589
+//│ annoying  calls  : 88
+//│ subtyping calls  : 2393
 
 :stats
 evalOpt (Plus{lhs = Lit{v=2}; rhs = Lit{v=3}})
 //│ res: NoneBecause | Some[int]
-//│    = Some { v: 5 }
-//│ constrain calls  : 303
-//│ annoying  calls  : 37
-//│ subtyping calls  : 466
+//│ constrain calls  : 221
+//│ annoying  calls  : 33
+//│ subtyping calls  : 401

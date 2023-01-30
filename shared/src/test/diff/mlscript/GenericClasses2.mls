@@ -6,35 +6,28 @@ class Bar1: Foo1[int]
 
 Foo1
 //│ res: {x: 'x} -> Foo1['x]
-//│    = [Function: res]
 
 Bar1
 //│ res: {x: int & 'x} -> (Bar1 with {x: 'x})
-//│    = [Function: res]
 
 b = Bar1{x = 1}
-//│ b: Bar1 & {x: 1}
-//│  = Bar1 { x: 1 }
+//│ b: Bar1
 
 :e
 b: Foo1[string]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.20: 	b: Foo1[string]
+//│ ║  l.17: 	b: Foo1[string]
 //│ ║        	^
-//│ ╟── integer literal of type `1` is not an instance of `Foo1[string]`
-//│ ║  l.15: 	b = Bar1{x = 1}
-//│ ║        	             ^
-//│ ╟── but it flows into reference with expected type `Foo1[string]`
-//│ ║  l.20: 	b: Foo1[string]
+//│ ╟── application of type `Bar1 & {Foo1#A = int}` does not match type `Foo1[?] & {x: string}`
+//│ ║  l.13: 	b = Bar1{x = 1}
+//│ ║        	    ^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Foo1[?] & {x: string}`
+//│ ║  l.17: 	b: Foo1[string]
 //│ ║        	^
 //│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.20: 	b: Foo1[string]
-//│ ║        	   ^^^^^^^^^^^^
-//│ ╟── from type reference:
-//│ ║  l.20: 	b: Foo1[string]
-//│ ╙──      	        ^^^^^^
+//│ ║  l.17: 	b: Foo1[string]
+//│ ╙──      	   ^^^^^^^^^^^^
 //│ res: Foo1[string]
-//│    = Bar1 { x: 1 }
 
 
 
@@ -47,7 +40,7 @@ class Bar2: Foo2[int] & { x: int }
 //│ Defined class Foo2[+A]
 //│ Declared Foo2.M2: Foo2['A] -> 'A
 //│ Defined class Bar2
-//│ Defined Bar2.M2: Bar2 -> 1
+//│ Defined Bar2.M2: Bar2 -> int
 
 class Bar3: Foo2[int]
 //│ Defined class Bar3
@@ -59,18 +52,16 @@ Bar3
 //│ res: {x: 'x} -> (#Bar2 & {Foo2#A = int, x: 'x})
 //│   where
 //│     'x <: int
-//│    = [Function: res]
 //│ ╔══[ERROR] Instantiation of an abstract type is forbidden
-//│ ║  l.58: 	Bar3
+//│ ║  l.51: 	Bar3
 //│ ║        	^^^^
 //│ ╟── Note that class Bar3 is abstract:
-//│ ║  l.52: 	class Bar3: Foo2[int]
+//│ ║  l.45: 	class Bar3: Foo2[int]
 //│ ║        	      ^^^^^^^^^^^^^^^
 //│ ╟── Hint: method M2 is abstract
-//│ ║  l.44: 	  method M2: A
+//│ ║  l.37: 	  method M2: A
 //│ ╙──      	         ^^^^^
 //│ res: error
-//│    = [Function: res]
 
 
 
@@ -79,18 +70,16 @@ Bar3
 Bar2
 Bar3
 //│ res: {x: int & 'x} -> (Bar2 with {x: 'x})
-//│    = [Function: res]
 //│ ╔══[ERROR] Instantiation of an abstract type is forbidden
-//│ ║  l.80: 	Bar3
+//│ ║  l.71: 	Bar3
 //│ ║        	^^^^
 //│ ╟── Note that class Bar3 is abstract:
-//│ ║  l.52: 	class Bar3: Foo2[int]
+//│ ║  l.45: 	class Bar3: Foo2[int]
 //│ ║        	      ^^^^^^^^^^^^^^^
 //│ ╟── Hint: method M2 is abstract
-//│ ║  l.44: 	  method M2: A
+//│ ║  l.37: 	  method M2: A
 //│ ╙──      	         ^^^^^
 //│ res: error
-//│    = [Function: res]
 
 
 
@@ -98,84 +87,115 @@ Bar3
 :e
 {A = 1}
 //│ ╔══[ERROR] Field identifiers must start with a small letter
-//│ ║  l.99: 	{A = 1}
+//│ ║  l.88: 	{A = 1}
 //│ ╙──      	^^^^^^^
-//│ res: {A <: 1}
-//│    = { A: 1 }
+//│ res: {A <: int}
 
 
 :e
 error: {A: 1}
 //│ ╔══[ERROR] Field identifiers must start with a small letter
-//│ ║  l.108: 	error: {A: 1}
-//│ ╙──       	        ^
+//│ ║  l.96: 	error: {A: 1}
+//│ ╙──      	        ^
 //│ res: {A <: 1}
-//│ Runtime error:
-//│   Error: unexpected runtime error
 
 
 b = Bar2{x = 1}
-//│ b: Bar2 & {x: 1}
-//│  = Bar2 { x: 1 }
+//│ b: Bar2
 
 :e
 c = b: Foo2[string]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.122: 	c = b: Foo2[string]
+//│ ║  l.107: 	c = b: Foo2[string]
 //│ ║         	    ^
-//│ ╟── type `int` is not an instance of `Foo2[string]`
-//│ ║  l.45: 	class Bar2: Foo2[int] & { x: int }
-//│ ║        	                 ^^^
+//│ ╟── application of type `Bar2 & {Foo2#A = int}` does not match type `Foo2[string]`
+//│ ║  l.103: 	b = Bar2{x = 1}
+//│ ║         	    ^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `Foo2[string]`
-//│ ║  l.122: 	c = b: Foo2[string]
+//│ ║  l.107: 	c = b: Foo2[string]
 //│ ║         	    ^
 //│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.122: 	c = b: Foo2[string]
-//│ ║         	       ^^^^^^^^^^^^
-//│ ╟── from type reference:
-//│ ║  l.122: 	c = b: Foo2[string]
-//│ ╙──       	            ^^^^^^
+//│ ║  l.107: 	c = b: Foo2[string]
+//│ ╙──       	       ^^^^^^^^^^^^
 //│ c: Foo2[string]
-//│  = Bar2 { x: 1 }
 
 
 
 
 c.M2
-//│ res: string
-//│    = 1
+//│ ╔══[ERROR] Implicit call to method M2 is forbidden because it is ambiguous.
+//│ ║  l.125: 	c.M2
+//│ ║         	^^^^
+//│ ╟── Unrelated methods named M2 are defined by:
+//│ ╟── • class Foo2
+//│ ║  l.36: 	class Foo2[A]
+//│ ║        	      ^^^^
+//│ ╟── • class Bar2
+//│ ║  l.38: 	class Bar2: Foo2[int] & { x: int }
+//│ ╙──      	      ^^^^
+//│ res: error
 
 d = b: Bar2
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.138: 	d = b: Bar2
+//│ ║         	    ^
+//│ ╟── application of type `Bar2 & {Foo2#A = int}` is not an instance of type `Foo2`
+//│ ║  l.103: 	b = Bar2{x = 1}
+//│ ║         	    ^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Foo2[?]`
+//│ ║  l.138: 	d = b: Bar2
+//│ ║         	    ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.138: 	d = b: Bar2
+//│ ║         	       ^^^^
+//│ ╟── from applied type reference:
+//│ ║  l.38: 	class Bar2: Foo2[int] & { x: int }
+//│ ╙──      	            ^^^^^^^^^
 //│ d: Bar2
-//│  = Bar2 { x: 1 }
 
 d.M2
-//│ res: int
-//│    = 1
+//│ ╔══[ERROR] Implicit call to method M2 is forbidden because it is ambiguous.
+//│ ║  l.156: 	d.M2
+//│ ║         	^^^^
+//│ ╟── Unrelated methods named M2 are defined by:
+//│ ╟── • class Foo2
+//│ ║  l.36: 	class Foo2[A]
+//│ ║        	      ^^^^
+//│ ╟── • class Bar2
+//│ ║  l.38: 	class Bar2: Foo2[int] & { x: int }
+//│ ╙──      	      ^^^^
+//│ res: error
 
 d: Foo2['a]
-//│ res: Foo2[int]
-//│    = Bar2 { x: 1 }
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.169: 	d: Foo2['a]
+//│ ║         	^
+//│ ╟── type `Bar2` is not an instance of `Foo2[?a]`
+//│ ║  l.138: 	d = b: Bar2
+//│ ║         	       ^^^^
+//│ ╟── but it flows into reference with expected type `Foo2[?a]`
+//│ ║  l.169: 	d: Foo2['a]
+//│ ║         	^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.169: 	d: Foo2['a]
+//│ ╙──       	   ^^^^^^^^
+//│ res: Foo2[nothing]
 
 :e
 d: Foo2[string]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.161: 	d: Foo2[string]
+//│ ║  l.185: 	d: Foo2[string]
 //│ ║         	^
-//│ ╟── type `int` is not an instance of `Foo2[string]`
-//│ ║  l.45: 	class Bar2: Foo2[int] & { x: int }
-//│ ║        	                 ^^^
+//│ ╟── type `Bar2` is not an instance of `Foo2[string]`
+//│ ║  l.138: 	d = b: Bar2
+//│ ║         	       ^^^^
 //│ ╟── but it flows into reference with expected type `Foo2[string]`
-//│ ║  l.161: 	d: Foo2[string]
+//│ ║  l.185: 	d: Foo2[string]
 //│ ║         	^
 //│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.161: 	d: Foo2[string]
-//│ ║         	   ^^^^^^^^^^^^
-//│ ╟── from type reference:
-//│ ║  l.161: 	d: Foo2[string]
-//│ ╙──       	        ^^^^^^
+//│ ║  l.185: 	d: Foo2[string]
+//│ ╙──       	   ^^^^^^^^^^^^
 //│ res: Foo2[string]
-//│    = Bar2 { x: 1 }
 
 
 

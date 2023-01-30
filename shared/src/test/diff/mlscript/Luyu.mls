@@ -3,7 +3,6 @@
 // Preamble
 def plus1 x = x + 1
 //│ plus1: int -> int
-//│      = [Function: plus1]
 
 class JustIntBox: { value: int }
   method Get = this.value
@@ -11,52 +10,90 @@ class JustIntBox: { value: int }
 //│ Defined JustIntBox.Get: JustIntBox -> int
 
 ib0 = JustIntBox { value = 0 }
-//│ ib0: JustIntBox & {value: 0}
-//│    = JustIntBox { value: 0 }
+//│ ib0: JustIntBox
 
 ib0.Get
 //│ res: int
-//│    = 0
 
 // Extend with some function.
 class MappableIntBox: JustIntBox
   method Map f = MappableIntBox { value = f this.value }
 //│ Defined class MappableIntBox
-//│ Defined MappableIntBox.Map: MappableIntBox -> (int -> (int & 'value)) -> (MappableIntBox with {value: 'value})
+//│ Defined MappableIntBox.Map: MappableIntBox -> (nothing -> (int & 'value)) -> (MappableIntBox with {value: 'value})
 
 mib0 = MappableIntBox { value = 0 }
-//│ mib0: MappableIntBox & {value: 0}
-//│     = MappableIntBox { value: 0 }
+//│ mib0: MappableIntBox
 
 mib0.Get
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.27: 	mib0.Get
+//│ ║        	^^^^^^^^
+//│ ╟── application of type `MappableIntBox` does not match type `?this`
+//│ ║  l.24: 	mib0 = MappableIntBox { value = 0 }
+//│ ║        	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `?this0`
+//│ ║  l.27: 	mib0.Get
+//│ ╙──      	^^^^
 //│ res: int
-//│    = 0
 
 mib0.Map
-//│ res: (int -> (int & 'value)) -> (MappableIntBox with {value: 'value})
-//│    = [Function: Map]
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.39: 	mib0.Map
+//│ ║        	^^^^^^^^
+//│ ╟── application of type `MappableIntBox` is not an instance of type `JustIntBox`
+//│ ║  l.24: 	mib0 = MappableIntBox { value = 0 }
+//│ ║        	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `JustIntBox`
+//│ ║  l.39: 	mib0.Map
+//│ ║        	^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.19: 	class MappableIntBox: JustIntBox
+//│ ╙──      	                      ^^^^^^^^^^
+//│ res: (nothing -> (int & 'value)) -> (MappableIntBox with {value: 'value})
 
 mib0.Map plus1
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.54: 	mib0.Map plus1
+//│ ║        	^^^^^^^^
+//│ ╟── application of type `MappableIntBox` is not an instance of type `JustIntBox`
+//│ ║  l.24: 	mib0 = MappableIntBox { value = 0 }
+//│ ║        	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `JustIntBox`
+//│ ║  l.54: 	mib0.Map plus1
+//│ ║        	^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.19: 	class MappableIntBox: JustIntBox
+//│ ╙──      	                      ^^^^^^^^^^
 //│ res: MappableIntBox
-//│    = MappableIntBox { value: 1 }
 
 // Naughty map...
 :e
 mib0.Map (fun _ -> "str")
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.71: 	mib0.Map (fun _ -> "str")
+//│ ║        	^^^^^^^^
+//│ ╟── application of type `MappableIntBox` is not an instance of type `JustIntBox`
+//│ ║  l.24: 	mib0 = MappableIntBox { value = 0 }
+//│ ║        	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `JustIntBox`
+//│ ║  l.71: 	mib0.Map (fun _ -> "str")
+//│ ║        	^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.19: 	class MappableIntBox: JustIntBox
+//│ ╙──      	                      ^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.45: 	mib0.Map (fun _ -> "str")
+//│ ║  l.71: 	mib0.Map (fun _ -> "str")
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── string literal of type `"str"` does not match type `?a`
-//│ ║  l.45: 	mib0.Map (fun _ -> "str")
+//│ ╟── string literal of type `string` is not an instance of type `int`
+//│ ║  l.71: 	mib0.Map (fun _ -> "str")
 //│ ║        	                   ^^^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.23: 	  method Map f = MappableIntBox { value = f this.value }
+//│ ║  l.20: 	  method Map f = MappableIntBox { value = f this.value }
 //│ ║        	                                          ^^^^^^^^^^^^
 //│ ╟── from type reference:
-//│ ║  l.8: 	class JustIntBox: { value: int }
+//│ ║  l.7: 	class JustIntBox: { value: int }
 //│ ╙──     	                           ^^^
-//│ res: error | (MappableIntBox with {value: "str"})
-//│    = MappableIntBox { value: 'str' }
+//│ res: MappableIntBox with {value: string}
 
 
 

@@ -8,30 +8,30 @@ let empty = {}
 {1}
 {{1}}
 {(1)}
-//│ res: 1
-//│ res: 1
-//│ res: 1
-//│ res: 1
-//│ res: 1
-//│ res: 1
+//│ res: int
+//│ res: int
+//│ res: int
+//│ res: int
+//│ res: int
+//│ res: int
 
 x : 1
 x: 1
 {x: 1}
 x: 1, y: 2
-//│ res: (x: 1,)
-//│ res: (x: 1,)
-//│ res: {x: 1}
-//│ res: (x: 1, y: 2,)
+//│ res: (x: int,)
+//│ res: (x: int,)
+//│ res: {x: int}
+//│ res: (x: int, y: int,)
 
 x : 1, 2, 3
 x: 1, 2, z: 3
 1, y: 2, z: 3
 x: 1, y: 2, z: 3
-//│ res: (x: 1, 2, 3,)
-//│ res: (x: 1, 2, z: 3,)
-//│ res: (1, y: 2, z: 3,)
-//│ res: (x: 1, y: 2, z: 3,)
+//│ res: (x: int, int, int,)
+//│ res: (x: int, int, z: int,)
+//│ res: (int, y: int, z: int,)
+//│ res: (x: int, y: int, z: int,)
 
 let r = {u:1,v:2}
 let r = { u:1 , v:2 }
@@ -39,12 +39,12 @@ let r = { u :1 , v :2 }
 let r = {u: 1, v: 2}
 let r = { u: 1, v: 2 }
 let r = { u: 1,v: 2 }
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: 2}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
 
 r.u + r.v
 r . u + r . v
@@ -67,17 +67,17 @@ r.w
 //│ ╟── but it flows into reference with expected type `{w: ?w}`
 //│ ║  l.59: 	empty.w
 //│ ╙──      	^^^^^
-//│ res: error
+//│ res: nothing
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.60: 	r.w
 //│ ║        	 ^^
-//│ ╟── record of type `{u: 1, v: 2}` does not have field 'w'
+//│ ╟── record of type `{u: int, v: int}` does not have field 'w'
 //│ ║  l.41: 	let r = { u: 1,v: 2 }
 //│ ║        	        ^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `{w: ?w}`
 //│ ║  l.60: 	r.w
 //│ ╙──      	^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -93,7 +93,7 @@ let rec sumHeads = x => x.head + sumHeads x.tail
 let rec ouroboros = {head: 0, tail: ouroboros, eyes: {l: 1, r: 2}}
 //│ ouroboros: 'ouroboros
 //│   where
-//│     'ouroboros :> {eyes: {l: 1, r: 2}, head: 0, tail: 'ouroboros}
+//│     'ouroboros :> {eyes: {l: int, r: int}, head: int, tail: 'ouroboros}
 
 sumHeads ouroboros
 //│ res: int
@@ -120,12 +120,12 @@ let r = {
   u: 1
   v: u + 1
 }
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: int}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
 
 :pe
 let r = {
@@ -157,9 +157,9 @@ let r = {
     y
 }
 // ^ FIXME? field punning...
-//│ r: {u: 1, v: 2}
-//│ r: {u: 1, v: 2}
-//│ r: {u: {x: 1}, v: {y: 2}}
+//│ r: {u: int, v: int}
+//│ r: {u: int, v: int}
+//│ r: {u: {x: int}, v: {y: int}}
 
 // TODO
 let r = {
@@ -170,7 +170,7 @@ let r = {
     x: 3
     y: 4
 }
-//│ r: {u: {x: 1, y: 2}, v: {x: 3, y: 4}}
+//│ r: {u: {x: int, y: int}, v: {x: int, y: int}}
 
 :w // Disallow or warn about this?
 let r = { u:
@@ -178,7 +178,7 @@ let r = { u:
 //│ ╔══[WARNING] Missing name for record field
 //│ ║  l.177: 	  1, v: 2 }
 //│ ╙──       	  ^
-//│ r: {u: {_1: 1, v: 2}}
+//│ r: {u: {_1: int, v: int}}
 
 
 // :e // used to raise: useless fields in statement position
@@ -206,9 +206,9 @@ let r = (
     x: 3
     y: 4
 )
-//│ r: (u: (x: 1, y: 2,), v: (x: 3, y: 4,),)
-//│ r: (u: (x: 1, y: 2,), v: (x: 3, y: 4,),)
-//│ r: (u: (x: 1, y: 2,), v: (x: 3, y: 4,),)
+//│ r: (u: (x: int, y: int,), v: (x: int, y: int,),)
+//│ r: (u: (x: int, y: int,), v: (x: int, y: int,),)
+//│ r: (u: (x: int, y: int,), v: (x: int, y: int,),)
 
 let r = (
   u: (
@@ -229,8 +229,8 @@ let r = (
     y: 4,
   ),
 )
-//│ r: (u: (x: 1, y: 2,), v: (x: 3, y: 4,),)
-//│ r: (u: (x: 1, y: 2,), v: (x: 3, y: 4,),)
+//│ r: (u: (x: int, y: int,), v: (x: int, y: int,),)
+//│ r: (u: (x: int, y: int,), v: (x: int, y: int,),)
 
 let r = (
   u:
@@ -240,7 +240,7 @@ let r = (
     x: 3,
     y: 4,
 )
-//│ r: (u: (x: 1, y: 2,), v: (x: 3, y: 4,),)
+//│ r: (u: (x: int, y: int,), v: (x: int, y: int,),)
 
 :pe
 let r = (
@@ -270,9 +270,9 @@ a:
       1
   }
   d: 2
-//│ res: (a: (b: (c: 1,),),)
-//│ res: (a: {b: {c: 1}, d: 2},)
-//│ res: (a: (b: {c: 1}, d: 2,),)
+//│ res: (a: (b: (c: int,),),)
+//│ res: (a: {b: {c: int}, d: int},)
+//│ res: (a: (b: {c: int}, d: int,),)
 
 // :e // used to raise: useless fields in statement position
 a:
@@ -280,7 +280,7 @@ a:
     c:
       1
   d: 2
-//│ res: (a: (b: (c: 1,), d: 2,),)
+//│ res: (a: (b: (c: int,), d: int,),)
 
 :w
 a:
@@ -295,11 +295,11 @@ a: {
 //│ ╔══[WARNING] Previous field definitions are discarded by this returned expression.
 //│ ║  l.289: 	  3
 //│ ╙──       	  ^
-//│ res: (a: 3,)
+//│ res: (a: int,)
 //│ ╔══[WARNING] Previous field definitions are discarded by this returned expression.
 //│ ║  l.293: 	  3
 //│ ╙──       	  ^
-//│ res: (a: 3,)
+//│ res: (a: int,)
 
 
 
@@ -312,8 +312,8 @@ let r =
   log x
   y: 2
   let _ = log y
-//│ r: (x: 1, y: 2,)
-//│ r: (x: 1, y: 2,)
+//│ r: (x: int, y: int,)
+//│ r: (x: int, y: int,)
 
 // TODO ignore return-position unit expressions?
 :w

@@ -29,7 +29,6 @@ type Hello = int
 
 42: Hello
 //│ res: Hello
-//│    = 42
 
 :e
 42: hello
@@ -37,7 +36,6 @@ type Hello = int
 //│ ║  l.+1: 	42: hello
 //│ ╙──      	    ^^^^^
 //│ res: error
-//│    = 42
 
 
 
@@ -52,8 +50,7 @@ aa = { a = 1; a = "oops" }
 //│ ╟── Declared at
 //│ ║  l.+1: 	aa = { a = 1; a = "oops" }
 //│ ╙──      	              ^
-//│ aa: {a: 1, a: "oops"}
-//│   = { a: 'oops' }
+//│ aa: {a: int, a: string}
 
 
 
@@ -72,14 +69,13 @@ aa: { a: int; a: string }
 //│ ╔══[ERROR] Type mismatch in type ascription:
 //│ ║  l.+1: 	aa: { a: int; a: string }
 //│ ║        	^^
-//│ ╟── integer literal of type `1` is not an instance of `string`
-//│ ║  l.45: 	aa = { a = 1; a = "oops" }
+//│ ╟── integer literal of type `int` is not an instance of `string`
+//│ ║  l.43: 	aa = { a = 1; a = "oops" }
 //│ ║        	           ^
 //│ ╟── Note: constraint arises from type reference:
 //│ ║  l.+1: 	aa: { a: int; a: string }
 //│ ╙──      	                 ^^^^^^
 //│ res: {a: int, a: string}
-//│    = { a: 'oops' }
 
 
 
@@ -88,12 +84,10 @@ aa: { a: int; a: string }
 
 
 aa.a
-//│ res: 1
-//│    = 'oops'
+//│ res: int
 
 aa: { a: 'a }
-//│ res: {a: 1}
-//│    = { a: 'oops' }
+//│ res: {a: int}
 
 
 
@@ -109,19 +103,15 @@ type Bad = { x: 'a }
 // :d
 {x = 123}: Bad
 //│ res: Bad
-//│    = { x: 123 }
 
 // Note: we should get {x: 123 | "ah"} here; but there seems to be a TV problem
 // :d
 {x = "ah"}: Bad
 //│ res: Bad
-//│    = { x: 'ah' }
 
 :re
 error: Bad
 //│ res: Bad
-//│ Runtime error:
-//│   Error: unexpected runtime error
 
 type BadRec = { x: 'a; y: BadRec }
 //│ Defined type alias BadRec
@@ -129,41 +119,34 @@ type BadRec = { x: 'a; y: BadRec }
 :re
 (fun (x: BadRec) -> ()) (error: BadRec)
 //│ res: ()
-//│ Runtime error:
-//│   Error: unexpected runtime error
 
 :re
 error: BadRec
 //│ res: BadRec
-//│ Runtime error:
-//│   Error: unexpected runtime error
 
 def someRec: { y: 'a } as 'a
 //│ someRec: 'a
 //│   where
 //│     'a :> {y: 'a}
-//│        = <missing implementation>
 
 :e
 someRec: BadRec
 //│ ╔══[ERROR] Type mismatch in type ascription:
 //│ ║  l.+1: 	someRec: BadRec
 //│ ║        	^^^^^^^
-//│ ╟── type `{y: ?a}` is not an instance of `BadRec`
-//│ ║  l.141: 	def someRec: { y: 'a } as 'a
+//│ ╟── type `{y: ?a}` does not have field 'x'
+//│ ║  l.127: 	def someRec: { y: 'a } as 'a
 //│ ║         	             ^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `BadRec`
+//│ ╟── but it flows into reference with expected type `{x: ?a0, y: BadRec}`
 //│ ║  l.+1: 	someRec: BadRec
 //│ ║        	^^^^^^^
 //│ ╟── Note: constraint arises from type reference:
 //│ ║  l.+1: 	someRec: BadRec
 //│ ║        	         ^^^^^^
 //│ ╟── from record type:
-//│ ║  l.126: 	type BadRec = { x: 'a; y: BadRec }
+//│ ║  l.116: 	type BadRec = { x: 'a; y: BadRec }
 //│ ╙──       	              ^^^^^^^^^^^^^^^^^^^^
 //│ res: BadRec
-//│    = <no result>
-//│      someRec is not implemented
 
 
 
@@ -174,12 +157,9 @@ def someRec: { x: 'a; y: 'a } as 'a
 //│ someRec: 'a
 //│   where
 //│     'a :> {x: 'a, y: 'a}
-//│        = <missing implementation>
 
 someRec: BadRec
 //│ res: BadRec
-//│    = <no result>
-//│      someRec is not implemented
 
 
 

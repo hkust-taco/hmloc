@@ -37,33 +37,29 @@ Nil{}
 //│ ╟── record literal of type `anything` is not a 1-element tuple
 //│ ║  l.33: 	Nil{}
 //│ ╙──      	   ^^
-//│ res: error | Nil & {size: nothing}
-//│    = Nil { size: undefined }
+//│ res: Nil & {size: nothing}
 
 
 
 def Nil = Nil { size = 0 }
-//│ Nil: Nil & {size: 0}
-//│    = [Function: Nil1]
+//│ Nil: Nil
 
 :e
 :re
 Cons 1 Nil
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.51: 	Cons 1 Nil
+//│ ║  l.49: 	Cons 1 Nil
 //│ ║        	^^^^^^
-//│ ╟── integer literal of type `1` is not a 1-element tuple
-//│ ║  l.51: 	Cons 1 Nil
+//│ ╟── integer literal of type `int` is not a 1-element tuple
+//│ ║  l.49: 	Cons 1 Nil
 //│ ╙──      	     ^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.51: 	Cons 1 Nil
+//│ ║  l.49: 	Cons 1 Nil
 //│ ║        	^^^^^^^^^^
 //│ ╟── application of type `Cons[?A] with {Cons#A = ?A, head: ?head, size: ?size, tail: ?tail}` is not a function
-//│ ║  l.51: 	Cons 1 Nil
+//│ ║  l.49: 	Cons 1 Nil
 //│ ╙──      	^^^^^^
-//│ res: error
-//│ Runtime error:
-//│   TypeError: (intermediate value) is not a function
+//│ res: nothing
 
 
 
@@ -71,68 +67,106 @@ Cons 1 Nil
 
 Cons
 //│ res: {head: 'A & 'head, size: int & 'size, tail: List['A] & 'tail} -> (Cons['A] with {head: 'head, size: 'size, tail: 'tail})
-//│    = [Function: res]
 
 // In the old inheritance semantics, this used to be required:
 def Cons_old head tail =
   Cons (ListBase (Seq { size = succ tail.size }) with { head; tail })
 //│ Cons_old: ('head & 'A) -> (List['A] & {size: int} & 'tail) -> (Cons['A] with {head: 'head, tail: 'tail})
-//│         = [Function: Cons_old]
 
 def Cons head tail =
   Cons { size = succ tail.size; head; tail }
 //│ Cons: ('head & 'A) -> (List['A] & {size: int} & 'tail) -> (Cons['A] with {head: 'head, tail: 'tail})
-//│     = [Function: Cons1]
 
 // * Works thanks to variance analysis
 Nil: ListBase[anything]
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.81: 	Nil: ListBase[anything]
+//│ ║        	^^^
+//│ ╟── application of type `Nil` does not match type `nothing`
+//│ ║  l.44: 	def Nil = Nil { size = 0 }
+//│ ║        	          ^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `nothing`
+//│ ║  l.81: 	Nil: ListBase[anything]
+//│ ║        	^^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.81: 	Nil: ListBase[anything]
+//│ ╙──      	     ^^^^^^^^^^^^^^^^^^
 //│ res: ListBase[?]
-//│    = Nil { size: 0 }
 
 def c = Cons 1 Nil
-//│ c: Cons[1] with {tail: Nil & {size: 0}}
-//│  = [Function: c]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.96: 	def c = Cons 1 Nil
+//│ ║        	        ^^^^^^^^^^
+//│ ╟── application of type `Nil` does not match type `Cons[?A] | Nil`
+//│ ║  l.44: 	def Nil = Nil { size = 0 }
+//│ ║        	          ^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Cons[?A0] | Nil`
+//│ ║  l.96: 	def c = Cons 1 Nil
+//│ ║        	               ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.77: 	  Cons { size = succ tail.size; head; tail }
+//│ ║        	                                      ^^^^
+//│ ╟── from union type:
+//│ ║  l.27: 	type List[A] = Nil | Cons[A]
+//│ ╙──      	               ^^^^^^^^^^^^^
+//│ c: Cons[int] with {tail: Nil}
 
 c: ListBase[int]
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.114: 	c: ListBase[int]
+//│ ║         	^
+//│ ╟── application of type `Cons[?A] & {Cons#A = ?A, head: ?head, tail: ?tail}` does not match type `nothing`
+//│ ║  l.77: 	  Cons { size = succ tail.size; head; tail }
+//│ ║        	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `nothing`
+//│ ║  l.114: 	c: ListBase[int]
+//│ ║         	^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.114: 	c: ListBase[int]
+//│ ╙──       	   ^^^^^^^^^^^^^
 //│ res: ListBase[?]
-//│    = Cons { size: 1, head: 1, tail: Nil { size: 0 } }
 
 c.head
-//│ res: 1
-//│    = 1
+//│ res: int
 
 c.tail
-//│ res: Nil & {size: 0}
-//│    = Nil { size: 0 }
+//│ res: Nil
 
 c.size
 //│ res: int
-//│    = 1
 
 def d = Cons 2 c
-//│ d: Cons[1 | 2] with {head: 2, tail: Cons[1] with {tail: Nil & {size: 0}}}
-//│  = [Function: d]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.138: 	def d = Cons 2 c
+//│ ║         	        ^^^^^^^^
+//│ ╟── application of type `Cons[?A] & {Cons#A = ?A, head: ?head, tail: ?tail}` does not match type `Cons[?A0] | Nil`
+//│ ║  l.77: 	  Cons { size = succ tail.size; head; tail }
+//│ ║        	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Cons[?A1] | Nil`
+//│ ║  l.138: 	def d = Cons 2 c
+//│ ║         	               ^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.77: 	  Cons { size = succ tail.size; head; tail }
+//│ ║        	                                      ^^^^
+//│ ╟── from union type:
+//│ ║  l.27: 	type List[A] = Nil | Cons[A]
+//│ ╙──      	               ^^^^^^^^^^^^^
+//│ d: Cons[int] with {tail: Cons[int] with {tail: Nil}}
 
 d.head
-//│ res: 2
-//│    = 2
+//│ res: int
 
 d.size
 //│ res: int
-//│    = 2
 
 d.tail
-//│ res: Cons[1] with {tail: Nil & {size: 0}}
-//│    = Cons { size: 1, head: 1, tail: Nil { size: 0 } }
+//│ res: Cons[int] with {tail: Nil}
 
 d.tail.size
 //│ res: int
-//│    = 1
 
 d.tail.head
 d.tail.tail
-//│ res: 1
-//│    = 1
-//│ res: Nil & {size: 0}
-//│    = Nil { size: 0 }
+//│ res: int
+//│ res: Nil
 

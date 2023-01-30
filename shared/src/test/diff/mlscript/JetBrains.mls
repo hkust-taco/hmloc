@@ -13,20 +13,17 @@ rec def eval x = case x of {
 //│ eval: 'a -> int
 //│   where
 //│     'a <: (Add with {lhs: 'a, rhs: 'a}) | Lit
-//│     = [Function: eval]
 
 def eval eval x = case x of {
   Lit -> x.val
   | Add -> eval eval x.lhs + eval eval x.rhs
   }
 //│ eval: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'val})) -> (int | 'val)
-//│     = [Function: eval1]
 
 eval eval
 //│ res: ((Add with {lhs: 'a, rhs: 'a}) | (Lit with {val: 'val})) -> (int | 'val)
 //│   where
 //│     'a <: (Add with {lhs: 'a, rhs: 'a}) | Lit
-//│    = [Function (anonymous)]
 
 class Neg: Expr & { underlying: Expr }
 //│ Defined class Neg
@@ -35,22 +32,36 @@ def evalN evalN x = case x of {
   Neg -> 0 - (evalN evalN x.underlying)
   | _ -> eval evalN x
   }
-//│ evalN: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'val}) | (Neg with {underlying: 'rhs})) -> (int | 'val)
-//│      = [Function: evalN]
+//│ evalN: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'b}) | (Neg with {underlying: 'rhs})) -> (int | 'b)
 
 evalN evalN
-//│ res: ((Add with {lhs: 'a, rhs: 'a}) | (Lit with {val: 'val}) | (Neg with {underlying: 'a})) -> (int | 'val)
+//│ res: ((Add with {lhs: 'a, rhs: 'a}) | (Lit with {val: 'b}) | (Neg with {underlying: 'a})) -> (int | 'b)
 //│   where
 //│     'a <: (Add with {lhs: 'a, rhs: 'a}) | Lit | (Neg with {underlying: 'a})
-//│    = [Function (anonymous)]
 
 e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
-//│ e: Add with {lhs: Lit & {val: 1}, rhs: Neg with {underlying: Lit & {val: 2}}}
-//│  = Add { lhs: Lit { val: 1 }, rhs: Neg { underlying: Lit { val: 2 } } }
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ║        	                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Lit` is not an instance of type `Expr`
+//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ║        	                                                   ^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.28: 	class Neg: Expr & { underlying: Expr }
+//│ ╙──      	                                ^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Lit` is not an instance of type `Expr`
+//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ║        	              ^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.4: 	class Add: Expr & { lhs: Expr; rhs: Expr }
+//│ ╙──     	                         ^^^^
+//│ e: Add with {lhs: Lit, rhs: Neg with {underlying: Lit}}
 
 evalN evalN e
 //│ res: int
-//│    = -1
 
 
 
@@ -68,7 +79,7 @@ def evalN2 evalN2 x = case x of {
   Neg -> 0 - (evalN2 evalN2 x.underlying)
   | _ -> eval eval x
   }
-//│ evalN2: ('a -> 'underlying -> int & 'a) -> ((Add with {lhs: 'b, rhs: 'b}) | (Lit with {val: 'val}) | (Neg with {underlying: 'underlying})) -> (int | 'val)
+//│ evalN2: ('a -> 'underlying -> int & 'a) -> ((Add with {lhs: 'b, rhs: 'b}) | (Lit with {val: 'c}) | (Neg with {underlying: 'underlying})) -> (int | 'c)
 //│   where
 //│     'b <: (Add with {lhs: 'b, rhs: 'b}) | Lit
 
@@ -76,19 +87,19 @@ evalN2 evalN2 e
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	evalN2 evalN2 e
 //│ ║        	^^^^^^^^^^^^^^^
-//│ ╟── application of type `Neg & {underlying: ?underlying}` is not a 1-element tuple
-//│ ║  l.47: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ╟── application of type `Neg & {underlying: ?underlying}` does not match type `Add & ?a | Lit & ?b`
+//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
 //│ ║        	                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ╟── but it flows into reference with expected type `Add & ?c | Lit & ?d`
 //│ ║  l.+1: 	evalN2 evalN2 e
 //│ ║        	              ^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.67: 	def evalN2 evalN2 x = case x of {
+//│ ║  l.78: 	def evalN2 evalN2 x = case x of {
 //│ ║        	                           ^
 //│ ╟── from reference:
-//│ ║  l.18: 	def eval eval x = case x of {
+//│ ║  l.17: 	def eval eval x = case x of {
 //│ ╙──      	                       ^
-//│ res: error | int
+//│ res: int
 
 
 
@@ -102,19 +113,19 @@ def evalN3 evalN3 x = case x of {
 //│ ╔══[ERROR] Type mismatch in operator application:
 //│ ║  l.+2: 	  Neg -> 0 - (evalN2 x.underlying)
 //│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> (?b | ?c)` is not a 1-element tuple
-//│ ║  l.67: 	def evalN2 evalN2 x = case x of {
+//│ ╟── function of type `?a -> ?b` is not an instance of type `int`
+//│ ║  l.78: 	def evalN2 evalN2 x = case x of {
 //│ ║        	                  ^^^^^^^^^^^^^^^
-//│ ║  l.68: 	  Neg -> 0 - (evalN2 evalN2 x.underlying)
+//│ ║  l.79: 	  Neg -> 0 - (evalN2 evalN2 x.underlying)
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.69: 	  | _ -> eval eval x
+//│ ║  l.80: 	  | _ -> eval eval x
 //│ ║        	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.70: 	  }
+//│ ║  l.81: 	  }
 //│ ║        	^^^
-//│ ╟── but it flows into application with expected type `(int,)`
+//│ ╟── but it flows into application with expected type `int`
 //│ ║  l.+2: 	  Neg -> 0 - (evalN2 x.underlying)
 //│ ╙──      	              ^^^^^^^^^^^^^^^^^^^
-//│ evalN3: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'val}) | (Neg with {underlying: 'b -> nothing -> int & 'b})) -> (error | int | 'val)
+//│ evalN3: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'b}) | (Neg with {underlying: 'c -> nothing -> int & 'c})) -> (int | 'b)
 
 
 
@@ -126,43 +137,43 @@ def evalN3 evalN3 x = case x of {
   Neg -> 0 - (evalN3 x.underlying)
   | _ -> eval evalN3 x
   }
-//│ evalN3: ('underlying -> nothing & 'underlying) -> ((Add with {lhs: anything, rhs: anything}) | (Lit with {val: 'val}) | (Neg with {underlying: 'underlying})) -> (int | 'val)
+//│ evalN3: ('underlying -> nothing & 'underlying) -> ((Add with {lhs: anything, rhs: anything}) | (Lit with {val: 'a}) | (Neg with {underlying: 'underlying})) -> (int | 'a)
 
 evalN3 evalN3 e
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	evalN3 evalN3 e
 //│ ║        	^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> ?b` does not match type `?c`
-//│ ║  l.125: 	def evalN3 evalN3 x = case x of {
+//│ ╟── function of type `?a -> ?b` is not an instance of type `int`
+//│ ║  l.136: 	def evalN3 evalN3 x = case x of {
 //│ ║         	                  ^^^^^^^^^^^^^^^
-//│ ║  l.126: 	  Neg -> 0 - (evalN3 x.underlying)
+//│ ║  l.137: 	  Neg -> 0 - (evalN3 x.underlying)
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.127: 	  | _ -> eval evalN3 x
+//│ ║  l.138: 	  | _ -> eval evalN3 x
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.128: 	  }
+//│ ║  l.139: 	  }
 //│ ║         	^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.126: 	  Neg -> 0 - (evalN3 x.underlying)
+//│ ║  l.137: 	  Neg -> 0 - (evalN3 x.underlying)
 //│ ║         	              ^^^^^^^^^^^^^^^^^^^
 //│ ╟── from argument:
-//│ ║  l.126: 	  Neg -> 0 - (evalN3 x.underlying)
+//│ ║  l.137: 	  Neg -> 0 - (evalN3 x.underlying)
 //│ ╙──       	             ^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	evalN3 evalN3 e
 //│ ║        	^^^^^^^^^^^^^^^
-//│ ╟── application of type `Lit & {val: ?val}` is not a 1-element tuple
-//│ ║  l.47: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ╟── application of type `Lit` is not a function
+//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
 //│ ║        	                                                   ^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `(?a,)`
+//│ ╟── but it flows into reference with expected type `?a -> ?b`
 //│ ║  l.+1: 	evalN3 evalN3 e
 //│ ║        	              ^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.125: 	def evalN3 evalN3 x = case x of {
+//│ ║  l.136: 	def evalN3 evalN3 x = case x of {
 //│ ║         	                           ^
 //│ ╟── from reference:
-//│ ║  l.20: 	  | Add -> eval eval x.lhs + eval eval x.rhs
+//│ ║  l.19: 	  | Add -> eval eval x.lhs + eval eval x.rhs
 //│ ╙──      	                             ^^^^
-//│ res: error | int
+//│ res: int
 
 
 

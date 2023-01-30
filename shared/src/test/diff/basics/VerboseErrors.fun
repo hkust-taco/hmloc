@@ -16,7 +16,7 @@ h / mkArg false
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.15: 	h / mkArg false
 //│ ║        	^^^^^^^^^^^^^^^
-//│ ╟── reference of type `false` does not match type `?prop`
+//│ ╟── reference of type `false` is not an instance of type `int`
 //│ ║  l.15: 	h / mkArg false
 //│ ║        	          ^^^^^
 //│ ╟── Note: constraint arises from field selection:
@@ -25,7 +25,7 @@ h / mkArg false
 //│ ╟── from argument:
 //│ ║  l.7: 	  succ / f y
 //│ ╙──     	         ^^^
-//│ res: error | int
+//│ res: int
 
 
 
@@ -37,7 +37,7 @@ h / mkArg false
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.36: 	(x => succ x) false
 //│ ║        	^^^^^^^^^^^^^^^^^^^
-//│ ╟── reference of type `false` does not match type `?a`
+//│ ╟── reference of type `false` is not an instance of type `int`
 //│ ║  l.36: 	(x => succ x) false
 //│ ║        	              ^^^^^
 //│ ╟── Note: constraint arises from variable:
@@ -46,7 +46,7 @@ h / mkArg false
 //│ ╟── from argument:
 //│ ║  l.36: 	(x => succ x) false
 //│ ╙──      	           ^
-//│ res: error | int
+//│ res: int
 
 
 
@@ -73,7 +73,7 @@ test arg2
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.72: 	test arg2
 //│ ║        	^^^^^^^^^
-//│ ╟── application of type `bool` does not match type `?prop`
+//│ ╟── application of type `bool` is not an instance of type `int`
 //│ ║  l.59: 	let arg = {prop: not true}
 //│ ║        	                 ^^^^^^^^
 //│ ╟── Note: constraint arises from field selection:
@@ -82,7 +82,7 @@ test arg2
 //│ ╟── from argument:
 //│ ║  l.62: 	  succ / f y.fld
 //│ ╙──      	         ^^^^^^^
-//│ res: 'a -> (int | 'a) | error
+//│ res: 'a -> (int | 'a)
 
 
 

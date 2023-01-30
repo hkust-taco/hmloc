@@ -8,79 +8,75 @@ type List[A] = Nil | Cons[A]
 
 def originalCons = Cons  // Note: type still seems over-complicated because we push 'b inside the union, killing a hash-consing opportunity at the outer level...
 //│ originalCons: {head: 'head & 'A, tail: List['A] & 'tail} -> (Cons['A] with {head: 'head, tail: 'tail})
-//│             = [Function: originalCons]
 
 def Nil = Nil {}
 //│ Nil: Nil
-//│    = [Function: Nil1]
 
 def Cons head tail = Cons { head; tail }
 //│ Cons: ('head & 'A) -> (List['A] & 'tail) -> (Cons['A] with {head: 'head, tail: 'tail})
-//│     = [Function: Cons1]
 
 
 Cons 2
-//│ res: (List['A] & 'tail) -> (Cons[2 | 'A] with {head: 2, tail: 'tail})
-//│    = [Function (anonymous)]
+//│ res: (List['A] & 'tail) -> (Cons['A | int] with {head: int, tail: 'tail})
 
 def c = Cons 2 Nil
-//│ c: Cons[2] with {tail: Nil}
-//│  = [Function: c]
+//│ c: Cons[int] with {tail: Nil}
 
 def d = Cons 1 c
-//│ d: Cons[1 | 2] with {head: 1, tail: Cons[2] with {tail: Nil}}
-//│  = [Function: d]
+//│ d: Cons[int] with {tail: Cons[int] with {tail: Nil}}
 
 d.head
-//│ res: 1
-//│    = 1
+//│ res: int
 
 res: 1
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.31: 	res: 1
+//│ ║        	^^^
+//│ ╟── integer literal of type `int` does not match type `1`
+//│ ║  l.25: 	def d = Cons 1 c
+//│ ║        	             ^
+//│ ╟── but it flows into reference with expected type `1`
+//│ ║  l.31: 	res: 1
+//│ ║        	^^^
+//│ ╟── Note: constraint arises from literal type:
+//│ ║  l.31: 	res: 1
+//│ ╙──      	     ^
 //│ res: 1
-//│    = 1
 
 d.tail
-//│ res: Cons[2] with {tail: Nil}
-//│    = Cons { head: 2, tail: Nil {} }
+//│ res: Cons[int] with {tail: Nil}
 
 Cons 1 res
-//│ res: Cons[1 | 2] with {head: 1, tail: Cons[2] with {tail: Nil}}
-//│    = Cons { head: 1, tail: Cons { head: 2, tail: Nil {} } }
+//│ res: Cons[int] with {tail: Cons[int] with {tail: Nil}}
 
 res.tail
-//│ res: Cons[2] with {tail: Nil}
-//│    = Cons { head: 2, tail: Nil {} }
+//│ res: Cons[int] with {tail: Nil}
 
 Cons 1 (Cons 2 Nil)
-//│ res: Cons[1 | 2] with {head: 1, tail: Cons[2] with {tail: Nil}}
-//│    = Cons { head: 1, tail: Cons { head: 2, tail: Nil {} } }
+//│ res: Cons[int] with {tail: Cons[int] with {tail: Nil}}
 
 res.tail
-//│ res: Cons[2] with {tail: Nil}
-//│    = Cons { head: 2, tail: Nil {} }
+//│ res: Cons[int] with {tail: Nil}
 
 // We can now access the tail's tail, thanks to the refined type
 res.tail
 //│ res: Nil
-//│    = Nil {}
 
 :e
 res.tail.head
 //│ ╔══[ERROR] Type mismatch in field selection:
-//│ ║  l.68: 	res.tail.head
+//│ ║  l.66: 	res.tail.head
 //│ ║        	^^^^^^^^
 //│ ╟── application of type `Nil` does not have field 'tail'
-//│ ║  l.13: 	def Nil = Nil {}
+//│ ║  l.12: 	def Nil = Nil {}
 //│ ║        	          ^^^^^^
 //│ ╟── but it flows into reference with expected type `{tail: ?tail}`
-//│ ║  l.68: 	res.tail.head
+//│ ║  l.66: 	res.tail.head
 //│ ║        	^^^
 //│ ╟── Note: class Nil is defined at:
 //│ ║  l.2: 	class Nil: {}
 //│ ╙──     	      ^^^
-//│ res: error
-//│ Runtime error:
-//│   TypeError: Cannot read properties of undefined (reading 'head')
+//│ res: nothing
 
 
 
@@ -91,40 +87,35 @@ res.tail.head
 // This used to yield a more precise Cons constructor, but it's no longer necessary in the new class semantics
 def Cons head tail = originalCons { head; tail } with { head; tail }
 //│ Cons: ('A & 'head) -> (List['A] & 'tail) -> (Cons['A] & {head: 'head, tail: 'tail})
-//│     = [Function: Cons2]
 
 
 Cons 2
-//│ res: (List['A] & 'tail) -> (Cons[2 | 'A] with {head: 2, tail: 'tail})
-//│    = [Function (anonymous)]
+//│ res: (List['A] & 'tail) -> (Cons['A | int] with {head: int, tail: 'tail})
 
 Cons 2 Nil
-//│ res: Cons[2] with {tail: Nil}
-//│    = Cons { head: 2, tail: Nil {} }
+//│ res: Cons[int] with {tail: Nil}
 
 res.head
-//│ res: 2
-//│    = 2
+//│ res: int
 
 :e
 Cons 1 res
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.110: 	Cons 1 res
+//│ ║  l.102: 	Cons 1 res
 //│ ║         	^^^^^^^^^^
-//│ ╟── integer literal of type `2` is not a 1-element tuple
-//│ ║  l.101: 	Cons 2 Nil
-//│ ║         	     ^
-//│ ╟── but it flows into reference with expected type `(?a,)`
-//│ ║  l.110: 	Cons 1 res
+//│ ╟── integer literal of type `int` does not match type `Cons[?A] | Nil`
+//│ ║  l.95: 	Cons 2 Nil
+//│ ║        	     ^
+//│ ╟── but it flows into reference with expected type `Cons[?A0] | Nil`
+//│ ║  l.102: 	Cons 1 res
 //│ ║         	       ^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.92: 	def Cons head tail = originalCons { head; tail } with { head; tail }
+//│ ║  l.88: 	def Cons head tail = originalCons { head; tail } with { head; tail }
 //│ ║        	                                          ^^^^
 //│ ╟── from union type:
 //│ ║  l.4: 	type List[A] = Nil | Cons[A]
 //│ ╙──     	               ^^^^^^^^^^^^^
-//│ res: (Cons[1] with {tail: 2}) | error
-//│    = Cons { head: 1, tail: 2 }
+//│ res: Cons[int] with {tail: int}
 
 
 
@@ -141,24 +132,19 @@ Cons 1 res
 // But then I reverted to the use of simple field-hiding types, as they are simpler!
 // 
 Cons 1 (Cons 2 Nil)
-//│ res: Cons[1 | 2] with {head: 1, tail: Cons[2] with {tail: Nil}}
-//│    = Cons { head: 1, tail: Cons { head: 2, tail: Nil {} } }
+//│ res: Cons[int] with {tail: Cons[int] with {tail: Nil}}
 
 { a = res.head; b = res.tail.head; c = res.tail.tail }
-//│ res: {a: 1, b: 2, c: Nil}
-//│    = { a: 1, b: 2, c: Nil {} }
+//│ res: {a: int, b: int, c: Nil}
 
 Cons 2 Nil
-//│ res: Cons[2] with {tail: Nil}
-//│    = Cons { head: 2, tail: Nil {} }
+//│ res: Cons[int] with {tail: Nil}
 
 Cons 1 (id res)
-//│ res: Cons[1 | 2] with {head: 1, tail: Cons[2] with {tail: Nil}}
-//│    = Cons { head: 1, tail: Cons { head: 2, tail: Nil {} } }
+//│ res: Cons[int] with {tail: Cons[int] with {tail: Nil}}
 
 { a = res.head; b = res.tail.head; c = res.tail.tail }
-//│ res: {a: 1, b: 2, c: Nil}
-//│    = { a: 1, b: 2, c: Nil {} }
+//│ res: {a: int, b: int, c: Nil}
 
 
 
@@ -168,45 +154,33 @@ rec def filter p ls = case ls of
   }
 //│ filter: ('head -> bool) -> 'a -> 'b
 //│   where
-//│     'b :> (Cons['head] with {tail: 'b}) | Nil
+//│     'b :> Nil | Cons['head]\head\tail & {tail: 'b}\head\tail & {head: 'head, tail: 'b}
 //│     'a <: (Cons[?] with {head: 'head, tail: 'a}) | Nil
-//│       = [Function: filter]
 
 
 
 
 def Cons head = originalCons { head=0; tail=Nil } with { head }
-//│ Cons: 'a -> (Cons[0] with {head: 'a, tail: Nil})
-//│     = [Function: Cons3]
+//│ Cons: 'a -> (Cons[int] with {head: 'a, tail: Nil})
 
 Cons 1
-//│ res: Cons[0] with {head: 1, tail: Nil}
-//│    = Cons { head: 1, tail: Nil {} }
+//│ res: Cons[int] with {tail: Nil}
 
 res.head
-//│ res: 1
-//│    = 1
+//│ res: int
 
 def c = Cons 1
-//│ c: Cons[0] with {head: 1, tail: Nil}
-//│  = [Function: c1]
+//│ c: Cons[int] with {tail: Nil}
 
 c.head
-//│ res: 1
-//│    = 1
+//│ res: int
 
 def c: 'a -> List['b] -> List['a | 'b]
 c 1 (c 2 Nil)
 //│ c: 'a -> List['a] -> List['a]
-//│  = <missing implementation>
-//│ res: List[1 | 2]
-//│    = <no result>
-//│      c is not implemented
+//│ res: List[int]
 
 def c: 'a -> ('l & List['b]) -> (Cons[anything] & { head: 'a; tail: 'l })
 c 1 (c 2 Nil)
 //│ c: 'a -> (List[?] & 'l) -> (Cons[?] with {head: 'a, tail: 'l})
-//│  = <missing implementation>
-//│ res: Cons[?] with {head: 1, tail: Cons[?] with {head: 2, tail: Nil}}
-//│    = <no result>
-//│      c is not implemented
+//│ res: Cons[?] with {head: int, tail: Cons[?] with {head: int, tail: Nil}}

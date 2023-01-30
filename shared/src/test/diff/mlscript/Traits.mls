@@ -7,22 +7,20 @@ class C: { x: 0 | 1 }
 
 
 A { x = 1 }
-//│ res: {x: 1} & #A
-//│    = { x: 1 }
+//│ res: {x: int} & #A
 
 :e
 A {}
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.14: 	A {}
+//│ ║  l.13: 	A {}
 //│ ║        	^^^^
-//│ ╟── record literal of type `anything` is not a 1-element tuple
-//│ ║  l.14: 	A {}
+//│ ╟── record literal of type `anything` does not have field 'x'
+//│ ║  l.13: 	A {}
 //│ ║        	  ^^
 //│ ╟── Note: constraint arises from record type:
 //│ ║  l.1: 	trait A: { x: int }
 //│ ╙──     	         ^^^^^^^^^^
-//│ res: error | #A
-//│    = {}
+//│ res: #A
 
 
 
@@ -33,69 +31,100 @@ class D: C & A & B
 
 D
 //│ res: {x: 'x & (0 | 1), y: string & 'y} -> (D with {x: 'x, y: 'y})
-//│    = [Function: res]
 
 :re
 error: A & B
 //│ res: A & B
-//│ Runtime error:
-//│   Error: unexpected runtime error
 
 :e
 def dv = D{}
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.45: 	def dv = D{}
+//│ ║  l.40: 	def dv = D{}
 //│ ║        	         ^^^
 //│ ╟── record literal of type `anything` is not a 1-element tuple
-//│ ║  l.45: 	def dv = D{}
+//│ ║  l.40: 	def dv = D{}
 //│ ╙──      	          ^^
-//│ dv: D & {x: nothing, y: nothing} | error
-//│   = [Function: dv]
+//│ dv: D & {x: nothing, y: nothing}
 
 
 
 def dv = D { x = 0; y = "hello" }
-//│ dv: D & {x: 0, y: "hello"}
-//│   = [Function: dv1]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.51: 	def dv = D { x = 0; y = "hello" }
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` does not match type `0 | 1`
+//│ ║  l.51: 	def dv = D { x = 0; y = "hello" }
+//│ ║        	                 ^
+//│ ╟── Note: constraint arises from union type:
+//│ ║  l.3: 	class C: { x: 0 | 1 }
+//│ ╙──     	              ^^^^^
+//│ dv: D
 
 :e
 dv: nothing
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.62: 	dv: nothing
+//│ ║  l.64: 	dv: nothing
 //│ ║        	^^
-//│ ╟── application of type `D with {x: ?x, y: ?y}` is not an instance of `nothing`
-//│ ║  l.57: 	def dv = D { x = 0; y = "hello" }
+//│ ╟── application of type `D` does not match type `nothing`
+//│ ║  l.51: 	def dv = D { x = 0; y = "hello" }
 //│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `nothing`
-//│ ║  l.62: 	dv: nothing
+//│ ║  l.64: 	dv: nothing
 //│ ║        	^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.62: 	dv: nothing
+//│ ║  l.64: 	dv: nothing
 //│ ╙──      	    ^^^^^^^
 //│ res: nothing
-//│    = D { x: 0, y: 'hello' }
 
 
 
 
 
 dv: A & B
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.83: 	dv: A & B
+//│ ║        	^^
+//│ ╟── application of type `D` is not an instance of type `A`
+//│ ║  l.51: 	def dv = D { x = 0; y = "hello" }
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `#A`
+//│ ║  l.83: 	dv: A & B
+//│ ║        	^^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.83: 	dv: A & B
+//│ ║        	    ^^^^^
+//│ ╟── from type reference:
+//│ ║  l.83: 	dv: A & B
+//│ ╙──      	    ^
 //│ res: A & B
-//│    = D { x: 0, y: 'hello' }
 
 :e
 dv: A & B: nothing
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.87: 	dv: A & B: nothing
-//│ ║        	^^
-//│ ╟── type `A & B` is not an instance of `nothing`
-//│ ║  l.87: 	dv: A & B: nothing
-//│ ║        	    ^^^^^
+//│ ║  l.102: 	dv: A & B: nothing
+//│ ║         	^^
+//│ ╟── application of type `D` is not an instance of type `A`
+//│ ║  l.51: 	def dv = D { x = 0; y = "hello" }
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `#A`
+//│ ║  l.102: 	dv: A & B: nothing
+//│ ║         	^^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.102: 	dv: A & B: nothing
+//│ ║         	    ^^^^^
+//│ ╟── from type reference:
+//│ ║  l.102: 	dv: A & B: nothing
+//│ ╙──       	    ^
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.102: 	dv: A & B: nothing
+//│ ║         	^^
+//│ ╟── type `A & B` does not match type `nothing`
+//│ ║  l.102: 	dv: A & B: nothing
+//│ ║         	    ^^^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.87: 	dv: A & B: nothing
-//│ ╙──      	           ^^^^^^^
+//│ ║  l.102: 	dv: A & B: nothing
+//│ ╙──       	           ^^^^^^^
 //│ res: nothing
-//│    = D { x: 0, y: 'hello' }
 
 
 
@@ -110,22 +139,40 @@ class E: Indirect
 :e
 E{}
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.111: 	E{}
+//│ ║  l.140: 	E{}
 //│ ║         	^^^
 //│ ╟── record literal of type `anything` is not a 1-element tuple
-//│ ║  l.111: 	E{}
+//│ ║  l.140: 	E{}
 //│ ╙──       	 ^^
-//│ res: E & {x: nothing} | error
-//│    = E {}
+//│ res: E & {x: nothing}
 
 
 
 def ev = E { x = 1 }
 ev: C
-//│ ev: E & {x: 1}
-//│   = [Function: ev]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.151: 	def ev = E { x = 1 }
+//│ ║         	         ^^^^^^^^^^^
+//│ ╟── integer literal of type `int` does not match type `0 | 1`
+//│ ║  l.151: 	def ev = E { x = 1 }
+//│ ║         	                 ^
+//│ ╟── Note: constraint arises from union type:
+//│ ║  l.3: 	class C: { x: 0 | 1 }
+//│ ╙──     	              ^^^^^
+//│ ev: E
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.152: 	ev: C
+//│ ║         	^^
+//│ ╟── application of type `E` does not match type `C`
+//│ ║  l.151: 	def ev = E { x = 1 }
+//│ ║         	         ^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `C`
+//│ ║  l.152: 	ev: C
+//│ ║         	^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.152: 	ev: C
+//│ ╙──       	    ^
 //│ res: C
-//│    = E {}
 
 
 trait T1: C & A
@@ -134,22 +181,21 @@ trait T1: C & A
 :e
 def t = T1 (A { x = 1 })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.135: 	def t = T1 (A { x = 1 })
+//│ ║  l.182: 	def t = T1 (A { x = 1 })
 //│ ║         	        ^^^^^^^^^^^^^^^^
-//│ ╟── record literal of type `{x: 1}` is not a 1-element tuple
-//│ ║  l.135: 	def t = T1 (A { x = 1 })
+//│ ╟── record literal of type `{x: int}` is not an instance of type `C`
+//│ ║  l.182: 	def t = T1 (A { x = 1 })
 //│ ║         	              ^^^^^^^^^
-//│ ╟── but it flows into application with expected type `(?a,)`
-//│ ║  l.135: 	def t = T1 (A { x = 1 })
+//│ ╟── but it flows into application with expected type `C`
+//│ ║  l.182: 	def t = T1 (A { x = 1 })
 //│ ║         	            ^^^^^^^^^^^
 //│ ╟── Note: constraint arises from intersection type:
-//│ ║  l.131: 	trait T1: C & A
+//│ ║  l.178: 	trait T1: C & A
 //│ ║         	          ^^^^^
 //│ ╟── from type reference:
-//│ ║  l.131: 	trait T1: C & A
+//│ ║  l.178: 	trait T1: C & A
 //│ ╙──       	          ^
-//│ t: error | {x: 1} & #A & #T1
-//│  = [Function: t]
+//│ t: {x: int} & #A & #T1
 
 
 
@@ -157,15 +203,61 @@ def t = T1 (A { x = 1 })
 
 
 def t = T1 (A (C { x = 1 }))
-//│ t: C & {x: 1} & #A & #T1
-//│  = [Function: t1]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.205: 	def t = T1 (A (C { x = 1 }))
+//│ ║         	               ^^^^^^^^^^^
+//│ ╟── integer literal of type `int` does not match type `0 | 1`
+//│ ║  l.205: 	def t = T1 (A (C { x = 1 }))
+//│ ║         	                       ^
+//│ ╟── Note: constraint arises from union type:
+//│ ║  l.3: 	class C: { x: 0 | 1 }
+//│ ╙──     	              ^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.205: 	def t = T1 (A (C { x = 1 }))
+//│ ║         	        ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` does not have field 'x'
+//│ ║  l.205: 	def t = T1 (A (C { x = 1 }))
+//│ ║         	                       ^
+//│ ╟── but it flows into application with expected type `{x: 0 | 1}`
+//│ ║  l.205: 	def t = T1 (A (C { x = 1 }))
+//│ ║         	               ^^^^^^^^^^^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.178: 	trait T1: C & A
+//│ ║         	          ^^^^^
+//│ ╟── from record type:
+//│ ║  l.3: 	class C: { x: 0 | 1 }
+//│ ╙──     	         ^^^^^^^^^^^^
+//│ t: C & #A & #T1
 
 class CA: C & A
 //│ Defined class CA
 
 def t = T1 (CA { x = 1 })
-//│ t: CA & {x: 1} & #T1
-//│  = [Function: t2]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.235: 	def t = T1 (CA { x = 1 })
+//│ ║         	            ^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` does not match type `0 | 1`
+//│ ║  l.235: 	def t = T1 (CA { x = 1 })
+//│ ║         	                     ^
+//│ ╟── Note: constraint arises from union type:
+//│ ║  l.3: 	class C: { x: 0 | 1 }
+//│ ╙──     	              ^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.235: 	def t = T1 (CA { x = 1 })
+//│ ║         	        ^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `CA` is not an instance of type `C`
+//│ ║  l.235: 	def t = T1 (CA { x = 1 })
+//│ ║         	            ^^^^^^^^^^^^
+//│ ╟── but it flows into argument with expected type `C`
+//│ ║  l.235: 	def t = T1 (CA { x = 1 })
+//│ ║         	           ^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.178: 	trait T1: C & A
+//│ ║         	          ^^^^^
+//│ ╟── from type reference:
+//│ ║  l.178: 	trait T1: C & A
+//│ ╙──       	          ^
+//│ t: CA & #T1
 
 
 class C1: B & T1 & { y: "hi" | "hello" }
@@ -174,32 +266,59 @@ class C1: B & T1 & { y: "hi" | "hello" }
 :e
 def c1 = C1 { }
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.175: 	def c1 = C1 { }
+//│ ║  l.267: 	def c1 = C1 { }
 //│ ║         	         ^^^^^^
 //│ ╟── record literal of type `anything` is not a 1-element tuple
-//│ ║  l.175: 	def c1 = C1 { }
+//│ ║  l.267: 	def c1 = C1 { }
 //│ ╙──       	            ^^^
-//│ c1: C1 & {x: nothing, y: nothing} | error
-//│   = [Function: c1]
+//│ c1: C1 & {x: nothing, y: nothing}
 
 
 
 def c1 = C1 { x = 1; y = "hi" }
-//│ c1: C1 & {x: 1, y: "hi"}
-//│   = [Function: c11]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.278: 	def c1 = C1 { x = 1; y = "hi" }
+//│ ║         	         ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── string literal of type `string` does not match type `"hello" | "hi"`
+//│ ║  l.278: 	def c1 = C1 { x = 1; y = "hi" }
+//│ ║         	                         ^^^^
+//│ ╟── Note: constraint arises from union type:
+//│ ║  l.263: 	class C1: B & T1 & { y: "hi" | "hello" }
+//│ ╙──       	                        ^^^^^^^^^^^^^^
+//│ c1: C1
 
 c1: T1
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.290: 	c1: T1
+//│ ║         	^^
+//│ ╟── application of type `C1` does not match type `C & #T1`
+//│ ║  l.278: 	def c1 = C1 { x = 1; y = "hi" }
+//│ ║         	         ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `C & #T1`
+//│ ║  l.290: 	c1: T1
+//│ ║         	^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.290: 	c1: T1
+//│ ╙──       	    ^^
 //│ res: T1
-//│    = C1 { y: 'hi', x: 1 }
 
 c1: A
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.305: 	c1: A
+//│ ║         	^^
+//│ ╟── application of type `C1` does not match type `{x: int} & #A`
+//│ ║  l.278: 	def c1 = C1 { x = 1; y = "hi" }
+//│ ║         	         ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `{x: int} & #A`
+//│ ║  l.305: 	c1: A
+//│ ║         	^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.305: 	c1: A
+//│ ╙──       	    ^
 //│ res: A
-//│    = C1 { y: 'hi', x: 1 }
 
 c1.x
 c1.y
-//│ res: 1
-//│    = 1
-//│ res: "hi"
-//│    = 'hi'
+//│ res: int
+//│ res: string
 

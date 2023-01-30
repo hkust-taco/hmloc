@@ -3,32 +3,25 @@
 
 def True = true
 //│ True: true
-//│     = [Function: True]
 
 def inc: int -> int
 //│ inc: int -> int
-//│    = <missing implementation>
 
 test f =
   let r = fun x -> fun g -> (g x, )
   in (r 0 inc, r True not)
 //│ test: anything -> ((int,), (bool,),)
-//│     = <no result>
-//│       inc is not implemented
 
 // Here, notice the imprecise `(0 | true) -> 'a` type.
 // In a system with inferred first-class constraints, this could be avoided.
 test f =
   let r x = f x
   in (r 0, r True)
-//│ test: ((0 | true) -> 'a) -> ('a, 'a,)
-//│     = [Function: test]
+//│ test: ((int | true) -> 'a) -> ('a, 'a,)
 
 // Same example, a little elaborated
 test f =
   let r = fun x -> fun g -> (g x, f x)
   in (r 0 inc, r True not)
-//│ test: ((0 | true) -> 'a) -> ((int, 'a,), (bool, 'a,),)
-//│     = <no result>
-//│       inc is not implemented
+//│ test: ((int | true) -> 'a) -> ((int, 'a,), (bool, 'a,),)
 

@@ -6,94 +6,131 @@ class Child: Parent & { age: int }
 //│ Defined class Child
 
 def p = Parent{ name = "Bob" }
-//│ p: Parent & {name: "Bob"}
-//│  = [Function: p]
+//│ p: Parent
 
 p: Parent
 //│ res: Parent
-//│    = Parent { name: 'Bob' }
 
 :e
 def c = Child(Parent { name = "Bob" })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.17: 	def c = Child(Parent { name = "Bob" })
+//│ ║  l.15: 	def c = Child(Parent { name = "Bob" })
 //│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Parent & {name: ?name}` is not a 1-element tuple
-//│ ║  l.17: 	def c = Child(Parent { name = "Bob" })
+//│ ╟── application of type `Parent` is not a 1-element tuple
+//│ ║  l.15: 	def c = Child(Parent { name = "Bob" })
 //│ ║        	              ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into argument with expected type `({age: ?age, name: ?name0},)`
-//│ ║  l.17: 	def c = Child(Parent { name = "Bob" })
+//│ ╟── but it flows into argument with expected type `({age: ?age, name: ?name},)`
+//│ ║  l.15: 	def c = Child(Parent { name = "Bob" })
 //│ ╙──      	             ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ c: Child & {age: nothing, name: "Bob"} | error
-//│  = [Function: c]
+//│ c: Child & {age: nothing}
 
 
 
 def c = Child(Parent { name = "Bob" } with { age = 123 })
-//│ c: Child & {age: 123, name: "Bob"}
-//│  = [Function: c1]
+//│ c: Child
 
 c: Parent
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.32: 	c: Parent
+//│ ║        	^
+//│ ╟── application of type `Child` does not match type `Parent`
+//│ ║  l.29: 	def c = Child(Parent { name = "Bob" } with { age = 123 })
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Parent`
+//│ ║  l.32: 	c: Parent
+//│ ║        	^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.32: 	c: Parent
+//│ ╙──      	   ^^^^^^
 //│ res: Parent
-//│    = Child { name: 'Bob', age: 123 }
 
 c.name
-//│ res: "Bob"
-//│    = 'Bob'
+//│ res: string
 
 c: { name: 'a }
-//│ res: {name: "Bob"}
-//│    = Child { name: 'Bob', age: 123 }
+//│ res: {name: string}
 
 c: { name: string }
 //│ res: {name: string}
-//│    = Child { name: 'Bob', age: 123 }
 
 
 def f x = case x of {
   | Parent -> x.name
   }
 //│ f: (Parent with {name: 'name}) -> 'name
-//│  = [Function: f]
 
 f c
-//│ res: "Bob"
-//│    = 'Bob'
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.62: 	f c
+//│ ║        	^^^
+//│ ╟── application of type `Child` is not an instance of type `Parent`
+//│ ║  l.29: 	def c = Child(Parent { name = "Bob" } with { age = 123 })
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Parent`
+//│ ║  l.62: 	f c
+//│ ║        	  ^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.57: 	def f x = case x of {
+//│ ║        	               ^
+//│ ╟── from class pattern:
+//│ ║  l.58: 	  | Parent -> x.name
+//│ ╙──      	    ^^^^^^
+//│ res: string
 
 f (c: Parent)
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.80: 	f (c: Parent)
+//│ ║        	   ^
+//│ ╟── application of type `Child` does not match type `Parent`
+//│ ║  l.29: 	def c = Child(Parent { name = "Bob" } with { age = 123 })
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Parent`
+//│ ║  l.80: 	f (c: Parent)
+//│ ║        	   ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.80: 	f (c: Parent)
+//│ ╙──      	      ^^^^^^
 //│ res: string
-//│    = 'Bob'
 
 
 def f x = case x of {
   | Child -> x.name
   }
 //│ f: (Child\age with {name: 'name}) -> 'name
-//│  = [Function: f1]
 
 f c
-//│ res: "Bob"
-//│    = 'Bob'
+//│ res: string
 
 :e
 f (c: Parent)
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.105: 	f (c: Parent)
+//│ ║         	   ^
+//│ ╟── application of type `Child` does not match type `Parent`
+//│ ║  l.29: 	def c = Child(Parent { name = "Bob" } with { age = 123 })
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Parent`
+//│ ║  l.105: 	f (c: Parent)
+//│ ║         	   ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.105: 	f (c: Parent)
+//│ ╙──       	      ^^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.79: 	f (c: Parent)
-//│ ║        	^^^^^^^^^^^^^
-//│ ╟── type `Parent` is not a 1-element tuple
-//│ ║  l.79: 	f (c: Parent)
-//│ ║        	      ^^^^^^
-//│ ╟── but it flows into argument with expected type `(?a,)`
-//│ ║  l.79: 	f (c: Parent)
-//│ ║        	  ^^^^^^^^^^^
+//│ ║  l.105: 	f (c: Parent)
+//│ ║         	^^^^^^^^^^^^^
+//│ ╟── type `Parent` is not an instance of type `Child`
+//│ ║  l.105: 	f (c: Parent)
+//│ ║         	      ^^^^^^
+//│ ╟── but it flows into argument with expected type `Child`
+//│ ║  l.105: 	f (c: Parent)
+//│ ║         	  ^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.68: 	def f x = case x of {
+//│ ║  l.96: 	def f x = case x of {
 //│ ║        	               ^
 //│ ╟── from class pattern:
-//│ ║  l.69: 	  | Child -> x.name
+//│ ║  l.97: 	  | Child -> x.name
 //│ ╙──      	    ^^^^^
-//│ res: error | string
-//│    = 'Bob'
+//│ res: string
 
 
 
@@ -104,30 +141,48 @@ def f x = case x of {
   | Parent -> x.name
   | _ -> ""
   }
-//│ f: ((Parent with {name: 'name}) | ~Parent) -> ("" | 'name)
-//│  = [Function: f2]
+//│ f: ((Parent with {name: 'name}) | ~Parent) -> ('name | string)
 
 f c
-//│ res: "" | "Bob"
-//│    = 'Bob'
+//│ res: string
 
 f (c: Parent)
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.149: 	f (c: Parent)
+//│ ║         	   ^
+//│ ╟── application of type `Child` does not match type `Parent`
+//│ ║  l.29: 	def c = Child(Parent { name = "Bob" } with { age = 123 })
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Parent`
+//│ ║  l.149: 	f (c: Parent)
+//│ ║         	   ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.149: 	f (c: Parent)
+//│ ╙──       	      ^^^^^^
 //│ res: string
-//│    = 'Bob'
 
 
 def f x = case x of {
   | Parent -> x.name
   | Child -> x.name
   }
-//│ f: (Parent with {name: 'name}) -> 'name
-//│  = [Function: f3]
+//│ f: ((Child\age with {name: 'name}) | (Parent with {name: 'name})) -> 'name
 
 f c
-//│ res: "Bob"
-//│    = 'Bob'
+//│ res: string
 
 f (c: Parent)
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.174: 	f (c: Parent)
+//│ ║         	   ^
+//│ ╟── application of type `Child` does not match type `Parent`
+//│ ║  l.29: 	def c = Child(Parent { name = "Bob" } with { age = 123 })
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Parent`
+//│ ║  l.174: 	f (c: Parent)
+//│ ║         	   ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.174: 	f (c: Parent)
+//│ ╙──       	      ^^^^^^
 //│ res: string
-//│    = 'Bob'
 

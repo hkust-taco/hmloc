@@ -12,7 +12,7 @@ class None[A]: Option[A]
 //│ Declared Option.Get: Option['A] -> 'A
 //│ Declared Option.Destruct: Option['A] -> (None['A] | Some['A])
 //│ Defined class Some[+A]
-//│ Defined Some.Get: Some['A] -> 'A
+//│ Defined Some.Get: Some[?] -> nothing
 //│ Defined Some.Destruct: (Some['A] & 'this) -> (Some['A] & 'this)
 //│ Defined class None[+A]
 //│ Defined None.Get: None[?] -> nothing
@@ -32,8 +32,32 @@ class Nil[A]: List[A]
     method Size = 0
     method HeadOption = None {}
     method Map[B] f = Nil {}
+//│ ╔══[ERROR] Type mismatch in method definition:
+//│ ║  l.33: 	    method HeadOption = None {}
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `None[?A] with {None#A = ?A, Option#A = ?A}` is not an instance of type `Option`
+//│ ║  l.33: 	    method HeadOption = None {}
+//│ ║        	                        ^^^^^^^
+//│ ╟── but it flows into method definition with expected type `Option[?]`
+//│ ║  l.33: 	    method HeadOption = None {}
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from inherited method declaration:
+//│ ║  l.24: 	    method HeadOption: Option[A]
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from applied type reference:
+//│ ║  l.24: 	    method HeadOption: Option[A]
+//│ ╙──      	                       ^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in method definition:
+//│ ║  l.34: 	    method Map[B] f = Nil {}
+//│ ║        	           ^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Nil[?A]` does not match type `List[B]`
+//│ ║  l.34: 	    method Map[B] f = Nil {}
+//│ ║        	                      ^^^^^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.25: 	    method Map[B]: (A -> B) -> List[B]
+//│ ╙──      	                               ^^^^^^^
 //│ Defined class Nil[+A]
-//│ Defined Nil.Size: Nil[?] -> 0
+//│ Defined Nil.Size: Nil[?] -> int
 //│ Defined Nil.HeadOption: Nil[?] -> None[nothing]
 //│ Defined Nil.Map: Nil[?] -> anything -> Nil[nothing]
 
@@ -41,120 +65,298 @@ class Cons[A]: List[A] & { head: A; tail: List[A] }
     method Size = succ this.tail.Size
     method HeadOption = Some { payload = this.head }
     method Map[B] f = Cons { head = f this.head; tail = this.tail.Map f }
+//│ ╔══[ERROR] Implicit call to method Size is forbidden because it is ambiguous.
+//│ ║  l.65: 	    method Size = succ this.tail.Size
+//│ ║        	                       ^^^^^^^^^^^^^^
+//│ ╟── Unrelated methods named Size are defined by:
+//│ ╟── • class List
+//│ ║  l.22: 	class List[A]
+//│ ║        	      ^^^^
+//│ ╟── • class Nil
+//│ ║  l.31: 	class Nil[A]: List[A]
+//│ ╙──      	      ^^^
+//│ ╔══[ERROR] Implicit call to method Map is forbidden because it is ambiguous.
+//│ ║  l.67: 	    method Map[B] f = Cons { head = f this.head; tail = this.tail.Map f }
+//│ ║        	                                                        ^^^^^^^^^^^^^
+//│ ╟── Unrelated methods named Map are defined by:
+//│ ╟── • class List
+//│ ║  l.22: 	class List[A]
+//│ ║        	      ^^^^
+//│ ╟── • class Nil
+//│ ║  l.31: 	class Nil[A]: List[A]
+//│ ╙──      	      ^^^
+//│ ╔══[ERROR] Type mismatch in method definition:
+//│ ║  l.66: 	    method HeadOption = Some { payload = this.head }
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Some[?A] with {Option#A = ?A, Some#A = ?A, payload: ?payload}` is not an instance of type `Option`
+//│ ║  l.66: 	    method HeadOption = Some { payload = this.head }
+//│ ║        	                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into method definition with expected type `Option[?]`
+//│ ║  l.66: 	    method HeadOption = Some { payload = this.head }
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from inherited method declaration:
+//│ ║  l.24: 	    method HeadOption: Option[A]
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from applied type reference:
+//│ ║  l.24: 	    method HeadOption: Option[A]
+//│ ╙──      	                       ^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in method definition:
+//│ ║  l.67: 	    method Map[B] f = Cons { head = f this.head; tail = this.tail.Map f }
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Cons[?A] & {head: ?head, tail: ?tail}` does not match type `List[B]`
+//│ ║  l.67: 	    method Map[B] f = Cons { head = f this.head; tail = this.tail.Map f }
+//│ ║        	                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.25: 	    method Map[B]: (A -> B) -> List[B]
+//│ ╙──      	                               ^^^^^^^
 //│ Defined class Cons[+A]
 //│ Defined Cons.Size: Cons[?] -> int
-//│ Defined Cons.HeadOption: Cons['A] -> Some['A]
-//│ Defined Cons.Map: Cons['A] -> ('A -> 'B) -> Cons['B]
+//│ Defined Cons.HeadOption: Cons[?] -> Some[nothing]
+//│ Defined Cons.Map: Cons[?] -> (nothing -> 'head) -> (Cons['head | error] with {head: 'head, tail: error})
 
 // Note that the useless `with {tail: List['A]}` refinement is kept
 //  because the approximate subtyping check `list & {List#A = 'A} <: List['A]` currently returns false
 //  as we do not try to expand type aliases right now.
 Cons.Size
 //│ res: Cons[?] -> int
-//│    = undefined
 
 List.HeadOption
 //│ res: List['A] -> Option['A]
-//│    = undefined
 
 Cons.HeadOption
-//│ res: Cons['A] -> Some['A]
-//│    = undefined
+//│ res: Cons[?] -> Some[nothing]
 
 l = Cons { head = 0; tail = Cons { head = 1; tail = Nil {} } }
-//│ l: Cons[0 | 1] with {head: 0, tail: Cons[1] with {tail: Nil[nothing]}}
-//│  = Cons { head: 0, tail: Cons { head: 1, tail: Nil {} } }
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.129: 	l = Cons { head = 0; tail = Cons { head = 1; tail = Nil {} } }
+//│ ║         	                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Nil[?A] with {Nil#A = ?A}` is not an instance of type `List`
+//│ ║  l.129: 	l = Cons { head = 0; tail = Cons { head = 1; tail = Nil {} } }
+//│ ║         	                                                    ^^^^^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	                                          ^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.129: 	l = Cons { head = 0; tail = Cons { head = 1; tail = Nil {} } }
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Cons[?A] & {Cons#A = ?A, head: ?head, tail: ?tail}` is not an instance of type `List`
+//│ ║  l.129: 	l = Cons { head = 0; tail = Cons { head = 1; tail = Nil {} } }
+//│ ║         	                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	                                          ^^^^^^^
+//│ l: Cons[int] with {tail: Cons[int] with {tail: Nil[nothing]}}
 
 l.Size
-//│ res: int
-//│    = 2
+//│ ╔══[ERROR] Implicit call to method Size is forbidden because it is ambiguous.
+//│ ║  l.150: 	l.Size
+//│ ║         	^^^^^^
+//│ ╟── Unrelated methods named Size are defined by:
+//│ ╟── • class List
+//│ ║  l.22: 	class List[A]
+//│ ║        	      ^^^^
+//│ ╟── • class Nil
+//│ ║  l.31: 	class Nil[A]: List[A]
+//│ ║        	      ^^^
+//│ ╟── • class Cons
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	      ^^^^
+//│ res: error
 
 :stats
 l.Map (fun x -> mul x 2)
-//│ res: List[int]
-//│    = Cons { head: 0, tail: Cons { head: 2, tail: Nil {} } }
-//│ constrain calls  : 117
-//│ annoying  calls  : 6
-//│ subtyping calls  : 12
+//│ ╔══[ERROR] Implicit call to method Map is forbidden because it is ambiguous.
+//│ ║  l.167: 	l.Map (fun x -> mul x 2)
+//│ ║         	^^^^^
+//│ ╟── Unrelated methods named Map are defined by:
+//│ ╟── • class List
+//│ ║  l.22: 	class List[A]
+//│ ║        	      ^^^^
+//│ ╟── • class Nil
+//│ ║  l.31: 	class Nil[A]: List[A]
+//│ ║        	      ^^^
+//│ ╟── • class Cons
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	      ^^^^
+//│ res: error
+//│ constrain calls  : 23
+//│ annoying  calls  : 0
+//│ subtyping calls  : 1
 
 l0 = Cons { head = 0; tail = Nil {} }
-//│ l0: Cons[0] with {tail: Nil[nothing]}
-//│   = Cons { head: 0, tail: Nil {} }
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.186: 	l0 = Cons { head = 0; tail = Nil {} }
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Nil[?A] with {Nil#A = ?A}` is not an instance of type `List`
+//│ ║  l.186: 	l0 = Cons { head = 0; tail = Nil {} }
+//│ ║         	                             ^^^^^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	                                          ^^^^^^^
+//│ l0: Cons[int] with {tail: Nil[nothing]}
 
 :re
 :stats
 Cons.HeadOption l0
-//│ res: Some[0]
-//│ Runtime error:
-//│   TypeError: (intermediate value).HeadOption is not a function
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.200: 	Cons.HeadOption l0
+//│ ║         	^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Cons[?A] & {Cons#A = ?A, head: ?head, tail: ?tail}` is not an instance of type `List`
+//│ ║  l.186: 	l0 = Cons { head = 0; tail = Nil {} }
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `List[?]`
+//│ ║  l.200: 	Cons.HeadOption l0
+//│ ║         	                ^^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ║        	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from applied type reference:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	               ^^^^^^^
+//│ res: Some[nothing]
 //│ constrain calls  : 43
-//│ annoying  calls  : 27
-//│ subtyping calls  : 82
+//│ annoying  calls  : 29
+//│ subtyping calls  : 127
 
 
 l1 = Cons { head = 0; tail = Nil {} }
-//│ l1: Cons[0] with {tail: Nil[nothing]}
-//│   = Cons { head: 0, tail: Nil {} }
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.222: 	l1 = Cons { head = 0; tail = Nil {} }
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Nil[?A] with {Nil#A = ?A}` is not an instance of type `List`
+//│ ║  l.222: 	l1 = Cons { head = 0; tail = Nil {} }
+//│ ║         	                             ^^^^^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	                                          ^^^^^^^
+//│ l1: Cons[int] with {tail: Nil[nothing]}
 
 :re
 :stats
 Cons.HeadOption l1
-//│ res: Some[0]
-//│ Runtime error:
-//│   TypeError: (intermediate value).HeadOption is not a function
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.236: 	Cons.HeadOption l1
+//│ ║         	^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Cons[?A] & {Cons#A = ?A, head: ?head, tail: ?tail}` is not an instance of type `List`
+//│ ║  l.222: 	l1 = Cons { head = 0; tail = Nil {} }
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `List[?]`
+//│ ║  l.236: 	Cons.HeadOption l1
+//│ ║         	                ^^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ║        	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from applied type reference:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	               ^^^^^^^
+//│ res: Some[nothing]
 //│ constrain calls  : 43
-//│ annoying  calls  : 27
-//│ subtyping calls  : 82
+//│ annoying  calls  : 29
+//│ subtyping calls  : 127
 
 :re
 :stats
 Cons.HeadOption l
-//│ res: Some[0 | 1]
-//│ Runtime error:
-//│   TypeError: (intermediate value).HeadOption is not a function
-//│ constrain calls  : 60
-//│ annoying  calls  : 27
-//│ subtyping calls  : 124
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.259: 	Cons.HeadOption l
+//│ ║         	^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Cons[?A] & {Cons#A = ?A, head: ?head, tail: ?tail}` is not an instance of type `List`
+//│ ║  l.129: 	l = Cons { head = 0; tail = Cons { head = 1; tail = Nil {} } }
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `List[?]`
+//│ ║  l.259: 	Cons.HeadOption l
+//│ ║         	                ^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ║        	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from applied type reference:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	               ^^^^^^^
+//│ res: Some[nothing]
+//│ constrain calls  : 47
+//│ annoying  calls  : 29
+//│ subtyping calls  : 205
 
 :stats
 o = l.(Cons.HeadOption)
-//│ o: Some[0 | 1]
-//│  = undefined
-//│ constrain calls  : 59
-//│ annoying  calls  : 27
-//│ subtyping calls  : 122
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.281: 	o = l.(Cons.HeadOption)
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Cons[?A] & {Cons#A = ?A, head: ?head, tail: ?tail}` is not an instance of type `List`
+//│ ║  l.129: 	l = Cons { head = 0; tail = Cons { head = 1; tail = Nil {} } }
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `List[?]`
+//│ ║  l.281: 	o = l.(Cons.HeadOption)
+//│ ║         	    ^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ║        	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from applied type reference:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	               ^^^^^^^
+//│ o: Some[nothing]
+//│ constrain calls  : 46
+//│ annoying  calls  : 29
+//│ subtyping calls  : 204
 
 o = l.(Cons.HeadOption)
-//│ o: Some[0 | 1]
-//│  = undefined
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.302: 	o = l.(Cons.HeadOption)
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Cons[?A] & {Cons#A = ?A, head: ?head, tail: ?tail}` is not an instance of type `List`
+//│ ║  l.129: 	l = Cons { head = 0; tail = Cons { head = 1; tail = Nil {} } }
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `List[?]`
+//│ ║  l.302: 	o = l.(Cons.HeadOption)
+//│ ║         	    ^
+//│ ╟── Note: constraint arises from intersection type:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ║        	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from applied type reference:
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	               ^^^^^^^
+//│ o: Some[nothing]
 
 o = l.HeadOption
-//│ o: Option[0 | 1]
-//│  = Some { payload: 0 }
+//│ ╔══[ERROR] Implicit call to method HeadOption is forbidden because it is ambiguous.
+//│ ║  l.320: 	o = l.HeadOption
+//│ ║         	    ^^^^^^^^^^^^
+//│ ╟── Unrelated methods named HeadOption are defined by:
+//│ ╟── • class List
+//│ ║  l.22: 	class List[A]
+//│ ║        	      ^^^^
+//│ ╟── • class Nil
+//│ ║  l.31: 	class Nil[A]: List[A]
+//│ ║        	      ^^^
+//│ ╟── • class Cons
+//│ ║  l.64: 	class Cons[A]: List[A] & { head: A; tail: List[A] }
+//│ ╙──      	      ^^^^
+//│ o: error
 
 :e
 case o of {None -> 0 | Some -> o.payload}
-//│ ╔══[ERROR] Type mismatch in `case` expression:
-//│ ║  l.136: 	case o of {None -> 0 | Some -> o.payload}
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `Option[?A]` does not match type `None[?] & ?a | Some[?] & ?b`
-//│ ║  l.24: 	    method HeadOption: Option[A]
-//│ ║        	                       ^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `None[?] & ?a | Some[?] & ?c`
-//│ ║  l.136: 	case o of {None -> 0 | Some -> o.payload}
-//│ ╙──       	     ^
-//│ res: 0
-//│    = 0
+//│ res: int
 
 
 
 
 v = o.Destruct
 case v of {None -> 0 | Some -> v.payload}
-//│ v: None[0 | 1] | Some[0 | 1]
-//│  = Some { payload: 0 }
-//│ res: 0 | 1
-//│    = 0
+//│ ╔══[ERROR] Implicit call to method Destruct is forbidden because it is ambiguous.
+//│ ║  l.343: 	v = o.Destruct
+//│ ║         	    ^^^^^^^^^^
+//│ ╟── Unrelated methods named Destruct are defined by:
+//│ ╟── • class Option
+//│ ║  l.2: 	class Option[A]
+//│ ║       	      ^^^^^^
+//│ ╟── • class Some
+//│ ║  l.5: 	class Some[A]: Option[A] & { payload: A }
+//│ ║       	      ^^^^
+//│ ╟── • class None
+//│ ║  l.8: 	class None[A]: Option[A]
+//│ ╙──     	      ^^^^
+//│ v: error
+//│ res: int
 
 
 def newHeadOption x = case x of {
@@ -162,39 +364,36 @@ def newHeadOption x = case x of {
     | _ -> None{}
     }
 //│ newHeadOption: (Cons[?] & {head: 'payload} | ~Cons[?]) -> (None[nothing] | Some['payload])
-//│              = [Function: newHeadOption]
 
 // Note that `o` is not a list, so this takes the default case:
 newHeadOption o
 //│ res: None[nothing] | Some[nothing]
-//│    = None {}
 
 newHeadOption l
-//│ res: None[nothing] | Some[0]
-//│    = Some { payload: 0 }
+//│ res: None[nothing] | Some[int]
 
 case res of {None -> 0 | Some -> res.payload}
-//│ res: 0
-//│    = 0
+//│ res: int
 
 
 // Idiomatic definition for proper matching: `type Option[A] = Some[A] | None[A]`
 :e
 case o of {
     Some -> o.Get | None -> 0 }
-//│ ╔══[ERROR] Type mismatch in `case` expression:
-//│ ║  l.183: 	case o of {
-//│ ║         	^^^^^^^^^^^
-//│ ║  l.184: 	    Some -> o.Get | None -> 0 }
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `Option[?A]` does not match type `None[?] & ?a | Some[?] & ?b`
-//│ ║  l.24: 	    method HeadOption: Option[A]
-//│ ║        	                       ^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `None[?] & ?a | Some[?] & ?c`
-//│ ║  l.183: 	case o of {
-//│ ╙──       	     ^
-//│ res: 0 | 1
-//│    = 0
+//│ ╔══[ERROR] Implicit call to method Get is forbidden because it is ambiguous.
+//│ ║  l.382: 	    Some -> o.Get | None -> 0 }
+//│ ║         	            ^^^^^
+//│ ╟── Unrelated methods named Get are defined by:
+//│ ╟── • class Option
+//│ ║  l.2: 	class Option[A]
+//│ ║       	      ^^^^^^
+//│ ╟── • class Some
+//│ ║  l.5: 	class Some[A]: Option[A] & { payload: A }
+//│ ║       	      ^^^^
+//│ ╟── • class None
+//│ ║  l.8: 	class None[A]: Option[A]
+//│ ╙──     	      ^^^^
+//│ res: error | int
 
 
 
@@ -202,6 +401,18 @@ case o of {
 
 case o of {
     Some -> o.Get | None -> 0 | Option -> error }
-//│ res: 0 | 1
-//│    = 0
+//│ ╔══[ERROR] Implicit call to method Get is forbidden because it is ambiguous.
+//│ ║  l.403: 	    Some -> o.Get | None -> 0 | Option -> error }
+//│ ║         	            ^^^^^
+//│ ╟── Unrelated methods named Get are defined by:
+//│ ╟── • class Option
+//│ ║  l.2: 	class Option[A]
+//│ ║       	      ^^^^^^
+//│ ╟── • class Some
+//│ ║  l.5: 	class Some[A]: Option[A] & { payload: A }
+//│ ║       	      ^^^^
+//│ ╟── • class None
+//│ ║  l.8: 	class None[A]: Option[A]
+//│ ╙──     	      ^^^^
+//│ res: error | int
 

@@ -54,7 +54,7 @@ let f x y z = { log x; if y < z then y else z }
 //│ f: int -> int
 //│ f: int -> int -> int
 //│ f: bool -> 'a -> 'a -> 'a
-//│ f: anything -> (number & 'a) -> (number & 'a) -> 'a
+//│ f: anything -> (int & 'a) -> (int & 'a) -> 'a
 
 // TODO
 // let f (x: int) = x + 1
@@ -85,7 +85,7 @@ f (y: 42)
 //│ ╔══[ERROR] Wrong tuple field name: found 'y' instead of 'x'
 //│ ║  l.84: 	f (y: 42)
 //│ ╙──      	   ^^^^^
-//│ res: error | int
+//│ res: int
 
 
 :e
@@ -93,10 +93,10 @@ f (x: 42, y: 43)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.92: 	f (x: 42, y: 43)
 //│ ║        	^^^^^^^^^^^^^^^^
-//│ ╟── tuple of type `(x: 42, y: 43,)` does not match type `(x: ?a,)`
+//│ ╟── tuple of type `(x: int, y: int,)` is not an instance of type `int`
 //│ ║  l.92: 	f (x: 42, y: 43)
 //│ ║        	   ^^^^^^^^^^^^
-//│ ╟── but it flows into argument with expected type `(x: ?b,)`
+//│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.92: 	f (x: 42, y: 43)
 //│ ║        	  ^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from binding:
@@ -105,7 +105,7 @@ f (x: 42, y: 43)
 //│ ╟── from argument:
 //│ ║  l.74: 	let f(x: int) = x + 1
 //│ ╙──      	                ^
-//│ res: error | int
+//│ res: int
 
 
 

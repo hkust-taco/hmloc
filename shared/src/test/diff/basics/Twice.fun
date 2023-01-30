@@ -9,7 +9,7 @@ twice twice
 //│ res: ('a -> ('a & 'b)) -> 'a -> 'b
 
 let f = x => 1, x
-//│ f: 'a -> (1, 'a,)
+//│ f: 'a -> (int, 'a,)
 
 // Note: once we instantiate during constraint solving instead of on variable reference,
 //  the following should get the more useful type: 'a -> (1, (1 'a,),)
@@ -20,7 +20,7 @@ twice f
 //│ res: 'a -> 'b
 //│   where
 //│     'a :> 'b
-//│     'b :> (1, 'a,)
+//│     'b :> (int, 'a,)
 
 // TODO simplify more
 // :ds
@@ -35,7 +35,7 @@ let one = twice (o => o.x) { x: { x: 1 } }
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.34: 	let one = twice (o => o.x) { x: { x: 1 } }
 //│ ║        	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `1` does not match type `?x`
+//│ ╟── integer literal of type `int` does not have field 'x'
 //│ ║  l.34: 	let one = twice (o => o.x) { x: { x: 1 } }
 //│ ║        	                                     ^
 //│ ╟── Note: constraint arises from field selection:
@@ -44,7 +44,7 @@ let one = twice (o => o.x) { x: { x: 1 } }
 //│ ╟── from receiver:
 //│ ║  l.34: 	let one = twice (o => o.x) { x: { x: 1 } }
 //│ ╙──      	                      ^
-//│ one: 1 | error | {x: 1}
+//│ one: int | {x: int}
 
 
 

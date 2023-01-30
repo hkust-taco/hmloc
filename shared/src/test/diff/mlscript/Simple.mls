@@ -2,20 +2,15 @@
 def a = 1
 def b = 2
 def c = 3
-//│ a: 1
-//│  = [Function: a]
-//│ b: 2
-//│  = [Function: b]
-//│ c: 3
-//│  = [Function: c]
+//│ a: int
+//│ b: int
+//│ c: int
 
 if true then if true then a else b else a
-//│ res: 1 | 2
-//│    = 1
+//│ res: int
 
 if true then if true then id a else id b else a
-//│ res: 1 | 2
-//│    = 1
+//│ res: int
 
 class Foo[A]: { field: A }
 class Bar: {}
@@ -23,59 +18,45 @@ class Bar: {}
 //│ Defined class Bar
 
 def foo = Foo { field = id 1 }
-//│ foo: Foo[1]
-//│    = [Function: foo]
+//│ foo: Foo[int]
 
 (if true then foo else { field = 2 }).field
-//│ res: 1 | 2
-//│    = 1
+//│ res: int
 
 Foo { field = id 1 }
-//│ res: Foo[1]
-//│    = Foo { field: 1 }
+//│ res: Foo[int]
 
 def test x = case x of { Bar -> 1 | Foo -> 2 }
-//│ test: (Bar | Foo[?]) -> (1 | 2)
-//│     = [Function: test]
+//│ test: (Bar | Foo[?]) -> int
 
 test foo
-//│ res: 1 | 2
-//│    = 2
+//│ res: int
 
 def test x = case x of { Bar -> 1 | Foo -> x.field }
-//│ test: (Bar | (Foo[?] with {field: 'field})) -> (1 | 'field)
-//│     = [Function: test1]
+//│ test: (Bar | (Foo[?] with {field: 'field})) -> ('field | int)
 
 test foo
-//│ res: 1
-//│    = 1
+//│ res: int
 
 test (Foo { field = 2 })
-//│ res: 1 | 2
-//│    = 2
+//│ res: int
 
 def test x = case x of { Foo -> x.field | _ -> 1 }
-//│ test: ((Foo[?] with {field: 'field}) | ~Foo[?]) -> (1 | 'field)
-//│     = [Function: test2]
+//│ test: ((Foo[?] with {field: 'field}) | ~Foo[?]) -> ('field | int)
 
 
 def f x = x.u
 //│ f: {u: 'u} -> 'u
-//│  = [Function: f]
 
 f { u = 1 }
-//│ res: 1
-//│    = 1
+//│ res: int
 
 f { u = 1; v = 2 }
-//│ res: 1
-//│    = 1
+//│ res: int
 
 f (if true then { u = 1; v = 2 } else { u = 1 })
-//│ res: 1
-//│    = 1
+//│ res: int
 
 if true then { u = 1; v = 2 } else { u = 2 }
-//│ res: {u: 1 | 2}
-//│    = { u: 1, v: 2 }
+//│ res: {u: int}
 

@@ -8,19 +8,19 @@
 
 
 42
-//│ res: 42
+//│ res: int
 
 x => 42
-//│ res: anything -> 42
+//│ res: anything -> int
 
 x => x
 //│ res: 'a -> 'a
 
 x => x 42
-//│ res: (42 -> 'a) -> 'a
+//│ res: (int -> 'a) -> 'a
 
 (x => x) 42
-//│ res: 42
+//│ res: int
 
 f => x => f (f x)  // twice
 //│ res: ('a -> ('a & 'b)) -> 'a -> 'b
@@ -59,7 +59,7 @@ succ true
 //│ ╟── reference of type `true` is not an instance of type `int`
 //│ ║  l.+1: 	succ true
 //│ ╙──      	     ^^^^
-//│ res: error | int
+//│ res: int
 
 
 
@@ -74,7 +74,7 @@ x => succ (not x)
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	x => succ (not x)
 //│ ╙──      	          ^^^^^^^
-//│ res: bool -> (error | int)
+//│ res: bool -> int
 
 
 
@@ -84,7 +84,7 @@ x => succ (not x)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(x => not x.f) { f: 123 }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `123` does not match type `?f`
+//│ ╟── integer literal of type `int` is not an instance of type `bool`
 //│ ║  l.+1: 	(x => not x.f) { f: 123 }
 //│ ║        	                    ^^^
 //│ ╟── Note: constraint arises from field selection:
@@ -93,7 +93,7 @@ x => succ (not x)
 //│ ╟── from argument:
 //│ ║  l.+1: 	(x => not x.f) { f: 123 }
 //│ ╙──      	          ^^^
-//│ res: bool | error
+//│ res: bool
 
 
 
@@ -104,13 +104,13 @@ x => succ (not x)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(f => x => not (f x.u)) false
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── reference of type `false` does not match type `?a`
+//│ ╟── reference of type `false` is not a function
 //│ ║  l.+1: 	(f => x => not (f x.u)) false
 //│ ║        	                        ^^^^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	(f => x => not (f x.u)) false
 //│ ╙──      	                ^
-//│ res: {u: anything} -> bool | error
+//│ res: {u: anything} -> bool
 
 
 
@@ -129,19 +129,19 @@ x => x.f
 //│ res: anything
 
 { f: 42 }
-//│ res: {f: 42}
+//│ res: {f: int}
 
 { f: 42 }.f
-//│ res: 42
+//│ res: int
 
 (x => x.f) { f: 42 }
-//│ res: 42
+//│ res: int
 
 f => { x: f 42 }.x
-//│ res: (42 -> 'x) -> 'x
+//│ res: (int -> 'x) -> 'x
 
 f => { x: f 42, y: 123 }.y
-//│ res: (42 -> anything) -> 123
+//│ res: (int -> anything) -> int
 
 if true then { a: 1, b: true } else { b: false, c: 42 }
 //│ res: {b: bool}
@@ -151,10 +151,10 @@ if true then { a: 1, b: true } else { b: false, c: 42 }
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{ a: 123, b: true }.c
 //│ ║        	                   ^^
-//│ ╟── record of type `{a: 123, b: true}` does not have field 'c'
+//│ ╟── record of type `{a: int, b: true}` does not have field 'c'
 //│ ║  l.+1: 	{ a: 123, b: true }.c
 //│ ╙──      	^^^^^^^^^^^^^^^^^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -166,7 +166,7 @@ x => { a: x }.b
 //│ ╟── record of type `{a: ?a}` does not have field 'b'
 //│ ║  l.+1: 	x => { a: x }.b
 //│ ╙──      	     ^^^^^^^^
-//│ res: anything -> error
+//│ res: anything -> nothing
 
 
 
@@ -239,13 +239,13 @@ i => if ((i i) true) then true else true
 
 let f = x => x; {a: f 0, b: f true}
 //│ f: 'a -> 'a
-//│ res: {a: 0, b: true}
+//│ res: {a: int, b: true}
 
 y => (let f = x => x; {a: f y, b: f true})
 //│ res: 'a -> {a: 'a, b: true}
 
 y => (let f = x => y x; {a: f 0, b: f true})
-//│ res: ((0 | true) -> 'a) -> {a: 'a, b: 'a}
+//│ res: ((int | true) -> 'a) -> {a: 'a, b: 'a}
 
 y => (let f = x => x y; {a: f (z => z), b: f (z => true)})
 //│ res: 'a -> {a: 'a, b: true}
@@ -290,21 +290,21 @@ let rec x = (let rec y = {u: y, v: (x y)}; 0); 0
 //│ ╔══[ERROR] Type mismatch in binding of block of statements:
 //│ ║  l.+1: 	let rec x = (let rec y = {u: y, v: (x y)}; 0); 0
 //│ ║        	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `0` does not match type `?x`
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	let rec x = (let rec y = {u: y, v: (x y)}; 0); 0
 //│ ║        	                                           ^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	let rec x = (let rec y = {u: y, v: (x y)}; 0); 0
 //│ ╙──      	                                    ^
-//│ x: 0
-//│ res: 0
+//│ x: int
+//│ res: int
 
 
 
 
 
 (x => (let y = (x x); 0))
-//│ res: ('a -> anything & 'a) -> 0
+//│ res: ('a -> anything & 'a) -> int
 
 // TODO simplify more
 (let rec x = (y => (y (x x))); x)
@@ -314,7 +314,7 @@ let rec x = (let rec y = {u: y, v: (x y)}; 0); 0
 //│     'b <: 'a
 
 next => 0
-//│ res: anything -> 0
+//│ res: anything -> int
 
 ((x => (x x)) (x => x))
 //│ res: 'a
@@ -362,7 +362,7 @@ x => (y => (x (y y)))
 //│     'a <: 'x -> anything
 
 (x => (let y = (x x.v); 0))
-//│ res: ('v -> anything & {v: 'v}) -> 0
+//│ res: ('v -> anything & {v: 'v}) -> int
 
 let rec x = (let y = (x x); (z => z)); (x (y => y.u)) // [test:T1]
 //│ x: 'x

@@ -1,9 +1,9 @@
 
 1
-//│ res: 1
+//│ res: int
 
 "hello"
-//│ res: "hello"
+//│ res: string
 
 // TODO literal booleans
 true
@@ -12,63 +12,66 @@ true
 1 as Int
 "hello" as String
 true as Bool
-//│ res: int
-//│ res: string
-//│ res: bool
+//│ ╔══[ERROR] identifier not found: Int
+//│ ║  l.12: 	1 as Int
+//│ ╙──      	     ^^^
+//│ res: error
+//│ ╔══[ERROR] identifier not found: String
+//│ ║  l.13: 	"hello" as String
+//│ ╙──      	           ^^^^^^
+//│ res: error
+//│ ╔══[ERROR] identifier not found: Bool
+//│ ║  l.14: 	true as Bool
+//│ ╙──      	        ^^^^
+//│ res: error
 
 :w
 1 as int
 "hello" as string
 //│ ╔══[WARNING] Variable name 'int' already names a symbol in scope. If you want to refer to that symbol, you can use `scope.int`; if not, give your future readers a break and use another name :^)
-//│ ║  l.20: 	1 as int
+//│ ║  l.29: 	1 as int
 //│ ╙──      	     ^^^
-//│ res: 1
+//│ res: int
 //│ ╔══[WARNING] Variable name 'string' already names a symbol in scope. If you want to refer to that symbol, you can use `scope.string`; if not, give your future readers a break and use another name :^)
-//│ ║  l.21: 	"hello" as string
+//│ ║  l.30: 	"hello" as string
 //│ ╙──      	           ^^^^^^
-//│ res: "hello"
+//│ res: string
 
 
 
 1 as (_: int)
 "hello" as (_: string)
-//│ res: (_: 1,)
-//│ res: (_: "hello",)
+//│ res: (_: int,)
+//│ res: (_: string,)
 
 :e
 1 as true
 true as Int
 false as 1
 //│ ╔══[ERROR] Type mismatch in 'as' binding:
-//│ ║  l.39: 	1 as true
+//│ ║  l.48: 	1 as true
 //│ ║        	^^^^^^^^^
-//│ ╟── integer literal of type `1` is not an instance of type `true`
-//│ ║  l.39: 	1 as true
+//│ ╟── integer literal of type `int` is not an instance of type `true`
+//│ ║  l.48: 	1 as true
 //│ ║        	^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.39: 	1 as true
+//│ ║  l.48: 	1 as true
 //│ ╙──      	     ^^^^
 //│ res: true
-//│ ╔══[ERROR] Type mismatch in 'as' binding:
-//│ ║  l.40: 	true as Int
-//│ ║        	^^^^^^^^^^^
-//│ ╟── reference of type `true` is not an instance of type `int`
-//│ ║  l.40: 	true as Int
-//│ ║        	^^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.40: 	true as Int
+//│ ╔══[ERROR] identifier not found: Int
+//│ ║  l.49: 	true as Int
 //│ ╙──      	        ^^^
-//│ res: int
+//│ res: error
 //│ ╔══[ERROR] Type mismatch in 'as' binding:
-//│ ║  l.41: 	false as 1
+//│ ║  l.50: 	false as 1
 //│ ║        	^^^^^^^^^^
-//│ ╟── reference of type `false` does not match type `1`
-//│ ║  l.41: 	false as 1
+//│ ╟── reference of type `false` is not an instance of type `int`
+//│ ║  l.50: 	false as 1
 //│ ║        	^^^^^
 //│ ╟── Note: constraint arises from integer literal:
-//│ ║  l.41: 	false as 1
+//│ ║  l.50: 	false as 1
 //│ ╙──      	         ^
-//│ res: 1
+//│ res: int
 
 
 
@@ -80,25 +83,25 @@ false as 1
 
 
 let f = b => if b then 0 else 1
-//│ f: bool -> (0 | 1)
+//│ f: bool -> int
 
 let pred = n => 0 < n
-//│ pred: number -> bool
+//│ pred: int -> bool
 
 let g = x => if pred x then x else f false
-//│ g: (number & 'a) -> (0 | 1 | 'a)
+//│ g: int -> int
 
 g 3
-//│ res: 0 | 1 | 3
+//│ res: int
 
 g / succ 3
 //│ res: int
 
 x => if x then x else f false
-//│ res: (bool & 'a) -> (0 | 1 | 'a)
+//│ res: (bool & 'a) -> (int | 'a)
 
 res false
-//│ res: 0 | 1 | false
+//│ res: false | int
 
 let rec f = n =>
   if pred n then n else f (n + 1)
@@ -114,27 +117,27 @@ x => if pred x then x else f x
 :e
 f false
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.115: 	f false
+//│ ║  l.118: 	f false
 //│ ║         	^^^^^^^
-//│ ╟── reference of type `false` does not match type `?a`
-//│ ║  l.115: 	f false
+//│ ╟── reference of type `false` is not an instance of type `int`
+//│ ║  l.118: 	f false
 //│ ║         	  ^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.104: 	  if pred n then n else f (n + 1)
+//│ ║  l.107: 	  if pred n then n else f (n + 1)
 //│ ╙──       	                           ^
-//│ res: error | false | int
+//│ res: false | int
 
 
 
 
 let take0 (x: 0) = 0
 let take1 (x: 1) = 1
-//│ take0: (x: 0,) -> 0
-//│ take1: (x: 1,) -> 1
+//│ take0: (x: int,) -> int
+//│ take1: (x: int,) -> int
 
 let takeWhat y = if y < 0 then take0 y else take1 y
-//│ takeWhat: nothing -> (0 | 1)
+//│ takeWhat: nothing -> int
 
 let takeWhat y = if y < 0 then take0 (x: y) else take1 (x: y)
-//│ takeWhat: nothing -> (0 | 1)
+//│ takeWhat: int -> int
 

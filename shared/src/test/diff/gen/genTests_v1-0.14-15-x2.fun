@@ -5,7 +5,7 @@
 
 
 0
-//│ res: 0
+//│ res: int
 
 add
 //│ res: int -> int -> int
@@ -14,10 +14,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(0 0)
 //│ ║        	 ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(0 0)
 //│ ╙──      	 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -25,10 +25,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(0 add)
 //│ ║        	 ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(0 add)
 //│ ╙──      	 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -36,10 +36,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(0 {u: 0})
 //│ ║        	 ^^^^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(0 {u: 0})
 //│ ╙──      	 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -47,10 +47,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(0 {u: add})
 //│ ║        	 ^^^^^^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(0 {u: add})
 //│ ╙──      	 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -64,7 +64,7 @@ add
 //│ ╟── reference of type `int -> int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	(add add)
 //│ ╙──      	     ^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -72,7 +72,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(add 0.u)
 //│ ║        	      ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	(add 0.u)
 //│ ╙──      	     ^
 //│ res: int -> int
@@ -94,7 +94,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(add 0.v)
 //│ ║        	      ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(add 0.v)
 //│ ╙──      	     ^
 //│ res: int -> int
@@ -116,10 +116,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(add {v: 0})
 //│ ║        	 ^^^^^^^^^^
-//│ ╟── record of type `{v: 0}` is not an instance of type `int`
+//│ ╟── record of type `{v: int}` is not an instance of type `int`
 //│ ║  l.+1: 	(add {v: 0})
 //│ ╙──      	     ^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -130,7 +130,7 @@ add
 //│ ╟── record of type `{v: int -> int -> int}` is not an instance of type `int`
 //│ ║  l.+1: 	(add {v: add})
 //│ ╙──      	     ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -138,7 +138,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(add {v: 0.v})
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(add {v: 0.v})
 //│ ╙──      	         ^
 //│ ╔══[ERROR] Type mismatch in application:
@@ -147,7 +147,7 @@ add
 //│ ╟── record of type `{v: ?v}` is not an instance of type `int`
 //│ ║  l.+1: 	(add {v: 0.v})
 //│ ╙──      	     ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -166,29 +166,29 @@ add
 //│ ╟── record of type `{v: ?v}` is not an instance of type `int`
 //│ ║  l.+1: 	(add {v: add.v})
 //│ ╙──      	     ^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
 
 
 ((x => 0) 0)
-//│ res: 0
+//│ res: int
 
 ((x => 0) add)
-//│ res: 0
+//│ res: int
 
 ((x => 0) {u: 0})
-//│ res: 0
+//│ res: int
 
 ((x => 0) {u: 0, v: 0})
-//│ res: 0
+//│ res: int
 
 ((x => 0) {u: 0, v: add})
-//│ res: 0
+//│ res: int
 
 ((x => 0) {u: add})
-//│ res: 0
+//│ res: int
 
 ((x => add) 0)
 //│ res: int -> int -> int
@@ -200,7 +200,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((x => add) 0.u)
 //│ ║        	             ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((x => add) 0.u)
 //│ ╙──      	            ^
 //│ res: int -> int -> int
@@ -234,7 +234,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((x => add) {u: 0.u})
 //│ ║        	                 ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((x => add) {u: 0.u})
 //│ ╙──      	                ^
 //│ res: int -> int -> int
@@ -256,7 +256,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((x => add) 0.v)
 //│ ║        	             ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	((x => add) 0.v)
 //│ ╙──      	            ^
 //│ res: int -> int -> int
@@ -284,7 +284,7 @@ add
 //│ ╟── reference of type `int -> int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = 0; add) add)
 //│ ╙──      	                  ^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -292,7 +292,7 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = 0; add) (0 0))
 //│ ║        	                   ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((let x = 0; add) (0 0))
 //│ ╙──      	                   ^
 //│ res: int -> int
@@ -303,7 +303,7 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = 0; add) (0 add))
 //│ ║        	                   ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((let x = 0; add) (0 add))
 //│ ╙──      	                   ^
 //│ res: int -> int
@@ -314,13 +314,13 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = 0; add) (x => 0))
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> 0` is not an instance of type `int`
+//│ ╟── function of type `?a -> int` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = 0; add) (x => 0))
 //│ ║        	                   ^^^^^^
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = 0; add) (x => 0))
 //│ ╙──      	                  ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -338,7 +338,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((let x = 0; add) (let x = 0.u; 0))
 //│ ║        	                            ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((let x = 0; add) (let x = 0.u; 0))
 //│ ╙──      	                           ^
 //│ res: int -> int
@@ -369,7 +369,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = 0; add) (x => add))
 //│ ╙──      	                  ^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -384,7 +384,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = 0; add) (x => x))
 //│ ╙──      	                  ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -402,7 +402,7 @@ add
 //│ ╟── but it flows into reference with expected type `int`
 //│ ║  l.+1: 	((let x = 0; add) (let x = add; x))
 //│ ╙──      	                                ^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -414,7 +414,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((let x = 0; add) 0.u)
 //│ ║        	                   ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((let x = 0; add) 0.u)
 //│ ╙──      	                  ^
 //│ res: int -> int
@@ -436,10 +436,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = 0; add) {u: 0})
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── record of type `{u: 0}` is not an instance of type `int`
+//│ ╟── record of type `{u: int}` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = 0; add) {u: 0})
 //│ ╙──      	                  ^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -450,7 +450,7 @@ add
 //│ ╟── record of type `{u: int -> int -> int}` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = 0; add) {u: add})
 //│ ╙──      	                  ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -458,10 +458,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = 0; add) {v: 0})
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── record of type `{v: 0}` is not an instance of type `int`
+//│ ╟── record of type `{v: int}` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = 0; add) {v: 0})
 //│ ╙──      	                  ^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -472,7 +472,7 @@ add
 //│ ╟── record of type `{v: int -> int -> int}` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = 0; add) {v: add})
 //│ ╙──      	                  ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -486,7 +486,7 @@ add
 //│ ╟── reference of type `int -> int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = add; add) add)
 //│ ╙──      	                    ^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -494,7 +494,7 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = add; add) (0 0))
 //│ ║        	                     ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((let x = add; add) (0 0))
 //│ ╙──      	                     ^
 //│ res: int -> int
@@ -505,7 +505,7 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = add; add) (0 add))
 //│ ║        	                     ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((let x = add; add) (0 add))
 //│ ╙──      	                     ^
 //│ res: int -> int
@@ -516,7 +516,7 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = add; add) (0 {u: 0}))
 //│ ║        	                     ^^^^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((let x = add; add) (0 {u: 0}))
 //│ ╙──      	                     ^
 //│ res: int -> int
@@ -527,7 +527,7 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = add; add) (0 {u: add}))
 //│ ║        	                     ^^^^^^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((let x = add; add) (0 {u: add}))
 //│ ╙──      	                     ^
 //│ res: int -> int
@@ -538,7 +538,7 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = add; add) ((0 add) 0))
 //│ ║        	                      ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((let x = add; add) ((0 add) 0))
 //│ ╙──      	                      ^
 //│ res: int -> int
@@ -549,7 +549,7 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = add; add) ((0 add) add))
 //│ ║        	                      ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((let x = add; add) ((0 add) add))
 //│ ╙──      	                      ^
 //│ res: int -> int
@@ -560,13 +560,13 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = add; add) (x => 0))
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> 0` is not an instance of type `int`
+//│ ╟── function of type `?a -> int` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = add; add) (x => 0))
 //│ ║        	                     ^^^^^^
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = add; add) (x => 0))
 //│ ╙──      	                    ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -590,7 +590,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = add; add) (x => add))
 //│ ╙──      	                    ^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -605,7 +605,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = add; add) (let x = 0; add))
 //│ ╙──      	                    ^^^^^^^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -620,7 +620,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = add; add) (let x = add; add))
 //│ ╙──      	                    ^^^^^^^^^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -635,7 +635,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = add; add) (let rec x = x; add))
 //│ ╙──      	                    ^^^^^^^^^^^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -650,7 +650,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = add; add) (x => x))
 //│ ╙──      	                    ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -665,7 +665,7 @@ add
 //│ ╟── reference of type `int -> int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	((let rec x = x; add) add)
 //│ ╙──      	                      ^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -673,7 +673,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((let rec x = x; add) 0.u)
 //│ ║        	                       ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((let rec x = x; add) 0.u)
 //│ ╙──      	                      ^
 //│ res: int -> int
@@ -704,7 +704,7 @@ add
 //│ ╟── but it flows into field selection with expected type `int`
 //│ ║  l.+1: 	((let rec x = x; add) {u: add}.u)
 //│ ╙──      	                              ^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -713,10 +713,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let rec x = x; add) {v: 0})
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── record of type `{v: 0}` is not an instance of type `int`
+//│ ╟── record of type `{v: int}` is not an instance of type `int`
 //│ ║  l.+1: 	((let rec x = x; add) {v: 0})
 //│ ╙──      	                      ^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -727,7 +727,7 @@ add
 //│ ╟── record of type `{v: int -> int -> int}` is not an instance of type `int`
 //│ ║  l.+1: 	((let rec x = x; add) {v: add})
 //│ ╙──      	                      ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -735,7 +735,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((let rec x = x; add) {v: 0.u})
 //│ ║        	                           ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((let rec x = x; add) {v: 0.u})
 //│ ╙──      	                          ^
 //│ ╔══[ERROR] Type mismatch in application:
@@ -744,7 +744,7 @@ add
 //│ ╟── record of type `{v: ?u}` is not an instance of type `int`
 //│ ║  l.+1: 	((let rec x = x; add) {v: 0.u})
 //│ ╙──      	                      ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -763,7 +763,7 @@ add
 //│ ╟── record of type `{v: ?u}` is not an instance of type `int`
 //│ ║  l.+1: 	((let rec x = x; add) {v: add.u})
 //│ ╙──      	                      ^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -779,7 +779,7 @@ add
 //│ ╟── reference of type `int -> int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = {v: 0}; add) add)
 //│ ╙──      	                       ^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -793,7 +793,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = {v: 0}; add) (add 0))
 //│ ╙──      	                       ^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -814,7 +814,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = {v: 0}; add) (add add))
 //│ ╙──      	                       ^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -825,13 +825,13 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = {v: 0}; add) (x => 0))
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> 0` is not an instance of type `int`
+//│ ╟── function of type `?a -> int` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = {v: 0}; add) (x => 0))
 //│ ║        	                        ^^^^^^
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = {v: 0}; add) (x => 0))
 //│ ╙──      	                       ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -855,7 +855,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = {v: 0}; add) (x => add))
 //│ ╙──      	                       ^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -870,7 +870,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = {v: 0}; add) (let x = 0; add))
 //│ ╙──      	                       ^^^^^^^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -885,7 +885,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = {v: 0}; add) (let x = add; add))
 //│ ╙──      	                       ^^^^^^^^^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -900,7 +900,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = {v: 0}; add) (let rec x = x; add))
 //│ ╙──      	                       ^^^^^^^^^^^^^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -915,7 +915,7 @@ add
 //│ ╟── but it flows into argument with expected type `int`
 //│ ║  l.+1: 	((let x = {v: 0}; add) (x => x))
 //│ ╙──      	                       ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -924,7 +924,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((let x = {v: 0}; add) 0.v)
 //│ ║        	                        ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	((let x = {v: 0}; add) 0.v)
 //│ ╙──      	                       ^
 //│ res: int -> int
@@ -946,7 +946,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((let x = {v: 0}; add) (x => 0).v)
 //│ ║        	                               ^^
-//│ ╟── function of type `?a -> 0` does not have field 'v'
+//│ ╟── function of type `?a -> int` does not have field 'v'
 //│ ║  l.+1: 	((let x = {v: 0}; add) (x => 0).v)
 //│ ║        	                        ^^^^^^
 //│ ╟── but it flows into receiver with expected type `{v: ?v}`
@@ -997,7 +997,7 @@ add
 //│ ╟── reference of type `int -> int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = {v: add}; add) add)
 //│ ╙──      	                         ^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -1005,10 +1005,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((let x = {v: add}; add) {v: 0})
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── record of type `{v: 0}` is not an instance of type `int`
+//│ ╟── record of type `{v: int}` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = {v: add}; add) {v: 0})
 //│ ╙──      	                         ^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -1019,7 +1019,7 @@ add
 //│ ╟── record of type `{v: int -> int -> int}` is not an instance of type `int`
 //│ ║  l.+1: 	((let x = {v: add}; add) {v: add})
 //│ ╙──      	                         ^^^^^^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
@@ -1033,12 +1033,12 @@ add
 //│ ╟── reference of type `int -> int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	((let rec x = {v: x}; add) add)
 //│ ╙──      	                           ^^^
-//│ res: int -> int | error
+//│ res: int -> int
 
 
 
 ((x => x) 0)
-//│ res: 0
+//│ res: int
 
 ((x => x) add)
 //│ res: int -> int -> int
@@ -1047,10 +1047,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x) (0 0))
 //│ ║        	           ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((x => x) (0 0))
 //│ ╙──      	           ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1058,10 +1058,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x) (0 add))
 //│ ║        	           ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((x => x) (0 add))
 //│ ╙──      	           ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1069,10 +1069,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x) (0 (x => 0)))
 //│ ║        	           ^^^^^^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((x => x) (0 (x => 0)))
 //│ ╙──      	           ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1080,10 +1080,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x) (0 (x => add)))
 //│ ║        	           ^^^^^^^^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((x => x) (0 (x => add)))
 //│ ╙──      	           ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1091,15 +1091,15 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x) (0 (x => x)))
 //│ ║        	           ^^^^^^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	((x => x) (0 (x => x)))
 //│ ╙──      	           ^
-//│ res: error
+//│ res: nothing
 
 
 
 ((x => x) {v: 0})
-//│ res: {v: 0}
+//│ res: {v: int}
 
 ((x => x) {v: add})
 //│ res: {v: int -> int -> int}
@@ -1108,10 +1108,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((x => 0.u) 0)
 //│ ║        	        ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((x => 0.u) 0)
 //│ ╙──      	       ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1119,10 +1119,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((x => 0.u) add)
 //│ ║        	        ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((x => 0.u) add)
 //│ ╙──      	       ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1133,7 +1133,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	((x => add.u) 0)
 //│ ╙──      	       ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1144,7 +1144,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	((x => add.u) add)
 //│ ╙──      	       ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1158,10 +1158,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((x => add.u) 0.u)
 //│ ║        	               ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((x => add.u) 0.u)
 //│ ╙──      	              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1180,7 +1180,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	((x => add.u) add.u)
 //│ ╙──      	              ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1190,13 +1190,13 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x.u) 0)
 //│ ║        	 ^^^^^^^^^^^^
-//│ ╟── integer literal of type `0` does not match type `?a`
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((x => x.u) 0)
 //│ ║        	            ^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	((x => x.u) 0)
 //│ ╙──      	       ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1206,13 +1206,13 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x.u) add)
 //│ ║        	 ^^^^^^^^^^^^^^
-//│ ╟── reference of type `int -> int -> int` does not match type `?a`
+//│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	((x => x.u) add)
 //│ ║        	            ^^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	((x => x.u) add)
 //│ ╙──      	       ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1222,10 +1222,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	((x => x.u) 0.u)
 //│ ║        	             ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((x => x.u) 0.u)
 //│ ╙──      	            ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1236,7 +1236,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	((x => x.u) add.u)
 //│ ╙──      	            ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1244,16 +1244,16 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x.u) {u: 0}.u)
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `0` does not match type `?a`
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	((x => x.u) {u: 0}.u)
 //│ ║        	                ^
-//│ ╟── but it flows into field selection with expected type `?b`
+//│ ╟── but it flows into field selection with expected type `{u: ?u}`
 //│ ║  l.+1: 	((x => x.u) {u: 0}.u)
 //│ ║        	                  ^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	((x => x.u) {u: 0}.u)
 //│ ╙──      	       ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1264,16 +1264,16 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	((x => x.u) {u: add}.u)
 //│ ║        	 ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── reference of type `int -> int -> int` does not match type `?a`
+//│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	((x => x.u) {u: add}.u)
 //│ ║        	                ^^^
-//│ ╟── but it flows into field selection with expected type `?b`
+//│ ╟── but it flows into field selection with expected type `{u: ?u}`
 //│ ║  l.+1: 	((x => x.u) {u: add}.u)
 //│ ║        	                    ^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	((x => x.u) {u: add}.u)
 //│ ╙──      	       ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1281,25 +1281,25 @@ add
 
 
 (x => 0)
-//│ res: anything -> 0
+//│ res: anything -> int
 
 (let x = 0; 0)
-//│ res: 0
+//│ res: int
 
 (let x = add; 0)
-//│ res: 0
+//│ res: int
 
 (let rec x = x; 0)
-//│ res: 0
+//│ res: int
 
 (let x = 0.u; 0)
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.u; 0)
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	(let x = 0.u; 0)
 //│ ╙──      	         ^
-//│ res: 0
+//│ res: int
 
 
 
@@ -1310,12 +1310,12 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	(let x = add.u; 0)
 //│ ╙──      	         ^^^
-//│ res: 0
+//│ res: int
 
 
 
 (let rec x = x.u; 0)
-//│ res: 0
+//│ res: int
 
 (x => add)
 //│ res: anything -> int -> int -> int
@@ -1333,7 +1333,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.v; add)
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; add)
 //│ ╙──      	         ^
 //│ res: int -> int -> int
@@ -1358,7 +1358,7 @@ add
 //│ res: 'a -> 'a
 
 (let x = 0; x)
-//│ res: 0
+//│ res: int
 
 (let x = add; x)
 //│ res: int -> int -> int
@@ -1370,10 +1370,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 0); x)
 //│ ║        	          ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 0); x)
 //│ ╙──      	          ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1381,10 +1381,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 add); x)
 //│ ║        	          ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 add); x)
 //│ ╙──      	          ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1392,10 +1392,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (0 x); x)
 //│ ║        	              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (0 x); x)
 //│ ╙──      	              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1403,10 +1403,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.u; x)
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	(let x = 0.u; x)
 //│ ╙──      	         ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1417,7 +1417,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	(let x = add.u; x)
 //│ ╙──      	         ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1428,10 +1428,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = {v: 0}.u; x)
 //│ ║        	               ^^
-//│ ╟── record of type `{v: 0}` does not have field 'u'
+//│ ╟── record of type `{v: int}` does not have field 'u'
 //│ ║  l.+1: 	(let x = {v: 0}.u; x)
 //│ ╙──      	         ^^^^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1442,7 +1442,7 @@ add
 //│ ╟── record of type `{v: int -> int -> int}` does not have field 'u'
 //│ ║  l.+1: 	(let x = {v: add}.u; x)
 //│ ╙──      	         ^^^^^^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1453,32 +1453,32 @@ add
 //│ ╟── record of type `{v: ?x}` does not have field 'u'
 //│ ║  l.+1: 	(let rec x = {v: x}.u; x)
 //│ ╙──      	             ^^^^^^
-//│ res: error
+//│ res: nothing
 
 
 
 (let x = {u: 0}; x)
-//│ res: {u: 0}
+//│ res: {u: int}
 
 (let x = {u: 0, v: 0}; x)
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 (let x = {u: 0, v: add}; x)
-//│ res: {u: 0, v: int -> int -> int}
+//│ res: {u: int, v: int -> int -> int}
 
 (let rec x = {u: 0, v: x}; x)
 //│ res: 'x
 //│   where
-//│     'x :> {u: 0, v: 'x}
+//│     'x :> {u: int, v: 'x}
 
 (let x = {u: 0, v: 0.v}; x)
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = {u: 0, v: 0.v}; x)
 //│ ║        	                    ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {u: 0, v: 0.v}; x)
 //│ ╙──      	                   ^
-//│ res: {u: 0, v: error}
+//│ res: {u: int, v: nothing}
 
 
 
@@ -1489,12 +1489,12 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {u: 0, v: add.v}; x)
 //│ ╙──      	                   ^^^
-//│ res: {u: 0, v: error}
+//│ res: {u: int, v: nothing}
 
 
 
 (let rec x = {u: 0, v: x.v}; x)
-//│ res: {u: 0, v: nothing}
+//│ res: {u: int, v: nothing}
 
 (let x = {u: add}; x)
 //│ res: {u: int -> int -> int}
@@ -1508,10 +1508,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(x => (0 0))
 //│ ║        	       ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(x => (0 0))
 //│ ╙──      	       ^
-//│ res: anything -> error
+//│ res: anything -> nothing
 
 
 
@@ -1519,10 +1519,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = 0; (0 0))
 //│ ║        	             ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = 0; (0 0))
 //│ ╙──      	             ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1530,10 +1530,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = add; (0 0))
 //│ ║        	               ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = add; (0 0))
 //│ ╙──      	               ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1541,10 +1541,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = x; (0 0))
 //│ ║        	                 ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = x; (0 0))
 //│ ╙──      	                 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1552,16 +1552,16 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 0); (0 0))
 //│ ║        	          ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 0); (0 0))
 //│ ╙──      	          ^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 0); (0 0))
 //│ ║        	                 ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 0); (0 0))
 //│ ╙──      	                 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1571,16 +1571,16 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 add); (0 0))
 //│ ║        	          ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 add); (0 0))
 //│ ╙──      	          ^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 add); (0 0))
 //│ ║        	                   ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 add); (0 0))
 //│ ╙──      	                   ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1590,16 +1590,16 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (0 x); (0 0))
 //│ ║        	              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (0 x); (0 0))
 //│ ╙──      	              ^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (0 x); (0 0))
 //│ ║        	                     ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (0 x); (0 0))
 //│ ╙──      	                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1609,10 +1609,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (y => 0); (0 0))
 //│ ║        	                    ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (y => 0); (0 0))
 //│ ╙──      	                    ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1620,10 +1620,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (y => add); (0 0))
 //│ ║        	                      ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (y => add); (0 0))
 //│ ╙──      	                      ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1631,10 +1631,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (y => y); (0 0))
 //│ ║        	                    ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (y => y); (0 0))
 //│ ╙──      	                    ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1642,10 +1642,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (let y = 0; y); (0 0))
 //│ ║        	                          ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (let y = 0; y); (0 0))
 //│ ╙──      	                          ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1653,10 +1653,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (let y = add; y); (0 0))
 //│ ║        	                            ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (let y = add; y); (0 0))
 //│ ╙──      	                            ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1664,10 +1664,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (let rec y = y; y); (0 0))
 //│ ║        	                              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (let rec y = y; y); (0 0))
 //│ ╙──      	                              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1675,10 +1675,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = x; y); (0 0))
 //│ ║        	                              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = x; y); (0 0))
 //│ ╙──      	                              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1686,10 +1686,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (y => x); (0 0))
 //│ ║        	                        ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (y => x); (0 0))
 //│ ╙──      	                        ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1697,10 +1697,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = 0; x); (0 0))
 //│ ║        	                              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = 0; x); (0 0))
 //│ ╙──      	                              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1708,10 +1708,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = add; x); (0 0))
 //│ ║        	                                ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = add; x); (0 0))
 //│ ╙──      	                                ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1719,10 +1719,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let rec y = y; x); (0 0))
 //│ ║        	                                  ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let rec y = y; x); (0 0))
 //│ ╙──      	                                  ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1730,10 +1730,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = x; x); (0 0))
 //│ ║        	                              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = x; x); (0 0))
 //│ ╙──      	                              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1741,10 +1741,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (y => (z => 0)); (0 0))
 //│ ║        	                           ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (y => (z => 0)); (0 0))
 //│ ╙──      	                           ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1752,10 +1752,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (y => (z => add)); (0 0))
 //│ ║        	                             ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (y => (z => add)); (0 0))
 //│ ╙──      	                             ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1763,10 +1763,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (y => (z => z)); (0 0))
 //│ ║        	                           ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (y => (z => z)); (0 0))
 //│ ╙──      	                           ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1774,10 +1774,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (y => (z => y)); (0 0))
 //│ ║        	                           ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (y => (z => y)); (0 0))
 //│ ╙──      	                           ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1785,10 +1785,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (let y = 0; (z => y)); (0 0))
 //│ ║        	                                 ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (let y = 0; (z => y)); (0 0))
 //│ ╙──      	                                 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1796,10 +1796,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (let y = add; (z => y)); (0 0))
 //│ ║        	                                   ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (let y = add; (z => y)); (0 0))
 //│ ╙──      	                                   ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1807,10 +1807,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (let rec y = y; (z => y)); (0 0))
 //│ ║        	                                     ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (let rec y = y; (z => y)); (0 0))
 //│ ╙──      	                                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1818,10 +1818,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = x; (z => y)); (0 0))
 //│ ║        	                                     ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = x; (z => y)); (0 0))
 //│ ╙──      	                                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1829,10 +1829,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (y => (z => x)); (0 0))
 //│ ║        	                               ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (y => (z => x)); (0 0))
 //│ ╙──      	                               ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1840,10 +1840,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = 0; (z => x)); (0 0))
 //│ ║        	                                     ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = 0; (z => x)); (0 0))
 //│ ╙──      	                                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1851,10 +1851,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = add; (z => x)); (0 0))
 //│ ║        	                                       ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = add; (z => x)); (0 0))
 //│ ╙──      	                                       ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1862,10 +1862,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let rec y = y; (z => x)); (0 0))
 //│ ║        	                                         ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let rec y = y; (z => x)); (0 0))
 //│ ╙──      	                                         ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1873,10 +1873,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = x; (z => x)); (0 0))
 //│ ║        	                                     ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = x; (z => x)); (0 0))
 //│ ╙──      	                                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1884,10 +1884,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = {u: 0}; (0 0))
 //│ ║        	                  ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = {u: 0}; (0 0))
 //│ ╙──      	                  ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1895,10 +1895,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = {u: add}; (0 0))
 //│ ║        	                    ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = {u: add}; (0 0))
 //│ ╙──      	                    ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1906,10 +1906,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = {u: x}; (0 0))
 //│ ║        	                      ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = {u: x}; (0 0))
 //│ ╙──      	                      ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1917,10 +1917,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(x => (0 add))
 //│ ║        	       ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(x => (0 add))
 //│ ╙──      	       ^
-//│ res: anything -> error
+//│ res: anything -> nothing
 
 
 
@@ -1928,10 +1928,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = 0; (0 add))
 //│ ║        	             ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = 0; (0 add))
 //│ ╙──      	             ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1939,10 +1939,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = add; (0 add))
 //│ ║        	               ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = add; (0 add))
 //│ ╙──      	               ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1950,10 +1950,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = x; (0 add))
 //│ ║        	                 ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = x; (0 add))
 //│ ╙──      	                 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1961,16 +1961,16 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.v; (0 add))
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; (0 add))
 //│ ╙──      	         ^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = 0.v; (0 add))
 //│ ║        	               ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = 0.v; (0 add))
 //│ ╙──      	               ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1986,10 +1986,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = add.v; (0 add))
 //│ ║        	                 ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = add.v; (0 add))
 //│ ╙──      	                 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -1999,10 +1999,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = x.v; (0 add))
 //│ ║        	                   ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = x.v; (0 add))
 //│ ╙──      	                   ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2010,10 +2010,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(x => (0 x))
 //│ ║        	       ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(x => (0 x))
 //│ ╙──      	       ^
-//│ res: anything -> error
+//│ res: anything -> nothing
 
 
 
@@ -2021,10 +2021,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = 0; (0 x))
 //│ ║        	             ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = 0; (0 x))
 //│ ╙──      	             ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2032,10 +2032,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = add; (0 x))
 //│ ║        	               ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = add; (0 x))
 //│ ╙──      	               ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2043,10 +2043,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = x; (0 x))
 //│ ║        	                 ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = x; (0 x))
 //│ ╙──      	                 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2054,16 +2054,16 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 0); (0 x))
 //│ ║        	          ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 0); (0 x))
 //│ ╙──      	          ^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 0); (0 x))
 //│ ║        	                 ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 0); (0 x))
 //│ ╙──      	                 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2073,16 +2073,16 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 add); (0 x))
 //│ ║        	          ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 add); (0 x))
 //│ ╙──      	          ^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 add); (0 x))
 //│ ║        	                   ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 add); (0 x))
 //│ ╙──      	                   ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2092,16 +2092,16 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (0 x); (0 x))
 //│ ║        	              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (0 x); (0 x))
 //│ ╙──      	              ^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (0 x); (0 x))
 //│ ║        	                     ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (0 x); (0 x))
 //│ ╙──      	                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2111,10 +2111,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (add 0); (0 x))
 //│ ║        	                   ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (add 0); (0 x))
 //│ ╙──      	                   ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2128,10 +2128,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (add add); (0 x))
 //│ ║        	                     ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (add add); (0 x))
 //│ ╙──      	                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2141,7 +2141,7 @@ add
 //│ ╔══[ERROR] Type mismatch in binding of application:
 //│ ║  l.+1: 	(let rec x = (add x); (0 x))
 //│ ║        	             ^^^^^^^
-//│ ╟── application of type `int -> int` does not match type `?x`
+//│ ╟── application of type `int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	(let rec x = (add x); (0 x))
 //│ ║        	              ^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -2150,10 +2150,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (add x); (0 x))
 //│ ║        	                       ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (add x); (0 x))
 //│ ╙──      	                       ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2164,10 +2164,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (x 0); (0 x))
 //│ ║        	                     ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (x 0); (0 x))
 //│ ╙──      	                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2175,10 +2175,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (x add); (0 x))
 //│ ║        	                       ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (x add); (0 x))
 //│ ╙──      	                       ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2186,10 +2186,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (x x); (0 x))
 //│ ║        	                     ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (x x); (0 x))
 //│ ╙──      	                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2197,10 +2197,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (y => 0); (0 x))
 //│ ║        	                    ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (y => 0); (0 x))
 //│ ╙──      	                    ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2208,10 +2208,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (y => add); (0 x))
 //│ ║        	                      ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (y => add); (0 x))
 //│ ╙──      	                      ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2219,10 +2219,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (y => y); (0 x))
 //│ ║        	                    ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (y => y); (0 x))
 //│ ╙──      	                    ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2230,10 +2230,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (y => x); (0 x))
 //│ ║        	                        ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (y => x); (0 x))
 //│ ╙──      	                        ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2241,10 +2241,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = 0; x); (0 x))
 //│ ║        	                              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = 0; x); (0 x))
 //│ ╙──      	                              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2252,10 +2252,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = add; x); (0 x))
 //│ ║        	                                ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = add; x); (0 x))
 //│ ╙──      	                                ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2263,10 +2263,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let rec y = y; x); (0 x))
 //│ ║        	                                  ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let rec y = y; x); (0 x))
 //│ ╙──      	                                  ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2274,10 +2274,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (let y = x; x); (0 x))
 //│ ║        	                              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (let y = x; x); (0 x))
 //│ ╙──      	                              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2285,10 +2285,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = {u: 0}; (0 x))
 //│ ║        	                  ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = {u: 0}; (0 x))
 //│ ╙──      	                  ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2296,10 +2296,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = {u: add}; (0 x))
 //│ ║        	                    ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = {u: add}; (0 x))
 //│ ╙──      	                    ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2307,10 +2307,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = {u: add, v: 0}; (0 x))
 //│ ║        	                          ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = {u: add, v: 0}; (0 x))
 //│ ╙──      	                          ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2318,10 +2318,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = {u: add, v: add}; (0 x))
 //│ ║        	                            ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = {u: add, v: add}; (0 x))
 //│ ╙──      	                            ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2329,10 +2329,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = {u: add, v: x}; (0 x))
 //│ ║        	                              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = {u: add, v: x}; (0 x))
 //│ ╙──      	                              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2340,10 +2340,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = {u: x}; (0 x))
 //│ ║        	                      ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = {u: x}; (0 x))
 //│ ╙──      	                      ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2351,16 +2351,16 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.v; (0 x))
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; (0 x))
 //│ ╙──      	         ^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = 0.v; (0 x))
 //│ ║        	               ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = 0.v; (0 x))
 //│ ╙──      	               ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2376,10 +2376,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = add.v; (0 x))
 //│ ║        	                 ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = add.v; (0 x))
 //│ ╙──      	                 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2389,10 +2389,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = x.v; (0 x))
 //│ ║        	                   ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = x.v; (0 x))
 //│ ╙──      	                   ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2400,10 +2400,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = {v: 0}; (0 x))
 //│ ║        	                  ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = {v: 0}; (0 x))
 //│ ╙──      	                  ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2411,10 +2411,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = {v: add}; (0 x))
 //│ ║        	                    ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = {v: add}; (0 x))
 //│ ╙──      	                    ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -2422,33 +2422,33 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = {v: x}; (0 x))
 //│ ║        	                      ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = {v: x}; (0 x))
 //│ ╙──      	                      ^
-//│ res: error
+//│ res: nothing
 
 
 
 (x => {u: 0})
-//│ res: anything -> {u: 0}
+//│ res: anything -> {u: int}
 
 (let x = 0; {u: 0})
-//│ res: {u: 0}
+//│ res: {u: int}
 
 (let x = add; {u: 0})
-//│ res: {u: 0}
+//│ res: {u: int}
 
 (let rec x = x; {u: 0})
-//│ res: {u: 0}
+//│ res: {u: int}
 
 (let x = (0 0); {u: 0})
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 0); {u: 0})
 //│ ║        	          ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 0); {u: 0})
 //│ ╙──      	          ^
-//│ res: {u: 0}
+//│ res: {u: int}
 
 
 
@@ -2456,10 +2456,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 add); {u: 0})
 //│ ║        	          ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 add); {u: 0})
 //│ ╙──      	          ^
-//│ res: {u: 0}
+//│ res: {u: int}
 
 
 
@@ -2467,10 +2467,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (0 x); {u: 0})
 //│ ║        	              ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (0 x); {u: 0})
 //│ ╙──      	              ^
-//│ res: {u: 0}
+//│ res: {u: int}
 
 
 
@@ -2478,10 +2478,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 {v: 0}); {u: 0})
 //│ ║        	          ^^^^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 {v: 0}); {u: 0})
 //│ ╙──      	          ^
-//│ res: {u: 0}
+//│ res: {u: int}
 
 
 
@@ -2489,10 +2489,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let x = (0 {v: add}); {u: 0})
 //│ ║        	          ^^^^^^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let x = (0 {v: add}); {u: 0})
 //│ ╙──      	          ^
-//│ res: {u: 0}
+//│ res: {u: int}
 
 
 
@@ -2500,10 +2500,10 @@ add
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(let rec x = (0 {v: x}); {u: 0})
 //│ ║        	              ^^^^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	(let rec x = (0 {v: x}); {u: 0})
 //│ ╙──      	              ^
-//│ res: {u: 0}
+//│ res: {u: int}
 
 
 
@@ -2511,10 +2511,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.u; {u: 0})
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	(let x = 0.u; {u: 0})
 //│ ╙──      	         ^
-//│ res: {u: 0}
+//│ res: {u: int}
 
 
 
@@ -2525,21 +2525,21 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	(let x = add.u; {u: 0})
 //│ ╙──      	         ^^^
-//│ res: {u: 0}
+//│ res: {u: int}
 
 
 
 (let rec x = x.u; {u: 0})
-//│ res: {u: 0}
+//│ res: {u: int}
 
 (let x = 0.u.u; {u: 0})
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.u.u; {u: 0})
 //│ ║        	            ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	(let x = 0.u.u; {u: 0})
 //│ ╙──      	         ^
-//│ res: {u: 0}
+//│ res: {u: int}
 
 
 
@@ -2550,27 +2550,27 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	(let x = add.u.u; {u: 0})
 //│ ╙──      	         ^^^
-//│ res: {u: 0}
+//│ res: {u: int}
 
 
 
 (let rec x = x.u.u; {u: 0})
-//│ res: {u: 0}
+//│ res: {u: int}
 
 (x => {u: 0, v: 0})
-//│ res: anything -> {u: 0, v: 0}
+//│ res: anything -> {u: int, v: int}
 
 (let x = 0; {u: 0, v: 0})
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 (let x = add; {u: 0, v: 0})
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 (let rec x = x; {u: 0, v: 0})
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 (let x = (add 0); {u: 0, v: 0})
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 (let x = (add add); {u: 0, v: 0})
 //│ ╔══[ERROR] Type mismatch in application:
@@ -2579,7 +2579,7 @@ add
 //│ ╟── reference of type `int -> int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	(let x = (add add); {u: 0, v: 0})
 //│ ╙──      	              ^^^
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 
 
@@ -2587,13 +2587,13 @@ add
 //│ ╔══[ERROR] Type mismatch in binding of application:
 //│ ║  l.+1: 	(let rec x = (add x); {u: 0, v: 0})
 //│ ║        	             ^^^^^^^
-//│ ╟── application of type `int -> int` does not match type `?x`
+//│ ╟── application of type `int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	(let rec x = (add x); {u: 0, v: 0})
 //│ ║        	              ^^^^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	(let rec x = (add x); {u: 0, v: 0})
 //│ ╙──      	                  ^
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 
 
@@ -2602,10 +2602,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.u; {u: 0, v: 0})
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	(let x = 0.u; {u: 0, v: 0})
 //│ ╙──      	         ^
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 
 
@@ -2616,46 +2616,46 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	(let x = add.u; {u: 0, v: 0})
 //│ ╙──      	         ^^^
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 
 
 (let rec x = x.u; {u: 0, v: 0})
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 (x => {u: 0, v: add})
-//│ res: anything -> {u: 0, v: int -> int -> int}
+//│ res: anything -> {u: int, v: int -> int -> int}
 
 (let x = 0; {u: 0, v: add})
-//│ res: {u: 0, v: int -> int -> int}
+//│ res: {u: int, v: int -> int -> int}
 
 (let x = add; {u: 0, v: add})
-//│ res: {u: 0, v: int -> int -> int}
+//│ res: {u: int, v: int -> int -> int}
 
 (let rec x = x; {u: 0, v: add})
-//│ res: {u: 0, v: int -> int -> int}
+//│ res: {u: int, v: int -> int -> int}
 
 (x => {u: 0, v: x})
-//│ res: 'a -> {u: 0, v: 'a}
+//│ res: 'a -> {u: int, v: 'a}
 
 (let x = 0; {u: 0, v: x})
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 (let x = add; {u: 0, v: x})
-//│ res: {u: 0, v: int -> int -> int}
+//│ res: {u: int, v: int -> int -> int}
 
 (let rec x = x; {u: 0, v: x})
-//│ res: {u: 0, v: nothing}
+//│ res: {u: int, v: nothing}
 
 (let rec x = (x 0); {u: 0, v: x})
-//│ res: {u: 0, v: nothing}
+//│ res: {u: int, v: nothing}
 
 (let rec x = (x add); {u: 0, v: x})
-//│ res: {u: 0, v: nothing}
+//│ res: {u: int, v: nothing}
 
 // FIXME
 (let rec x = (x x); {u: 0, v: x})
-//│ res: {u: 0, v: nothing}
+//│ res: {u: int, v: nothing}
 
 (x => {u: add})
 //│ res: anything -> {u: int -> int -> int}
@@ -2697,7 +2697,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.v; {u: add})
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; {u: add})
 //│ ╙──      	         ^
 //│ res: {u: int -> int -> int}
@@ -2731,7 +2731,7 @@ add
 //│ res: 'a -> {u: 'a}
 
 (let x = 0; {u: x})
-//│ res: {u: 0}
+//│ res: {u: int}
 
 (let x = add; {u: x})
 //│ res: {u: int -> int -> int}
@@ -2740,7 +2740,7 @@ add
 //│ res: {u: nothing}
 
 (let x = {v: 0}; {u: x})
-//│ res: {u: {v: 0}}
+//│ res: {u: {v: int}}
 
 (let x = {v: add}; {u: x})
 //│ res: {u: {v: int -> int -> int}}
@@ -2751,25 +2751,25 @@ add
 //│     'x :> {v: 'x}
 
 (x => {u: x, v: 0})
-//│ res: 'a -> {u: 'a, v: 0}
+//│ res: 'a -> {u: 'a, v: int}
 
 (let x = 0; {u: x, v: 0})
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 (let x = add; {u: x, v: 0})
-//│ res: {u: int -> int -> int, v: 0}
+//│ res: {u: int -> int -> int, v: int}
 
 (let rec x = x; {u: x, v: 0})
-//│ res: {u: nothing, v: 0}
+//│ res: {u: nothing, v: int}
 
 (let x = 0.v; {u: x, v: 0})
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.v; {u: x, v: 0})
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; {u: x, v: 0})
 //│ ╙──      	         ^
-//│ res: {u: error, v: 0}
+//│ res: {u: nothing, v: int}
 
 
 
@@ -2780,18 +2780,18 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = add.v; {u: x, v: 0})
 //│ ╙──      	         ^^^
-//│ res: {u: error, v: 0}
+//│ res: {u: nothing, v: int}
 
 
 
 (let rec x = x.v; {u: x, v: 0})
-//│ res: {u: nothing, v: 0}
+//│ res: {u: nothing, v: int}
 
 (x => {u: x, v: add})
 //│ res: 'a -> {u: 'a, v: int -> int -> int}
 
 (let x = 0; {u: x, v: add})
-//│ res: {u: 0, v: int -> int -> int}
+//│ res: {u: int, v: int -> int -> int}
 
 (let x = add; {u: x, v: add})
 //│ res: {u: int -> int -> int, v: int -> int -> int}
@@ -2803,10 +2803,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.u; {u: x, v: add})
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	(let x = 0.u; {u: x, v: add})
 //│ ╙──      	         ^
-//│ res: {u: error, v: int -> int -> int}
+//│ res: {u: nothing, v: int -> int -> int}
 
 
 
@@ -2817,7 +2817,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	(let x = add.u; {u: x, v: add})
 //│ ╙──      	         ^^^
-//│ res: {u: error, v: int -> int -> int}
+//│ res: {u: nothing, v: int -> int -> int}
 
 
 
@@ -2828,10 +2828,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.v; {u: x, v: add})
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; {u: x, v: add})
 //│ ╙──      	         ^
-//│ res: {u: error, v: int -> int -> int}
+//│ res: {u: nothing, v: int -> int -> int}
 
 
 
@@ -2842,7 +2842,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = add.v; {u: x, v: add})
 //│ ╙──      	         ^^^
-//│ res: {u: error, v: int -> int -> int}
+//│ res: {u: nothing, v: int -> int -> int}
 
 
 
@@ -2853,7 +2853,7 @@ add
 //│ res: 'a -> {u: 'a, v: 'a}
 
 (let x = 0; {u: x, v: x})
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 (let x = add; {u: x, v: x})
 //│ res: {u: int -> int -> int, v: int -> int -> int}
@@ -2862,7 +2862,7 @@ add
 //│ res: {u: nothing, v: nothing}
 
 (let x = {u: 0}; {u: x, v: x})
-//│ res: {u: {u: 0}, v: {u: 0}}
+//│ res: {u: {u: int}, v: {u: int}}
 
 (let x = {u: add}; {u: x, v: x})
 //│ res: {u: {u: int -> int -> int}, v: {u: int -> int -> int}}
@@ -2875,7 +2875,7 @@ add
 (let rec x = {u: x, v: 0}; {u: x, v: x})
 //│ res: {u: 'x, v: 'x}
 //│   where
-//│     'x :> {u: 'x, v: 0}
+//│     'x :> {u: 'x, v: int}
 
 (let rec x = {u: x, v: add}; {u: x, v: x})
 //│ res: {u: 'x, v: 'x}
@@ -2888,7 +2888,7 @@ add
 //│     'x :> {u: 'x, v: 'x}
 
 (let x = {v: 0}; {u: x, v: x})
-//│ res: {u: {v: 0}, v: {v: 0}}
+//│ res: {u: {v: int}, v: {v: int}}
 
 (let x = {v: add}; {u: x, v: x})
 //│ res: {u: {v: int -> int -> int}, v: {v: int -> int -> int}}
@@ -2902,10 +2902,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(x => {u: 0.v})
 //│ ║        	           ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(x => {u: 0.v})
 //│ ╙──      	          ^
-//│ res: anything -> {u: error}
+//│ res: anything -> {u: nothing}
 
 
 
@@ -2913,10 +2913,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0; {u: 0.v})
 //│ ║        	                 ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0; {u: 0.v})
 //│ ╙──      	                ^
-//│ res: {u: error}
+//│ res: {u: nothing}
 
 
 
@@ -2924,10 +2924,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = add; {u: 0.v})
 //│ ║        	                   ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = add; {u: 0.v})
 //│ ╙──      	                  ^
-//│ res: {u: error}
+//│ res: {u: nothing}
 
 
 
@@ -2935,10 +2935,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let rec x = x; {u: 0.v})
 //│ ║        	                     ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = x; {u: 0.v})
 //│ ╙──      	                    ^
-//│ res: {u: error}
+//│ res: {u: nothing}
 
 
 
@@ -2949,7 +2949,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(x => {u: add.v})
 //│ ╙──      	          ^^^
-//│ res: anything -> {u: error}
+//│ res: anything -> {u: nothing}
 
 
 
@@ -2960,7 +2960,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0; {u: add.v})
 //│ ╙──      	                ^^^
-//│ res: {u: error}
+//│ res: {u: nothing}
 
 
 
@@ -2971,7 +2971,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = add; {u: add.v})
 //│ ╙──      	                  ^^^
-//│ res: {u: error}
+//│ res: {u: nothing}
 
 
 
@@ -2982,7 +2982,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = x; {u: add.v})
 //│ ╙──      	                    ^^^
-//│ res: {u: error}
+//│ res: {u: nothing}
 
 
 
@@ -2993,13 +2993,13 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0; {u: x.v})
 //│ ║        	                 ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0; {u: x.v})
 //│ ║        	         ^
 //│ ╟── but it flows into reference with expected type `{v: ?v}`
 //│ ║  l.+1: 	(let x = 0; {u: x.v})
 //│ ╙──      	                ^
-//│ res: {u: error}
+//│ res: {u: nothing}
 
 
 
@@ -3014,7 +3014,7 @@ add
 //│ ╟── but it flows into reference with expected type `{v: ?v}`
 //│ ║  l.+1: 	(let x = add; {u: x.v})
 //│ ╙──      	                  ^
-//│ res: {u: error}
+//│ res: {u: nothing}
 
 
 
@@ -3026,10 +3026,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.v; {u: x.v})
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; {u: x.v})
 //│ ╙──      	         ^
-//│ res: {u: error}
+//│ res: {u: nothing}
 
 
 
@@ -3040,7 +3040,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = add.v; {u: x.v})
 //│ ╙──      	         ^^^
-//│ res: {u: error}
+//│ res: {u: nothing}
 
 
 
@@ -3048,7 +3048,7 @@ add
 //│ res: {u: nothing}
 
 (let x = {v: 0}; {u: x.v})
-//│ res: {u: 0}
+//│ res: {u: int}
 
 (let x = {v: add}; {u: x.v})
 //│ res: {u: int -> int -> int}
@@ -3059,7 +3059,7 @@ add
 //│     'x :> {v: 'x}
 
 (let x = {v: (y => 0)}; {u: x.v})
-//│ res: {u: anything -> 0}
+//│ res: {u: anything -> int}
 
 (let x = {v: (y => add)}; {u: x.v})
 //│ res: {u: anything -> int -> int -> int}
@@ -3076,10 +3076,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(x => 0.v)
 //│ ║        	       ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(x => 0.v)
 //│ ╙──      	      ^
-//│ res: anything -> error
+//│ res: anything -> nothing
 
 
 
@@ -3087,10 +3087,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0; 0.v)
 //│ ║        	             ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0; 0.v)
 //│ ╙──      	            ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3098,10 +3098,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = add; 0.v)
 //│ ║        	               ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = add; 0.v)
 //│ ╙──      	              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3109,10 +3109,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let rec x = x; 0.v)
 //│ ║        	                 ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = x; 0.v)
 //│ ╙──      	                ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3120,16 +3120,16 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.u; 0.v)
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	(let x = 0.u; 0.v)
 //│ ╙──      	         ^
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.u; 0.v)
 //│ ║        	               ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.u; 0.v)
 //│ ╙──      	              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3145,10 +3145,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = add.u; 0.v)
 //│ ║        	                 ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = add.u; 0.v)
 //│ ╙──      	                ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3158,10 +3158,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let rec x = x.u; 0.v)
 //│ ║        	                   ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = x.u; 0.v)
 //│ ╙──      	                  ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3169,16 +3169,16 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.v; 0.v)
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; 0.v)
 //│ ╙──      	         ^
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.v; 0.v)
 //│ ║        	               ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; 0.v)
 //│ ╙──      	              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3194,10 +3194,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = add.v; 0.v)
 //│ ║        	                 ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = add.v; 0.v)
 //│ ╙──      	                ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3207,10 +3207,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let rec x = x.v; 0.v)
 //│ ║        	                   ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = x.v; 0.v)
 //│ ╙──      	                  ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3218,10 +3218,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = {v: 0}; 0.v)
 //│ ║        	                  ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {v: 0}; 0.v)
 //│ ╙──      	                 ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3229,10 +3229,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = {v: add}; 0.v)
 //│ ║        	                    ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {v: add}; 0.v)
 //│ ╙──      	                   ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3240,10 +3240,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let rec x = {v: x}; 0.v)
 //│ ║        	                      ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = {v: x}; 0.v)
 //│ ╙──      	                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3251,16 +3251,16 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = {v: 0.v}; 0.v)
 //│ ║        	              ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {v: 0.v}; 0.v)
 //│ ╙──      	             ^
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = {v: 0.v}; 0.v)
 //│ ║        	                    ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {v: 0.v}; 0.v)
 //│ ╙──      	                   ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3276,10 +3276,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = {v: add.v}; 0.v)
 //│ ║        	                      ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {v: add.v}; 0.v)
 //│ ╙──      	                     ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3289,10 +3289,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let rec x = {v: x.v}; 0.v)
 //│ ║        	                        ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = {v: x.v}; 0.v)
 //│ ╙──      	                       ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3303,7 +3303,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(x => add.v)
 //│ ╙──      	      ^^^
-//│ res: anything -> error
+//│ res: anything -> nothing
 
 
 
@@ -3314,7 +3314,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0; add.v)
 //│ ╙──      	            ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3325,7 +3325,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = add; add.v)
 //│ ╙──      	              ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3336,7 +3336,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = x; add.v)
 //│ ╙──      	                ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3347,7 +3347,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {u: 0}; add.v)
 //│ ╙──      	                 ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3358,7 +3358,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {u: add}; add.v)
 //│ ╙──      	                   ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3369,7 +3369,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = {u: x}; add.v)
 //│ ╙──      	                     ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3380,7 +3380,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {u: {v: 0}}; add.v)
 //│ ╙──      	                      ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3391,7 +3391,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = {u: {v: add}}; add.v)
 //│ ╙──      	                        ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3402,7 +3402,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = {u: {v: x}}; add.v)
 //│ ╙──      	                          ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3410,7 +3410,7 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0.v; add.v)
 //│ ║        	          ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; add.v)
 //│ ╙──      	         ^
 //│ ╔══[ERROR] Type mismatch in field selection:
@@ -3419,7 +3419,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0.v; add.v)
 //│ ╙──      	              ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3438,7 +3438,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let x = add.v; add.v)
 //│ ╙──      	                ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3451,7 +3451,7 @@ add
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	(let rec x = x.v; add.v)
 //│ ╙──      	                  ^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3462,13 +3462,13 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	(let x = 0; x.v)
 //│ ║        	             ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	(let x = 0; x.v)
 //│ ║        	         ^
 //│ ╟── but it flows into reference with expected type `{v: ?v}`
 //│ ║  l.+1: 	(let x = 0; x.v)
 //│ ╙──      	            ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3483,7 +3483,7 @@ add
 //│ ╟── but it flows into reference with expected type `{v: ?v}`
 //│ ║  l.+1: 	(let x = add; x.v)
 //│ ╙──      	              ^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3492,7 +3492,7 @@ add
 //│ res: nothing
 
 (let x = {v: 0}; x.v)
-//│ res: 0
+//│ res: int
 
 (let x = {v: add}; x.v)
 //│ res: int -> int -> int
@@ -3503,7 +3503,7 @@ add
 //│     'x :> {v: 'x}
 
 (let x = {v: {v: 0}}; x.v)
-//│ res: {v: 0}
+//│ res: {v: int}
 
 (let x = {v: {v: add}}; x.v)
 //│ res: {v: int -> int -> int}
@@ -3517,10 +3517,10 @@ add
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	0.u
 //│ ║        	 ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	0.u
 //│ ╙──      	^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3531,7 +3531,7 @@ add.u
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	add.u
 //│ ╙──      	^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3539,10 +3539,10 @@ add.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	0.v.u
 //│ ║        	   ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	0.v.u
 //│ ╙──      	^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3553,7 +3553,7 @@ add.v.u
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	add.v.u
 //│ ╙──      	^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3561,10 +3561,10 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{v: 0}.u
 //│ ║        	      ^^
-//│ ╟── record of type `{v: 0}` does not have field 'u'
+//│ ╟── record of type `{v: int}` does not have field 'u'
 //│ ║  l.+1: 	{v: 0}.u
 //│ ╙──      	^^^^^^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -3575,39 +3575,39 @@ add.v.u
 //│ ╟── record of type `{v: int -> int -> int}` does not have field 'u'
 //│ ║  l.+1: 	{v: add}.u
 //│ ╙──      	^^^^^^^^
-//│ res: error
+//│ res: nothing
 
 
 
 {u: 0}
-//│ res: {u: 0}
+//│ res: {u: int}
 
 {u: 0, v: 0}
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 {u: 0, v: add}
-//│ res: {u: 0, v: int -> int -> int}
+//│ res: {u: int, v: int -> int -> int}
 
 {u: 0, v: (x => 0)}
-//│ res: {u: 0, v: anything -> 0}
+//│ res: {u: int, v: anything -> int}
 
 {u: 0, v: (let x = 0; 0)}
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 {u: 0, v: (let x = add; 0)}
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 {u: 0, v: (let rec x = x; 0)}
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 {u: 0, v: (let x = 0.u; 0)}
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: 0, v: (let x = 0.u; 0)}
 //│ ║        	                    ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	{u: 0, v: (let x = 0.u; 0)}
 //│ ╙──      	                   ^
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 
 
@@ -3618,66 +3618,66 @@ add.v.u
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	{u: 0, v: (let x = add.u; 0)}
 //│ ╙──      	                   ^^^
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 
 
 {u: 0, v: (let rec x = x.u; 0)}
-//│ res: {u: 0, v: 0}
+//│ res: {u: int, v: int}
 
 {u: 0, v: (x => add)}
-//│ res: {u: 0, v: anything -> int -> int -> int}
+//│ res: {u: int, v: anything -> int -> int -> int}
 
 {u: 0, v: (x => x)}
-//│ res: {u: 0, v: 'a -> 'a}
+//│ res: {u: int, v: 'a -> 'a}
 
 {u: 0, v: {u: 0}}
-//│ res: {u: 0, v: {u: 0}}
+//│ res: {u: int, v: {u: int}}
 
 {u: 0, v: {u: 0, v: 0}}
-//│ res: {u: 0, v: {u: 0, v: 0}}
+//│ res: {u: int, v: {u: int, v: int}}
 
 {u: 0, v: {u: 0, v: add}}
-//│ res: {u: 0, v: {u: 0, v: int -> int -> int}}
+//│ res: {u: int, v: {u: int, v: int -> int -> int}}
 
 {u: 0, v: {u: add}}
-//│ res: {u: 0, v: {u: int -> int -> int}}
+//│ res: {u: int, v: {u: int -> int -> int}}
 
 {u: 0, v: {v: 0}}
-//│ res: {u: 0, v: {v: 0}}
+//│ res: {u: int, v: {v: int}}
 
 {u: 0, v: {v: add}}
-//│ res: {u: 0, v: {v: int -> int -> int}}
+//│ res: {u: int, v: {v: int -> int -> int}}
 
 {u: add}
 //│ res: {u: int -> int -> int}
 
 {u: add, v: 0}
-//│ res: {u: int -> int -> int, v: 0}
+//│ res: {u: int -> int -> int, v: int}
 
 {u: add, v: add}
 //│ res: {u: int -> int -> int, v: int -> int -> int}
 
 {u: add, v: {u: 0}}
-//│ res: {u: int -> int -> int, v: {u: 0}}
+//│ res: {u: int -> int -> int, v: {u: int}}
 
 {u: add, v: {u: add}}
 //│ res: {u: int -> int -> int, v: {u: int -> int -> int}}
 
 {u: add, v: {u: add, v: 0}}
-//│ res: {u: int -> int -> int, v: {u: int -> int -> int, v: 0}}
+//│ res: {u: int -> int -> int, v: {u: int -> int -> int, v: int}}
 
 {u: add, v: {u: add, v: add}}
 //│ res: {u: int -> int -> int, v: {u: int -> int -> int, v: int -> int -> int}}
 
 {u: add, v: {u: (x => 0)}}
-//│ res: {u: int -> int -> int, v: {u: anything -> 0}}
+//│ res: {u: int -> int -> int, v: {u: anything -> int}}
 
 {u: add, v: {u: (x => add)}}
 //│ res: {u: int -> int -> int, v: {u: anything -> int -> int -> int}}
 
 {u: add, v: {u: (x => add), v: 0}}
-//│ res: {u: int -> int -> int, v: {u: anything -> int -> int -> int, v: 0}}
+//│ res: {u: int -> int -> int, v: {u: anything -> int -> int -> int, v: int}}
 
 {u: add, v: {u: (x => add), v: add}}
 //│ res: {u: int -> int -> int, v: {u: anything -> int -> int -> int, v: int -> int -> int}}
@@ -3686,7 +3686,7 @@ add.v.u
 //│ res: {u: int -> int -> int, v: {u: 'a -> 'a}}
 
 {u: add, v: {u: {v: 0}}}
-//│ res: {u: int -> int -> int, v: {u: {v: 0}}}
+//│ res: {u: int -> int -> int, v: {u: {v: int}}}
 
 {u: add, v: {u: {v: add}}}
 //│ res: {u: int -> int -> int, v: {u: {v: int -> int -> int}}}
@@ -3695,10 +3695,10 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: add, v: 0.v}
 //│ ║        	             ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	{u: add, v: 0.v}
 //│ ╙──      	            ^
-//│ res: {u: int -> int -> int, v: error}
+//│ res: {u: int -> int -> int, v: nothing}
 
 
 
@@ -3709,7 +3709,7 @@ add.v.u
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	{u: add, v: add.v}
 //│ ╙──      	            ^^^
-//│ res: {u: int -> int -> int, v: error}
+//│ res: {u: int -> int -> int, v: nothing}
 
 
 
@@ -3717,13 +3717,13 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: add, v: (x => 0).v}
 //│ ║        	                    ^^
-//│ ╟── function of type `?a -> 0` does not have field 'v'
+//│ ╟── function of type `?a -> int` does not have field 'v'
 //│ ║  l.+1: 	{u: add, v: (x => 0).v}
 //│ ║        	             ^^^^^^
 //│ ╟── but it flows into receiver with expected type `{v: ?v}`
 //│ ║  l.+1: 	{u: add, v: (x => 0).v}
 //│ ╙──      	            ^^^^^^^^
-//│ res: {u: int -> int -> int, v: error}
+//│ res: {u: int -> int -> int, v: nothing}
 
 
 
@@ -3738,7 +3738,7 @@ add.v.u
 //│ ╟── but it flows into receiver with expected type `{v: ?v}`
 //│ ║  l.+1: 	{u: add, v: (x => add).v}
 //│ ╙──      	            ^^^^^^^^^^
-//│ res: {u: int -> int -> int, v: error}
+//│ res: {u: int -> int -> int, v: nothing}
 
 
 
@@ -3753,7 +3753,7 @@ add.v.u
 //│ ╟── but it flows into receiver with expected type `{v: ?v}`
 //│ ║  l.+1: 	{u: add, v: (x => x).v}
 //│ ╙──      	            ^^^^^^^^
-//│ res: {u: int -> int -> int, v: error}
+//│ res: {u: int -> int -> int, v: nothing}
 
 
 
@@ -3762,10 +3762,10 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: add, v: {u: 0}.v}
 //│ ║        	                  ^^
-//│ ╟── record of type `{u: 0}` does not have field 'v'
+//│ ╟── record of type `{u: int}` does not have field 'v'
 //│ ║  l.+1: 	{u: add, v: {u: 0}.v}
 //│ ╙──      	            ^^^^^^
-//│ res: {u: int -> int -> int, v: error}
+//│ res: {u: int -> int -> int, v: nothing}
 
 
 
@@ -3776,27 +3776,27 @@ add.v.u
 //│ ╟── record of type `{u: int -> int -> int}` does not have field 'v'
 //│ ║  l.+1: 	{u: add, v: {u: add}.v}
 //│ ╙──      	            ^^^^^^^^
-//│ res: {u: int -> int -> int, v: error}
+//│ res: {u: int -> int -> int, v: nothing}
 
 
 
 {u: add, v: {v: 0}}
-//│ res: {u: int -> int -> int, v: {v: 0}}
+//│ res: {u: int -> int -> int, v: {v: int}}
 
 {u: add, v: {v: add}}
 //│ res: {u: int -> int -> int, v: {v: int -> int -> int}}
 
 {u: {u: 0}}
-//│ res: {u: {u: 0}}
+//│ res: {u: {u: int}}
 
 {u: {u: 0}, v: 0}
-//│ res: {u: {u: 0}, v: 0}
+//│ res: {u: {u: int}, v: int}
 
 {u: {u: 0}, v: add}
-//│ res: {u: {u: 0}, v: int -> int -> int}
+//│ res: {u: {u: int}, v: int -> int -> int}
 
 {u: {u: 0}, v: (add 0)}
-//│ res: {u: {u: 0}, v: int -> int}
+//│ res: {u: {u: int}, v: int -> int}
 
 {u: {u: 0}, v: (add add)}
 //│ ╔══[ERROR] Type mismatch in application:
@@ -3805,7 +3805,7 @@ add.v.u
 //│ ╟── reference of type `int -> int -> int` is not an instance of type `int`
 //│ ║  l.+1: 	{u: {u: 0}, v: (add add)}
 //│ ╙──      	                    ^^^
-//│ res: {u: {u: 0}, v: int -> int | error}
+//│ res: {u: {u: int}, v: int -> int}
 
 
 
@@ -3813,10 +3813,10 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	{u: {u: 0}, v: (add {v: 0})}
 //│ ║        	                ^^^^^^^^^^
-//│ ╟── record of type `{v: 0}` is not an instance of type `int`
+//│ ╟── record of type `{v: int}` is not an instance of type `int`
 //│ ║  l.+1: 	{u: {u: 0}, v: (add {v: 0})}
 //│ ╙──      	                    ^^^^^^
-//│ res: {u: {u: 0}, v: int -> int | error}
+//│ res: {u: {u: int}, v: int -> int}
 
 
 
@@ -3827,27 +3827,27 @@ add.v.u
 //│ ╟── record of type `{v: int -> int -> int}` is not an instance of type `int`
 //│ ║  l.+1: 	{u: {u: 0}, v: (add {v: add})}
 //│ ╙──      	                    ^^^^^^^^
-//│ res: {u: {u: 0}, v: int -> int | error}
+//│ res: {u: {u: int}, v: int -> int}
 
 
 
 {u: {u: 0}, v: (x => 0)}
-//│ res: {u: {u: 0}, v: anything -> 0}
+//│ res: {u: {u: int}, v: anything -> int}
 
 {u: {u: 0}, v: (x => add)}
-//│ res: {u: {u: 0}, v: anything -> int -> int -> int}
+//│ res: {u: {u: int}, v: anything -> int -> int -> int}
 
 {u: {u: 0}, v: (x => x)}
-//│ res: {u: {u: 0}, v: 'a -> 'a}
+//│ res: {u: {u: int}, v: 'a -> 'a}
 
 {u: {u: 0}, v: (x => 0.u)}
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: {u: 0}, v: (x => 0.u)}
 //│ ║        	                      ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	{u: {u: 0}, v: (x => 0.u)}
 //│ ╙──      	                     ^
-//│ res: {u: {u: 0}, v: anything -> error}
+//│ res: {u: {u: int}, v: anything -> nothing}
 
 
 
@@ -3855,10 +3855,10 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: {u: 0}, v: (let x = 0; 0.u)}
 //│ ║        	                            ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	{u: {u: 0}, v: (let x = 0; 0.u)}
 //│ ╙──      	                           ^
-//│ res: {u: {u: 0}, v: error}
+//│ res: {u: {u: int}, v: nothing}
 
 
 
@@ -3866,10 +3866,10 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: {u: 0}, v: (let x = add; 0.u)}
 //│ ║        	                              ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	{u: {u: 0}, v: (let x = add; 0.u)}
 //│ ╙──      	                             ^
-//│ res: {u: {u: 0}, v: error}
+//│ res: {u: {u: int}, v: nothing}
 
 
 
@@ -3877,10 +3877,10 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: {u: 0}, v: (let rec x = x; 0.u)}
 //│ ║        	                                ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	{u: {u: 0}, v: (let rec x = x; 0.u)}
 //│ ╙──      	                               ^
-//│ res: {u: {u: 0}, v: error}
+//│ res: {u: {u: int}, v: nothing}
 
 
 
@@ -3891,21 +3891,21 @@ add.v.u
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	{u: {u: 0}, v: (x => add.u)}
 //│ ╙──      	                     ^^^
-//│ res: {u: {u: 0}, v: anything -> error}
+//│ res: {u: {u: int}, v: anything -> nothing}
 
 
 
 {u: {u: 0}, v: (x => x.u)}
-//│ res: {u: {u: 0}, v: {u: 'u} -> 'u}
+//│ res: {u: {u: int}, v: {u: 'u} -> 'u}
 
 {u: {u: 0}, v: 0.v}
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: {u: 0}, v: 0.v}
 //│ ║        	                ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	{u: {u: 0}, v: 0.v}
 //│ ╙──      	               ^
-//│ res: {u: {u: 0}, v: error}
+//│ res: {u: {u: int}, v: nothing}
 
 
 
@@ -3916,7 +3916,7 @@ add.v.u
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	{u: {u: 0}, v: add.v}
 //│ ╙──      	               ^^^
-//│ res: {u: {u: 0}, v: error}
+//│ res: {u: {u: int}, v: nothing}
 
 
 
@@ -3924,13 +3924,13 @@ add.v.u
 //│ res: {u: {u: int -> int -> int}}
 
 {u: {u: add}, v: 0}
-//│ res: {u: {u: int -> int -> int}, v: 0}
+//│ res: {u: {u: int -> int -> int}, v: int}
 
 {u: {u: add}, v: add}
 //│ res: {u: {u: int -> int -> int}, v: int -> int -> int}
 
 {u: {u: add}, v: (x => 0)}
-//│ res: {u: {u: int -> int -> int}, v: anything -> 0}
+//│ res: {u: {u: int -> int -> int}, v: anything -> int}
 
 {u: {u: add}, v: (x => add)}
 //│ res: {u: {u: int -> int -> int}, v: anything -> int -> int -> int}
@@ -3948,22 +3948,22 @@ add.v.u
 //│ res: {u: {u: int -> int -> int}, v: 'a -> 'a}
 
 {u: {v: 0}}
-//│ res: {u: {v: 0}}
+//│ res: {u: {v: int}}
 
 {u: {v: 0}, v: 0}
-//│ res: {u: {v: 0}, v: 0}
+//│ res: {u: {v: int}, v: int}
 
 {u: {v: 0}, v: add}
-//│ res: {u: {v: 0}, v: int -> int -> int}
+//│ res: {u: {v: int}, v: int -> int -> int}
 
 {u: {v: 0}, v: (0 0)}
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	{u: {v: 0}, v: (0 0)}
 //│ ║        	                ^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	{u: {v: 0}, v: (0 0)}
 //│ ╙──      	                ^
-//│ res: {u: {v: 0}, v: error}
+//│ res: {u: {v: int}, v: nothing}
 
 
 
@@ -3971,45 +3971,45 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	{u: {v: 0}, v: (0 add)}
 //│ ║        	                ^^^^^
-//│ ╟── integer literal of type `0` is not a function
+//│ ╟── integer literal of type `int` is not a function
 //│ ║  l.+1: 	{u: {v: 0}, v: (0 add)}
 //│ ╙──      	                ^
-//│ res: {u: {v: 0}, v: error}
+//│ res: {u: {v: int}, v: nothing}
 
 
 
 {u: {v: 0}, v: (x => 0)}
-//│ res: {u: {v: 0}, v: anything -> 0}
+//│ res: {u: {v: int}, v: anything -> int}
 
 {u: {v: 0}, v: (let x = 0; 0)}
-//│ res: {u: {v: 0}, v: 0}
+//│ res: {u: {v: int}, v: int}
 
 {u: {v: 0}, v: (let x = add; 0)}
-//│ res: {u: {v: 0}, v: 0}
+//│ res: {u: {v: int}, v: int}
 
 {u: {v: 0}, v: (let rec x = x; 0)}
-//│ res: {u: {v: 0}, v: 0}
+//│ res: {u: {v: int}, v: int}
 
 {u: {v: 0}, v: (x => add)}
-//│ res: {u: {v: 0}, v: anything -> int -> int -> int}
+//│ res: {u: {v: int}, v: anything -> int -> int -> int}
 
 {u: {v: 0}, v: (let x = 0; add)}
-//│ res: {u: {v: 0}, v: int -> int -> int}
+//│ res: {u: {v: int}, v: int -> int -> int}
 
 {u: {v: 0}, v: (let x = add; add)}
-//│ res: {u: {v: 0}, v: int -> int -> int}
+//│ res: {u: {v: int}, v: int -> int -> int}
 
 {u: {v: 0}, v: (let rec x = x; add)}
-//│ res: {u: {v: 0}, v: int -> int -> int}
+//│ res: {u: {v: int}, v: int -> int -> int}
 
 {u: {v: 0}, v: (x => x)}
-//│ res: {u: {v: 0}, v: 'a -> 'a}
+//│ res: {u: {v: int}, v: 'a -> 'a}
 
 {u: {v: add}}
 //│ res: {u: {v: int -> int -> int}}
 
 {u: {v: add}, v: 0}
-//│ res: {u: {v: int -> int -> int}, v: 0}
+//│ res: {u: {v: int -> int -> int}, v: int}
 
 {u: {v: add}, v: add}
 //│ res: {u: {v: int -> int -> int}, v: int -> int -> int}
@@ -4018,10 +4018,10 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: {v: add}, v: 0.u}
 //│ ║        	                  ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	{u: {v: add}, v: 0.u}
 //│ ╙──      	                 ^
-//│ res: {u: {v: int -> int -> int}, v: error}
+//│ res: {u: {v: int -> int -> int}, v: nothing}
 
 
 
@@ -4032,7 +4032,7 @@ add.v.u
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	{u: {v: add}, v: add.u}
 //│ ╙──      	                 ^^^
-//│ res: {u: {v: int -> int -> int}, v: error}
+//│ res: {u: {v: int -> int -> int}, v: nothing}
 
 
 
@@ -4040,10 +4040,10 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{u: {v: add}, v: 0.v}
 //│ ║        	                  ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	{u: {v: add}, v: 0.v}
 //│ ╙──      	                 ^
-//│ res: {u: {v: int -> int -> int}, v: error}
+//│ res: {u: {v: int -> int -> int}, v: nothing}
 
 
 
@@ -4054,12 +4054,12 @@ add.v.u
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	{u: {v: add}, v: add.v}
 //│ ╙──      	                 ^^^
-//│ res: {u: {v: int -> int -> int}, v: error}
+//│ res: {u: {v: int -> int -> int}, v: nothing}
 
 
 
 {u: {v: add}, v: {v: 0}}
-//│ res: {u: {v: int -> int -> int}, v: {v: 0}}
+//│ res: {u: {v: int -> int -> int}, v: {v: int}}
 
 {u: {v: add}, v: {v: add}}
 //│ res: {u: {v: int -> int -> int}, v: {v: int -> int -> int}}
@@ -4068,10 +4068,10 @@ add.v.u
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	0.v
 //│ ║        	 ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	0.v
 //│ ╙──      	^
-//│ res: error
+//│ res: nothing
 
 
 
@@ -4082,12 +4082,12 @@ add.v
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	add.v
 //│ ╙──      	^^^
-//│ res: error
+//│ res: nothing
 
 
 
 {v: 0}
-//│ res: {v: 0}
+//│ res: {v: int}
 
 {v: add}
 //│ res: {v: int -> int -> int}
@@ -4096,10 +4096,10 @@ add.v
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{v: 0.u}
 //│ ║        	     ^^
-//│ ╟── integer literal of type `0` does not have field 'u'
+//│ ╟── integer literal of type `int` does not have field 'u'
 //│ ║  l.+1: 	{v: 0.u}
 //│ ╙──      	    ^
-//│ res: {v: error}
+//│ res: {v: nothing}
 
 
 
@@ -4110,7 +4110,7 @@ add.v
 //│ ╟── reference of type `int -> int -> int` does not have field 'u'
 //│ ║  l.+1: 	{v: add.u}
 //│ ╙──      	    ^^^
-//│ res: {v: error}
+//│ res: {v: nothing}
 
 
 
@@ -4118,10 +4118,10 @@ add.v
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{v: 0.v}
 //│ ║        	     ^^
-//│ ╟── integer literal of type `0` does not have field 'v'
+//│ ╟── integer literal of type `int` does not have field 'v'
 //│ ║  l.+1: 	{v: 0.v}
 //│ ╙──      	    ^
-//│ res: {v: error}
+//│ res: {v: nothing}
 
 
 
@@ -4132,12 +4132,12 @@ add.v
 //│ ╟── reference of type `int -> int -> int` does not have field 'v'
 //│ ║  l.+1: 	{v: add.v}
 //│ ╙──      	    ^^^
-//│ res: {v: error}
+//│ res: {v: nothing}
 
 
 
 {v: {v: 0}}
-//│ res: {v: {v: 0}}
+//│ res: {v: {v: int}}
 
 {v: {v: add}}
 //│ res: {v: {v: int -> int -> int}}

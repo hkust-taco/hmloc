@@ -5,28 +5,24 @@
 //│ ╔══[ERROR] Type mismatch in type ascription:
 //│ ║  l.4: 	42: ?
 //│ ║       	^^
-//│ ╟── integer literal of type `42` does not match type `nothing`
+//│ ╟── integer literal of type `int` does not match type `nothing`
 //│ ╟── Note: constraint arises from type wildcard:
 //│ ║  l.4: 	42: ?
 //│ ╙──     	    ^
 //│ res: anything
-//│    = 42
 
 
 
 def n: ?
 n = 42
 //│ n: anything
-//│  = <missing implementation>
-//│ 42
+//│ int
 //│   <:  n:
 //│ anything
-//│  = 42
 
 
 def f x = x : ?
 //│ f: nothing -> anything
-//│  = [Function: f]
 
 class E[A]
   method In: A -> A
@@ -38,22 +34,21 @@ class E[A]
 :e
 E{} : E[?]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.39: 	E{} : E[?]
+//│ ║  l.35: 	E{} : E[?]
 //│ ║        	^^^
-//│ ╟── type `anything` is not an instance of `E[?]`
-//│ ║  l.39: 	E{} : E[?]
+//│ ╟── type `anything` does not match type `nothing`
+//│ ║  l.35: 	E{} : E[?]
 //│ ║        	        ^
-//│ ╟── but it flows into application with expected type `E[?]`
-//│ ║  l.39: 	E{} : E[?]
+//│ ╟── but it flows into application with expected type `nothing`
+//│ ║  l.35: 	E{} : E[?]
 //│ ║        	^^^
 //│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.39: 	E{} : E[?]
+//│ ║  l.35: 	E{} : E[?]
 //│ ║        	      ^^^^
 //│ ╟── from type wildcard:
-//│ ║  l.39: 	E{} : E[?]
+//│ ║  l.35: 	E{} : E[?]
 //│ ╙──      	        ^
 //│ res: E[?]
-//│    = E {}
 
 
 
@@ -61,11 +56,9 @@ E{} : E[?]
 def e: E[?]
 def e = E{}
 //│ e: E[?]
-//│  = <missing implementation>
 //│ E['A]
 //│   <:  e:
 //│ E[?]
-//│  = [Function: e]
 
 
 type Als1[A] = int -> A
@@ -74,25 +67,22 @@ type Als1[A] = int -> A
 :e
 add 1 : Als1[?]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.75: 	add 1 : Als1[?]
+//│ ║  l.68: 	add 1 : Als1[?]
 //│ ║        	^^^^^
 //│ ╟── type `int` does not match type `nothing`
 //│ ╟── Note: constraint arises from type wildcard:
-//│ ║  l.75: 	add 1 : Als1[?]
+//│ ║  l.68: 	add 1 : Als1[?]
 //│ ╙──      	             ^
 //│ res: Als1[?]
-//│    = [Function (anonymous)]
 
 
 
 def a1: Als1[?]
 a1 = add 1
 //│ a1: Als1[?]
-//│   = <missing implementation>
 //│ int -> int
 //│   <:  a1:
 //│ Als1[?]
-//│   = [Function (anonymous)]
 
 
 type Als2[A] = A -> int
@@ -101,49 +91,43 @@ type Als2[A] = A -> int
 :e
 add 1 : Als2[?]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.102: 	add 1 : Als2[?]
-//│ ║         	^^^^^
+//│ ║  l.92: 	add 1 : Als2[?]
+//│ ║        	^^^^^
 //│ ╟── type `anything` is not an instance of type `int`
-//│ ║  l.102: 	add 1 : Als2[?]
-//│ ╙──       	             ^
+//│ ║  l.92: 	add 1 : Als2[?]
+//│ ╙──      	             ^
 //│ res: Als2[?]
-//│    = [Function (anonymous)]
 
 
 
 def a2: Als2[?]
 a2 = add 1
 //│ a2: Als2[?]
-//│   = <missing implementation>
 //│ int -> int
 //│   <:  a2:
 //│ Als2[?]
-//│   = [Function (anonymous)]
 
 
 def q: ?
 //│ q: anything
-//│  = <missing implementation>
 
 q = 1
-//│ 1
+//│ int
 //│   <:  q:
 //│ anything
-//│  = 1
 
 :e
 q + 1
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.135: 	q + 1
+//│ ║  l.120: 	q + 1
 //│ ║         	^^^
-//│ ╟── type `anything` is not a 1-element tuple
-//│ ║  l.124: 	def q: ?
+//│ ╟── type `anything` is not an instance of type `int`
+//│ ║  l.111: 	def q: ?
 //│ ║         	       ^
-//│ ╟── but it flows into reference with expected type `(int,)`
-//│ ║  l.135: 	q + 1
+//│ ╟── but it flows into reference with expected type `int`
+//│ ║  l.120: 	q + 1
 //│ ╙──       	^
-//│ res: error | int
-//│    = 2
+//│ res: int
 
 
 
@@ -151,17 +135,15 @@ q + 1
 :e
 q q
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.152: 	q q
+//│ ║  l.136: 	q q
 //│ ║         	^^^
 //│ ╟── type `anything` is not a function
-//│ ║  l.124: 	def q: ?
+//│ ║  l.111: 	def q: ?
 //│ ║         	       ^
 //│ ╟── but it flows into reference with expected type `anything -> ?a`
-//│ ║  l.152: 	q q
+//│ ║  l.136: 	q q
 //│ ╙──       	^
-//│ res: error
-//│ Runtime error:
-//│   TypeError: q is not a function
+//│ res: nothing
 
 
 

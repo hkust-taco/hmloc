@@ -1,4 +1,4 @@
-:NoJS
+
 :OcamlParser
 :OcamlLoadLibrary
 
@@ -23,19 +23,21 @@ let rec union lst1 lst2 =
    match lst1 with
      [] -> lst2
    | hd::tl -> add hd (union tl lst2)
-//│ empty_set: Nil
+//│ empty_set: list[nothing]
 //│ ╔══[ERROR] identifier not found: List
 //│ ║  l.20: 	let add str lst = if List.mem str lst then lst else str::lst
 //│ ╙──      	                     ^^^^
-//│ add: ('_0 & 'a) -> (list['a] & '_1) -> ((Cons['a] with {_0: '_0, _1: '_1}) | '_1)
+//│ add: 'a -> list['a] -> list['a]
 //│ ╔══[ERROR] identifier not found: List
 //│ ║  l.21: 	let remove str lst = List.filter (fun x -> x <> str) lst
 //│ ╙──      	                     ^^^^
 //│ remove: anything -> anything -> error
-//│ union: 'b -> (list['a] & '_1) -> '_1
+//│ union: 'a -> 'b -> 'c
 //│   where
-//│     '_1 :> Cons['a] with {_0: '_0, _1: '_1}
-//│     'b <: (Cons[?] with {_0: '_0 & 'a, _1: 'b}) | Nil
+//│     'b <: list['d] & 'c
+//│     'c :> list['d]
+//│        <: 'b
+//│     'a <: (Cons[?] with {_0: 'd, _1: 'a}) | Nil
 
 (* ################################################ *)
 
@@ -62,17 +64,17 @@ type exp = Var of string
 //│ TypeDef(Cls, TypeName(Pair), List(), Record(List((_0,Field(None,TypeName(exp))), (_1,Field(None,TypeName(exp))))), List(_0, _1))
 //│ TypeDef(Cls, TypeName(First), List(), Record(List((_0,Field(None,TypeName(exp))))), List(_0))
 //│ TypeDef(Cls, TypeName(Second), List(), Record(List((_0,Field(None,TypeName(exp))))), List(_0))
+//│ Def(false, Var, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(string))))),TypeName(exp))), true)
+//│ Def(false, Lam, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(string))), (None,Field(None,TypeName(exp))), (None,Field(None,AppliedType(TypeName(option),List(AppliedType(TypeName(list),List(TypeName(string))))))))),TypeName(exp))), true)
+//│ Def(false, Apply, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(exp))), (None,Field(None,TypeName(exp))))),TypeName(exp))), true)
+//│ Def(false, Closure, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(string))), (None,Field(None,TypeName(exp))), (None,Field(None,TypeName(env))))),TypeName(exp))), true)
+//│ Def(false, Int, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(int))))),TypeName(exp))), true)
+//│ Def(false, Plus, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(exp))), (None,Field(None,TypeName(exp))))),TypeName(exp))), true)
+//│ Def(false, If, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(exp))), (None,Field(None,TypeName(exp))), (None,Field(None,TypeName(exp))))),TypeName(exp))), true)
+//│ Def(false, Pair, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(exp))), (None,Field(None,TypeName(exp))))),TypeName(exp))), true)
+//│ Def(false, First, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(exp))))),TypeName(exp))), true)
+//│ Def(false, Second, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(exp))))),TypeName(exp))), true)
 //│ TypeDef(Als, TypeName(env), List(), AppliedType(TypeName(list),List(Tuple(List((None,Field(None,TypeName(string))), (None,Field(None,TypeName(exp))))))), List())
-//│ Def(false, Var, Lam(Tup(_: Var(a)), App(Var(Var), Tup(_: Rcd(Var(_0) = Var(a))))), true)
-//│ Def(false, Lam, Lam(Tup(_: Var(a), _: Var(b), _: Var(c)), App(Var(Lam), Tup(_: Rcd(Var(_0) = Var(a), Var(_1) = Var(b), Var(_2) = Var(c))))), true)
-//│ Def(false, Apply, Lam(Tup(_: Var(a), _: Var(b)), App(Var(Apply), Tup(_: Rcd(Var(_0) = Var(a), Var(_1) = Var(b))))), true)
-//│ Def(false, Closure, Lam(Tup(_: Var(a), _: Var(b), _: Var(c)), App(Var(Closure), Tup(_: Rcd(Var(_0) = Var(a), Var(_1) = Var(b), Var(_2) = Var(c))))), true)
-//│ Def(false, Int, Lam(Tup(_: Var(a)), App(Var(Int), Tup(_: Rcd(Var(_0) = Var(a))))), true)
-//│ Def(false, Plus, Lam(Tup(_: Var(a), _: Var(b)), App(Var(Plus), Tup(_: Rcd(Var(_0) = Var(a), Var(_1) = Var(b))))), true)
-//│ Def(false, If, Lam(Tup(_: Var(a), _: Var(b), _: Var(c)), App(Var(If), Tup(_: Rcd(Var(_0) = Var(a), Var(_1) = Var(b), Var(_2) = Var(c))))), true)
-//│ Def(false, Pair, Lam(Tup(_: Var(a), _: Var(b)), App(Var(Pair), Tup(_: Rcd(Var(_0) = Var(a), Var(_1) = Var(b))))), true)
-//│ Def(false, First, Lam(Tup(_: Var(a)), App(Var(First), Tup(_: Rcd(Var(_0) = Var(a))))), true)
-//│ Def(false, Second, Lam(Tup(_: Var(a)), App(Var(Second), Tup(_: Rcd(Var(_0) = Var(a))))), true)
 //│ Defined type alias exp
 //│ Defined class Var
 //│ Defined class Lam
@@ -85,16 +87,16 @@ type exp = Var of string
 //│ Defined class First
 //│ Defined class Second
 //│ Defined type alias env
-//│ Var: (string & '_0) -> (Var with {_0: '_0})
-//│ Lam: (string & '_0, exp & '_1, option[list[string]] & '_2,) -> (Lam with {_0: '_0, _1: '_1, _2: '_2})
-//│ Apply: (exp & '_0, exp & '_1,) -> (Apply with {_0: '_0, _1: '_1})
-//│ Closure: (string & '_0, exp & '_1, env & '_2,) -> (Closure with {_0: '_0, _1: '_1, _2: '_2})
-//│ Int: (int & '_0) -> (int & {_0: '_0})
-//│ Plus: (exp & '_0, exp & '_1,) -> (Plus with {_0: '_0, _1: '_1})
-//│ If: (exp & '_0, exp & '_1, exp & '_2,) -> (If with {_0: '_0, _1: '_1, _2: '_2})
-//│ Pair: (exp & '_0, exp & '_1,) -> (Pair with {_0: '_0, _1: '_1})
-//│ First: (exp & '_0) -> (First with {_0: '_0})
-//│ Second: (exp & '_0) -> (Second with {_0: '_0})
+//│ Var: string -> exp
+//│ Lam: (string, exp, option[list[string]],) -> exp
+//│ Apply: (exp, exp,) -> exp
+//│ Closure: (string, exp, env,) -> exp
+//│ Int: int -> exp
+//│ Plus: (exp, exp,) -> exp
+//│ If: (exp, exp, exp,) -> exp
+//│ Pair: (exp, exp,) -> exp
+//│ First: exp -> exp
+//│ Second: exp -> exp
 
 
 
@@ -143,38 +145,32 @@ let rec interp f env e =
      | _ -> raise RuntimeTypeError)
  | _ -> raise Unimplemented (* ############## *)
 //│ ╔══[ERROR] identifier not found: List
-//│ ║  l.107: 	   Var s -> List.assoc s env (* ############# *)
+//│ ║  l.109: 	   Var s -> List.assoc s env (* ############# *)
 //│ ╙──       	            ^^^^
-//│ interp: (((Cons['a | ('b, '_1,)] with {_0: ('b, '_1,), _1: '_10}) | 'c) -> 'd -> (env & list['a] & '_10 & '_2)) -> 'c -> 'e -> '_1
+//│ interp: ((list[(string | 'a, Closure | error | int & {_0: int} | exp,) | 'b] | 'c) -> (option[list[string]] | 'd) -> env) -> 'c -> 'e -> ('f | 'g)
 //│   where
-//│     '_1 :> 'f | (Pair with {_0: '_1, _1: '_1}) | (Closure with {_0: '_0, _1: '_11, _2: '_2}) | int & {_0: int} | 'g
-//│     'f :> '_1
-//│        <: Closure & 'h | exp & int & {_0: int} | exp & int & {_0: anything} & ~int | exp & ~#Closure & ~int & ~#Pair | 'i & (Pair & 'j | Pair & ~#Pair)
-//│     'h <: {_0: 'b, _1: 'e, _2: list['a] & '_10}
-//│     'e <: (Apply with {_0: 'e, _1: 'e}) | Closure & 'f | (First with {_0: 'e}) | (If with {_0: 'e, _1: 'e, _2: 'e}) | int & 'g | (Lam with {_0: string & 'b & '_0, _1: '_11, _2: 'd}) | (Pair with {_0: 'e, _1: 'e}) | (Plus with {_0: 'e, _1: 'e}) | (Second with {_0: 'e}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
-//│     '_11 <: exp & 'e
-//│     'g <: Closure\_1\_2 & 'h | exp & int & {_0: int} | exp & int & {_0: anything} & ~int | exp & {_0: anything} & ~#Closure & ~int & ~#Pair | 'i & (Pair\_1 & 'j | Pair\_1 & ~#Pair)
-//│     'j <: {_0: 'f, _1: anything}
-//│     'i <: {_0: anything, _1: 'f}
+//│     'e <: (Apply with {_0: 'e, _1: 'e}) | Closure & 'h & 'f & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'e}) | (If with {_0: 'e, _1: 'e, _2: 'e}) | int & 'g | (Lam with {_2: 'd}) | (Pair with {_0: 'e, _1: 'e}) | (Plus with {_0: 'e, _1: 'e}) | (Second with {_0: 'e}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
+//│     'g :> int & {_0: int}
+//│        <: 'h & 'f & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
+//│     'h <: 'f & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_0: 'a, _1: 'e, _2: list['b]}) | ~Closure)
+//│     'f :> Closure | error | int & {_0: int} | exp
+//│        <: 'h & (exp & int & {_0: int} | exp & ~int)
 
 let interp1 = interp (fun x _ -> x)
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.160: 	let interp1 = interp (fun x _ -> x)
+//│ ║  l.159: 	let interp1 = interp (fun x _ -> x)
 //│ ╙──       	                          ^^^
 //│ ╔══[ERROR] identifier not found: x
-//│ ║  l.160: 	let interp1 = interp (fun x _ -> x)
+//│ ║  l.159: 	let interp1 = interp (fun x _ -> x)
 //│ ╙──       	                                 ^
-//│ interp1: error -> 'a -> '_1
+//│ interp1: error -> 'a -> ('b | 'c)
 //│   where
-//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'b | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | (Lam with {_0: string & '_0, _1: '_10}) | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
-//│     'b :> '_1
-//│        <: Closure & 'd | exp & int & {_0: int} | exp & int & {_0: anything} & ~int | exp & ~#Closure & ~int & ~#Pair | 'e & (Pair & 'f | Pair & ~#Pair)
-//│     '_1 :> 'b | (Pair with {_0: '_1, _1: '_1}) | (Closure with {_0: '_0, _1: '_10, _2: error}) | int & {_0: int} | 'c
-//│     'c <: Closure\_1\_2 & 'd | exp & int & {_0: int} | exp & int & {_0: anything} & ~int | exp & {_0: anything} & ~#Closure & ~int & ~#Pair | 'e & (Pair\_1 & 'f | Pair\_1 & ~#Pair)
-//│     'f <: {_0: 'b, _1: anything}
-//│     'e <: {_0: anything, _1: 'b}
-//│     'd <: {_0: anything, _1: 'a, _2: list[?]}
-//│     '_10 <: exp & 'a
+//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'd & 'b & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | Lam | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
+//│     'c :> int & {_0: int}
+//│        <: 'd & 'b & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
+//│     'd <: 'b & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_1: 'a, _2: list[?]}) | ~Closure)
+//│     'b :> Closure | error | int & {_0: int} | exp
+//│        <: 'd & (exp & int & {_0: int} | exp & ~int)
 
 (****** Problem 3: complete this function *******)
 
@@ -186,31 +182,28 @@ let interp2 = interp (fun (env:env) opt ->
      None -> raise BadPrecomputation
    | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.184: 	let interp2 = interp (fun (env:env) opt ->
+//│ ║  l.180: 	let interp2 = interp (fun (env:env) opt ->
 //│ ╙──       	                          ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
-//│ ║  l.185: 	  match opt with
+//│ ║  l.181: 	  match opt with
 //│ ╙──       	        ^^^
 //│ ╔══[ERROR] identifier not found: List
-//│ ║  l.187: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
+//│ ║  l.183: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
 //│ ╙──       	                 ^^^^
 //│ ╔══[ERROR] identifier not found: List
-//│ ║  l.187: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
+//│ ║  l.183: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
 //│ ╙──       	                                        ^^^^
 //│ ╔══[ERROR] identifier not found: env
-//│ ║  l.187: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
+//│ ║  l.183: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
 //│ ╙──       	                                                     ^^^
-//│ interp2: error -> 'a -> '_1
+//│ interp2: error -> 'a -> ('b | 'c)
 //│   where
-//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'b | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | (Lam with {_0: string & '_0, _1: '_10}) | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
-//│     'b :> '_1
-//│        <: Closure & 'd | exp & int & {_0: int} | exp & int & {_0: anything} & ~int | exp & ~#Closure & ~int & ~#Pair | 'e & (Pair & 'f | Pair & ~#Pair)
-//│     '_1 :> (Pair with {_0: '_1, _1: '_1}) | (Closure with {_0: '_0, _1: '_10, _2: error}) | int & {_0: int} | 'b | 'c
-//│     'c <: Closure\_1\_2 & 'd | exp & int & {_0: int} | exp & int & {_0: anything} & ~int | exp & {_0: anything} & ~#Closure & ~int & ~#Pair | 'e & (Pair\_1 & 'f | Pair\_1 & ~#Pair)
-//│     'f <: {_0: 'b, _1: anything}
-//│     'e <: {_0: anything, _1: 'b}
-//│     'd <: {_0: anything, _1: 'a, _2: list[?]}
-//│     '_10 <: exp & 'a
+//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'd & 'b & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | Lam | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
+//│     'c :> int & {_0: int}
+//│        <: 'd & 'b & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
+//│     'd <: 'b & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_1: 'a, _2: list[?]}) | ~Closure)
+//│     'b :> Closure | error | int & {_0: int} | exp
+//│        <: 'd & (exp & int & {_0: int} | exp & ~int)
 
 (******* Problem 4: not programming (see assignment) ********)
 
@@ -218,28 +211,25 @@ let interp2 = interp (fun (env:env) opt ->
 
 let interp3 = interp (fun (env:env) _ -> [])
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.219: 	let interp3 = interp (fun (env:env) _ -> [])
+//│ ║  l.212: 	let interp3 = interp (fun (env:env) _ -> [])
 //│ ╙──       	                          ^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.219: 	let interp3 = interp (fun (env:env) _ -> [])
+//│ ║  l.212: 	let interp3 = interp (fun (env:env) _ -> [])
 //│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `Nil` does not match type `?a`
-//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;type 'a option = None | Some of 'a;let raise a = nothing;let fst (a, b) = a;let snd (a, b) = b;
+//│ ╟── type `Nil` is not a function
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;type 'a option = None | Some of 'a;let raise a = nothing;let fst (a, b) = a;let snd (a, b) = b;let abs: int -> int;let mod: int -> int -> int;let List_length: 'a list -> int;let List_mem: 'a -> 'a list -> bool;let List_append: 'a list -> 'a list -> 'a list;let (@): 'a list -> 'a list -> 'a list;let List_map: ('a -> 'b) -> 'a list -> 'b list;let List_fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a;let (+.): float -> float -> float;let (-.): float -> float -> float;let ( *. ): float -> float -> float;let ( /. ): float -> float -> float;let ( ** ): float -> float -> float;let atan: float -> float;let sin: float -> float;let cos: float -> float;let tan: float -> float;;
 //│ ║       	                                      ^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.108: 	 | Lam(s,e2,opt) -> Closure(s,e2,f env opt) (*store env!*) 
+//│ ║  l.110: 	 | Lam(s,e2,opt) -> Closure(s,e2,f env opt) (*store env!*) 
 //│ ╙──       	                                 ^^^^^
-//│ interp3: error -> 'a -> '_1 | error
+//│ interp3: error -> 'a -> ('b | 'c)
 //│   where
-//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'b | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | (Lam with {_0: string & '_0, _1: '_10}) | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
-//│     'b :> '_1
-//│        <: Closure & 'd | exp & int & {_0: int} | exp & int & {_0: anything} & ~int | exp & ~#Closure & ~int & ~#Pair | 'e & (Pair & 'f | Pair & ~#Pair)
-//│     '_1 :> 'b | (Pair with {_0: '_1, _1: '_1}) | (Closure with {_0: '_0, _1: '_10, _2: nothing}) | int & {_0: int} | 'c
-//│     'c <: Closure\_1\_2 & 'd | exp & int & {_0: int} | exp & int & {_0: anything} & ~int | exp & {_0: anything} & ~#Closure & ~int & ~#Pair | 'e & (Pair\_1 & 'f | Pair\_1 & ~#Pair)
-//│     'f <: {_0: 'b, _1: anything}
-//│     'e <: {_0: anything, _1: 'b}
-//│     'd <: {_0: anything, _1: 'a, _2: list[?]}
-//│     '_10 <: exp & 'a
+//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'b & 'd & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | Lam | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
+//│     'c :> int & {_0: int}
+//│        <: 'b & 'd & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
+//│     'b :> Closure | error | int & {_0: int} | exp
+//│        <: 'd & (exp & int & {_0: int} | exp & ~int)
+//│     'd <: 'b & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_1: 'a, _2: list[?]}) | ~Closure)
 
 (****** Problem 5b (EXTRA CREDIT): explain the next two functions ******)
 
@@ -269,7 +259,7 @@ let rec translate varlist exp =
  | If(e1,e2,e3) -> If(translate varlist e1,
                       translate varlist e2,
                       translate varlist e3)
-//│ /!\ Parse error: Expected (Index ~ parens | Index ~ record | Index ~ (number | stringliteral | lit) | Index ~ filter | ocamlList):9:24, found "match varl" at l.255:24:                        match varlist with [] -> Int 0 | _ -> Var "arg")
+//│ /!\ Parse error: Expected (Index ~ parens | Index ~ record | Index ~ ("-".? ~ floatnumber | number | stringliteral | lit) | Index ~ filter | ocamlList):9:24, found "match varl" at l.245:24:                        match varlist with [] -> Int 0 | _ -> Var "arg")
 
 (********** examples and testing ***********)
 
@@ -283,7 +273,7 @@ let rec translate varlist exp =
 let ex1 = (Apply(Apply(Lam("x",Lam("y", Plus(Var"x",Var "y"),None),None), 
 		      Int 17),
 		Int 19))
-//│ ex1: Apply with {_0: Apply with {_0: Lam with {_0: "x", _1: Lam with {_0: "y", _1: Plus with {_0: Var & {_0: "x"}, _1: Var & {_0: "y"}}, _2: None}, _2: None}, _1: int & {_0: 17}}, _1: int & {_0: 19}}
+//│ ex1: exp
 
 (* #####################################################################
 ################################# *)
@@ -294,82 +284,70 @@ let app e1 e2 = Apply(e1,e2)
 let vx = Var "x"
 let vy = Var "y"
 let vf = Var "f"
-//│ lam: (string & '_0) -> (exp & '_1) -> (Lam with {_0: '_0, _1: '_1, _2: None})
-//│ app: (exp & '_0) -> (exp & '_1) -> (Apply with {_0: '_0, _1: '_1})
-//│ vx: Var & {_0: "x"}
-//│ vy: Var & {_0: "y"}
-//│ vf: Var & {_0: "f"}
+//│ lam: string -> exp -> exp
+//│ app: exp -> exp -> exp
+//│ vx: exp
+//│ vy: exp
+//│ vf: exp
 
 (* ########################### *)
 let fix = 
    let e = lam "x" (app vf (lam "y" (app (app vx vx) vy))) in
    lam "f" (app e e)
-//│ fix: Lam with {_0: "f", _1: Apply with {_0: Lam with {_0: "x", _1: Apply with {_0: Var & {_0: "f"}, _1: Lam with {_0: "y", _1: Apply with {_0: Apply with {_0: Var & {_0: "x"}, _1: Var & {_0: "x"}}, _1: Var & {_0: "y"}}, _2: None}}, _2: None}, _1: Lam with {_0: "x", _1: Apply with {_0: Var & {_0: "f"}, _1: Lam with {_0: "y", _1: Apply with {_0: Apply with {_0: Var & {_0: "x"}, _1: Var & {_0: "x"}}, _1: Var & {_0: "y"}}, _2: None}}, _2: None}}, _2: None}
+//│ fix: exp
 
 (* ################################################ *)
 let sum = 
   lam "f" (lam "x" (If(vx,
 		       Plus(vx, app vf (Plus(vx, Int (-1)))),
 		       Int 0)))
-//│ /!\ Parse error: Expected ")":3:41, found "-1)))),\n\t\t" at l.312:41: 		       Plus(vx, app vf (Plus(vx, Int (-1)))),
+//│ /!\ Parse error: Expected ")":3:41, found "-1)))),\n\t\t" at l.302:41: 		       Plus(vx, app vf (Plus(vx, Int (-1)))),
 
 (* ############################################################### *)
 let ex2 = (app (app fix sum) (Int 1000))
 //│ ╔══[ERROR] identifier not found: sum
-//│ ║  l.317: 	let ex2 = (app (app fix sum) (Int 1000))
+//│ ║  l.307: 	let ex2 = (app (app fix sum) (Int 1000))
 //│ ╙──       	                        ^^^
-//│ ex2: Apply with {_0: Apply with {_0: Lam with {_0: "f", _1: Apply with {_0: Lam with {_0: "x", _1: Apply with {_0: Var & {_0: "f"}, _1: Lam with {_0: "y", _1: Apply with {_0: Apply with {_0: Var & {_0: "x"}, _1: Var & {_0: "x"}}, _1: Var & {_0: "y"}}, _2: None}}, _2: None}, _1: Lam with {_0: "x", _1: Apply with {_0: Var & {_0: "f"}, _1: Lam with {_0: "y", _1: Apply with {_0: Apply with {_0: Var & {_0: "x"}, _1: Var & {_0: "x"}}, _1: Var & {_0: "y"}}, _2: None}}, _2: None}}, _2: None}, _1: error}, _1: int & {_0: 1000}}
+//│ ex2: exp
 
 (* ########################################################### *)
 
 let ans1 = interp1 [] ex1
 let ans2 = interp1 [] ex2
-//│ ans1: '_1
-//│   where
-//│     '_1 :> (Pair with {_0: '_1, _1: '_1}) | (Closure with {_0: "x" | "y", _1: (Lam with {_0: "y", _1: Plus with {_0: Var & {_0: "x"}, _1: Var & {_0: "y"}}, _2: None}) | (Plus with {_0: Var & {_0: "x"}, _1: Var & {_0: "y"}}), _2: error}) | error | int & {_0: int}
-//│ ans2: '_1
-//│   where
-//│     '_1 :> (Pair with {_0: '_1, _1: '_1}) | (Closure with {_0: "f" | "x" | "y", _1: Apply with {_0: (Apply with {_0: Var & {_0: "x"}, _1: Var & {_0: "x"}}) | (Lam with {_0: "x", _1: Apply with {_0: Var & {_0: "f"}, _1: Lam with {_0: "y", _1: Apply with {_0: Apply with {_0: Var & {_0: "x"}, _1: Var & {_0: "x"}}, _1: Var & {_0: "y"}}, _2: None}}, _2: None}) | Var & {_0: "f"}, _1: (Lam with {_0: "x" | "y", _1: Apply with {_0: (Apply with {_0: Var & {_0: "x"}, _1: Var & {_0: "x"}}) | Var & {_0: "f"}, _1: (Lam with {_0: "y", _1: Apply with {_0: Apply with {_0: Var & {_0: "x"}, _1: Var & {_0: "x"}}, _1: Var & {_0: "y"}}, _2: None}) | Var & {_0: "y"}}, _2: None}) | Var & {_0: "y"}}, _2: error}) | error | int & {_0: int}
+//│ ans1: Closure | error | int & {_0: int} | exp
+//│ ans2: Closure | error | int & {_0: int} | exp
 
 let ans3 = interp2 [] (fst (computeFreeVars ex1))
 let ans4 = interp2 [] (fst (computeFreeVars ex2))
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.334: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
+//│ ║  l.320: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
 //│ ║         	                       ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── argument of type `(?a,)` does not match type `(?b, ?c,)`
-//│ ║  l.334: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
+//│ ║  l.320: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
 //│ ║         	                            ^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from tuple literal:
-//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;type 'a option = None | Some of 'a;let raise a = nothing;let fst (a, b) = a;let snd (a, b) = b;
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;type 'a option = None | Some of 'a;let raise a = nothing;let fst (a, b) = a;let snd (a, b) = b;let abs: int -> int;let mod: int -> int -> int;let List_length: 'a list -> int;let List_mem: 'a -> 'a list -> bool;let List_append: 'a list -> 'a list -> 'a list;let (@): 'a list -> 'a list -> 'a list;let List_map: ('a -> 'b) -> 'a list -> 'b list;let List_fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a;let (+.): float -> float -> float;let (-.): float -> float -> float;let ( *. ): float -> float -> float;let ( /. ): float -> float -> float;let ( ** ): float -> float -> float;let atan: float -> float;let sin: float -> float;let cos: float -> float;let tan: float -> float;;
 //│ ╙──     	                                                                                                            ^^^^
-//│ ans3: '_1
-//│   where
-//│     '_1 :> (Pair with {_0: '_1, _1: '_1}) | (Closure with {_0: nothing, _1: nothing, _2: error}) | error | int & {_0: int}
+//│ ans3: Closure | error | int & {_0: int} | exp
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.335: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
+//│ ║  l.321: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
 //│ ║         	                       ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── argument of type `(?a,)` does not match type `(?b, ?c,)`
-//│ ║  l.335: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
+//│ ║  l.321: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
 //│ ║         	                            ^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from tuple literal:
-//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;type 'a option = None | Some of 'a;let raise a = nothing;let fst (a, b) = a;let snd (a, b) = b;
+//│ ║  l.0: 	type 'a list = Cons of 'a * 'a list | Nil;type 'a option = None | Some of 'a;let raise a = nothing;let fst (a, b) = a;let snd (a, b) = b;let abs: int -> int;let mod: int -> int -> int;let List_length: 'a list -> int;let List_mem: 'a -> 'a list -> bool;let List_append: 'a list -> 'a list -> 'a list;let (@): 'a list -> 'a list -> 'a list;let List_map: ('a -> 'b) -> 'a list -> 'b list;let List_fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a;let (+.): float -> float -> float;let (-.): float -> float -> float;let ( *. ): float -> float -> float;let ( /. ): float -> float -> float;let ( ** ): float -> float -> float;let atan: float -> float;let sin: float -> float;let cos: float -> float;let tan: float -> float;;
 //│ ╙──     	                                                                                                            ^^^^
-//│ ans4: '_1
-//│   where
-//│     '_1 :> (Pair with {_0: '_1, _1: '_1}) | (Closure with {_0: nothing, _1: nothing, _2: error}) | error | int & {_0: int}
+//│ ans4: Closure | error | int & {_0: int} | exp
 
 let ans5 = interp3 [] (translate [] ex1)
 let ans6 = interp3 [] (translate [] ex2)
 //│ ╔══[ERROR] identifier not found: translate
-//│ ║  l.361: 	let ans5 = interp3 [] (translate [] ex1)
+//│ ║  l.343: 	let ans5 = interp3 [] (translate [] ex1)
 //│ ╙──       	                       ^^^^^^^^^
-//│ ans5: '_1 | error
-//│   where
-//│     '_1 :> (Pair with {_0: '_1, _1: '_1}) | Closure & {_0: nothing, _1: nothing, _2: nothing} | error | int & {_0: int}
+//│ ans5: Closure | error | int & {_0: int} | exp
 //│ ╔══[ERROR] identifier not found: translate
-//│ ║  l.362: 	let ans6 = interp3 [] (translate [] ex2)
+//│ ║  l.344: 	let ans6 = interp3 [] (translate [] ex2)
 //│ ╙──       	                       ^^^^^^^^^
-//│ ans6: '_1 | error
-//│   where
-//│     '_1 :> (Pair with {_0: '_1, _1: '_1}) | Closure & {_0: nothing, _1: nothing, _2: nothing} | error | int & {_0: int}
+//│ ans6: Closure | error | int & {_0: int} | exp
 

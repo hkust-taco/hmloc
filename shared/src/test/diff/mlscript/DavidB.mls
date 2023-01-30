@@ -2,37 +2,19 @@
 
 
 tuple1 = (1, 2, 3)
-//│ tuple1: (1, 2, 3,)
-//│       = [ 1, 2, 3 ]
+//│ tuple1: (int, int, int,)
 
 tuple2 = (4, 5)
-//│ tuple2: (4, 5,)
-//│       = [ 4, 5 ]
+//│ tuple2: (int, int,)
 
 if true then tuple1 else tuple2
-//│ res: Array[1 | 2 | 3 | 4 | 5] & {_1: 1 | 4, _2: 2 | 5}
-//│    = [ 1, 2, 3 ]
+//│ res: Array[int] & {_1: int, _2: int}
 
 arr = tuple1 : Array[int]
-//│ /!!!\ Uncaught error: java.lang.Exception: Cannot update counter for uninitialized location
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateCounter$1(ConstraintSolver.scala:864)
-//│ 	at: scala.collection.mutable.HashMap.updateWith(HashMap.scala:154)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateCounter(ConstraintSolver.scala:857)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3(ConstraintSolver.scala:914)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3$adapted(ConstraintSolver.scala:914)
-//│ 	at: scala.Option.foreach(Option.scala:437)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2(ConstraintSolver.scala:914)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2$adapted(ConstraintSolver.scala:914)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateChainCount(ConstraintSolver.scala:914)
+//│ arr: Array[int]
 
 if true then tuple1 else arr
-//│ ╔══[ERROR] identifier not found: arr
-//│ ║  l.29: 	if true then tuple1 else arr
-//│ ╙──      	                         ^^^
-//│ res: (1, 2, 3,) | error
-//│ Code generation encountered an error:
-//│   unresolved symbol arr
+//│ res: Array[int]
 
 
 
@@ -42,61 +24,53 @@ type List[A] = Cons[A, List[A]] | ()
 //│ Defined type alias List[+A]
 
 list1 = { h = 1; t = { h = 2; t = () }}
-//│ list1: {h: 1, t: {h: 2, t: ()}}
-//│      = { h: 1, t: { h: 2, t: [] } }
+//│ list1: {h: int, t: {h: int, t: ()}}
 
 list2 = { h = 3; t = () }
-//│ list2: {h: 3, t: ()}
-//│      = { h: 3, t: [] }
+//│ list2: {h: int, t: ()}
 
 ls = if true then list1 else list2
-//│ ls: {h: 1 | 3, t: () | {h: 2, t: ()}}
-//│   = { h: 1, t: { h: 2, t: [] } }
+//│ ls: {h: int, t: () | {h: int, t: ()}}
 
 ls : List[int]
 //│ res: List[int]
-//│    = { h: 1, t: { h: 2, t: [] } }
 
 type NonEmptyList[A] = Cons[A, List[A]]
 //│ Defined type alias NonEmptyList[+A]
 
 ls : NonEmptyList[int]
 //│ res: NonEmptyList[int]
-//│    = { h: 1, t: { h: 2, t: [] } }
 
 :e // TODO improve error message
 ls : Cons[int, Cons[int, List[int]]]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.68: 	ls : Cons[int, Cons[int, List[int]]]
+//│ ║  l.45: 	ls : Cons[int, Cons[int, List[int]]]
 //│ ║        	^^
-//│ ╟── expression of type `()` is not an instance of `Cons[int, List[int]]`
+//│ ╟── expression of type `()` is not a record (expected a record with fields: h, t)
 //│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.68: 	ls : Cons[int, Cons[int, List[int]]]
+//│ ║  l.45: 	ls : Cons[int, Cons[int, List[int]]]
 //│ ║        	               ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── from record type:
-//│ ║  l.39: 	type Cons[H, T] = { h: H; t: T }
+//│ ║  l.21: 	type Cons[H, T] = { h: H; t: T }
 //│ ╙──      	                  ^^^^^^^^^^^^^^
 //│ res: Cons[int, Cons[int, List[int]]]
-//│    = { h: 1, t: { h: 2, t: [] } }
 
 
 
 
 ls : { h: int; t: List[int] }
 //│ res: {h: int, t: List[int]}
-//│    = { h: 1, t: { h: 2, t: [] } }
 
 :e
 ls : { h: int; t: { h: int; t: List[int] } }
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.90: 	ls : { h: int; t: { h: int; t: List[int] } }
+//│ ║  l.65: 	ls : { h: int; t: { h: int; t: List[int] } }
 //│ ║        	^^
 //│ ╟── expression of type `()` is not a record (expected a record with fields: h, t)
 //│ ╟── Note: constraint arises from record type:
-//│ ║  l.90: 	ls : { h: int; t: { h: int; t: List[int] } }
+//│ ║  l.65: 	ls : { h: int; t: { h: int; t: List[int] } }
 //│ ╙──      	                  ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ res: {h: int, t: {h: int, t: List[int]}}
-//│    = { h: 1, t: { h: 2, t: [] } }
 
 
 
@@ -108,20 +82,16 @@ type List0[A] = C[A] | ()
 //│ Defined type alias List0[+A]
 
 list1 = C { h = 1; t = C { h = 2; t = () }}
-//│ list1: C[1 | 2] with {h: 1, t: C[2] with {t: ()}}
-//│      = C { h: 1, t: C { h: 2, t: [] } }
+//│ list1: C[int] with {t: C[int] with {t: ()}}
 
 list2 = C { h = 3; t = () }
-//│ list2: C[3] with {t: ()}
-//│      = C { h: 3, t: [] }
+//│ list2: C[int] with {t: ()}
 
 ls = if true then list1 else list2
-//│ ls: C[1 | 2 | 3] with {h: 1 | 3, t: () | (C[2] with {t: ()})}
-//│   = C { h: 1, t: C { h: 2, t: [] } }
+//│ ls: C[int] with {t: () | (C[int] with {t: ()})}
 
 ls : List0[int]
 //│ res: List0[int]
-//│    = C { h: 1, t: C { h: 2, t: [] } }
 
 
 
@@ -129,20 +99,16 @@ type List1[A] = (A, List1[A]) | ()
 //│ Defined type alias List1[+A]
 
 list1 = (1, (2, (3, ())))
-//│ list1: (1, (2, (3, (),),),)
-//│      = [ 1, [ 2, [ 3, [] ] ] ]
+//│ list1: (int, (int, (int, (),),),)
 
 list1: List1[int]
 //│ res: List1[int]
-//│    = [ 1, [ 2, [ 3, [] ] ] ]
 
 list2 = (4, (5, ()))
-//│ list2: (4, (5, (),),)
-//│      = [ 4, [ 5, [] ] ]
+//│ list2: (int, (int, (),),)
 
 if true then list1 else list2
-//│ res: (1 | 4, (2 | 5, Array[() | 3],),)
-//│    = [ 1, [ 2, [ 3, [] ] ] ]
+//│ res: (int, (int, Array[() | int],),)
 
 
 

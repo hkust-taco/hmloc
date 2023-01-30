@@ -687,7 +687,13 @@ class DiffTests
               typer.TypeVariable.clearCollectedTypeVars()
               typer.dbg = temp
             }
-            
+
+            // Print type checking results
+            typingOutputs.foreach {
+              case L(diagnosticLines) => diagnosticLines.foreach(output)
+              case R(_ -> typingResults) => typingResults.foreach(output)
+            }
+
             // show a list of suspicious locations found in above block
             if (mode.suspiciousLocation) typer.showSuspiciousLocations()(raise)
             

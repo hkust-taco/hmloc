@@ -2,60 +2,41 @@
 (mut 1, mut 2): MutArray['a]
 //│ res: MutArray['a]
 //│   where
-//│     'a :> 1 | 2
-//│    = [ 1, 2 ]
+//│     'a :> int
 
 ((fun t -> let tmp = t._1 <- 3 in t) ((mut 1, mut 2))): MutArray['a]
 //│ res: MutArray['a]
 //│   where
-//│     'a :> 1 | 2 | 3
-//│    = [ 1, 2, _1: 3 ]
+//│     'a :> int
 
 ((fun t -> let tmp = t._1 + 1 in t) ((mut 1, mut 2))): MutArray['a]
-//│ /!!!\ Uncaught error: java.lang.Exception: Cannot update counter for uninitialized location
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateCounter$1(ConstraintSolver.scala:864)
-//│ 	at: scala.collection.mutable.HashMap.updateWith(HashMap.scala:154)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateCounter(ConstraintSolver.scala:857)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3(ConstraintSolver.scala:914)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$3$adapted(ConstraintSolver.scala:914)
-//│ 	at: scala.Option.foreach(Option.scala:437)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2(ConstraintSolver.scala:914)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.$anonfun$updateChainCount$2$adapted(ConstraintSolver.scala:914)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.ConstraintSolver$ErrorSimplifier.updateChainCount(ConstraintSolver.scala:914)
+//│ res: MutArray[int]
 
 if true then (mut 1, mut 2) else (mut 3, mut 4)
-//│ res: (mut in 'a out 1 | 3 | 'a, mut in 'b out 2 | 4 | 'b,)
-//│    = [ 1, 2 ]
+//│ res: (mut in 'a out int | 'a, mut in 'b out int | 'b,)
 
 def t1: (mut 1, mut 2)
 def t2: (mut 3, mut 4)
 //│ t1: (mut 1, mut 2,)
-//│   = <missing implementation>
 //│ t2: (mut 3, mut 4,)
-//│   = <missing implementation>
 
 r = if true then t1 else t2
 //│ r: (mut out 1 | 3, mut out 2 | 4,)
-//│  = <no result>
-//│    t1 is not implemented
 
 :e
 r._1 <- 1
 //│ ╔══[ERROR] Type mismatch in assignment:
-//│ ║  l.44: 	r._1 <- 1
+//│ ║  l.27: 	r._1 <- 1
 //│ ║        	^^^^^^^^^
-//│ ╟── integer literal of type `1` does not match type `?a`
-//│ ║  l.44: 	r._1 <- 1
+//│ ╟── integer literal of type `int` does not match type `3`
+//│ ║  l.27: 	r._1 <- 1
 //│ ║        	        ^
 //│ ╟── Note: constraint arises from assigned selection:
-//│ ║  l.44: 	r._1 <- 1
+//│ ║  l.27: 	r._1 <- 1
 //│ ║        	^^^^
 //│ ╟── from literal type:
-//│ ║  l.32: 	def t2: (mut 3, mut 4)
+//│ ║  l.19: 	def t2: (mut 3, mut 4)
 //│ ╙──      	             ^
-//│ = <no result>
-//│   r and t1 are not implemented
 
 
 
@@ -65,38 +46,45 @@ r._1 <- 1
 def t1: (mut 1 | 2 | 3)
 def t2: (mut 2 | 3 | 4)
 //│ t1: (mut 1 | 2 | 3,)
-//│   = <missing implementation>
 //│ t2: (mut 2 | 3 | 4,)
-//│   = <missing implementation>
 
 r = if true then t1 else t2
 //│ r: (mut in 2 | 3 out 1 | 2 | 3 | 4,)
-//│  = <no result>
-//│    t1 is not implemented
 
 r._1 <- if true then 2 else 3
-//│ = <no result>
-//│   r and t1 are not implemented
+//│ ╔══[ERROR] Type mismatch in assignment:
+//│ ║  l.54: 	r._1 <- if true then 2 else 3
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` does not match type `2 | 3 | 4`
+//│ ║  l.54: 	r._1 <- if true then 2 else 3
+//│ ║        	                            ^
+//│ ╟── but it flows into application with expected type `2 | 3 | 4`
+//│ ║  l.54: 	r._1 <- if true then 2 else 3
+//│ ║        	           ^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from assigned selection:
+//│ ║  l.54: 	r._1 <- if true then 2 else 3
+//│ ║        	^^^^
+//│ ╟── from union type:
+//│ ║  l.47: 	def t2: (mut 2 | 3 | 4)
+//│ ╙──      	             ^^^^^^^^^
 
 :e
 r._1 <- if true then 2 else 1
 //│ ╔══[ERROR] Type mismatch in assignment:
-//│ ║  l.82: 	r._1 <- if true then 2 else 1
+//│ ║  l.72: 	r._1 <- if true then 2 else 1
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `1` does not match type `?a`
-//│ ║  l.82: 	r._1 <- if true then 2 else 1
+//│ ╟── integer literal of type `int` does not match type `2 | 3 | 4`
+//│ ║  l.72: 	r._1 <- if true then 2 else 1
 //│ ║        	                            ^
-//│ ╟── but it flows into application with expected type `?b`
-//│ ║  l.82: 	r._1 <- if true then 2 else 1
+//│ ╟── but it flows into application with expected type `2 | 3 | 4`
+//│ ║  l.72: 	r._1 <- if true then 2 else 1
 //│ ║        	           ^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from assigned selection:
-//│ ║  l.82: 	r._1 <- if true then 2 else 1
+//│ ║  l.72: 	r._1 <- if true then 2 else 1
 //│ ║        	^^^^
 //│ ╟── from union type:
-//│ ║  l.66: 	def t2: (mut 2 | 3 | 4)
+//│ ║  l.47: 	def t2: (mut 2 | 3 | 4)
 //│ ╙──      	             ^^^^^^^^^
-//│ = <no result>
-//│   r and t1 are not implemented
 
 
 

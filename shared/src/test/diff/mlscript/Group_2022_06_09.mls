@@ -14,45 +14,59 @@ rec def eval e = case e of {
 //│ eval: 'a -> int
 //│   where
 //│     'a <: (Add with {lhs: 'a, rhs: 'a}) | Lit
-//│     = [Function: eval]
 
 e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
-//│ e: Add with {lhs: Lit & {n: 1}, rhs: Lit & {n: 2}}
-//│  = Add { lhs: Lit { n: 1 }, rhs: Lit { n: 2 } }
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.18: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Lit` is not an instance of type `Exp`
+//│ ║  l.18: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
+//│ ║        	                ^^^^^^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.6: 	class Add: { lhs: Exp; rhs: Exp } & Exp
+//│ ╙──     	                  ^^^
+//│ e: Add with {lhs: Lit, rhs: Lit}
 
 eval e
 //│ res: int
-//│    = 3
 
 
 class Neg: { e: Exp } & Exp
 //│ Defined class Neg
 
 e2 = Neg { e }
-//│ e2: Neg with {e: Add with {lhs: Lit & {n: 1}, rhs: Lit & {n: 2}}}
-//│   = Neg { e: Add { lhs: Lit { n: 1 }, rhs: Lit { n: 2 } } }
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.37: 	e2 = Neg { e }
+//│ ║        	     ^^^^^^^^^
+//│ ╟── application of type `Add & {lhs: ?lhs, rhs: ?rhs}` is not an instance of type `Exp`
+//│ ║  l.18: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Exp`
+//│ ║  l.37: 	e2 = Neg { e }
+//│ ║        	           ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.34: 	class Neg: { e: Exp } & Exp
+//│ ╙──      	                ^^^
+//│ e2: Neg with {e: Add with {lhs: Lit, rhs: Lit}}
 
 e2.e.lhs.n
-//│ res: 1
-//│    = 1
+//│ res: int
 
 :e
 eval e2
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.40: 	eval e2
+//│ ║  l.56: 	eval e2
 //│ ║        	^^^^^^^
-//│ ╟── application of type `Neg & {e: ?e}` is not a 1-element tuple
-//│ ║  l.31: 	e2 = Neg { e }
+//│ ╟── application of type `Neg & {e: ?e}` does not match type `Add & ?a | Lit & ?b`
+//│ ║  l.37: 	e2 = Neg { e }
 //│ ║        	     ^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `(?a,)`
-//│ ║  l.40: 	eval e2
+//│ ╟── but it flows into reference with expected type `Add & ?c | Lit & ?d`
+//│ ║  l.56: 	eval e2
 //│ ║        	     ^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.10: 	rec def eval e = case e of {
 //│ ╙──      	                      ^
-//│ res: error | int
-//│ Runtime error:
-//│   Error: non-exhaustive case expression
+//│ res: int
 
 
 
@@ -64,46 +78,55 @@ def eval eval e = case e of {
   | Add -> eval eval e.lhs + eval eval e.rhs
   }
 //│ eval: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {n: 'n})) -> (int | 'n)
-//│     = [Function: eval1]
 
 eval eval e
 //│ res: int
-//│    = 3
 
 
 def evalN evalN e = case e of {
   | Neg -> 0 - evalN evalN e.e
   | _ -> eval evalN e
   }
-//│ evalN: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {n: 'n}) | (Neg with {e: 'rhs})) -> (int | 'n)
-//│      = [Function: evalN]
+//│ evalN: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {n: 'b}) | (Neg with {e: 'rhs})) -> (int | 'b)
 
 evalN eval e
 //│ res: int
-//│    = 3
 
 evalN eval e2
 //│ res: int
-//│    = -3
 
 ev = evalN evalN
-//│ ev: ((Add with {lhs: 'a, rhs: 'a}) | (Lit with {n: 'n}) | (Neg with {e: 'a})) -> (int | 'n)
+//│ ev: ((Add with {lhs: 'a, rhs: 'a}) | (Lit with {n: 'b}) | (Neg with {e: 'a})) -> (int | 'b)
 //│   where
 //│     'a <: (Add with {lhs: 'a, rhs: 'a}) | Lit | (Neg with {e: 'a})
-//│   = [Function (anonymous)]
 
 (ev e, ev e2)
 //│ res: (int, int,)
-//│    = [ 3, -3 ]
 
 
 e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
-//│ e3: Add with {lhs: Neg with {e: Lit & {n: 1}}, rhs: Lit & {n: 2}}
-//│   = Add { lhs: Neg { e: Lit { n: 1 } }, rhs: Lit { n: 2 } }
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.107: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ║         	                 ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Lit` is not an instance of type `Exp`
+//│ ║  l.107: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ║         	                           ^^^^^^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.34: 	class Neg: { e: Exp } & Exp
+//│ ╙──      	                ^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.107: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Neg & {e: ?e}` is not an instance of type `Exp`
+//│ ║  l.107: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ║         	                 ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.6: 	class Add: { lhs: Exp; rhs: Exp } & Exp
+//│ ╙──     	                  ^^^
+//│ e3: Add with {lhs: Neg with {e: Lit}, rhs: Lit}
 
 ev e3
 //│ res: int
-//│    = 1
 
 
 // * With a continuation, to make `evalN` not need to mention `eval` at all:
@@ -113,20 +136,17 @@ def evalN evalN k e = case e of {
   | _ -> k e
   }
 //│ evalN: ('a -> 'b -> 'e -> int & 'a) -> ('c -> 'd & 'b) -> ((Neg with {e: 'e}) | 'c & ~#Neg) -> (int | 'd)
-//│      = [Function: evalN1]
 
 
 def evalComposed evalComposed = evalN evalN (fun e -> eval evalComposed e)
 //│ evalComposed: ('a -> 'rhs -> int & 'a) -> 'b -> int
 //│   where
 //│     'b <: (Add with {lhs: 'rhs, rhs: 'rhs}) | Lit | (Neg with {e: 'b})
-//│             = [Function: evalComposed]
 
 def evalComposed evalComposed = evalN evalN (eval evalComposed)
 //│ evalComposed: ('a -> 'rhs -> int & 'a) -> 'b -> int
 //│   where
 //│     'b <: (Add with {lhs: 'rhs, rhs: 'rhs}) | Lit | (Neg with {e: 'b})
-//│             = [Function: evalComposed1]
 
 
 // * NOTE: This inferred type is a good example
@@ -138,18 +158,15 @@ ev2 = evalComposed evalComposed
 //│     'a <: 'b | (Neg with {e: 'a})
 //│     'b <: (Add with {lhs: 'c, rhs: 'c}) | Lit
 //│     'c <: (Neg with {e: 'c}) | 'b & ~#Neg
-//│    = [Function (anonymous)]
 
 ev2 e3
 //│ res: int
-//│    = 1
 
 
 def ev2_ty: (Add & { lhs: 'a; rhs: 'a } | Lit | Neg & { e: 'a } as 'a) -> int
 //│ ev2_ty: 'a -> int
 //│   where
 //│     'a <: (Add with {lhs: 'a, rhs: 'a}) | Lit | (Neg with {e: 'a})
-//│       = <missing implementation>
 
 ev2_ty = ev2
 //│ 'a -> int
@@ -161,5 +178,4 @@ ev2_ty = ev2
 //│ 'a -> int
 //│   where
 //│     'a <: (Add with {lhs: 'a, rhs: 'a}) | Lit | (Neg with {e: 'a})
-//│       = [Function (anonymous)]
 

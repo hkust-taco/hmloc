@@ -1,5 +1,5 @@
 :NewParser
-:NoJS
+
 
 class Option
 class Some(value): Option
@@ -33,7 +33,7 @@ fun crazy(v) =
   if v is
     Some(Some(Some(Some(Some(Some(None())))))) then "bruh!"
     _ then "lol"
-//│ crazy: anything -> ("bruh!" | "lol")
+//│ crazy: anything -> string
 
 :e
 fun f(x) =
@@ -65,8 +65,8 @@ fun f(p) =
 //│ 1. Typing term p, => {if p is ‹(Some ('(' x, y, ')',)) then + (x,) (y,); (None ()) then 0›}
 //│ | 1. Typing pattern p,
 //│ | | 1. Typing pattern p
-//│ | | 1. : α166'
-//│ | 1. : (α166',)
+//│ | | 1. : α188'
+//│ | 1. : (α188',)
 //│ | 1. Typing term {if p is ‹(Some ('(' x, y, ')',)) then + (x,) (y,); (None ()) then 0›}
 //│ | | 1. Typing term if p is ‹(Some ('(' x, y, ')',)) then + (x,) (y,); (None ()) then 0›
 //│ | | | If(IfOpApp(Var(p), Var(is), IfBlock(IfThen(App(Var(Some), Tup(_: Bra(rcd = false, Tup(_: Var(x), _: Var(y))))), App(App(Var(+), Tup(_: Var(x))), Tup(_: Var(y)));IfThen(App(Var(None), Tup()), IntLit(0)), None)
@@ -118,53 +118,57 @@ fun f(p) =
 //│ | | | Desugared term: case p of { Some => let tmp12 = (p).value in case tmp12 of { Tuple#2 => let x = (tmp12)._1 in let y = (tmp12)._2 in + (x,) (y,) }; None => 0 }
 //│ | | | 1. Typing term case p of { Some => let tmp12 = (p).value in case tmp12 of { Tuple#2 => let x = (tmp12)._1 in let y = (tmp12)._2 in + (x,) (y,) }; None => 0 }
 //│ | | | | 1. Typing term p
-//│ | | | | 1. : α166'
+//│ | | | | 1. : α188'
 //│ | | | | 1. Typing term let tmp12 = (p).value in case tmp12 of { Tuple#2 => let x = (tmp12)._1 in let y = (tmp12)._2 in + (x,) (y,) }
 //│ | | | | | 2. Typing term (p).value
 //│ | | | | | | 2. Typing term p
-//│ | | | | | | 2. : α167'
-//│ | | | | | | CONSTRAIN α167' <! {value: value168''}
+//│ | | | | | | 2. : α189'
+//│ | | | | | | CONSTRAIN α189' <! {value: value190''}
 //│ | | | | | |   where 
-//│ | | | | | | C α167' <! {value: value168''}    (0)
-//│ | | | | | | | EXTR RHS  {value: value168''}  ~>  {value: value169'}  to 1
+//│ | | | | | | C α189' <! {value: value190''}    (0) where TypeVariable <: RecordType}
+//│ | | | | | | | EXTR RHS  {value: value190''}  ~>  {value: value191'}  to 1
 //│ | | | | | | |  where 
 //│ | | | | | | |    and 
-//│ 		value168'' :> value169'
-//│ | | | | | | | C α167' <! {value: value169'}    (1)
-//│ | | | | | 2. : value168''
+//│ 		value190'' :> value191'
+//│ | | | | | | | C α189' <! {value: value191'}    (1) where TypeVariable <: RecordType}
+//│ | | | | | 2. : value190''
 //│ | | | | | 1. Typing term case tmp12 of { Tuple#2 => let x = (tmp12)._1 in let y = (tmp12)._2 in + (x,) (y,) }
 //│ | | | | | | 1. Typing term tmp12
-//│ | | | | | | 1. : value170'
-//│ | | | | | | CONSTRAIN value170' <! error<>
+//│ | | | | | | 1. : value192'
+//│ | | | | | | CONSTRAIN value192' <! error<>
 //│ | | | | | |   where 
-//│ 		value170' :> value169'
-//│ | | | | | | C value170' <! error<>    (0)
-//│ | | | | | | | C value169' <! error<>    (1)
-//│ | | | | | 1. : error<>
-//│ | | | | 1. : error<>
+//│ 		value192' :> value191'
+//│ | | | | | | C value192' <! error<>    (0) where TypeVariable <: ClassTag}
+//│ | | | | | | | C value191' <! error<>    (1) where TypeVariable <: ClassTag}
+//│ | | | | | 1. : α193'
+//│ | | | | 1. : α193'
 //│ | | | | 1. Typing term 0
-//│ | | | | 1. : 0<int,number>
-//│ | | | | CONSTRAIN α166' <! ((some<option> & α167') | ((none<option> & α171') & ~(some<option>)))
+//│ | | | | 1. : int<>
+//│ | | | | CONSTRAIN α188' <! ((some<Option> & α189') | ((none<Option> & α194') & ~(some<Option>)))
 //│ | | | |   where 
-//│ 		α167' <: {value: value169'}
-//│ 		value169' <: error<>
-//│ | | | | C α166' <! ((some<option> & α167') | ((none<option> & α171') & ~(some<option>)))    (0)
-//│ | | | 1. : (error<> | 0<int,number>)
-//│ | | 1. : (error<> | 0<int,number>)
-//│ | 1. : (error<> | 0<int,number>)
-//│ 1. : (α166' -> (error<> | 0<int,number>))
-//│ CONSTRAIN (α166' -> (error<> | 0<int,number>)) <! f165'
+//│ 		α189' <: {value: value191'}
+//│ 		value191' <: error<>
+//│ | | | | C α188' <! ((some<Option> & α189') | ((none<Option> & α194') & ~(some<Option>)))    (0) where TypeVariable <: ComposedType}
+//│ | | | 1. : α195'
+//│ | | 1. : α195'
+//│ | 1. : α195'
+//│ 1. : (α188' -> α195')
+//│ CONSTRAIN (α188' -> α195') <! f187'
 //│   where 
-//│ 		α166' <: ((some<option> & α167') | ((none<option> & α171') & ~(some<option>)))
-//│ 		α167' <: {value: value169'}
-//│ 		value169' <: error<>
-//│ C (α166' -> (error<> | 0<int,number>)) <! f165'    (0)
-//│ ⬤ Typed as: f165'
+//│ 		α188' <: ((some<Option> & α189') | ((none<Option> & α194') & ~(some<Option>)))
+//│ 		α189' <: {value: value191'}
+//│ 		value191' <: error<>
+//│ 		α193' :> error<>
+//│ 		α195' :> α193' | int<>
+//│ C (α188' -> α195') <! f187'    (0) where FunctionType <: TypeVariable}
+//│ ⬤ Typed as: f187'
 //│  where: 
-//│ 		f165' :> (α166' -> (error<> | 0<int,number>))
-//│ 		α166' <: ((some<option> & α167') | ((none<option> & α171') & ~(some<option>)))
-//│ 		α167' <: {value: value169'}
-//│ 		value169' <: error<>
+//│ 		f187' :> (α188' -> α195')
+//│ 		α188' <: ((some<Option> & α189') | ((none<Option> & α194') & ~(some<Option>)))
+//│ 		α189' <: {value: value191'}
+//│ 		value191' <: error<>
+//│ 		α193' :> error<>
+//│ 		α195' :> α193' | int<>
 //│ ╔══[ERROR] type identifier not found: Tuple#2
 //│ ╙──
-//│ f: (None | Some & {value: error}) -> (0 | error)
+//│ f: (None | Some & {value: error}) -> (error | int)

@@ -16,9 +16,8 @@ def g: G['a] & {a: 'a} as 'a
 //│ g: 'a
 //│   where
 //│     'a :> G[?] with {a: 'a}
-//│  = <missing implementation>
 
-:NoJS
+
 
 rec def g2 a = G { a }
 //│ g2: (G[?] & 'a) -> (G[?] with {a: 'a})
@@ -26,13 +25,13 @@ rec def g2 a = G { a }
 :e
 g = g2
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.27: 	g = g2
+//│ ║  l.26: 	g = g2
 //│ ║        	^^^^^^
-//│ ╟── function of type `?b -> ?c` does not match type `?a`
-//│ ║  l.23: 	rec def g2 a = G { a }
+//│ ╟── function of type `?b -> ?c` does not match type `(G[?] with {a: ?a}) | 'a`
+//│ ║  l.22: 	rec def g2 a = G { a }
 //│ ║        	           ^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `?a0`
-//│ ║  l.27: 	g = g2
+//│ ╟── but it flows into reference with expected type `(G[?] with {a: ?a0}) | 'a`
+//│ ║  l.26: 	g = g2
 //│ ║        	    ^^
 //│ ╟── Note: constraint arises from local type binding:
 //│ ║  l.15: 	def g: G['a] & {a: 'a} as 'a
@@ -79,15 +78,15 @@ def manual: 'a -> nothing as 'a
 :e
 manual id
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.80: 	manual id
+//│ ║  l.79: 	manual id
 //│ ║        	^^^^^^^^^
-//│ ╟── type `?a -> nothing` is not an instance of `nothing`
-//│ ║  l.74: 	def manual: 'a -> nothing as 'a
+//│ ╟── type `?a -> nothing` does not match type `nothing`
+//│ ║  l.73: 	def manual: 'a -> nothing as 'a
 //│ ║        	            ^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.74: 	def manual: 'a -> nothing as 'a
+//│ ║  l.73: 	def manual: 'a -> nothing as 'a
 //│ ╙──      	                  ^^^^^^^
-//│ res: ('a & 'b) -> 'b | error
+//│ res: ('a & 'b) -> 'b
 //│   where
 //│     'a <: ('b -> 'b) -> nothing & 'b
 //│     'b :> ('a & 'b) -> 'b
@@ -114,7 +113,7 @@ f: { mut x: int }
 f = { mut x = 1 }
 //│ {mut x: 'x}
 //│   where
-//│     'x :> 1
+//│     'x :> int
 //│   <:  f:
 //│ {mut x: int}
 
