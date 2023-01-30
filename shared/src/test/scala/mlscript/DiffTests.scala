@@ -3,18 +3,11 @@ package mlscript
 import fastparse._
 import fastparse.Parsed.Failure
 import fastparse.Parsed.Success
-import sourcecode.Line
 
 import scala.collection.mutable
 import scala.collection.mutable.{Map => MutMap}
-import scala.collection.immutable
 import mlscript.utils._
 import shorthands._
-import mlscript.JSTestBackend.IllFormedCode
-import mlscript.JSTestBackend.Unimplemented
-import mlscript.JSTestBackend.UnexpectedCrash
-import mlscript.JSTestBackend.TestCode
-import mlscript.codegen.typescript.TsTypegenCodeBuilder
 import org.scalatest.{ParallelTestExecution, funsuite}
 import org.scalatest.time._
 import org.scalatest.concurrent.{Signaler, TimeLimitedTests}
@@ -37,9 +30,6 @@ abstract class ModeType {
   def stats: Bool
   def stdout: Bool
   def noExecution: Bool
-  def noGeneration: Bool
-  def showGeneratedJS: Bool
-  def generateTsDeclarations: Bool
   def debugVariance: Bool
   def expectRuntimeErrors: Bool
   def expectCodeGenErrors: Bool
@@ -149,9 +139,6 @@ class DiffTests
       stats: Bool = false,
       stdout: Bool = false,
       noExecution: Bool = false,
-      noGeneration: Bool = false,
-      showGeneratedJS: Bool = false,
-      generateTsDeclarations: Bool = false,
       debugVariance: Bool = false,
       expectRuntimeErrors: Bool = false,
       expectCodeGenErrors: Bool = false,
@@ -174,7 +161,6 @@ class DiffTests
     var allowTypeErrors = false
     var allowParseErrors = false // TODO use
     var showRelativeLineNums = false
-    var noJavaScript = false
     // Parse and check the file with ocaml syntax and semantic rules
     var ocamlMode = false
     // load mlscript type definitions of ocaml standard library constructs
@@ -183,7 +169,6 @@ class DiffTests
     var allowRuntimeErrors = false
     var newParser = basePath.headOption.contains("parser") || basePath.headOption.contains("compiler")
 
-    val backend = new JSTestBackend()
     val host = ReplHost()
 
     /** Load type definitions and function definitions from a file into ctx
@@ -250,8 +235,7 @@ class DiffTests
         }
       }
     }
-    val codeGenTestHelpers = new CodeGenTestHelpers(file, output)
-    
+
     def rec(lines: List[String], mode: Mode): Unit = lines match {
       case "" :: Nil =>
       case line :: ls if line.startsWith(":") =>
@@ -276,12 +260,8 @@ class DiffTests
           case "AllowRuntimeErrors" => allowRuntimeErrors = true; mode
           case "ShowRelativeLineNums" => showRelativeLineNums = true; mode
           case "NewParser" => newParser = true; mode
-          case "NoJS" => noJavaScript = true; mode
           case "NoProvs" => noProvs = true; mode
           case "ne" => mode.copy(noExecution = true)
-          case "ng" => mode.copy(noGeneration = true)
-          case "js" => mode.copy(showGeneratedJS = true)
-          case "ts" => mode.copy(generateTsDeclarations = true)
           case "dv" => mode.copy(debugVariance = true)
           case "ge" => mode.copy(expectCodeGenErrors = true)
           case "re" => mode.copy(expectRuntimeErrors = true)
@@ -485,7 +465,7 @@ class DiffTests
           case Success(prog, index) =>
             if (mode.expectParseErrors && !newParser)
               failures += blockLineNum
-            if (mode.dbgParsing) output(s"Parsed: ${codegen.Helpers.inspect(prog)}")
+            if (mode.dbgParsing) output(s"Parsed: ${PrettyPrintHelper.inspect(prog)}")
             // if (mode.isDebugging) typer.resetState()
             if (mode.stats) typer.resetStats()
             typer.dbg = mode.dbg
@@ -543,14 +523,6 @@ class DiffTests
               
               typer.TypeVariable.collectTypeVars = prevVal
               exp
-            }
-            // initialize ts typegen code builder and
-            // declare all type definitions for current block
-            val tsTypegenCodeBuilder = new TsTypegenCodeBuilder()
-            if (mode.generateTsDeclarations) {
-              typeDefs.iterator.filter(td =>
-                ctx.tyDefs.contains(td.nme.name) && !oldCtx.tyDefs.contains(td.nme.name)
-              ).foreach(td => tsTypegenCodeBuilder.declareTypeDef(td))
             }
 
             val curBlockTypeDefs = typeDefs
@@ -612,20 +584,6 @@ class DiffTests
                       _ => "Declared"  // the method type has just been declared
                     )} ${tn}.${mn}: ${res.show}")
                 }
-
-                // start typegen, declare methods if any and complete typegen block
-                if (mode.generateTsDeclarations) {
-                  val mthDeclSet = ttd.mthDecls.iterator.map(_.nme.name).toSet
-                  val methods = methodsAndTypes
-                    // filter method declarations and definitions
-                    // without declarations
-                    .withFilter { case (mthd, _) =>
-                      mthd.rhs.isRight || !mthDeclSet.contains(mthd.nme.name)
-                    }
-                    .map { case (mthd, mthdTy) => (mthd.nme.name, mthdTy) }
-
-                  tsTypegenCodeBuilder.addTypeDef(td, methods)
-                }
               }
             )
             
@@ -657,8 +615,6 @@ class DiffTests
             
             // process statements and output mlscript types
             // all `Def`s and `Term`s are processed here
-            // generate typescript types if generateTsDeclarations flag is
-            // set in the mode
             stmts.foreach {
               // statement only declares a new term with its type
               // but does not give a body/definition to it
@@ -670,7 +626,6 @@ class DiffTests
                 ctx += nme.name -> typer.VarSymbol(ty_sch, nme)
                 declared += nme.name -> ty_sch
                 val exp = getType(ty_sch)
-                if (mode.generateTsDeclarations) tsTypegenCodeBuilder.addTypeGenTermDefinition(exp, Some(nme.name))
                 typingOutputs += R[Ls[Str], Str -> Ls[Str]](nme.name -> (s"$nme: ${exp.show}" :: Nil))
 
               // statement is defined and has a body/definition
@@ -685,7 +640,6 @@ class DiffTests
                   // infer it's type and store it for lookup and type gen
                   case N =>
                     ctx += nme.name -> typer.VarSymbol(ty_sch, nme)
-                    if (mode.generateTsDeclarations) tsTypegenCodeBuilder.addTypeGenTermDefinition(exp, Some(nme.name))
                     s"$nme: ${exp.show}" :: Nil
                     
                   // statement has a body and a declared type
@@ -696,7 +650,6 @@ class DiffTests
                     val sign_exp = getType(sign)
                     typer.dbg = mode.dbg
                     typer.subsume(ty_sch, sign)(ctx, raiseToBuffer, typer.TypeProvenance(d.toLoc, "def definition"))
-                    if (mode.generateTsDeclarations) tsTypegenCodeBuilder.addTypeGenTermDefinition(exp, Some(nme.name))
                     exp.show :: s"  <:  $nme:" :: sign_exp.show :: Nil
                 }
                 typingOutputs += R[Ls[Str], Str -> Ls[Str]](nme.name -> typingOutput)
@@ -708,7 +661,6 @@ class DiffTests
                     binds.foreach { case (nme, pty) =>
                       val ptType = getType(pty)
                       ctx += nme -> typer.VarSymbol(pty, Var(nme))
-                      if (mode.generateTsDeclarations) tsTypegenCodeBuilder.addTypeGenTermDefinition(ptType, Some(nme))
                       typingOutputs += R[Ls[Str], Str -> Ls[Str]](nme -> (s"$nme: ${ptType.show}" :: Nil))
                     }
                   
@@ -719,7 +671,6 @@ class DiffTests
                     if (exp =/= TypeName("unit")) {
                       val res = "res"
                       ctx += res -> typer.VarSymbol(pty, Var(res))
-                      if (mode.generateTsDeclarations) tsTypegenCodeBuilder.addTypeGenTermDefinition(exp, None)
                       typingOutputs += R[Ls[Str], Str -> Ls[Str]](res, s"res: ${exp.show}" :: Nil)
                     } else (
                       typingOutputs += R[Ls[Str], Str -> Ls[Str]]("" -> Nil)
@@ -737,97 +688,6 @@ class DiffTests
               typer.dbg = temp
             }
             
-            var results: JSTestBackend.Result \/ Ls[ReplHost.Reply] = if (!allowTypeErrors &&
-                file.ext =:= "mls" && !mode.noGeneration && !noJavaScript) {
-              import codeGenTestHelpers._
-              backend(p, mode.allowEscape) match {
-                case testCode @ TestCode(prelude, queries) => {
-                  // Display the generated code.
-                  if (mode.showGeneratedJS) showGeneratedCode(testCode)
-                  // Execute code.
-                  if (!mode.noExecution) {
-                    val preludeReply = if (prelude.isEmpty) N else S(host.execute(prelude.mkString(" ")))
-                    if (mode.showRepl) showReplPrelude(prelude, preludeReply, blockLineNum)
-                    val replies = queries.map {
-                      case JSTestBackend.CodeQuery(preludeLines, codeLines, resultName) =>
-                        host.query(preludeLines.mkString, codeLines.mkString, resultName)
-                      case JSTestBackend.AbortedQuery(reason) => ReplHost.Unexecuted(reason)
-                      case JSTestBackend.EmptyQuery => ReplHost.Empty
-                    }
-                    if (mode.showRepl) showReplContent(queries, replies)
-                    R(replies)
-                  } else {
-                    L(JSTestBackend.ResultNotExecuted)
-                  }
-                }
-                case t => L(t)
-              }
-            } else {
-              L(JSTestBackend.ResultNotExecuted)
-            }
-
-            // If code generation fails, show the error message.
-            results match {
-              case R(replies) =>
-                val replyQueue = mutable.Queue.from(replies)
-                typingOutputs.foreach {
-                  case L(diagnosticLines) =>
-                    diagnosticLines.foreach(output)
-                  case R(name -> typingResult) =>
-                    typingResult.foreach(output)
-                    val prefixLength = name.length
-                    replyQueue.headOption.foreach { head =>
-                      head match {
-                        case ReplHost.Error(isSyntaxError, content) =>
-                          if (!(mode.expectTypeErrors
-                              || mode.expectRuntimeErrors
-                              || allowRuntimeErrors
-                              || mode.fixme
-                          )) failures += blockLineNum
-                          totalRuntimeErrors += 1
-                          output((if (isSyntaxError) "Syntax" else "Runtime") + " error:")
-                          content.linesIterator.foreach { s => output("  " + s) }
-                        case ReplHost.Unexecuted(reason) =>
-                          output(" " * prefixLength + "= <no result>")
-                          output(" " * (prefixLength + 2) + reason)
-                        case ReplHost.Result(result, _) =>
-                          result.linesIterator.zipWithIndex.foreach { case (line, i) =>
-                            if (i =:= 0) output(" " * prefixLength + "= " + line)
-                            else output(" " * (prefixLength + 2) + line)
-                          }
-                        case ReplHost.Empty =>
-                          output(" " * prefixLength + "= <missing implementation>")
-                      }
-                      replyQueue.dequeue()
-                    }
-                }
-              case L(other) =>
-                // Print type checking results first.
-                typingOutputs.foreach {
-                  case L(diagnosticLines) => diagnosticLines.foreach(output)
-                  case R(_ -> typingResults) => typingResults.foreach(output)
-                }
-                other match {
-                  case _: TestCode => () // Impossible case.
-                  case IllFormedCode(message) =>
-                    totalCodeGenErrors += 1
-                    if (!mode.expectCodeGenErrors && !mode.fixme)
-                      failures += blockLineNum
-                    output("Code generation encountered an error:")
-                    output(s"  ${message}")
-                  case Unimplemented(message) =>
-                    output("Unable to execute the code:")
-                    output(s"  ${message}")
-                  case UnexpectedCrash(name, message) =>
-                    if (!mode.fixme)
-                      failures += blockLineNum
-                    output("Code generation crashed:")
-                    output(s"  $name: $message")
-                  case JSTestBackend.ResultNotExecuted => ()
-                }
-            }
-            // generate typescript typegen block
-            if (mode.generateTsDeclarations) outputSourceCode(tsTypegenCodeBuilder.toSourceCode())
             // show a list of suspicious locations found in above block
             if (mode.suspiciousLocation) typer.showSuspiciousLocations()(raise)
             

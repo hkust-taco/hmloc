@@ -232,7 +232,7 @@ class Desugarer extends TypeDefs { self: Typer =>
       // x is Cons((x, y), Nil)
       case tuple: Tup => desugarTuplePattern(tuple)
       // What else?
-      case _ => throw new Exception(s"illegal pattern: ${mlscript.codegen.Helpers.inspect(pattern)}")
+      case _ => throw new Exception(s"illegal pattern: ${PrettyPrintHelper.inspect(pattern)}")
     }
   }
 

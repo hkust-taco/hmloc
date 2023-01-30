@@ -1,12 +1,9 @@
 package mlscript
 
 import fastparse._
-import mlscript.utils._, shorthands._
-import mlscript._
-import scala.annotation.nowarn
+import mlscript.utils._
 import fastparse.Parsed.Failure
 import fastparse.Parsed.Success
-import mlscript.codegen.Helpers
 
 class OcamlParserTests extends org.scalatest.funsuite.AnyFunSuite {
   import OcamlParserTests._
@@ -21,7 +18,7 @@ class OcamlParserTests extends org.scalatest.funsuite.AnyFunSuite {
       println(f)
     case Success(pgrm, index) =>
       println(pgrm)
-      println(Helpers.inspect(pgrm))
+      println(PrettyPrintHelper.inspect(pgrm))
   }
 }
 
