@@ -685,5 +685,9 @@ object OcamlParser {
       case _ => die
     }.toIndexedSeq
   }
-  
+
+  def libraryTopLevelSeparators(lines: IndexedSeq[Str]): IndexedSeq[Str] = {
+    // skip blank lines, mode lines and comments
+    lines.filter(line => !(line.startsWith(" ") || line.startsWith(":") || line.startsWith("//")))
+  }
 }

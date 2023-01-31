@@ -178,7 +178,7 @@ class DiffTests
     def loadLibrary(file: Path, typer: Typer): (typer.Ctx, Map[Str, typer.PolymorphicType]) = {
       val fileContents = os.read(file)
       val allLines = fileContents.splitSane('\n').toIndexedSeq
-      val block = OcamlParser.addTopLevelSeparators(allLines).mkString("\n")
+      val block = OcamlParser.libraryTopLevelSeparators(allLines).mkString("\n")
       val fph = new FastParseHelpers(block)
       val globalStartLineNum = 0
       parse(block, p => new OcamlParser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
@@ -753,7 +753,7 @@ object DiffTests {
   
   private val pwd = os.pwd
   private val dir = pwd/"shared"/"src"/"test"/"diff"
-  private val libPath = dir/"ocaml"/"OcamlLibrary.mls.txt"
+  private val libPath = dir/"ocaml"/"OcamlLibrary.mls"
 
   private val allFiles = os.walk(dir).filter(_.toIO.isFile)
   
