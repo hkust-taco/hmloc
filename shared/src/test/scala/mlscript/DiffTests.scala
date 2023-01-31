@@ -178,7 +178,7 @@ class DiffTests
     def loadLibrary(file: Path, typer: Typer): (typer.Ctx, Map[Str, typer.PolymorphicType]) = {
       val fileContents = os.read(file)
       val allLines = fileContents.splitSane('\n').toIndexedSeq
-      val block = OcamlParser.addTopLevelSeparators(allLines).mkString
+      val block = OcamlParser.addTopLevelSeparators(allLines).mkString("\n")
       val fph = new FastParseHelpers(block)
       val globalStartLineNum = 0
       parse(block, p => new OcamlParser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
