@@ -224,12 +224,12 @@ let interp3 = interp (fun (env:env) _ -> [])
 //│ ╙──       	                                 ^^^^^
 //│ interp3: error -> 'a -> ('b | 'c)
 //│   where
-//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'b & 'd & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | Lam | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
+//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'd & 'b & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | Lam | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
 //│     'c :> int & {_0: int}
-//│        <: 'b & 'd & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
+//│        <: 'd & 'b & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
+//│     'd <: 'b & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_1: 'a, _2: list[?]}) | ~Closure)
 //│     'b :> Closure | error | int & {_0: int} | exp
 //│        <: 'd & (exp & int & {_0: int} | exp & ~int)
-//│     'd <: 'b & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_1: 'a, _2: list[?]}) | ~Closure)
 
 (****** Problem 5b (EXTRA CREDIT): explain the next two functions ******)
 
@@ -325,9 +325,9 @@ let ans4 = interp2 [] (fst (computeFreeVars ex2))
 //│ ╟── argument of type `(?a,)` does not match type `(?b, ?c,)`
 //│ ║  l.320: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
 //│ ║         	                            ^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from tuple literal:
-//│ ║  l.3: 	let fst (a, b) = a;
-//│ ╙──     	         ^^^^
+//│ ╟── Note: constraint arises from tuple type:
+//│ ║  l.3: 	let fst: ('a * 'b) -> 'a;
+//│ ╙──     	          ^^^^^^^
 //│ ans3: Closure | error | int & {_0: int} | exp
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.321: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
@@ -335,9 +335,9 @@ let ans4 = interp2 [] (fst (computeFreeVars ex2))
 //│ ╟── argument of type `(?a,)` does not match type `(?b, ?c,)`
 //│ ║  l.321: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
 //│ ║         	                            ^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from tuple literal:
-//│ ║  l.3: 	let fst (a, b) = a;
-//│ ╙──     	         ^^^^
+//│ ╟── Note: constraint arises from tuple type:
+//│ ║  l.3: 	let fst: ('a * 'b) -> 'a;
+//│ ╙──     	          ^^^^^^^
 //│ ans4: Closure | error | int & {_0: int} | exp
 
 let ans5 = interp3 [] (translate [] ex1)

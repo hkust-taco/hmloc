@@ -195,20 +195,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       val newLhs = argSub(lhs)
       val newRhs = argSub(rhs)
       App(op.copy(name = "Cons"), toParams(newLhs :: newRhs :: Nil))
-    // substitute structural and refernce inequality for `ne` in mlscript
-    case o@App(i@App(op@Var("<>"), lhs), rhs) =>
-      val newLhs = appSubstitution(lhs)
-      val newRhs = appSubstitution(rhs)
-      o.copy(lhs = i.copy(lhs = op.copy(name = "ne"), rhs = newLhs), rhs = newRhs)
-    case o@App(i@App(op@Var("!="), lhs), rhs) =>
-      val newLhs = appSubstitution(lhs)
-      val newRhs = appSubstitution(rhs)
-      o.copy(lhs = i.copy(lhs = op.copy(name = "ne"), rhs = newLhs), rhs = newRhs)
-    // substitute structural and refernce equality for `eq` in mlscript
-    case o@App(i@App(op@Var("=="), lhs), rhs) =>
-      val newLhs = appSubstitution(lhs)
-      val newRhs = appSubstitution(rhs)
-      o.copy(lhs = i.copy(lhs = op.copy(name = "eq"), rhs = newLhs), rhs = newRhs)
     case o@App(i@App(op@Var("="), lhs), rhs) =>
       val newLhs = appSubstitution(lhs)
       val newRhs = appSubstitution(rhs)
