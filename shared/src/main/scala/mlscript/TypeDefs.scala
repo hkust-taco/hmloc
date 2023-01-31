@@ -312,9 +312,6 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
                 case _ => ()
               }
               (decls -- defns) match {
-                case absMths if absMths.nonEmpty || isTraitWithMethods =>
-                  if (ctx.get(n.name).isEmpty) // The class may already be defined in an erroneous program
-                    ctx += n.name -> AbstractConstructor(absMths, isTraitWithMethods)
                 case _ =>
                   val fields = fieldsOf(td.bodyTy, paramTags = true)
                   val tparamTags = td.tparamsargs.map { case (tp, tv) =>

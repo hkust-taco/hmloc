@@ -42,10 +42,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   
   sealed abstract class TypeInfo
 
-  /** A type for abstract classes that is used to check and throw
-   * errors if the abstract class is being instantiated */
-  case class AbstractConstructor(absMths: Set[Var], isTraitWithMethods: Bool) extends TypeInfo
-  
   case class VarSymbol(ty: TypeScheme, definingVar: Var) extends TypeInfo
   
   /** A type that potentially contains universally quantified type variables,

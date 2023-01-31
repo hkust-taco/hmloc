@@ -308,7 +308,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case Literal(lit) => ClassTag(lit, lit.baseClasses)(tyTp(ty.toLoc, "literal type"))
       case TypeName("this") =>
         ctx.env.getOrElse("this", err(msg"undeclared this" -> ty.toLoc :: Nil)) match {
-          case AbstractConstructor(_, _) => die
           case VarSymbol(t: TypeScheme, _) => t.instantiate
         }
       case tn @ TypeTag(name) => rec(TypeName(name.decapitalize))
@@ -535,18 +534,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           }
       case v @ ValidVar(name) =>
         val ty = ctx.get(name).fold(err("identifier not found: " + name, term.toLoc): TypeScheme) {
-          case AbstractConstructor(absMths, traitWithMths) =>
-            val td = ctx.tyDefs(name)
-            err((msg"Instantiation of an abstract type is forbidden" -> term.toLoc)
-              :: (
-                if (traitWithMths) {
-                  assert(td.kind is Trt)
-                  msg"Note that traits with methods are always considered abstract" -> td.toLoc :: Nil
-                } else
-                  msg"Note that ${td.kind.str} ${td.nme} is abstract:" -> td.toLoc
-                  :: absMths.map { case mn => msg"Hint: method ${mn.name} is abstract" -> mn.toLoc }.toList
-              )
-            )
           case VarSymbol(ty: TypeScheme, _) => ty
         }.instantiate
         mkProxy(ty, prov)
