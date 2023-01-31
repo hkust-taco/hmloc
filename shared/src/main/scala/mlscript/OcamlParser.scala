@@ -467,8 +467,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     P((constructorName ~ ("of" ~/ ocamlConstructorBody).?).map {
       case (id, Some((params, body))) =>
         val positionals = body.fields.map(_._1)
-        TypeDef(Cls, id, params.toList, body, Nil, Nil, positionals)
-      case (id, None)                 => TypeDef(Cls, id, Nil, Record(Ls.empty), Nil, Nil, Nil)
+        TypeDef(Cls, id, params.toList, body, positionals)
+      case (id, None)                 => TypeDef(Cls, id, Nil, Record(Ls.empty), Nil)
     })
     
   // https://v2.ocaml.org/manual/typedecl.html#ss:typedefs
@@ -509,10 +509,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
           case (union, tdef) => Union(unionType(tdef), union)
         }
         val helpers = bodies.flatMap(cls => ocamlTyDeclHelper(cls, tname, tparams)).toList
-        TypeDef(Als, tname, tparams, aliasBody, Nil, Nil, Nil) :: bodies ::: helpers ::: moreTypes.getOrElse(Nil)
+        TypeDef(Als, tname, tparams, aliasBody, Nil) :: bodies ::: helpers ::: moreTypes.getOrElse(Nil)
       // a type name, variable or applied type as alias
       case (tparams, tname, R((_, t)), moreTypes) =>
-        TypeDef(Als, tname, tparams.toList, t, Nil, Nil, Nil) :: moreTypes.getOrElse(Nil)
+        TypeDef(Als, tname, tparams.toList, t, Nil) :: moreTypes.getOrElse(Nil)
       }
     )
   
@@ -554,16 +554,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ocamlTyParams[p: P]: P[Ls[TypeName]] =
     ocamlTyParam.map(_ :: Nil) |
     ("(" ~ ocamlTyParam.rep(0, ",") ~ ")").?.map(_.toList.flatten)
-  def mthDecl[p: P](prt: TypeName): P[R[MethodDef[Right[Term, Type]]]] = 
-    P(kw("method") ~ variable ~ tyParams ~ ":" ~/ ty map {
-      case (id, ts, t) => R(MethodDef[Right[Term, Type]](true, prt, id, ts, R(t)))
-    })
-  def mthDef[p: P](prt: TypeName): P[L[MethodDef[Left[Term, Type]]]] = 
-    P(kw("rec").!.?.map(_.isDefined) ~ kw("method") ~ variable ~ tyParams ~ subterm.rep ~ "=" ~/ term map {
-      case (rec, id, ts, ps, bod) =>
-        L(MethodDef(rec, prt, id, ts, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc)))))
-    })
-  
+
   def ty[p: P]: P[Type] = P( tyNoAs ~ ("as" ~ tyVar).rep ).map {
     case (ty, ass) => ass.foldLeft(ty)((a, b) => Recursive(b, a))
   }

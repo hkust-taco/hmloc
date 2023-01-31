@@ -32,8 +32,6 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
     tparamsargs: List[(TypeName, TypeVariable)],
     tvars: Iterable[TypeVariable], // "implicit" type variables. instantiate every time a `TypeRef` is expanded
     bodyTy: SimpleType,
-    mthDecls: List[MethodDef[Right[Term, Type]]],
-    mthDefs: List[MethodDef[Left[Term, Type]]],
     baseClasses: Set[TypeName],
     toLoc: Opt[Loc],
     positionals: Ls[Str],
@@ -192,8 +190,7 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
           val tparamsargs = td.tparams.lazyZip(dummyTargs)
           val (bodyTy, tvars) = 
             typeType2(td.body, simplify = false)(ctx.copy(lvl = 0), raise, tparamsargs.map(_.name -> _).toMap, newDefsInfo)
-          val td1 = TypeDef(td.kind, td.nme, tparamsargs.toList, tvars, bodyTy,
-            td.mthDecls, td.mthDefs, baseClassesOf(td), td.toLoc, td.positionals.map(_.name))
+          val td1 = TypeDef(td.kind, td.nme, tparamsargs.toList, tvars, bodyTy, baseClassesOf(td), td.toLoc, td.positionals.map(_.name))
           allDefs += n -> td1
           S(td1)
       }
@@ -206,16 +203,6 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
       ctx.copy(tyDefs = oldDefs ++ newDefs.flatMap { td =>
         implicit val prov: TypeProvenance = tp(td.toLoc, "type definition")
         val n = td.nme
-        
-        def gatherMthNames(td: TypeDef): (Set[Var], Set[Var]) =
-          td.baseClasses.iterator.flatMap(bn => ctx.tyDefs.get(bn.name)).map(gatherMthNames(_)).fold(
-            (td.mthDecls.iterator.map(md => md.nme.copy().withLocOf(md)).toSet,
-            td.mthDefs.iterator.map(md => md.nme.copy().withLocOf(md)).toSet)
-          ) { case ((decls1, defns1), (decls2, defns2)) => (
-            (decls1.toSeq ++ decls2.toSeq).groupBy(identity).map { case (mn, mns) =>
-              if (mns.sizeIs > 1) Var(mn.name).withLoc(td.toLoc) else mn }.toSet,
-            defns1 ++ defns2
-          )}
         
         def checkCycle(ty: SimpleType)(implicit travsersed: Set[TypeName \/ TV]): Bool =
             // trace(s"Cycle? $ty {${travsersed.mkString(",")}}") {
@@ -299,60 +286,46 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
               case _: RecordType | _: ExtrType => true
               case p: ProxyType => checkParents(p.underlying)
             }
-            lazy val checkAbstractAddCtors = {
-              val (decls, defns) = gatherMthNames(td)
-              val isTraitWithMethods = (k is Trt) && defns.nonEmpty
-              val fields = fieldsOf(td.bodyTy, true)
-              fields.foreach {
-                // * Make sure the LB/UB of all inherited type args are consistent.
-                // * This is not actually necessary for soundness
-                // *  (if they aren't, the object type just won't be instantiable),
-                // *  but will help report inheritance errors earlier (see test BadInherit2).
-                case (nme, FieldType(S(lb), ub)) => constrain(lb, ub)
-                case _ => ()
-              }
-              (decls -- defns) match {
-                case _ =>
-                  val fields = fieldsOf(td.bodyTy, paramTags = true)
-                  val tparamTags = td.tparamsargs.map { case (tp, tv) =>
-                    tparamField(td.nme, tp) -> FieldType(Some(tv), tv)(tv.prov) }
-                  val ctor = k match {
-                    case Cls =>
-                      val nomTag = clsNameToNomTag(td)(originProv(td.nme.toLoc, "class", td.nme.name), ctx)
-                      val fieldsRefined = fields.iterator.map(f =>
-                        if (f._1.name.isCapitalized) f
-                        else {
-                          val fv = freshVar(noProv,
-                            S(f._1.name.drop(f._1.name.indexOf('#') + 1)) // strip any "...#" prefix
-                          )(1).tap(_.upperBounds ::= f._2.ub)
-                          f._1 -> (
-                            if (f._2.lb.isDefined) FieldType(Some(fv), fv)(f._2.prov)
-                            else fv.toUpper(f._2.prov)
-                          )
-                        }).toList
-                      PolymorphicType(0, FunctionType(
-                        singleTup(RecordType.mk(fieldsRefined.filterNot(_._1.name.isCapitalized))(noProv)),
-                        nomTag & RecordType.mk(
-                          fieldsRefined ::: tparamTags
-                        )(noProv)
-                        // * TODO try later:
-                        // TypeRef(td.nme, td.tparamsargs.unzip._2)(noProv) & RecordType.mk(fieldsRefined)(noProv)
-                      )(originProv(td.nme.toLoc, "class constructor", td.nme.name)))
-                    case Trt =>
-                      val nomTag = trtNameToNomTag(td)(originProv(td.nme.toLoc, "trait", td.nme.name), ctx)
-                      val tv = freshVar(noProv)(1)
-                      tv.upperBounds ::= td.bodyTy
-                      PolymorphicType(0, FunctionType(
-                        singleTup(tv), tv & nomTag & RecordType.mk(tparamTags)(noProv)
-                      )(originProv(td.nme.toLoc, "trait constructor", td.nme.name)))
-                  }
-                  ctx += n.name -> VarSymbol(ctor, Var(n.name))
-              }
-              true
+
+            val fields = fieldsOf(td.bodyTy, paramTags = true)
+            val tparamTags = td.tparamsargs.map { case (tp, tv) =>
+              tparamField(td.nme, tp) -> FieldType(Some(tv), tv)(tv.prov)
             }
-            checkParents(td.bodyTy) && checkCycle(td.bodyTy)(Set.single(L(td.nme))) && checkAbstractAddCtors
+            val ctor = k match {
+              case Cls =>
+                val nomTag = clsNameToNomTag(td)(originProv(td.nme.toLoc, "class", td.nme.name), ctx)
+                val fieldsRefined = fields.iterator.map(f =>
+                  if (f._1.name.isCapitalized) f
+                  else {
+                    val fv = freshVar(noProv,
+                      S(f._1.name.drop(f._1.name.indexOf('#') + 1)) // strip any "...#" prefix
+                    )(1).tap(_.upperBounds ::= f._2.ub)
+                    f._1 -> (
+                      if (f._2.lb.isDefined) FieldType(Some(fv), fv)(f._2.prov)
+                      else fv.toUpper(f._2.prov)
+                      )
+                  }).toList
+                PolymorphicType(0, FunctionType(
+                  singleTup(RecordType.mk(fieldsRefined.filterNot(_._1.name.isCapitalized))(noProv)),
+                  nomTag & RecordType.mk(
+                    fieldsRefined ::: tparamTags
+                  )(noProv)
+                  // * TODO try later:
+                  // TypeRef(td.nme, td.tparamsargs.unzip._2)(noProv) & RecordType.mk(fieldsRefined)(noProv)
+                )(originProv(td.nme.toLoc, "class constructor", td.nme.name)))
+              case Trt =>
+                val nomTag = trtNameToNomTag(td)(originProv(td.nme.toLoc, "trait", td.nme.name), ctx)
+                val tv = freshVar(noProv)(1)
+                tv.upperBounds ::= td.bodyTy
+                PolymorphicType(0, FunctionType(
+                  singleTup(tv), tv & nomTag & RecordType.mk(tparamTags)(noProv)
+                )(originProv(td.nme.toLoc, "trait constructor", td.nme.name)))
+            }
+            ctx += n.name -> VarSymbol(ctor, Var(n.name))
+
+            checkParents(td.bodyTy) && checkCycle(td.bodyTy)(Set.single(L(td.nme)))
         }
-        
+
         def checkRegular(ty: SimpleType)(implicit reached: Map[Str, Ls[SimpleType]]): Bool = ty match {
           case tr @ TypeRef(defn, targs) => reached.get(defn.name) match {
             case None => checkRegular(tr.expandWith(false))(reached + (defn.name -> targs))
@@ -503,17 +476,10 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
       val visitedSet: MutSet[Bool -> TypeVariable] = MutSet()
       varianceUpdated = false;
       tyDefs.foreach {
-        case t @ TypeDef(k, nme, _, _, body, mthDecls, mthDefs, _, _, _) =>
+        case t @ TypeDef(k, nme, _, _, body, _, _, _) =>
           trace(s"${k.str} ${nme.name}  ${
                 t.tvarVariances.getOrElse(die).iterator.map(kv => s"${kv._2} ${kv._1}").mkString("  ")}") {
             updateVariance(body, VarianceInfo.co)(t, visitedSet)
-            val stores = (mthDecls ++ mthDefs).foreach { mthDef => 
-              val mthBody = ctx.mthEnv.getOrElse(
-                Right(Some(nme.name), mthDef.nme.name),
-                throw new Exception(s"Method ${mthDef.nme.name} does not exist in the context")
-              ).body
-              mthBody.foreach { case (_, body) => updateVariance(body, VarianceInfo.co)(t, visitedSet) }
-            }
           }()
       }
       i += 1

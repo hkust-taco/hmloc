@@ -565,25 +565,6 @@ class DiffTests
                   else
                     SourceCode("")
                 output(s"Defined " + td.kind.str + " " + tn + params)
-
-                // calculate types for all method definitions and declarations
-                // only once and reuse for pretty printing and type generation
-                val methodsAndTypes = (ttd.mthDecls ++ ttd.mthDefs).flatMap {
-                  case m@MethodDef(_, _, Var(mn), _, rhs) =>
-                    rhs.fold(
-                      _ => ctx.getMthDefn(tn, mn).map(mthTy => (m, getType(mthTy.toPT))),
-                      _ => ctx.getMth(S(tn), mn).map(mthTy => (m, getType(mthTy.toPT)))
-                    )
-                }
-
-                // pretty print method definitions
-                methodsAndTypes.foreach {
-                  case (MethodDef(_, _, Var(mn), _, rhs), res) =>
-                    output(s"${rhs.fold(
-                      _ => "Defined",  // the method has been defined
-                      _ => "Declared"  // the method type has just been declared
-                    )} ${tn}.${mn}: ${res.show}")
-                }
               }
             )
             

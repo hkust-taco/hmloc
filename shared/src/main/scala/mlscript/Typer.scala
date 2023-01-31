@@ -129,22 +129,22 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       "anything" -> TopType, "nothing" -> BotType, "float" -> FloatType)
   
   val builtinTypes: Ls[TypeDef] =
-    TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("number"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("bool"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("true"), Nil, Nil, TopType, Nil, Nil, Set.single(TypeName("bool")), N, Nil) ::
-    TypeDef(Cls, TypeName("false"), Nil, Nil, TopType, Nil, Nil, Set.single(TypeName("bool")), N, Nil) ::
-    TypeDef(Cls, TypeName("string"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
-    TypeDef(Als, TypeName("undefined"), Nil, Nil, ClassTag(UnitLit(true), Set.empty)(noProv), Nil, Nil, Set.empty, N, Nil) ::
-    TypeDef(Als, TypeName("null"), Nil, Nil, ClassTag(UnitLit(false), Set.empty)(noProv), Nil, Nil, Set.empty, N, Nil) ::
-    TypeDef(Als, TypeName("anything"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
-    TypeDef(Als, TypeName("nothing"), Nil, Nil, BotType, Nil, Nil, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("error"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("unit"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
+    TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Set.empty, N, Nil) ::
+    TypeDef(Cls, TypeName("number"), Nil, Nil, TopType, Set.empty, N, Nil) ::
+    TypeDef(Cls, TypeName("bool"), Nil, Nil, TopType, Set.empty, N, Nil) ::
+    TypeDef(Cls, TypeName("true"), Nil, Nil, TopType, Set.single(TypeName("bool")), N, Nil) ::
+    TypeDef(Cls, TypeName("false"), Nil, Nil, TopType, Set.single(TypeName("bool")), N, Nil) ::
+    TypeDef(Cls, TypeName("string"), Nil, Nil, TopType, Set.empty, N, Nil) ::
+    TypeDef(Als, TypeName("undefined"), Nil, Nil, ClassTag(UnitLit(true), Set.empty)(noProv), Set.empty, N, Nil) ::
+    TypeDef(Als, TypeName("null"), Nil, Nil, ClassTag(UnitLit(false), Set.empty)(noProv), Set.empty, N, Nil) ::
+    TypeDef(Als, TypeName("anything"), Nil, Nil, TopType, Set.empty, N, Nil) ::
+    TypeDef(Als, TypeName("nothing"), Nil, Nil, BotType, Set.empty, N, Nil) ::
+    TypeDef(Cls, TypeName("error"), Nil, Nil, TopType, Set.empty, N, Nil) ::
+    TypeDef(Cls, TypeName("unit"), Nil, Nil, TopType, Set.empty, N, Nil) ::
     {
       val tv = freshVar(noTyProv)(1)
       val tyDef = TypeDef(Als, TypeName("Array"), List(TypeName("A") -> tv), Nil,
-        ArrayType(FieldType(None, tv)(noTyProv))(noTyProv), Nil, Nil, Set.empty, N, Nil)
+        ArrayType(FieldType(None, tv)(noTyProv))(noTyProv), Set.empty, N, Nil)
         // * ^ Note that the `noTyProv` here is kind of a problem
         // *    since we currently expand primitive types eagerly in DNFs.
         // *  For instance, see `inn2 v1` in test `Yicong.mls`.
@@ -157,11 +157,11 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     {
       val tv = freshVar(noTyProv)(1)
       val tyDef = TypeDef(Als, TypeName("MutArray"), List(TypeName("A") -> tv), Nil,
-        ArrayType(FieldType(Some(tv), tv)(noTyProv))(noTyProv), Nil, Nil, Set.empty, N, Nil)
+        ArrayType(FieldType(Some(tv), tv)(noTyProv))(noTyProv), Set.empty, N, Nil)
       tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.in))
       tyDef
     } ::
-    TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Nil, Nil, Set.empty, N, Nil) ::
+    TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Set.empty, N, Nil) ::
     Nil
   val primitiveTypes: Set[Str] =
     builtinTypes.iterator.map(_.nme.name).toSet

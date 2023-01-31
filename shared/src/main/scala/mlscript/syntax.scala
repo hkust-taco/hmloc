@@ -28,32 +28,8 @@ final case class TypeDef(
   nme: TypeName,
   tparams: List[TypeName],
   body: Type,
-  mthDecls: List[MethodDef[Right[Term, Type]]],
-  mthDefs: List[MethodDef[Left[Term, Type]]],
   positionals: Ls[Var],
 ) extends Decl
-
-/**
-  * Method type can be a definition or a declaration based
-  * on the type parameter set. A declaration has `Type` in rhs
-  * and definition has `Term` in rhs.
-  *
-  * @param rec indicates that the method is recursive
-  * @param prt name of class to which method belongs
-  * @param nme name of method
-  * @param tparams list of parameters for the method if any
-  * @param rhs term or type if definition and declaration respectively
-  */
-final case class MethodDef[RHS <: Term \/ Type](
-  rec: Bool,
-  parent: TypeName,
-  nme: Var,
-  tparams: List[TypeName],
-  rhs: RHS,
-) extends Located {
-  val body: Located = rhs.fold(identity, identity)
-  val children: Ls[Located] = nme :: body :: Nil
-}
 
 sealed abstract class TypeDefKind(val str: Str)
 sealed trait ObjDefKind

@@ -202,25 +202,15 @@ class MLParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true) {
   }
   def tyDecl[p: P]: P[TypeDef] =
     P((tyKind ~/ tyName ~ tyParams).flatMap {
-      case (k @ (Cls | Trt), id, ts) => (":" ~ ty).? ~ (mthDecl(id) | mthDef(id)).rep.map(_.toList) map {
-        case (bod, ms) => TypeDef(k, id, ts, bod.getOrElse(Top), 
-          ms.collect { case R(md) => md }, ms.collect{ case L(md) => md }, Nil)
+      case (k @ (Cls | Trt), id, ts) => (":" ~ ty).? map {
+        case bod => TypeDef(k, id, ts, bod.getOrElse(Top), Nil)
       }
-      case (k @ Als, id, ts) => "=" ~ ty map (bod => TypeDef(k, id, ts, bod, Nil, Nil, Nil))
+      case (k @ Als, id, ts) => "=" ~ ty map (bod => TypeDef(k, id, ts, bod, Nil))
       case (k @ Nms, _, _) => throw new NotImplementedError("Namespaces are not supported yet.")
     })
   def tyParams[p: P]: P[Ls[TypeName]] =
     ("[" ~ tyName.rep(0, ",") ~ "]").?.map(_.toList.flatten)
-  def mthDecl[p: P](prt: TypeName): P[R[MethodDef[Right[Term, Type]]]] = 
-    P(kw("method") ~ variable ~ tyParams ~ ":" ~/ ty map {
-      case (id, ts, t) => R(MethodDef[Right[Term, Type]](true, prt, id, ts, R(t)))
-    })
-  def mthDef[p: P](prt: TypeName): P[L[MethodDef[Left[Term, Type]]]] = 
-    P(kw("rec").!.?.map(_.isDefined) ~ kw("method") ~ variable ~ tyParams ~ subterm.rep ~ "=" ~/ term map {
-      case (rec, id, ts, ps, bod) =>
-        L(MethodDef(rec, prt, id, ts, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc)))))
-    })
-  
+
   def ty[p: P]: P[Type] = P( tyNoAs ~ ("as" ~ tyVar).rep ).map {
     case (ty, ass) => ass.foldLeft(ty)((a, b) => Recursive(b, a))
   }
