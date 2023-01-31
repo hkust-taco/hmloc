@@ -47,59 +47,6 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
       tvarVariances.getOrElse(Map.empty[TV, VarianceInfo].withDefaultValue(VarianceInfo.in))
   }
   
-  /** Represent a set of methods belonging to some owner type.
-    * This includes explicitly declared/defined as well as inherited methods. */
-  private case class MethodSet(
-    ownerType: TypeName,
-    parents: List[MethodSet],
-    decls: Map[Str, MethodType],
-    defns: Map[Str, MethodType],
-  ) {
-    private def &(that: MethodSet)(tn: TypeName, overridden: Set[Str])(implicit raise: Raise): MethodSet =
-      MethodSet(
-        tn,
-        this.parents ::: that.parents,
-        mergeMap(this.decls, that.decls)(_ & _),
-        (this.defns.iterator ++ that.defns.iterator).toSeq.groupMap(_._1)(_._2).flatMap {
-          case _ -> Nil => die
-          case mn -> (defn :: Nil) => S(mn -> defn)
-          case mn -> defns if overridden(mn) => N  // ignore an inherited method definition if it's overridden
-          case mn -> defns =>
-            err(msg"An overriding method definition must be given when inheriting from multiple method definitions" -> tn.toLoc
-              :: msg"Definitions of method $mn inherited from:" -> N
-              :: defns.iterator.map(mt => msg"• ${mt.parents.head}" -> mt.prov.loco).toList)
-            S(mn -> MethodType(defns.head.level, N, tn :: Nil, isInherited = false)(
-              TypeProvenance(tn.toLoc, "inherited method declaration")))
-        }
-      )
-    /** Returns a `MethodSet` of the _inherited_ methods only,
-      *   disregarding the current MethodSet's methods... 
-      * Useful for subsumption checking
-      *   as inherited and current methods should be considered separately 
-      * An overriding definition is required when multiple method definitions are inherited.
-      *   An error is raised if no overriding definition is given. */
-    def processInheritedMethods(implicit ctx: Ctx, raise: Raise): MethodSet =
-      processInheritedMethodsHelper(includeCurrentMethods = false)
-    private def processInheritedMethodsHelper(includeCurrentMethods: Bool)
-        (implicit ctx: Ctx, raise: Raise): MethodSet = {
-      def addParent(mt: MethodSet): MethodSet = {
-        val td = ctx.tyDefs(ownerType.name)
-        def addThis(mt: MethodType): MethodType =
-          mt.copy(body = mt.body.map(b => b.copy(_1 = td.thisTv)))(mt.prov)
-        def add(mt: MethodType): MethodType =
-          mt.copy(parents = ownerType :: mt.parents)(mt.prov)
-        mt.copy(decls = mt.decls.view.mapValues(addThis).mapValues(add).toMap, defns = mt.defns.view.mapValues(addThis).toMap)
-      }
-      parents.map(_.processInheritedMethodsHelper(true))
-        .reduceOption(_.&(_)(ownerType, defns.keySet)).map(addParent)
-        .foldRight(if (includeCurrentMethods) this else copy(decls = Map.empty, defns = Map.empty)) {
-          (mds1, mds2) =>
-            mds2.copy(decls = mds1.decls ++ mds2.decls, defns = mds1.defns ++ mds2.defns)
-        }
-    }
-  }
-  
-  
   def tparamField(clsNme: TypeName, tparamNme: TypeName): Var =
     Var(clsNme.name + "#" + tparamNme.name)
   
@@ -161,7 +108,6 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
     
     var allDefs = ctx.tyDefs
     val allEnv = ctx.env.clone
-    val allMthEnv = ctx.mthEnv.clone
     val newDefsInfo = newDefs0.iterator.map { case td => td.nme.name -> (td.kind, td.tparams.size) }.toMap
     val newDefs = newDefs0.flatMap { td0 =>
       val n = td0.nme.name
@@ -353,7 +299,7 @@ class TypeDefs extends NuTypeDefs { self: Typer =>
         else Nil
       })
 
-    typeTypeDefs(ctx.copy(env = allEnv, mthEnv = allMthEnv, tyDefs = allDefs))
+    typeTypeDefs(ctx.copy(env = allEnv, tyDefs = allDefs))
   }
   
   /**

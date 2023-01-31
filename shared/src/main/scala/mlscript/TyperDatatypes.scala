@@ -60,37 +60,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def rigidify(implicit lvl: Int): SimpleType = freshenAbove(level, body, rigidify = true)
   }
   
-  /** `body.get._1`: implicit `this` parameter
-    * `body.get._2`: actual body of the method
-    * `body` being `None` indicates an error:
-    *   - when this MethodType is computed from `MethodSet#processInheritedMethods`,
-    *     it means two or more parent classes defined or declared the method
-    *     and the current class did not override it;
-    *   - when this MethodType is obtained from the environment, it means the method is ambiguous,
-    *     which happens when two or more unrelated classes define or declare a method with the same name.
-    *     So note that in this case, it will have more than one parent.
-    *   Note: This is some fairly brittle and error-prone logic, which would gain to be refactored.
-    *     Especially aggravating is the fact that `toPT`/`bodyPT` return `errorType` when `body` is `None`,
-    *     whereas this case should probably be checked and carefully considered in each call site.
-    * `isInherited`: whether the method declaration comes from the intersection of multiple inherited declarations
-   */
-  case class MethodType(
-    level: Int,
-    body: Opt[(SimpleType, SimpleType)],
-    parents: List[TypeName],
-    isInherited: Bool,
-  )(val prov: TypeProvenance) {
-    def &(that: MethodType): MethodType = {
-      require(this.level === that.level)
-      MethodType(level, mergeOptions(this.body, that.body)((b1, b2) => (b1._1 & b2._1, b1._2 & b2._2)),
-        (this.parents ::: that.parents).distinct, isInherited = true)(prov)
-    }
-    val toPT: PolymorphicType =
-      body.fold(PolymorphicType(0, errType))(b => PolymorphicType(level, FunctionType(singleTup(b._1), b._2)(prov)))
-    val bodyPT: PolymorphicType =
-      body.fold(PolymorphicType(0, errType))(b => PolymorphicType(level, ProvType(b._2)(prov)))
-  }
-  
   /** A type without universally quantified type variables. */
   sealed abstract class SimpleType extends TypeScheme with SimpleTypeImpl {
     val prov: TypeProvenance

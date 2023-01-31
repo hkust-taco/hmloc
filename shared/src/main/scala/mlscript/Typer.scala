@@ -51,7 +51,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   case class Ctx(
       parent: Opt[Ctx],
       env: MutMap[Str, TypeInfo],
-      mthEnv: MutMap[(Str, Str) \/ (Opt[Str], Str), MethodType],
       lvl: Int,
       inPattern: Bool,
       tyDefs: Map[Str, TypeDef],
@@ -61,15 +60,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     def ++=(bs: IterableOnce[Str -> TypeInfo]): Unit = bs.iterator.foreach(+=)
     def get(name: Str): Opt[TypeInfo] = env.get(name) orElse parent.dlof(_.get(name))(N)
     def contains(name: Str): Bool = env.contains(name) || parent.exists(_.contains(name))
-    def addMth(parent: Opt[Str], nme: Str, ty: MethodType): Unit = mthEnv += R(parent, nme) -> ty
-    def addMthDefn(parent: Str, nme: Str, ty: MethodType): Unit = mthEnv += L(parent, nme) -> ty
-    private def getMth(key: (Str, Str) \/ (Opt[Str], Str)): Opt[MethodType] =
-      mthEnv.get(key) orElse parent.dlof(_.getMth(key))(N)
-    def getMth(parent: Opt[Str], nme: Str): Opt[MethodType] = getMth(R(parent, nme))
-    def getMthDefn(parent: Str, nme: Str): Opt[MethodType] = getMth(L(parent, nme))
-    private def containsMth(key: (Str, Str) \/ (Opt[Str], Str)): Bool = mthEnv.contains(key) || parent.exists(_.containsMth(key))
-    def containsMth(parent: Opt[Str], nme: Str): Bool = containsMth(R(parent, nme))
-    def nest: Ctx = copy(Some(this), MutMap.empty, MutMap.empty)
+    def nest: Ctx = copy(Some(this), MutMap.empty)
     def nextLevel: Ctx = copy(lvl = lvl + 1)
     private val abcCache: MutMap[Str, Set[TypeName]] = MutMap.empty
     def allBaseClassesOf(name: Str): Set[TypeName] = abcCache.getOrElseUpdate(name,
@@ -79,7 +70,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     def init: Ctx = Ctx(
       parent = N,
       env = MutMap.from(builtinBindings.iterator.map(nt => nt._1 -> VarSymbol(nt._2, Var(nt._1)))),
-      mthEnv = MutMap.empty,
       lvl = 0,
       inPattern = false,
       tyDefs = Map.from(builtinTypes.map(t => t.nme.name -> t)),
@@ -683,12 +673,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           ), res)
         resTy
       case Sel(obj, fieldName) =>
-        // Explicit method calls have the form `x.(Class.Method)`
-        // Implicit method calls have the form `x.Method`
-        //   If two unrelated classes define methods of the same name,
-        //   implicit calls to this method are marked as ambiguous and are forbidden
-        // Explicit method retrievals have the form `Class.Method`
-        //   Returns a function expecting an additional argument of type `Class` before the method arguments
         def rcdSel(obj: Term, fieldName: Var) = {
           val o_ty = typeTerm(obj)
           val res = freshVar(prov, Opt.when(!fieldName.name.startsWith("_"))(fieldName.name))
@@ -697,38 +681,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             fieldName -> res.toUpper(tp(fieldName.toLoc, "field selector")) :: Nil)(hintProv(prov))
           con(obj_ty, rcd_ty, res)
         }
-        def mthCallOrSel(obj: Term, fieldName: Var) = 
-          (fieldName.name match {
-            case s"$parent.$nme" => ctx.getMth(S(parent), nme) // explicit calls
-            case nme => ctx.getMth(N, nme) // implicit calls
-          }) match {
-            case S(mth_ty) =>
-              if (mth_ty.body.isEmpty) {
-                assert(mth_ty.parents.sizeCompare(1) > 0, mth_ty)
-                err(msg"Implicit call to method ${fieldName.name} is forbidden because it is ambiguous." -> term.toLoc
-                  :: msg"Unrelated methods named ${fieldName.name} are defined by:" -> N
-                  :: mth_ty.parents.map { prt =>
-                    val td = ctx.tyDefs(prt.name)
-                    msg"• ${td.kind.str} ${td.nme}" -> td.nme.toLoc
-                  })
-              }
-              val o_ty = typeTerm(obj)
-              val res = freshVar(prov)
-              con(mth_ty.toPT.instantiate, FunctionType(singleTup(o_ty), res)(prov), res)
-            case N =>
-              if (fieldName.name.isCapitalized) err(msg"Method ${fieldName.name} not found", term.toLoc)
-              else rcdSel(obj, fieldName) // TODO: no else?
-          }
-        obj match {
-          case Var(name) if name.isCapitalized && ctx.tyDefs.isDefinedAt(name) => // explicit retrieval
-            ctx.getMth(S(name), fieldName.name) match {
-              case S(mth_ty) => mth_ty.toPT.instantiate
-              case N =>
-                err(msg"Class ${name} has no method ${fieldName.name}", term.toLoc)
-                mthCallOrSel(obj, fieldName)
-            }
-          case _ => mthCallOrSel(obj, fieldName)
-        }
+
+        // methods have been removed only field selection works
+        rcdSel(obj, fieldName)
       case Let(isrec, nme, rhs, bod) =>
         val n_ty = typeLetRhs(isrec, nme.name, rhs)
         val newCtx = ctx.nest
