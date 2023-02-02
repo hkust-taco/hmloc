@@ -530,9 +530,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // ^ TODO maybe use a description passed in param?
         // currently we get things like "flows into variable reference"
         // but we used to get the better "flows into object receiver" or "flows into applied expression"...
-      case intlit: IntLit => ClassTag(Var("int"), Set.empty)(prov)
-      case strlit: StrLit => ClassTag(Var("string"), Set.empty)(prov)
-      case declit: DecLit => ClassTag(Var("float"), Set.empty)(prov)
+      case intlit: IntLit => TypeRef(TypeName("int"), Nil)(prov)
+      case strlit: StrLit => TypeRef(TypeName("string"), Nil)(prov)
+      case declit: DecLit => TypeRef(TypeName("float"), Nil)(prov)
       case lit: Lit => ClassTag(lit, lit.baseClasses)(prov)
       case App(Var("neg" | "~"), trm) => typeTerm(trm).neg(prov)
       case App(App(Var("|"), lhs), rhs) =>

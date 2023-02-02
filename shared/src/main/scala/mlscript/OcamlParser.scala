@@ -46,7 +46,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def lowercase[p: P]  = P( CharIn("a-z") )
   def uppercase[p: P]  = P( CharIn("A-Z") )
   def digit[p: P]      = P( CharIn("0-9") )
-  def number[p: P]: P[Int] = P( CharIn("0-9").repX(1).!.map(_.toInt) )
+  // TODO parse negative numbers even if their value is not correct
+  def number[p: P]: P[Int] = P("-".? ~~ CharIn("0-9").repX(1).!.map(_.toInt) )
   // ocaml operators adapted from https://v2.ocaml.org/manual/lex.html#operator-char
   def ocamlOps[p:P]: P[Var] = P("::").!.map(Var)
   def ident[p: P]: P[String] =
