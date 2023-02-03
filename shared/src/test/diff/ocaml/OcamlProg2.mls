@@ -149,12 +149,12 @@ let rec interp f env e =
 //│ ╙──       	            ^^^^
 //│ interp: ((list[(string | 'a, Closure | error | int & {_0: int} | exp,) | 'b] | 'c) -> (option[list[string]] | 'd) -> env) -> 'c -> 'e -> ('f | 'g)
 //│   where
-//│     'e <: (Apply with {_0: 'e, _1: 'e}) | Closure & 'h & 'f & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'e}) | (If with {_0: 'e, _1: 'e, _2: 'e}) | int & 'g | (Lam with {_2: 'd}) | (Pair with {_0: 'e, _1: 'e}) | (Plus with {_0: 'e, _1: 'e}) | (Second with {_0: 'e}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
+//│     'e <: (Apply with {_0: 'e, _1: 'e}) | Closure & 'f & 'h & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'e}) | (If with {_0: 'e, _1: 'e, _2: 'e}) | int & 'g | (Lam with {_2: 'd}) | (Pair with {_0: 'e, _1: 'e}) | (Plus with {_0: 'e, _1: 'e}) | (Second with {_0: 'e}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
 //│     'g :> int & {_0: int}
-//│        <: 'h & 'f & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
-//│     'h <: 'f & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_0: 'a, _1: 'e, _2: list['b]}) | ~Closure)
+//│        <: 'f & 'h & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
 //│     'f :> Closure | error | int & {_0: int} | exp
 //│        <: 'h & (exp & int & {_0: int} | exp & ~int)
+//│     'h <: 'f & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_0: 'a, _1: 'e, _2: list['b]}) | ~Closure)
 
 let interp1 = interp (fun x _ -> x)
 //│ ╔══[ERROR] Unsupported pattern shape:
@@ -301,13 +301,10 @@ let sum =
   lam "f" (lam "x" (If(vx,
 		       Plus(vx, app vf (Plus(vx, Int (-1)))),
 		       Int 0)))
-//│ /!\ Parse error: Expected ")":3:41, found "-1)))),\n\t\t" at l.302:41: 		       Plus(vx, app vf (Plus(vx, Int (-1)))),
+//│ sum: exp
 
 (* ############################################################### *)
 let ex2 = (app (app fix sum) (Int 1000))
-//│ ╔══[ERROR] identifier not found: sum
-//│ ║  l.307: 	let ex2 = (app (app fix sum) (Int 1000))
-//│ ╙──       	                        ^^^
 //│ ex2: exp
 
 (* ########################################################### *)
@@ -320,20 +317,20 @@ let ans2 = interp1 [] ex2
 let ans3 = interp2 [] (fst (computeFreeVars ex1))
 let ans4 = interp2 [] (fst (computeFreeVars ex2))
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.320: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
+//│ ║  l.317: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
 //│ ║         	                       ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── argument of type `(?a,)` does not match type `(?b, ?c,)`
-//│ ║  l.320: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
+//│ ║  l.317: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
 //│ ║         	                            ^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from tuple type:
 //│ ║  l.5: 	let fst: ('a * 'b) -> 'a
 //│ ╙──     	          ^^^^^^^
 //│ ans3: Closure | error | int & {_0: int} | exp
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.321: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
+//│ ║  l.318: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
 //│ ║         	                       ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── argument of type `(?a,)` does not match type `(?b, ?c,)`
-//│ ║  l.321: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
+//│ ║  l.318: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
 //│ ║         	                            ^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from tuple type:
 //│ ║  l.5: 	let fst: ('a * 'b) -> 'a
@@ -343,11 +340,11 @@ let ans4 = interp2 [] (fst (computeFreeVars ex2))
 let ans5 = interp3 [] (translate [] ex1)
 let ans6 = interp3 [] (translate [] ex2)
 //│ ╔══[ERROR] identifier not found: translate
-//│ ║  l.343: 	let ans5 = interp3 [] (translate [] ex1)
+//│ ║  l.340: 	let ans5 = interp3 [] (translate [] ex1)
 //│ ╙──       	                       ^^^^^^^^^
 //│ ans5: Closure | error | int & {_0: int} | exp
 //│ ╔══[ERROR] identifier not found: translate
-//│ ║  l.344: 	let ans6 = interp3 [] (translate [] ex2)
+//│ ║  l.341: 	let ans6 = interp3 [] (translate [] ex2)
 //│ ╙──       	                       ^^^^^^^^^
 //│ ans6: Closure | error | int & {_0: int} | exp
 

@@ -81,7 +81,7 @@ neg 0 as 1
 //│ ╔══[ERROR] Type mismatch in 'as' binding:
 //│ ║  l.80: 	neg 0 as 1
 //│ ║        	^^^^^^^^^^
-//│ ╟── application of type `~int` is not an instance of type `int`
+//│ ╟── application of type `~int` is not an instance of `int`
 //│ ║  l.80: 	neg 0 as 1
 //│ ║        	^^^^^
 //│ ╟── Note: constraint arises from integer literal:

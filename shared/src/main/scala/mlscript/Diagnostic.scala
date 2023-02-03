@@ -1,9 +1,11 @@
 package mlscript
 
 import scala.util.chaining._
-import mlscript.utils._, shorthands._
-
+import mlscript.utils._
+import shorthands._
 import Diagnostic._
+
+import scala.collection.mutable
 
 sealed abstract class Diagnostic(val theMsg: String) extends Exception(theMsg) {
   val allMsgs: Ls[Message -> Opt[Loc]]
@@ -59,6 +61,31 @@ final case class Loc(spanStart: Int, spanEnd: Int, origin: Origin) {
   def ++(that: Opt[Loc]): Loc = that.fold(this)(this ++ _)
   def right: Loc = copy(spanStart = spanEnd)
   def left: Loc = copy(spanEnd = spanStart)
+  def showLocationInSource: Str = {
+    val prepre = "║  "
+    val preend = "╙──"
+    val (startLineNum, _, startLineCol) = origin.fph.getLineColAt(spanStart)
+    val (endLineNum, _, endLineCol) = origin.fph.getLineColAt(spanEnd)
+    var l = startLineNum
+    var c = startLineCol
+    val tickBuilder = new mutable.StringBuilder()
+
+    while (l <= endLineNum) {
+      val curLine = origin.fph.lines(l - 1)
+      tickBuilder ++= (prepre + "\t" + curLine)
+      tickBuilder ++= (if (l =:= endLineNum) preend else prepre) + "\t" + " " * (c - 1)
+      val lastCol = if (l =:= endLineNum) endLineCol else curLine.length + 1
+      while (c < lastCol) {
+        tickBuilder += '^';
+        c += 1
+      }
+      if (c =:= startLineCol) tickBuilder += '^'
+      tickBuilder += '\n'
+      c = 1
+      l += 1
+    }
+    tickBuilder.toString
+  }
 }
 
 object Loc {

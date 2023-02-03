@@ -1,59 +1,59 @@
 :unifyDbg
 let temp = if true then 0 else "oops" in 0
-//│ [ERROR 1] string<> != int<> unifying because [[[string<>]]] | [[[int<>]]] <: α22'
-//│ ╔══[WARNING] [[[string<>]]] and [[[int<>]]] cannot be unified but they flow into the same locations
-//│ ╟── string<> is here
+//│ [ERROR 1] String != Int unifying because [[[String]]] | [[[Int]]] <: α22'
+//│ ╔══[WARNING] [UNIFICATION ERROR 1] [[[String]]] and [[[Int]]] cannot be unified but flows into the same location
+//│ ╟── String is used as argument
 //│ ║  l.2: 	let temp = if true then 0 else "oops" in 0
 //│ ║       	                               ^^^^^^
-//│ ╟── int<> is here
+//│ ╟── Int is used as argument
 //│ ║  l.2: 	let temp = if true then 0 else "oops" in 0
 //│ ║       	                        ^
 //│ ╙── The following tvars cannot be resolved α22'
 //│ unified α22'
-//│  [int<>] = α22' are arg type in ([int<>] -> α24') = (α22' -> (α22' -> α22'))
-//│  α22' :> [[[int<>]]]
-//│  α22' :> [[[string<>]]]
+//│  [Int] = α22' are arg type in ([Int] -> α24') = (α22' -> (α22' -> α22'))
+//│  α22' :> [[[Int]]]
+//│  α22' :> [[[String]]]
 //│  α22' <: [[α25']]
 //│ unified α23'
 //│  α23' :> [[(α22' -> (α22' -> α22'))]]
-//│  α23' <: [([int<>] -> α24')]
+//│  α23' <: [([Int] -> α24')]
 //│ unified α24'
-//│  α24' <: [([string<>] -> α25')]
-//│  α24' = (α22' -> α22') are result type in ([int<>] -> α24') = (α22' -> (α22' -> α22'))
+//│  α24' <: [([String] -> α25')]
+//│  α24' = (α22' -> α22') are result type in ([Int] -> α24') = (α22' -> (α22' -> α22'))
 //│ unified α25'
-//│  [[α25']] = [[[int<>]]] because α22' <: [[α25']] and α22' :> [[[int<>]]]
-//│  [[α25']] = [[[string<>]]] because α22' <: [[α25']] and α22' :> [[[string<>]]]
+//│  [[α25']] = [[[Int]]] because α22' <: [[α25']] and α22' :> [[[Int]]]
+//│  [[α25']] = [[[String]]] because α22' <: [[α25']] and α22' :> [[[String]]]
 //│ res: int
 
 :unifyDbg
 def s x = if x then x else 3
-//│ [ERROR 2] bool<> != int<> unifying because [[[[[bool<>]]]]] = [[[int<>]]] because [[[[α27']]]] & [[[[[bool<>]]]]] :> α26' and α27' :> [[[int<>]]]
-//│ ╔══[WARNING] [[[[[bool<>]]]]] and [[[int<>]]] cannot be unified but they flow into the same locations
-//│ ╟── bool<> is here
+//│ [ERROR 2] bool<> != Int unifying because [[[[[bool<>]]]]] = [[[Int]]] because [[[[α27']]]] & [[[[[bool<>]]]]] :> α26' and α27' :> [[[Int]]]
+//│ ╔══[WARNING] [UNIFICATION ERROR 2] [[[[[bool<>]]]]] and [[[Int]]] cannot be unified but flows into the same location
+//│ ╟── bool<> is used as reference
 //│ ║  l.29: 	def s x = if x then x else 3
 //│ ║        	             ^
-//│ ╟── int<> is here
+//│ ╟── Int is used as argument
 //│ ║  l.29: 	def s x = if x then x else 3
 //│ ║        	                           ^
 //│ ╟── The following tvars cannot be resolved α26', [[[[α27']]]]
-//│ ╟── α27' is here
+//│ ╟── α27' is used as reference
 //│ ║  l.29: 	def s x = if x then x else 3
 //│ ╙──      	                    ^
 //│ unified α26'
 //│  α26' <: [[[[[bool<>]]]]]
 //│  α26' <: [[[[α27']]]]
 //│ unified α27'
-//│  α27' :> [[[int<>]]]
+//│  α27' :> [[[Int]]]
 //│  α27' <: [[α30']]
 //│  [[[[α27']]]] & [[[[[bool<>]]]]] :> α26'
 //│ unified α28'
 //│  α28' :> [[(α27' -> (α27' -> α27'))]]
 //│  α28' <: [([[α26']] -> α29')]
 //│ unified α29'
-//│  α29' <: [([int<>] -> α30')]
+//│  α29' <: [([Int] -> α30')]
 //│  α29' = (α27' -> α27') are result type in ([[α26']] -> α29') = (α27' -> (α27' -> α27'))
 //│ unified α30'
-//│  [[α30']] = [[[int<>]]] because α27' <: [[α30']] and α27' :> [[[int<>]]]
+//│  [[α30']] = [[[Int]]] because α27' <: [[α30']] and α27' :> [[[Int]]]
 //│  [[[[[bool<>]]]]] = [[α30']] because [[[[α27']]]] & [[[[[bool<>]]]]] :> α26' and α27' <: [[α30']]
 //│ s: (bool & 'a) -> (int | 'a)
 
@@ -62,6 +62,11 @@ rec def clone x n =
   let rec helper acc n' =
     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
   helper x (n - 1)
+//│ [ERROR 0] Int != int<> unifying because Int = int<> are arg type in ([(Int,)] -> α44'') = (int<> -> bool<>)
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] Int and int<> cannot be unified but flows into the same location
+//│ ╟── Int is used as integer literal
+//│ ║  l.63: 	    if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
+//│ ╙──      	              ^
 //│ unified clone36'
 //│  clone36' :> [(α37' -> (α38' -> α66'))]
 //│ unified α37'
@@ -76,7 +81,7 @@ rec def clone x n =
 //│  α40'' <: [[[[α42'']]]]
 //│  α40'' <: [[[[[[int<>]]]]]]
 //│ unified α41''
-//│  int<> = [[[[α41'']]]] because α51'' = int<> are result type in ([(int<>,)] -> α51'') = (int<> -> int<>) and α51'' <: [[[[α41'']]]]
+//│  int<> = [[[[α41'']]]] because α51'' = int<> are result type in ([(Int,)] -> α51'') = (int<> -> int<>) and α51'' <: [[[[α41'']]]]
 //│  α41'' = α51'' are arg type in (α41'' -> α53'') = ([(α51'',)] -> α52'')
 //│  α41'' <: [[[[[[int<>]]]]]]
 //│ unified α42''
@@ -86,9 +91,9 @@ rec def clone x n =
 //│  [[[[[[int<>]]]]]] & [[[[α42'']]]] :> α40''
 //│ unified α43''
 //│  α43'' :> [[(int<> -> bool<>)]]
-//│  α43'' <: [([(int<>,)] -> α44'')]
+//│  α43'' <: [([(Int,)] -> α44'')]
 //│ unified α44''
-//│  α44'' = bool<> are result type in ([(int<>,)] -> α44'') = (int<> -> bool<>)
+//│  α44'' = bool<> are result type in ([(Int,)] -> α44'') = (int<> -> bool<>)
 //│ unified α45''
 //│  α45'' :> [[(α42'' -> (α42'' -> α42''))]]
 //│  α45'' <: [([[α40'']] -> α46'')]
@@ -97,19 +102,19 @@ rec def clone x n =
 //│  α46'' = (α42'' -> α42'') are result type in ([[α40'']] -> α46'') = (α42'' -> (α42'' -> α42''))
 //│ unified α47''
 //│  α47'' :> [[(int<> -> int<>)]]
-//│  α47'' <: [([(int<>,)] -> α48'')]
+//│  α47'' <: [([(Int,)] -> α48'')]
 //│ unified α48''
-//│  α48'' = int<> are result type in ([(int<>,)] -> α48'') = (int<> -> int<>)
+//│  α48'' = int<> are result type in ([(Int,)] -> α48'') = (int<> -> int<>)
 //│  α48'' = α40'' are arg type in ([(α48'',)] -> α49'') = (α40'' -> (α41'' -> α53''))
 //│ unified α49''
 //│  α49'' <: [([(α51'',)] -> α52'')]
 //│  α49'' = (α41'' -> α53'') are result type in ([(α48'',)] -> α49'') = (α40'' -> (α41'' -> α53''))
 //│ unified α50''
 //│  α50'' :> [[(int<> -> int<>)]]
-//│  α50'' <: [([(int<>,)] -> α51'')]
+//│  α50'' <: [([(Int,)] -> α51'')]
 //│ unified α51''
 //│  α51'' <: [[[[α41'']]]]
-//│  α51'' = int<> are result type in ([(int<>,)] -> α51'') = (int<> -> int<>)
+//│  α51'' = int<> are result type in ([(Int,)] -> α51'') = (int<> -> int<>)
 //│  [[[[[[int<>]]]]]] = α51'' because α41'' <: [[[[[[int<>]]]]]] and α41'' = α51'' are arg type in (α41'' -> α53'') = ([(α51'',)] -> α52'')
 //│ unified α52''
 //│  α52'' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]
@@ -141,7 +146,7 @@ rec def clone x n =
 //│  α58' <: [[[α56']]]
 //│  [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]] = [[[α58']]] because [[α57']] = [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]] because α56' <: [[α57']] and α56' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]] and α57' <: [[[α58']]]
 //│ unified α59'
-//│  int<> = [[[[α59']]]] because α65' = int<> are result type in ([(int<>,)] -> α65') = (int<> -> int<>) and α65' <: [[[[α59']]]]
+//│  int<> = [[[[α59']]]] because α65' = int<> are result type in ([(Int,)] -> α65') = (int<> -> int<>) and α65' <: [[[[α59']]]]
 //│  α59' = α65' are arg type in (α59' -> α57') = ([(α65',)] -> α66')
 //│  α59' = α62' are Tup(0) field type
 //│  α59' <: [[[[[[int<>]]]]]]
@@ -164,10 +169,10 @@ rec def clone x n =
 //│  α63' = α61' are result type in ([([α37'],)] -> α63') = ([(α60',)] -> α61')
 //│ unified α64'
 //│  α64' :> [[(int<> -> int<>)]]
-//│  α64' <: [([(int<>,)] -> α65')]
+//│  α64' <: [([(Int,)] -> α65')]
 //│ unified α65'
 //│  α65' <: [[[[α59']]]]
-//│  α65' = int<> are result type in ([(int<>,)] -> α65') = (int<> -> int<>)
+//│  α65' = int<> are result type in ([(Int,)] -> α65') = (int<> -> int<>)
 //│  [[[int<>]]] = α65' because α62' :> [[[int<>]]] and α62' = α65' because α59' = α62' are Tup(0) field type and α59' = α65' are arg type in (α59' -> α57') = ([(α65',)] -> α66')
 //│ unified α66'
 //│  α66' :> [[[[[[[[[[[[[[int<>]]]]]]]]]]]]]]

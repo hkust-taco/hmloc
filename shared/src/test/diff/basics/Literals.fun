@@ -65,7 +65,7 @@ false as 1
 //│ ╔══[ERROR] Type mismatch in 'as' binding:
 //│ ║  l.50: 	false as 1
 //│ ║        	^^^^^^^^^^
-//│ ╟── reference of type `false` is not an instance of type `int`
+//│ ╟── reference of type `false` is not an instance of `int`
 //│ ║  l.50: 	false as 1
 //│ ║        	^^^^^
 //│ ╟── Note: constraint arises from integer literal:
