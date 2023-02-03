@@ -877,18 +877,18 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   
   case class UnificationStore() {
     // TODO: remove and use the one defined in TypeHelpers
-    def firstAndLastUseLocation(t: ST): Ls[Message -> Opt[Loc]] = {
+    def firstAndLastUseLocation(t: ST)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
       val stUseLocation = t.typeUseLocations
       val st = t.unwrapProvs
       (stUseLocation.headOption, stUseLocation.lastOption) match {
         // only show one location in case of duplicates
-        case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.toString} is used as ${prov1.desc}" -> prov1.loco :: Nil
+        case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.expPos} is used as ${prov1.desc}" -> prov1.loco :: Nil
         case ((S(prov1), S(prov2))) =>
-          msg"${st.toString} is used as ${prov1.desc}" -> prov1.loco ::
-          msg"${st.toString} is used as ${prov2.desc}" -> prov2.loco ::
+          msg"${st.expPos} is used as ${prov1.desc}" -> prov1.loco ::
+          msg"${st.expPos} is used as ${prov2.desc}" -> prov2.loco ::
             Nil
-        case ((S(prov), N)) => msg"${st.toString} is used as ${prov.desc}" -> prov.loco :: Nil
-        case (N, (S(prov))) => msg"${st.toString} is used as ${prov.desc}" -> prov.loco :: Nil
+        case ((S(prov), N)) => msg"${st.expPos} is used as ${prov.desc}" -> prov.loco :: Nil
+        case (N, (S(prov))) => msg"${st.expPos} is used as ${prov.desc}" -> prov.loco :: Nil
         case ((N, N)) => Nil
       }
     }
@@ -900,7 +900,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case true => s"${st.unwrapProvs} <: ${prev}"
         case false => s"${st.unwrapProvs} :> ${prev}"
       }
-      def toDiagnostic: Ls[Message -> Opt[Loc]] = {
+      def toDiagnostic(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
         val stUnder = st.unwrapProvs
         val prevUnder = prev.unwrapProvs
         dir match {
