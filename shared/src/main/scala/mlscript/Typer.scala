@@ -966,7 +966,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         } else {
           Nil
         }
-        msg"[UNIFICATION ERROR ${u.level.toString}] ${a.toString} and ${b.toString} cannot be unified but flows into the same location" -> N ::
+        msg"[UNIFICATION ERROR ${u.level.toString}] ${a.expPos} and ${b.expPos} cannot be unified but flows into the same location" -> N ::
           firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b) ::: tvarMessage
       }
       u match {
