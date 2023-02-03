@@ -957,6 +957,32 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       }
     }
 
+    /** A unification can create an message showing relevant locations */
+    def createErrorMessage(u: Unification)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+      def helper(a: ST, b: ST, u: Unification): Ls[Message -> Opt[Loc]] = {
+        val tvars = u.unifyingTypeVars.filter{case (_, (l, r)) => l >= 2 || r >= 2}.keys
+        val tvarMessage: Ls[Message -> Opt[Loc]] = if (tvars.nonEmpty) {
+          msg"The following tvars cannot be resolved ${tvars.mkString(", ")}" -> N :: tvars.flatMap(firstAndLastUseLocation).toList
+        } else {
+          Nil
+        }
+        msg"[UNIFICATION ERROR ${u.level.toString}] ${a.toString} and ${b.toString} cannot be unified but flows into the same location" -> N ::
+          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b) ::: tvarMessage
+      }
+      u match {
+        case CommonLower(common, a, b) => helper(a, b, u)
+        case CommonUpper(common, a, b) => helper(a, b, u)
+        case TypeRefArg(a, b, _, _, _, _) => helper(a, b, u)
+        case TupleField(a, b, _, _, _) => helper(a, b, u)
+        case FunctionArg(a, b, _, _) => helper(a, b, u)
+        case FunctionResult(a, b, _, _) => helper(a, b, u)
+        case Connector(a, b, uforB, uforA) => helper(a, b, u)
+        // these unifications cannot produce an error by themselves
+        case LowerBound(tv, st) => firstAndLastUseLocation(st)
+        case UpperBound(tv, st) => firstAndLastUseLocation(st)
+      }
+    }
+
     def unifyTypes(a: ST, b: ST, u: Unification)(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
       val st1 = a.unwrapProvs
       val st2 = b.unwrapProvs
@@ -970,7 +996,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             // report error
             println(s"[ERROR ${u.level}] ${c1} != ${c2} unifying because ${u}")
             // TODO: type variables are unwrapped so no prov info is available
-            raise(WarningReport(u.createErrorMessage))
+            raise(WarningReport(createErrorMessage(u)))
           }
         case (tr1: TypeRef, tr2: TypeRef) =>
           if (tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length) {
@@ -980,7 +1006,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           } else {
             // report error
             println(s"[ERROR ${u.level}] ${tr1} != ${tr2} unifying because ${u}")
-            raise(WarningReport(u.createErrorMessage))
+            raise(WarningReport(createErrorMessage(u)))
           }
         case (tup1: TupleType, tup2: TupleType)
           if ((tup1.implicitTuple && tup2.implicitTuple) ||
@@ -1002,7 +1028,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           } else {
             // report error
             println(s"[ERROR ${u.level}] ${tup1} != ${tup2} unifying because ${u}")
-            raise(WarningReport(u.createErrorMessage))
+            raise(WarningReport(createErrorMessage(u)))
           }
         case (f1@FunctionType(arg1, res1), f2@FunctionType(arg2, res2)) =>
           unifyTypes(arg1, arg2, FunctionArg(arg1, arg2, f1, f2))
@@ -1016,7 +1042,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case (_, _) =>
           // report error
           println(s"[ERROR ${u.level}] ${st1} != ${st2} unifying because ${u}")
-          raise(WarningReport(u.createErrorMessage))
+          raise(WarningReport(createErrorMessage(u)))
       }
     }
 
