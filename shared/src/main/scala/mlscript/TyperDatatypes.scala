@@ -314,16 +314,16 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   case class Unification(a: ST, b: ST, reason: Ls[UnificationReason]) {
     def unificationLevel: Int = {
       this.reason.sliding(2).count {
-        case Seq(LB(_, tv1), LB(_, tv2)) if tv1 == tv2 => true
-        case Seq(UB(tv1, _), UB(tv2, _)) if tv1 == tv2 => true
-        case Seq(UB(_, tv1), LB(_, tv2)) if tv1 == tv2 => true
-        case Seq(LB(_, tv1), UB(_, tv2)) if tv1 == tv2 => true
+        case Seq(LB(_, tv1), LB(_, tv2)) if tv1 === tv2 => true
+        case Seq(UB(tv1, _), UB(tv2, _)) if tv1 === tv2 => true
+        case Seq(UB(_, tv1), LB(_, tv2)) if tv1 === tv2 => true
+        case Seq(LB(_, tv1), UB(_, tv2)) if (tv1: ST) === tv2 => true
         case _ => false
       }
     }
 
     def unificationSequence: Ls[ST -> Bool] = {
-      var flow = this.reason.head match {
+      var flow = this.reason.headOption.getOrElse(die) match {
         case _: LB => true  // flow is from left to right
         case _: UB => false // flow is from right to left
         case _: CONN => true
@@ -333,7 +333,9 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         case LB(st, tv) :: Nil => (tv, st)
         case CONN(a, b, _) :: Nil => (a, b)
         case Nil => lastWords("Unexpected no unification reason")
-        case _ => (this.reason.head.unifiedWith, this.reason.last.unifiedWith)
+        case _ =>
+          (this.reason.headOption.getOrElse(die).unifiedWith,
+            this.reason.lastOption.getOrElse(die).unifiedWith)
       }
 
       start -> flow :: this.reason.sliding(2).collect {
@@ -370,11 +372,20 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       case CONN(_, b, _) => b
     }
   }
-
-  final case class LB(st: ST, tv: TV) extends UnificationReason
-  final case class UB(tv: TV, st: ST) extends UnificationReason
-  final case class CONN(a: ST, b: ST, desc: Str = "") extends UnificationReason
-
+  
+  case class LB(st: ST, tv: TV) extends UnificationReason
+  case class UB(tv: TV, st: ST) extends UnificationReason
+  case class CONN(a: ST, b: ST, desc: Str = "") extends UnificationReason
+  /*
+  case class DATATYPE(
+    datatypeName: Str,
+    datatypeArgIdx: Int,
+    datatypeParamNum: Int,
+    // lhs: ST,
+    // rhs: ST,
+    datatypeFlow: Unification) extends UnificationReason
+  */
+  
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
     * Invariant: Types appearing in the bounds never have a level higher than this variable's `level`. */
   final class TypeVariable(

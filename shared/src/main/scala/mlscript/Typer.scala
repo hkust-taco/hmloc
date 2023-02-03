@@ -152,7 +152,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   def typeType2(ty: Type, simplify: Bool = true)
         (implicit ctx: Ctx, raise: Raise, vars: Map[Str, SimpleType],
         newDefsInfo: Map[Str, (TypeDefKind, Int)] = Map.empty): (SimpleType, Iterable[TypeVariable]) =
-      trace(s"$lvl. Typing type $ty") {
+      trace(s"$lvl. Typing type ${ty.show}") {
     println(s"vars=$vars newDefsInfo=$newDefsInfo")
     val typeType2 = ()
     def typeNamed(loc: Opt[Loc], name: Str): (() => ST) \/ (TypeDefKind, Int) =
@@ -590,8 +590,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             val cond_ty = typeTerm(cond, "this if condition has type")
             con(cond_ty, BoolType, cond_ty)
             val ret_ty = freshVar(prov.copy(desc = "this if-then-else expression has type"))
-            con(typeTerm(trueArm, "then branch has type"), ret_ty, ret_ty)
-            con(typeTerm(falseArm, "else branch has type"), ret_ty, ret_ty)
+            con(typeTerm(trueArm, "`then` branch has type"), ret_ty, ret_ty)
+            con(typeTerm(falseArm, "`else` branch has type"), ret_ty, ret_ty)
           case _ =>
             // find constructor for each arm
             // handle tuple arms differently
