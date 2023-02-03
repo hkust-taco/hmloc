@@ -447,3 +447,239 @@ let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│ ╙──
 //│ wwhile: ('a -> error, 'a,) -> error
 //│ fixpoint: (error, anything,) -> error
+
+// file 3 mod
+let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+let padZero l1 l2 =
+  let numZeros = (List_length l1) - (List_length l2) in
+  let absNumZeros = abs numZeros in
+  if numZeros = 0
+  then (l1, l2)
+  else
+    (let listZeros = clone 0 absNumZeros in
+     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
+let rec removeZero l =
+  match l with | [] -> [] | 0::t -> removeZero t | h::t -> l;;
+//│ clone: 'a -> int -> list['a]
+//│ padZero: (list[?] & 'a) -> (list[?] & 'b) -> (list[int] | 'a, list[int] | 'b,)
+//│ removeZero: 'a -> (list[nothing] | 'b)
+//│   where
+//│     'a <: Cons[?] & 'b | Nil
+//│     'b <: {_0: anything, _1: 'a}
+
+// TODO: parse let (a, b) = ... correctly
+// let bigAdd l1 l2 =
+//   let add (l1,l2) =
+//     let f a x =
+//       let (carry,currentSum) = a in
+//       if x = []
+//       then (0, (carry :: currentSum))
+//       else
+//         (let (toSum1,toSum2) = x in
+//          let intermediateValue = (toSum1 + toSum2) + carry in
+//          let valueToAddToArray = intermediateValue mod 10 in
+//          let carry = intermediateValue / 10 in
+//          (carry, (valueToAddToArray :: currentSum))) in
+//     let base = (0, []) in
+//     let args = List.rev (List.combine l1 l2) in
+//     let (_,res) = List.fold_left f base args in res in
+//   removeZero (add (padZero l1 l2));;
+
+// file 1935
+let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+let addTuple (l1,l2) = l1 + l2;;
+let padZero l1 l2 =
+  if (List_length l1) > (List_length l2)
+  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+  else
+    if (List_length l1) < (List_length l2)
+    then (((clone 0 ((List_length l2) - (List_length l1))) @ l1), l2)
+    else (l1, l2);;
+let rec removeZero l =
+  match l with | [] -> [] | h::t -> if h = 0 then removeZero t else h :: t;;
+//│ clone: 'a -> int -> list['a]
+//│ addTuple: (int, int,) -> int
+//│ ╔══[ERROR] identifier not found: List
+//│ ║  l.493: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ ╙──       	                        ^^^^
+//│ ╔══[ERROR] identifier not found: List
+//│ ║  l.493: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ ╙──       	                                           ^^^^
+//│ padZero: (list[?] & 'a) -> (list[?] & 'b) -> (list[int] | 'a, list[int] | 'b,)
+//│ removeZero: 'a -> list['b]
+//│   where
+//│     'a <: (Cons[?] with {_0: 'b, _1: list['b] & 'a}) | Nil
+
+// TODO: parse let (a, b) = .. 
+// let bigAdd l1 l2 =
+//   let add (l1,l2) =
+//     let f a x = (a + x) mod 10 in
+//     let base = 0 in
+//     let args = List_map addTuple (List_combine l1 l2) in
+//     let (_,res) = List_fold_left f base args in res in
+//   removeZero (add (padZero l1 l2));;
+
+
+// file 1907
+let intboolf f x = ((f x), ((f x) < 1));;
+let fixpoint (f,b) = wwhile (intboolf, b);;
+//│ intboolf: ('a -> 'b) -> 'a -> ('b, bool,)
+//│ fixpoint: (anything, nothing -> anything,) -> error
+
+// TODO: fix loc error
+// let rec wwhile (f,b) =
+//   match f b with | (b',c') -> if c' then wwhile (f, b') else b';;
+
+
+// file 2047
+let identity a = a;;
+let pipe fs =
+  let f a x = a x in let base = identity in List_fold_left f base fs;;
+//│ identity: 'a -> 'a
+//│ pipe: list['a & 'b & 'c] -> (('b & 'c) -> 'b | 'c)
+//│   where
+//│     'c <: 'a -> 'c
+
+
+// file 830
+// TODO: fix how match case is done
+let modulus ss = ss mod 10;;
+let rec digitsOfInt n =
+  if n <= 0
+  then []
+  else (match n with | x -> (digitsOfInt (n / 10)) @ [modulus x]);;
+let lt10 q = q < 10;;
+let rec sumList xs = match xs with | [] -> 0 | h::t -> h + (sumList t);;
+let rec additivePersistence n =
+  if lt10 n
+  then n
+  else
+    (match n with
+     | n -> let x_ = digitsOfInt n in sumList x_ additivePersistence n);;
+//│ modulus: ((int -> int -> int) -> int -> 'a) -> 'a
+//│ ╔══[ERROR] Cannot find the constructor `x` in the context
+//│ ║  l.550: 	  else (match n with | x -> (digitsOfInt (n / 10)) @ [modulus x]);;
+//│ ╙──       	                       ^
+//│ digitsOfInt: anything -> (error | list[nothing])
+//│ lt10: anything -> bool
+//│ sumList: 'a -> int
+//│   where
+//│     'a <: (Cons[?] with {_0: int, _1: 'a}) | Nil
+//│ ╔══[ERROR] Cannot find the constructor `n` in the context
+//│ ║  l.558: 	     | n -> let x_ = digitsOfInt n in sumList x_ additivePersistence n);;
+//│ ╙──       	       ^
+//│ additivePersistence: 'a -> (error | 'a)
+
+
+// file 1770
+let rec filter l a =
+  match l with
+  | [] -> []
+  | h::t -> if a = h then filter t a else h :: (filter t a);;
+let removeDuplicates l =
+  let rec helper (seen,rest) =
+    match rest with
+    | [] -> seen
+    | h::t ->
+        let seen' = h in
+        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+  List_rev (helper ([], l));;
+//│ filter: 'a -> anything -> list['b]
+//│   where
+//│     'a <: (Cons[?] with {_0: 'b, _1: 'a}) | Nil
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.585: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║         	                    ^^^^^^^^^^^^^^^^^
+//│ ╟── function of type `?a -> ?b` does not match type `Cons[?c] | Nil`
+//│ ║  l.575: 	let rec filter l a =
+//│ ║         	                 ^^^
+//│ ║  l.576: 	  match l with
+//│ ║         	^^^^^^^^^^^^^^
+//│ ║  l.577: 	  | [] -> []
+//│ ║         	^^^^^^^^^^^^
+//│ ║  l.578: 	  | h::t -> if a = h then filter t a else h :: (filter t a);;
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into application with expected type `Cons[?d] | Nil`
+//│ ║  l.585: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║         	                          ^^^^^^^^^^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	                            ^^
+//│ ╟── from union type:
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ╙──     	                       ^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.580: 	  let rec helper (seen,rest) =
+//│ ║         	                  ^^^^^^^^^^^^
+//│ ║  l.581: 	    match rest with
+//│ ║         	^^^^^^^^^^^^^^^^^^^
+//│ ║  l.582: 	    | [] -> seen
+//│ ║         	^^^^^^^^^^^^^^^^
+//│ ║  l.583: 	    | h::t ->
+//│ ║         	^^^^^^^^^^^^^
+//│ ║  l.584: 	        let seen' = h in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.585: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `Nil` is not a function
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	                                      ^^^
+//│ ╟── but it flows into application with expected type `?a -> ?b`
+//│ ║  l.585: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║         	                    ^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.581: 	    match rest with
+//│ ║         	          ^^^^
+//│ ╟── from reference:
+//│ ║  l.585: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ╙──       	                                  ^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.580: 	  let rec helper (seen,rest) =
+//│ ║         	                  ^^^^^^^^^^^^
+//│ ║  l.581: 	    match rest with
+//│ ║         	^^^^^^^^^^^^^^^^^^^
+//│ ║  l.582: 	    | [] -> seen
+//│ ║         	^^^^^^^^^^^^^^^^
+//│ ║  l.583: 	    | h::t ->
+//│ ║         	^^^^^^^^^^^^^
+//│ ║  l.584: 	        let seen' = h in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.585: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `Cons[?a]` is not a function
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	                       ^^
+//│ ╟── but it flows into application with expected type `?b -> ?c`
+//│ ║  l.585: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║         	                    ^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.581: 	    match rest with
+//│ ║         	          ^^^^
+//│ ╟── from reference:
+//│ ║  l.585: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ╙──       	                                  ^
+//│ removeDuplicates: ((Cons[?] with {_0: list['a] & 'b, _1: 'b -> 'c}) | Nil) -> list['a]
+//│   where
+//│     'c <: (Cons[?] with {_1: 'c}) | Nil
+
+
+// file 0221
+// TODO fix Tuple2 in match case
+let fu x b = (x, (b < (x b)));;
+let rec wwhile (f,b) =
+  let temp = f b in
+  match temp with | (a,boolean) -> if boolean then wwhile (f, a) else a;;
+let fixpoint (f,b) = wwhile ((fu f), b);;
+//│ fu: ('a -> anything & 'b) -> 'a -> ('b, bool,)
+//│ ╔══[ERROR] type identifier not found: Tuple#2
+//│ ╙──
+//│ wwhile: ('a -> error, 'a,) -> error
+//│ fixpoint: ('a -> anything, 'a,) -> error
+
+
+// file 2338
+// TODO: fix let parse error
+// let rec assoc (d,k,l) =
+//   match l with
+//   | [] -> d
+//   | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
