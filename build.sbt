@@ -7,14 +7,7 @@ ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "io.lptk"
 ThisBuild / organizationName := "LPTK"
 
-lazy val root = project.in(file("."))
-  .aggregate(mlscriptJS, mlscriptJVM, ts2mlsJS, compilerJVM)
-  .settings(
-    publish := {},
-    publishLocal := {},
-  )
-
-lazy val mlscript = crossProject(JSPlatform, JVMPlatform).in(file("."))
+lazy val mlscript = crossProject(JVMPlatform).in(file("."))
   .settings(
     name := "mlscript",
     scalacOptions ++= Seq(
@@ -44,52 +37,16 @@ lazy val mlscript = crossProject(JSPlatform, JVMPlatform).in(file("."))
     libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.8.0",
     // 
     watchSources += WatchSource(
-      sourceDirectory.value.getParentFile().getParentFile()/"shared/src/test/diff", "*.fun", NothingFilter),
+      sourceDirectory.value.getParentFile.getParentFile/"shared/src/test/diff", "*.fun", NothingFilter),
     watchSources += WatchSource(
-      sourceDirectory.value.getParentFile().getParentFile()/"shared/src/test/diff", "*.mls", NothingFilter),
+      sourceDirectory.value.getParentFile.getParentFile/"shared/src/test/diff", "*.mls", NothingFilter),
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oC"),
-  )
-  .jsSettings(
-    scalaJSUseMainModuleInitializer := true,
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "2.1.0",
   )
 
 lazy val mlscriptJVM = mlscript.jvm
-lazy val mlscriptJS = mlscript.js
-
-lazy val ts2mls = crossProject(JSPlatform, JVMPlatform).in(file("ts2mls"))
+lazy val root = project.in(file("."))
+  .aggregate(mlscriptJVM)
   .settings(
-    name := "ts2mls",
-    scalaVersion := "2.13.8",
-    scalacOptions ++= Seq(
-      "-deprecation"
-    )
+    publish := {},
+    publishLocal := {},
   )
-  .jvmSettings()
-  .jsSettings(
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.12" % "test"
-  )
-  .dependsOn(mlscript % "compile->compile;test->test")
-
-lazy val ts2mlsJS = ts2mls.js
-lazy val ts2mlsJVM = ts2mls.jvm
-
-val tsTypeDiffTests = taskKey[Unit]("")
-
-tsTypeDiffTests := (Def.task{
-  (ts2mlsJVM / Test / test).value
-} triggeredBy (ts2mlsJS / Test / test)).value
-
-lazy val compiler = crossProject(JSPlatform, JVMPlatform).in(file("compiler"))
-  .settings(
-    name := "mlscript-compiler",
-    scalaVersion := "3.1.3",
-    sourceDirectory := baseDirectory.value.getParentFile()/"shared",
-    watchSources += WatchSource(
-      baseDirectory.value.getParentFile()/"shared"/"test"/"diff", "*.mls", NothingFilter),
-  )
-  .dependsOn(mlscript % "compile->compile;test->test")
-
-lazy val compilerJVM = compiler.jvm
-lazy val compilerJS = compiler.js
-
