@@ -62,7 +62,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   }
 
   /** Top level term */
-  def term[p: P]: P[Term] = P(let | fun | ite | ocamlWithAsc | _match)
+  def term[p: P]: P[Term] = P(let | letPatMat | fun | ite | ocamlWithAsc | _match)
 
   def lit[p: P]: P[Lit] =
     locate(floatnumber.map(x => DecLit(x)) | number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
@@ -126,11 +126,21 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def fun[p: P]: P[Term] = locate(P( kw("fun") ~/ term ~ "->" ~ term ).map(nb => Lam(toParams(nb._1), nb._2)))
   
   def let[p: P]: P[Term] = locate(P(
-      kw("let") ~/ kw("rec").!.?.map(_.isDefined) ~ variable ~ subterm.rep ~ "=" ~ term ~ kw("in") ~ term
+      kw("let") ~ kw("rec").!.?.map(_.isDefined) ~ variable ~ subterm.rep ~ "=" ~ term ~ kw("in") ~ term
     ) map {
       case (rec, id, ps, rhs, bod) => Let(rec, id, ps.foldRight(rhs)((i, acc) => Lam(toParams(i), acc)), bod)
     })
-  
+
+  /** Patter match on the lhs of the let expression
+    * e.g. let (a, b) = (1 + 1, 2 + 2) in a * */
+  def letPatMat[p: P]: P[Term] = locate(P(
+    kw("let") ~ subterm ~ "=" ~ term ~ kw("in") ~ term
+  ) map {
+    case (matVar, matExpr, bod) =>
+      val matchArm = L(IfThen(matVar, bod)) :: Nil
+      If(IfOpApp(matExpr, Var("is"), IfBlock(matchArm)), N)
+  })
+
   def ite[p: P]: P[Term] = P( kw("if") ~/ term ~ kw("then") ~ term ~ kw("else") ~ term ).map(ite =>
     // App(App(App(Var("if"), ite._1), ite._2), ite._3)
     If(IfThen(ite._1, ite._2), S(ite._3))

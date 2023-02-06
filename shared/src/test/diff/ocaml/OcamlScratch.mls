@@ -12,28 +12,28 @@ type Bool = True | False
 :unifyDbg
 let test x =
   match x with True -> 0 | False -> 1
-//│ unified α64'
-//│  α64' <: [[((true<> & α65') | ((false<> & α66') & ~(true<>)))]]
-//│ unified α65'
-//│ unified α66'
 //│ unified α67'
-//│  α67' :> Int
+//│  α67' <: [[((true<> & α68') | ((false<> & α69') & ~(true<>)))]]
+//│ unified α68'
+//│ unified α69'
+//│ unified α70'
+//│  α70' :> Int
 //│ test: bool -> int
 
 :unifyDbg
 let test x =
   match x with True -> 0 | False -> "oops"
-//│ [ERROR 1] Int != String unifying because Int | String <: α75'
-//│ allVarPols: +α80'
-//│ norm[+] α80'
-//│ | DNF: DNF(α80')
+//│ [ERROR 1] Int != String unifying because Int | String <: α78'
+//│ allVarPols: +α83'
+//│ norm[+] α83'
+//│ | DNF: DNF(α83')
 //│ | norm[+] Int
 //│ | | DNF: DNF(int<>{})
 //│ | ~> int<>
 //│ | norm[+] String
 //│ | | DNF: DNF(string<>{})
 //│ | ~> string<>
-//│ ~> α80'
+//│ ~> α83'
 //│ allVarPols: 
 //│ norm[+] Int
 //│ | DNF: DNF(int<>{})
@@ -57,34 +57,34 @@ let test x =
 //│ ╟── string is used as string literal
 //│ ║  l.25: 	  match x with True -> 0 | False -> "oops"
 //│ ║        	                                    ^^^^^^
-//│ ╟── The following tvars cannot be resolved α75'
+//│ ╟── The following tvars cannot be resolved α78'
 //│ ╟── ?a is used as `case` expression
 //│ ║  l.25: 	  match x with True -> 0 | False -> "oops"
 //│ ╙──      	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ unified α72'
-//│  α72' <: [[((true<> & α73') | ((false<> & α74') & ~(true<>)))]]
-//│ unified α73'
-//│ unified α74'
 //│ unified α75'
-//│  α75' :> String
-//│  α75' :> Int
+//│  α75' <: [[((true<> & α76') | ((false<> & α77') & ~(true<>)))]]
+//│ unified α76'
+//│ unified α77'
+//│ unified α78'
+//│  α78' :> String
+//│  α78' :> Int
 //│ test: bool -> (int | string)
 
 
 
 :unifyDbg
 let temp x = if x then 0 else "oops"
-//│ [ERROR 1] Int != String unifying because Int | String <: α84'
-//│ allVarPols: +α89'
-//│ norm[+] α89'
-//│ | DNF: DNF(α89')
+//│ [ERROR 1] Int != String unifying because Int | String <: α87'
+//│ allVarPols: +α92'
+//│ norm[+] α92'
+//│ | DNF: DNF(α92')
 //│ | norm[+] Int
 //│ | | DNF: DNF(int<>{})
 //│ | ~> int<>
 //│ | norm[+] String
 //│ | | DNF: DNF(string<>{})
 //│ | ~> string<>
-//│ ~> α89'
+//│ ~> α92'
 //│ allVarPols: 
 //│ norm[+] Int
 //│ | DNF: DNF(int<>{})
@@ -108,17 +108,17 @@ let temp x = if x then 0 else "oops"
 //│ ╟── string is used as string literal
 //│ ║  l.76: 	let temp x = if x then 0 else "oops"
 //│ ║        	                              ^^^^^^
-//│ ╟── The following tvars cannot be resolved α84'
+//│ ╟── The following tvars cannot be resolved α87'
 //│ ╟── ?a is used as `case` expression
 //│ ║  l.76: 	let temp x = if x then 0 else "oops"
 //│ ╙──      	                ^^^^^^^^^^^^^^^^^^^^
-//│ unified α81'
-//│  α81' <: [[((true<bool> & α82') | (α83' & ~(true<bool>)))]]
-//│ unified α82'
-//│ unified α83'
 //│ unified α84'
-//│  α84' :> String
-//│  α84' :> Int
+//│  α84' <: [[((true<bool> & α85') | (α86' & ~(true<bool>)))]]
+//│ unified α85'
+//│ unified α86'
+//│ unified α87'
+//│  α87' :> String
+//│  α87' :> Int
 //│ temp: anything -> (int | string)
 
 
@@ -130,31 +130,31 @@ temp true 1 2
 
 :unifyDbg
 temp true 1 "oops"
-//│ [ERROR 0] ((true<bool> & α115) | (α116 & ~(true<bool>))) != true<bool> unifying because [[((true<bool> & α115) | (α116 & ~(true<bool>)))]] = [[[[[[true<bool>]]]]]] because α114 <: [[((true<bool> & α115) | (α116 & ~(true<bool>)))]] and α114 :> [[[[[[true<bool>]]]]]]
-//│ allVarPols: +α116, +α124
-//│ norm[+] [[((true<bool> & α124) | (α116 & ~(true<bool>)))]]
-//│ | DNF: DNF(true<bool>{}∧α124 | α116∧~(true<bool>))
+//│ [ERROR 0] ((true<bool> & α118) | (α119 & ~(true<bool>))) != true<bool> unifying because [[((true<bool> & α118) | (α119 & ~(true<bool>)))]] = [[[[[[true<bool>]]]]]] because α117 <: [[((true<bool> & α118) | (α119 & ~(true<bool>)))]] and α117 :> [[[[[[true<bool>]]]]]]
+//│ allVarPols: +α119, +α127
+//│ norm[+] [[((true<bool> & α127) | (α119 & ~(true<bool>)))]]
+//│ | DNF: DNF(true<bool>{}∧α127 | α119∧~(true<bool>))
 //│ | norm[+] [[[[[[[[[true<bool>]]]]]]]]]
 //│ | | DNF: DNF(true<bool>{})
 //│ | ~> true<bool>
-//│ | factorize? true<bool> & α124 | α116 & ~(true<bool>)
-//│ | | Factors α116 -> 1, α124 -> 1
-//│ | yes: ((true<bool> & α124) | (α116 & ~(true<bool>)))
-//│ ~> ((true<bool> & α124) | (α116 & ~(true<bool>)))
+//│ | factorize? true<bool> & α127 | α119 & ~(true<bool>)
+//│ | | Factors α119 -> 1, α127 -> 1
+//│ | yes: ((true<bool> & α127) | (α119 & ~(true<bool>)))
+//│ ~> ((true<bool> & α127) | (α119 & ~(true<bool>)))
 //│ allVarPols: 
 //│ norm[+] [[[[[[true<bool>]]]]]]
 //│ | DNF: DNF(true<bool>{})
 //│ ~> true<bool>
-//│ allVarPols: +α116, +α125
-//│ norm[+] ((true<bool> & α125) | (α116 & ~(true<bool>)))
-//│ | DNF: DNF(true<bool>{}∧α125 | α116∧~(true<bool>))
+//│ allVarPols: +α119, +α128
+//│ norm[+] ((true<bool> & α128) | (α119 & ~(true<bool>)))
+//│ | DNF: DNF(true<bool>{}∧α128 | α119∧~(true<bool>))
 //│ | norm[+] [[[[[[[[[true<bool>]]]]]]]]]
 //│ | | DNF: DNF(true<bool>{})
 //│ | ~> true<bool>
-//│ | factorize? true<bool> & α125 | α116 & ~(true<bool>)
-//│ | | Factors α116 -> 1, α125 -> 1
-//│ | yes: ((true<bool> & α125) | (α116 & ~(true<bool>)))
-//│ ~> ((true<bool> & α125) | (α116 & ~(true<bool>)))
+//│ | factorize? true<bool> & α128 | α119 & ~(true<bool>)
+//│ | | Factors α128 -> 1, α119 -> 1
+//│ | yes: ((true<bool> & α128) | (α119 & ~(true<bool>)))
+//│ ~> ((true<bool> & α128) | (α119 & ~(true<bool>)))
 //│ allVarPols: 
 //│ norm[+] true<bool>
 //│ | DNF: DNF(true<bool>{})
@@ -166,27 +166,27 @@ temp true 1 "oops"
 //│ ╟── true is used as argument
 //│ ║  l.132: 	temp true 1 "oops"
 //│ ╙──       	     ^^^^
-//│ [ERROR 1] Int != String unifying because [[[[Int]]]] = [[[[String]]]] because [[[[[α122]]]]] = [[[[Int]]]] because α117 <: [[[[[α122]]]]] and α117 :> [[[[Int]]]] and [[[[[α122]]]]] = [[[[String]]]] because α118 <: [[[[[α122]]]]] and α118 :> [[[[String]]]]
-//│ allVarPols: +α126
-//│ norm[+] α126
-//│ | DNF: DNF(α126)
+//│ [ERROR 1] Int != String unifying because [[[[Int]]]] = [[[[String]]]] because [[[[[α125]]]]] = [[[[Int]]]] because α120 <: [[[[[α125]]]]] and α120 :> [[[[Int]]]] and [[[[[α125]]]]] = [[[[String]]]] because α121 <: [[[[[α125]]]]] and α121 :> [[[[String]]]]
+//│ allVarPols: +α129
+//│ norm[+] α129
+//│ | DNF: DNF(α129)
 //│ | norm[+] [[[[[[[[String]]]]]]]]
 //│ | | DNF: DNF(string<>{})
 //│ | ~> string<>
 //│ | norm[+] [[[[[[[[Int]]]]]]]]
 //│ | | DNF: DNF(int<>{})
 //│ | ~> int<>
-//│ ~> α126
-//│ allVarPols: +α127
-//│ norm[+] α127
-//│ | DNF: DNF(α127)
+//│ ~> α129
+//│ allVarPols: +α130
+//│ norm[+] α130
+//│ | DNF: DNF(α130)
 //│ | norm[+] [[[[[[[[String]]]]]]]]
 //│ | | DNF: DNF(string<>{})
 //│ | ~> string<>
 //│ | norm[+] [[[[[[[[Int]]]]]]]]
 //│ | | DNF: DNF(int<>{})
 //│ | ~> int<>
-//│ ~> α127
+//│ ~> α130
 //│ allVarPols: 
 //│ norm[+] [[[[Int]]]]
 //│ | DNF: DNF(int<>{})
@@ -210,45 +210,45 @@ temp true 1 "oops"
 //│ ╟── string is used as argument
 //│ ║  l.132: 	temp true 1 "oops"
 //│ ║         	            ^^^^^^
-//│ ╟── The following tvars cannot be resolved [[[[[α122]]]]]
+//│ ╟── The following tvars cannot be resolved [[[[[α125]]]]]
 //│ ╟── ?a is used as reference
 //│ ║  l.125: 	let temp x y z = if x then y else z
 //│ ║         	                           ^
 //│ ╟── ?b is used as application
 //│ ║  l.132: 	temp true 1 "oops"
 //│ ╙──       	^^^^^^^^^^^^^^^^^^
-//│ [ERROR 1] String != Int unifying because [[[[String]]]] = [[[[Int]]]] because α118 :> [[[[String]]]] and [[[[Int]]]] = [α118] because α117 :> [[[[Int]]]] and [α117] | [α118] <: α119
-//│ allVarPols: +α128, +α129, +α131
-//│ norm[+] α128
-//│ | DNF: DNF(α128)
-//│ | norm[+] [α129]
-//│ | | DNF: DNF(α129)
+//│ [ERROR 1] String != Int unifying because [[[[String]]]] = [[[[Int]]]] because α121 :> [[[[String]]]] and [[[[Int]]]] = [α121] because α120 :> [[[[Int]]]] and [α120] | [α121] <: α122
+//│ allVarPols: +α131, +α132, +α134
+//│ norm[+] α131
+//│ | DNF: DNF(α131)
+//│ | norm[+] [α132]
+//│ | | DNF: DNF(α132)
 //│ | | norm[+] [[[[Int]]]]
 //│ | | | DNF: DNF(int<>{})
 //│ | | ~> int<>
-//│ | | norm[-] [[[[[α130]]]]]
-//│ | | | DNF: DNF(α130)
+//│ | | norm[-] [[[[[α133]]]]]
+//│ | | | DNF: DNF(α133)
 //│ | | | norm[+] [[[[[[[[String]]]]]]]]
 //│ | | | | DNF: DNF(string<>{})
 //│ | | | ~> string<>
 //│ | | | norm[+] [[[[[[[[Int]]]]]]]]
 //│ | | | | DNF: DNF(int<>{})
 //│ | | | ~> int<>
-//│ | | ~> α130
-//│ | ~> α129
-//│ | norm[+] [α131]
-//│ | | DNF: DNF(α131)
+//│ | | ~> α133
+//│ | ~> α132
+//│ | norm[+] [α134]
+//│ | | DNF: DNF(α134)
 //│ | | norm[+] [[[[String]]]]
 //│ | | | DNF: DNF(string<>{})
 //│ | | ~> string<>
-//│ | | norm[-] [[[[[α130]]]]]
-//│ | | | DNF: DNF(α130)
-//│ | | ~> α130
-//│ | ~> α131
-//│ | norm[-] [[[α130]]]
-//│ | | DNF: DNF(α130)
-//│ | ~> α130
-//│ ~> α128
+//│ | | norm[-] [[[[[α133]]]]]
+//│ | | | DNF: DNF(α133)
+//│ | | ~> α133
+//│ | ~> α134
+//│ | norm[-] [[[α133]]]
+//│ | | DNF: DNF(α133)
+//│ | ~> α133
+//│ ~> α131
 //│ allVarPols: 
 //│ norm[+] [[[[String]]]]
 //│ | DNF: DNF(string<>{})
@@ -272,42 +272,42 @@ temp true 1 "oops"
 //│ ╟── int is used as argument
 //│ ║  l.132: 	temp true 1 "oops"
 //│ ║         	          ^
-//│ ╟── The following tvars cannot be resolved α119
+//│ ╟── The following tvars cannot be resolved α122
 //│ ╟── ?a is used as `case` expression
 //│ ║  l.125: 	let temp x y z = if x then y else z
 //│ ╙──       	                    ^^^^^^^^^^^^^^^
-//│ unified α114
-//│  α114 :> [[[[[[true<bool>]]]]]]
-//│  α114 <: [[((true<bool> & α115) | (α116 & ~(true<bool>)))]]
-//│ unified α115
-//│  α115 :> [[[[[[[[[true<bool>]]]]]]]]]
-//│ unified α116
 //│ unified α117
-//│  [α117] | [α118] <: α119
-//│  [[[[Int]]]] = [α117] because [[[[[α122]]]]] = [[[[Int]]]] because α117 <: [[[[[α122]]]]] and α117 :> [[[[Int]]]] and [[[α122]]] = [α117] because α119 <: [[[α122]]] and α119 :> [α117]
-//│  [[[[String]]]] = [α117] because [[[[[α122]]]]] = [[[[String]]]] because α118 <: [[[[[α122]]]]] and α118 :> [[[[String]]]] and [[[α122]]] = [α117] because α119 <: [[[α122]]] and α119 :> [α117]
-//│  α117 :> [[[[Int]]]]
-//│  α117 <: [[[[[α122]]]]]
+//│  α117 :> [[[[[[true<bool>]]]]]]
+//│  α117 <: [[((true<bool> & α118) | (α119 & ~(true<bool>)))]]
 //│ unified α118
-//│  [[[[String]]]] = [α118] because [[[[[α122]]]]] = [[[[String]]]] because α118 <: [[[[[α122]]]]] and α118 :> [[[[String]]]] and [[[[[α122]]]]] = [α118] because α117 <: [[[[[α122]]]]] and [α117] | [α118] <: α119
-//│  [[[[Int]]]] = [α118] because α117 :> [[[[Int]]]] and [α117] | [α118] <: α119
-//│  α118 :> [[[[String]]]]
-//│  α118 <: [[[[[α122]]]]]
+//│  α118 :> [[[[[[[[[true<bool>]]]]]]]]]
 //│ unified α119
-//│  α119 :> [α118]
-//│  α119 :> [α117]
-//│  α119 <: [[[α122]]]
 //│ unified α120
-//│  α120 :> [[[(α117 -> (α118 -> α119))]]]
-//│  α120 <: [([(Int,)] -> α121)]
+//│  [α120] | [α121] <: α122
+//│  [[[[Int]]]] = [α120] because [[[[[α125]]]]] = [[[[Int]]]] because α120 <: [[[[[α125]]]]] and α120 :> [[[[Int]]]] and [[[α125]]] = [α120] because α122 <: [[[α125]]] and α122 :> [α120]
+//│  [[[[String]]]] = [α120] because [[[[[α125]]]]] = [[[[String]]]] because α121 <: [[[[[α125]]]]] and α121 :> [[[[String]]]] and [[[α125]]] = [α120] because α122 <: [[[α125]]] and α122 :> [α120]
+//│  α120 :> [[[[Int]]]]
+//│  α120 <: [[[[[α125]]]]]
 //│ unified α121
-//│  α121 <: [([(String,)] -> α122)]
-//│  α121 = (α118 -> α119) are result type in ([(Int,)] -> α121) = (α117 -> (α118 -> α119))
+//│  [[[[String]]]] = [α121] because [[[[[α125]]]]] = [[[[String]]]] because α121 <: [[[[[α125]]]]] and α121 :> [[[[String]]]] and [[[[[α125]]]]] = [α121] because α120 <: [[[[[α125]]]]] and [α120] | [α121] <: α122
+//│  [[[[Int]]]] = [α121] because α120 :> [[[[Int]]]] and [α120] | [α121] <: α122
+//│  α121 :> [[[[String]]]]
+//│  α121 <: [[[[[α125]]]]]
 //│ unified α122
-//│  [[[[[α122]]]]] = [α118] because α117 <: [[[[[α122]]]]] and [α117] | [α118] <: α119
-//│  [[[α122]]] = [α117] because α119 <: [[[α122]]] and α119 :> [α117]
-//│  [[[[[α122]]]]] = [[[[String]]]] because α118 <: [[[[[α122]]]]] and α118 :> [[[[String]]]]
-//│  [[[[[α122]]]]] = [[[[Int]]]] because α117 <: [[[[[α122]]]]] and α117 :> [[[[Int]]]]
+//│  α122 :> [α121]
+//│  α122 :> [α120]
+//│  α122 <: [[[α125]]]
+//│ unified α123
+//│  α123 :> [[[(α120 -> (α121 -> α122))]]]
+//│  α123 <: [([(Int,)] -> α124)]
+//│ unified α124
+//│  α124 <: [([(String,)] -> α125)]
+//│  α124 = (α121 -> α122) are result type in ([(Int,)] -> α124) = (α120 -> (α121 -> α122))
+//│ unified α125
+//│  [[[[[α125]]]]] = [α121] because α120 <: [[[[[α125]]]]] and [α120] | [α121] <: α122
+//│  [[[α125]]] = [α120] because α122 <: [[[α125]]] and α122 :> [α120]
+//│  [[[[[α125]]]]] = [[[[String]]]] because α121 <: [[[[[α125]]]]] and α121 :> [[[[String]]]]
+//│  [[[[[α125]]]]] = [[[[Int]]]] because α120 <: [[[[[α125]]]]] and α120 :> [[[[Int]]]]
 //│ res: int | string
 
 
@@ -316,49 +316,49 @@ let temp x y = if x then x else y
 
 :unifyDbg
 temp true 1
-//│ [ERROR 0] ((true<bool> & α145) | (α146 & ~(true<bool>))) != true<bool> unifying because [[((true<bool> & α145) | (α146 & ~(true<bool>)))]] = [[[[[[true<bool>]]]]]] because α144 <: [[((true<bool> & α145) | (α146 & ~(true<bool>)))]] and α144 :> [[[[[[true<bool>]]]]]]
-//│ allVarPols: +α146, +α152
-//│ norm[+] [[((true<bool> & α152) | (α146 & ~(true<bool>)))]]
-//│ | DNF: DNF(true<bool>{}∧α152 | α146∧~(true<bool>))
+//│ [ERROR 0] ((true<bool> & α148) | (α149 & ~(true<bool>))) != true<bool> unifying because [[((true<bool> & α148) | (α149 & ~(true<bool>)))]] = [[[[[[true<bool>]]]]]] because α147 <: [[((true<bool> & α148) | (α149 & ~(true<bool>)))]] and α147 :> [[[[[[true<bool>]]]]]]
+//│ allVarPols: +α149, +α155
+//│ norm[+] [[((true<bool> & α155) | (α149 & ~(true<bool>)))]]
+//│ | DNF: DNF(true<bool>{}∧α155 | α149∧~(true<bool>))
 //│ | norm[+] [[[[[[[[[true<bool>]]]]]]]]]
 //│ | | DNF: DNF(true<bool>{})
 //│ | ~> true<bool>
-//│ | norm[-] [[[[[α153]]]]]
-//│ | | DNF: DNF(α153)
+//│ | norm[-] [[[[[α156]]]]]
+//│ | | DNF: DNF(α156)
 //│ | | norm[+] [[[[[[[[Int]]]]]]]]
 //│ | | | DNF: DNF(int<>{})
 //│ | | ~> int<>
 //│ | | norm[+] [[[[[[[[[[[[true<bool>]]]]]]]]]]]]
 //│ | | | DNF: DNF(true<bool>{})
 //│ | | ~> true<bool>
-//│ | ~> α153
-//│ | factorize? true<bool> & α152 | α146 & ~(true<bool>)
-//│ | | Factors α146 -> 1, α152 -> 1
-//│ | yes: ((true<bool> & α152) | (α146 & ~(true<bool>)))
-//│ ~> ((true<bool> & α152) | (α146 & ~(true<bool>)))
+//│ | ~> α156
+//│ | factorize? true<bool> & α155 | α149 & ~(true<bool>)
+//│ | | Factors α149 -> 1, α155 -> 1
+//│ | yes: ((true<bool> & α155) | (α149 & ~(true<bool>)))
+//│ ~> ((true<bool> & α155) | (α149 & ~(true<bool>)))
 //│ allVarPols: 
 //│ norm[+] [[[[[[true<bool>]]]]]]
 //│ | DNF: DNF(true<bool>{})
 //│ ~> true<bool>
-//│ allVarPols: +α146, +α154
-//│ norm[+] ((true<bool> & α154) | (α146 & ~(true<bool>)))
-//│ | DNF: DNF(true<bool>{}∧α154 | α146∧~(true<bool>))
+//│ allVarPols: +α149, +α157
+//│ norm[+] ((true<bool> & α157) | (α149 & ~(true<bool>)))
+//│ | DNF: DNF(true<bool>{}∧α157 | α149∧~(true<bool>))
 //│ | norm[+] [[[[[[[[[true<bool>]]]]]]]]]
 //│ | | DNF: DNF(true<bool>{})
 //│ | ~> true<bool>
-//│ | norm[-] [[[[[α155]]]]]
-//│ | | DNF: DNF(α155)
+//│ | norm[-] [[[[[α158]]]]]
+//│ | | DNF: DNF(α158)
 //│ | | norm[+] [[[[[[[[Int]]]]]]]]
 //│ | | | DNF: DNF(int<>{})
 //│ | | ~> int<>
 //│ | | norm[+] [[[[[[[[[[[[true<bool>]]]]]]]]]]]]
 //│ | | | DNF: DNF(true<bool>{})
 //│ | | ~> true<bool>
-//│ | ~> α155
-//│ | factorize? true<bool> & α154 | α146 & ~(true<bool>)
-//│ | | Factors α146 -> 1, α154 -> 1
-//│ | yes: ((true<bool> & α154) | (α146 & ~(true<bool>)))
-//│ ~> ((true<bool> & α154) | (α146 & ~(true<bool>)))
+//│ | ~> α158
+//│ | factorize? true<bool> & α157 | α149 & ~(true<bool>)
+//│ | | Factors α149 -> 1, α157 -> 1
+//│ | yes: ((true<bool> & α157) | (α149 & ~(true<bool>)))
+//│ ~> ((true<bool> & α157) | (α149 & ~(true<bool>)))
 //│ allVarPols: 
 //│ norm[+] true<bool>
 //│ | DNF: DNF(true<bool>{})
@@ -370,27 +370,27 @@ temp true 1
 //│ ╟── true is used as argument
 //│ ║  l.318: 	temp true 1
 //│ ╙──       	     ^^^^
-//│ [ERROR 1] true<bool> != Int unifying because [[[[[[[[[true<bool>]]]]]]]]] = [[[[Int]]]] because [[[[[α150]]]]] = [[[[[[[[[true<bool>]]]]]]]]] because α145 <: [[[[[α150]]]]] and α145 :> [[[[[[[[[true<bool>]]]]]]]]] and [[[[[α150]]]]] = [[[[Int]]]] because α147 <: [[[[[α150]]]]] and α147 :> [[[[Int]]]]
-//│ allVarPols: +α156
-//│ norm[+] α156
-//│ | DNF: DNF(α156)
+//│ [ERROR 1] true<bool> != Int unifying because [[[[[[[[[true<bool>]]]]]]]]] = [[[[Int]]]] because [[[[[α153]]]]] = [[[[[[[[[true<bool>]]]]]]]]] because α148 <: [[[[[α153]]]]] and α148 :> [[[[[[[[[true<bool>]]]]]]]]] and [[[[[α153]]]]] = [[[[Int]]]] because α150 <: [[[[[α153]]]]] and α150 :> [[[[Int]]]]
+//│ allVarPols: +α159
+//│ norm[+] α159
+//│ | DNF: DNF(α159)
 //│ | norm[+] [[[[[[[[Int]]]]]]]]
 //│ | | DNF: DNF(int<>{})
 //│ | ~> int<>
 //│ | norm[+] [[[[[[[[[[[[true<bool>]]]]]]]]]]]]
 //│ | | DNF: DNF(true<bool>{})
 //│ | ~> true<bool>
-//│ ~> α156
-//│ allVarPols: +α157
-//│ norm[+] α157
-//│ | DNF: DNF(α157)
+//│ ~> α159
+//│ allVarPols: +α160
+//│ norm[+] α160
+//│ | DNF: DNF(α160)
 //│ | norm[+] [[[[[[[[Int]]]]]]]]
 //│ | | DNF: DNF(int<>{})
 //│ | ~> int<>
 //│ | norm[+] [[[[[[[[[[[[true<bool>]]]]]]]]]]]]
 //│ | | DNF: DNF(true<bool>{})
 //│ | ~> true<bool>
-//│ ~> α157
+//│ ~> α160
 //│ allVarPols: 
 //│ norm[+] [[[[[[[[[true<bool>]]]]]]]]]
 //│ | DNF: DNF(true<bool>{})
@@ -421,45 +421,45 @@ temp true 1
 //│ ╟── int is used as argument
 //│ ║  l.318: 	temp true 1
 //│ ║         	          ^
-//│ ╟── The following tvars cannot be resolved [[[[[α150]]]]]
+//│ ╟── The following tvars cannot be resolved [[[[[α153]]]]]
 //│ ╟── ?a is used as refined scrutinee
 //│ ║  l.314: 	let temp x y = if x then x else y
 //│ ║         	                  ^
 //│ ╟── ?b is used as application
 //│ ║  l.318: 	temp true 1
 //│ ╙──       	^^^^^^^^^^^
-//│ [ERROR 1] Int != true<bool> unifying because [[[[Int]]]] = [[[[[[[[[true<bool>]]]]]]]]] because α147 :> [[[[Int]]]] and [[[[[[[[[true<bool>]]]]]]]]] = [α147] because α145 :> [[[[[[[[[true<bool>]]]]]]]]] and [α145] | [α147] <: α148
-//│ allVarPols: +α158, +α159, +α161
-//│ norm[+] α158
-//│ | DNF: DNF(α158)
-//│ | norm[+] [α159]
-//│ | | DNF: DNF(α159)
+//│ [ERROR 1] Int != true<bool> unifying because [[[[Int]]]] = [[[[[[[[[true<bool>]]]]]]]]] because α150 :> [[[[Int]]]] and [[[[[[[[[true<bool>]]]]]]]]] = [α150] because α148 :> [[[[[[[[[true<bool>]]]]]]]]] and [α148] | [α150] <: α151
+//│ allVarPols: +α161, +α162, +α164
+//│ norm[+] α161
+//│ | DNF: DNF(α161)
+//│ | norm[+] [α162]
+//│ | | DNF: DNF(α162)
 //│ | | norm[+] [[[[[[[[[true<bool>]]]]]]]]]
 //│ | | | DNF: DNF(true<bool>{})
 //│ | | ~> true<bool>
-//│ | | norm[-] [[[[[α160]]]]]
-//│ | | | DNF: DNF(α160)
+//│ | | norm[-] [[[[[α163]]]]]
+//│ | | | DNF: DNF(α163)
 //│ | | | norm[+] [[[[[[[[Int]]]]]]]]
 //│ | | | | DNF: DNF(int<>{})
 //│ | | | ~> int<>
 //│ | | | norm[+] [[[[[[[[[[[[true<bool>]]]]]]]]]]]]
 //│ | | | | DNF: DNF(true<bool>{})
 //│ | | | ~> true<bool>
-//│ | | ~> α160
-//│ | ~> α159
-//│ | norm[+] [α161]
-//│ | | DNF: DNF(α161)
+//│ | | ~> α163
+//│ | ~> α162
+//│ | norm[+] [α164]
+//│ | | DNF: DNF(α164)
 //│ | | norm[+] [[[[Int]]]]
 //│ | | | DNF: DNF(int<>{})
 //│ | | ~> int<>
-//│ | | norm[-] [[[[[α160]]]]]
-//│ | | | DNF: DNF(α160)
-//│ | | ~> α160
-//│ | ~> α161
-//│ | norm[-] [[[α160]]]
-//│ | | DNF: DNF(α160)
-//│ | ~> α160
-//│ ~> α158
+//│ | | norm[-] [[[[[α163]]]]]
+//│ | | | DNF: DNF(α163)
+//│ | | ~> α163
+//│ | ~> α164
+//│ | norm[-] [[[α163]]]
+//│ | | DNF: DNF(α163)
+//│ | ~> α163
+//│ ~> α161
 //│ allVarPols: 
 //│ norm[+] [[[[Int]]]]
 //│ | DNF: DNF(int<>{})
@@ -490,45 +490,45 @@ temp true 1
 //│ ╟── true is used as reference
 //│ ║  l.318: 	temp true 1
 //│ ║         	     ^^^^
-//│ ╟── The following tvars cannot be resolved α148
+//│ ╟── The following tvars cannot be resolved α151
 //│ ╟── ?a is used as `case` expression
 //│ ║  l.314: 	let temp x y = if x then x else y
 //│ ╙──       	                  ^^^^^^^^^^^^^^^
-//│ unified α144
-//│  α144 :> [[[[[[true<bool>]]]]]]
-//│  α144 <: [[((true<bool> & α145) | (α146 & ~(true<bool>)))]]
-//│ unified α145
-//│  [α145] = α148 because [[[α150]]] = [α145] because α148 <: [[[α150]]] and α148 :> [α145] and α150 = α148 are result type in ([(Int,)] -> α150) = (α147 -> α148)
-//│  [α145] = [[[[Int]]]] because α148 :> [α145] and [[[[Int]]]] = α148 because α147 :> [[[[Int]]]] and [α147] = α148 because [[[[[α150]]]]] = [α147] because α145 <: [[[[[α150]]]]] and [α145] | [α147] <: α148 and α150 = α148 are result type in ([(Int,)] -> α150) = (α147 -> α148)
-//│  [α145] | [α147] <: α148
-//│  [[[[[[[[[true<bool>]]]]]]]]] = [α145] because [[[[[α150]]]]] = [[[[[[[[[true<bool>]]]]]]]]] because α145 <: [[[[[α150]]]]] and α145 :> [[[[[[[[[true<bool>]]]]]]]]] and [[[α150]]] = [α145] because α148 <: [[[α150]]] and α148 :> [α145]
-//│  [[[[Int]]]] = [α145] because [[[[[α150]]]]] = [[[[Int]]]] because α147 <: [[[[[α150]]]]] and α147 :> [[[[Int]]]] and [[[α150]]] = [α145] because α148 <: [[[α150]]] and α148 :> [α145]
-//│  α145 :> [[[[[[[[[true<bool>]]]]]]]]]
-//│  α145 <: [[[[[α150]]]]]
-//│ unified α146
 //│ unified α147
-//│  [α147] = [[[[[[[[[true<bool>]]]]]]]]] because α148 :> [α147] and α148 = [[[[[[[[[true<bool>]]]]]]]]] because [[[[Int]]]] = α148 because α147 :> [[[[Int]]]] and [α147] = α148 because [[[[[α150]]]]] = [α147] because α145 <: [[[[[α150]]]]] and [α145] | [α147] <: α148 and α150 = α148 are result type in ([(Int,)] -> α150) = (α147 -> α148) and [[[[[[[[[true<bool>]]]]]]]]] = α148 because α145 :> [[[[[[[[[true<bool>]]]]]]]]] and [α145] = α148 because [[[α150]]] = [α145] because α148 <: [[[α150]]] and α148 :> [α145] and α150 = α148 are result type in ([(Int,)] -> α150) = (α147 -> α148)
-//│  [α147] = α148 because [[[[[α150]]]]] = [α147] because α145 <: [[[[[α150]]]]] and [α145] | [α147] <: α148 and α150 = α148 are result type in ([(Int,)] -> α150) = (α147 -> α148)
-//│  [[[[Int]]]] = [α147] because [[[[[α150]]]]] = [[[[Int]]]] because α147 <: [[[[[α150]]]]] and α147 :> [[[[Int]]]] and [[[[[α150]]]]] = [α147] because α145 <: [[[[[α150]]]]] and [α145] | [α147] <: α148
-//│  [[[[[[[[[true<bool>]]]]]]]]] = [α147] because α145 :> [[[[[[[[[true<bool>]]]]]]]]] and [α145] | [α147] <: α148
-//│  α147 :> [[[[Int]]]]
-//│  α147 <: [[[[[α150]]]]]
+//│  α147 :> [[[[[[true<bool>]]]]]]
+//│  α147 <: [[((true<bool> & α148) | (α149 & ~(true<bool>)))]]
 //│ unified α148
-//│  [[[[[[[[[true<bool>]]]]]]]]] = α148 because α145 :> [[[[[[[[[true<bool>]]]]]]]]] and [α145] = α148 because [[[α150]]] = [α145] because α148 <: [[[α150]]] and α148 :> [α145] and α150 = α148 are result type in ([(Int,)] -> α150) = (α147 -> α148)
-//│  α148 = [[[[[[[[[true<bool>]]]]]]]]] because [[[[Int]]]] = α148 because α147 :> [[[[Int]]]] and [α147] = α148 because [[[[[α150]]]]] = [α147] because α145 <: [[[[[α150]]]]] and [α145] | [α147] <: α148 and α150 = α148 are result type in ([(Int,)] -> α150) = (α147 -> α148) and [[[[[[[[[true<bool>]]]]]]]]] = α148 because α145 :> [[[[[[[[[true<bool>]]]]]]]]] and [α145] = α148 because [[[α150]]] = [α145] because α148 <: [[[α150]]] and α148 :> [α145] and α150 = α148 are result type in ([(Int,)] -> α150) = (α147 -> α148)
-//│  [[[[Int]]]] = α148 because α147 :> [[[[Int]]]] and [α147] = α148 because [[[[[α150]]]]] = [α147] because α145 <: [[[[[α150]]]]] and [α145] | [α147] <: α148 and α150 = α148 are result type in ([(Int,)] -> α150) = (α147 -> α148)
-//│  α148 :> [α147]
-//│  α148 :> [α145]
-//│  α148 <: [[[α150]]]
+//│  [α148] = α151 because [[[α153]]] = [α148] because α151 <: [[[α153]]] and α151 :> [α148] and α153 = α151 are result type in ([(Int,)] -> α153) = (α150 -> α151)
+//│  [α148] = [[[[Int]]]] because α151 :> [α148] and [[[[Int]]]] = α151 because α150 :> [[[[Int]]]] and [α150] = α151 because [[[[[α153]]]]] = [α150] because α148 <: [[[[[α153]]]]] and [α148] | [α150] <: α151 and α153 = α151 are result type in ([(Int,)] -> α153) = (α150 -> α151)
+//│  [α148] | [α150] <: α151
+//│  [[[[[[[[[true<bool>]]]]]]]]] = [α148] because [[[[[α153]]]]] = [[[[[[[[[true<bool>]]]]]]]]] because α148 <: [[[[[α153]]]]] and α148 :> [[[[[[[[[true<bool>]]]]]]]]] and [[[α153]]] = [α148] because α151 <: [[[α153]]] and α151 :> [α148]
+//│  [[[[Int]]]] = [α148] because [[[[[α153]]]]] = [[[[Int]]]] because α150 <: [[[[[α153]]]]] and α150 :> [[[[Int]]]] and [[[α153]]] = [α148] because α151 <: [[[α153]]] and α151 :> [α148]
+//│  α148 :> [[[[[[[[[true<bool>]]]]]]]]]
+//│  α148 <: [[[[[α153]]]]]
 //│ unified α149
-//│  α149 :> [[[(α147 -> α148)]]]
-//│  α149 <: [([(Int,)] -> α150)]
 //│ unified α150
-//│  α150 = α148 are result type in ([(Int,)] -> α150) = (α147 -> α148)
-//│  [[[[[α150]]]]] = [α147] because α145 <: [[[[[α150]]]]] and [α145] | [α147] <: α148
-//│  [[[α150]]] = [α145] because α148 <: [[[α150]]] and α148 :> [α145]
-//│  [[[[[α150]]]]] = [[[[Int]]]] because α147 <: [[[[[α150]]]]] and α147 :> [[[[Int]]]]
-//│  [[[[[α150]]]]] = [[[[[[[[[true<bool>]]]]]]]]] because α145 <: [[[[[α150]]]]] and α145 :> [[[[[[[[[true<bool>]]]]]]]]]
+//│  [α150] = [[[[[[[[[true<bool>]]]]]]]]] because α151 :> [α150] and α151 = [[[[[[[[[true<bool>]]]]]]]]] because [[[[Int]]]] = α151 because α150 :> [[[[Int]]]] and [α150] = α151 because [[[[[α153]]]]] = [α150] because α148 <: [[[[[α153]]]]] and [α148] | [α150] <: α151 and α153 = α151 are result type in ([(Int,)] -> α153) = (α150 -> α151) and [[[[[[[[[true<bool>]]]]]]]]] = α151 because α148 :> [[[[[[[[[true<bool>]]]]]]]]] and [α148] = α151 because [[[α153]]] = [α148] because α151 <: [[[α153]]] and α151 :> [α148] and α153 = α151 are result type in ([(Int,)] -> α153) = (α150 -> α151)
+//│  [α150] = α151 because [[[[[α153]]]]] = [α150] because α148 <: [[[[[α153]]]]] and [α148] | [α150] <: α151 and α153 = α151 are result type in ([(Int,)] -> α153) = (α150 -> α151)
+//│  [[[[Int]]]] = [α150] because [[[[[α153]]]]] = [[[[Int]]]] because α150 <: [[[[[α153]]]]] and α150 :> [[[[Int]]]] and [[[[[α153]]]]] = [α150] because α148 <: [[[[[α153]]]]] and [α148] | [α150] <: α151
+//│  [[[[[[[[[true<bool>]]]]]]]]] = [α150] because α148 :> [[[[[[[[[true<bool>]]]]]]]]] and [α148] | [α150] <: α151
+//│  α150 :> [[[[Int]]]]
+//│  α150 <: [[[[[α153]]]]]
+//│ unified α151
+//│  [[[[[[[[[true<bool>]]]]]]]]] = α151 because α148 :> [[[[[[[[[true<bool>]]]]]]]]] and [α148] = α151 because [[[α153]]] = [α148] because α151 <: [[[α153]]] and α151 :> [α148] and α153 = α151 are result type in ([(Int,)] -> α153) = (α150 -> α151)
+//│  α151 = [[[[[[[[[true<bool>]]]]]]]]] because [[[[Int]]]] = α151 because α150 :> [[[[Int]]]] and [α150] = α151 because [[[[[α153]]]]] = [α150] because α148 <: [[[[[α153]]]]] and [α148] | [α150] <: α151 and α153 = α151 are result type in ([(Int,)] -> α153) = (α150 -> α151) and [[[[[[[[[true<bool>]]]]]]]]] = α151 because α148 :> [[[[[[[[[true<bool>]]]]]]]]] and [α148] = α151 because [[[α153]]] = [α148] because α151 <: [[[α153]]] and α151 :> [α148] and α153 = α151 are result type in ([(Int,)] -> α153) = (α150 -> α151)
+//│  [[[[Int]]]] = α151 because α150 :> [[[[Int]]]] and [α150] = α151 because [[[[[α153]]]]] = [α150] because α148 <: [[[[[α153]]]]] and [α148] | [α150] <: α151 and α153 = α151 are result type in ([(Int,)] -> α153) = (α150 -> α151)
+//│  α151 :> [α150]
+//│  α151 :> [α148]
+//│  α151 <: [[[α153]]]
+//│ unified α152
+//│  α152 :> [[[(α150 -> α151)]]]
+//│  α152 <: [([(Int,)] -> α153)]
+//│ unified α153
+//│  α153 = α151 are result type in ([(Int,)] -> α153) = (α150 -> α151)
+//│  [[[[[α153]]]]] = [α150] because α148 <: [[[[[α153]]]]] and [α148] | [α150] <: α151
+//│  [[[α153]]] = [α148] because α151 <: [[[α153]]] and α151 :> [α148]
+//│  [[[[[α153]]]]] = [[[[Int]]]] because α150 <: [[[[[α153]]]]] and α150 :> [[[[Int]]]]
+//│  [[[[[α153]]]]] = [[[[[[[[[true<bool>]]]]]]]]] because α148 <: [[[[[α153]]]]] and α148 :> [[[[[[[[[true<bool>]]]]]]]]]
 //│ res: int | true
 
 
@@ -547,7 +547,7 @@ let rec findOddAndAddThem xs = match xs with
 //│ ╟── {_0: ?d} is used as refined scrutinee
 //│ ║  l.540: 	let rec findOddAndAddThem xs = match xs with
 //│ ║         	                                     ^^
-//│ ╟── The following tvars cannot be resolved α177'
+//│ ╟── The following tvars cannot be resolved α180'
 //│ ╟── ?e is used as refined scrutinee
 //│ ║  l.540: 	let rec findOddAndAddThem xs = match xs with
 //│ ╙──       	                                     ^^
@@ -559,15 +559,15 @@ let rec findOddAndAddThem xs = match xs with
 //│ ║  l.540: 	let rec findOddAndAddThem xs = match xs with
 //│ ║         	                                     ^^
 //│ ╟── int is used as type reference
-//│ ║  l.21: 	let mod: int -> int -> int
+//│ ║  l.22: 	let mod: int -> int -> int
 //│ ║        	         ^^^
-//│ ╟── The following tvars cannot be resolved α181'
+//│ ╟── The following tvars cannot be resolved α184'
 //│ ╟── ?d is used as reference
 //│ ║  l.540: 	let rec findOddAndAddThem xs = match xs with
 //│ ╙──       	                                     ^^
 //│ ╔══[WARNING] [UNIFICATION ERROR 0] bool and true | ?a & ~true cannot be unified but flows into the same location
 //│ ╟── bool is used as type reference
-//│ ║  l.30: 	let (==): 'a -> 'a -> bool
+//│ ║  l.31: 	let (==): 'a -> 'a -> bool
 //│ ║        	                      ^^^^
 //│ ╟── true | ?b & ~true is used as operator application
 //│ ║  l.541: 	  | x :: xs -> if (mod xs 2 == 0) then addF x findOddAndAddThem xs else findOddAndAddThem xs
@@ -577,12 +577,12 @@ let rec findOddAndAddThem xs = match xs with
 //│ ║  l.540: 	let rec findOddAndAddThem xs = match xs with
 //│ ║         	                                     ^^
 //│ ╟── int is used as type reference
-//│ ║  l.21: 	let mod: int -> int -> int
+//│ ║  l.22: 	let mod: int -> int -> int
 //│ ║        	         ^^^
 //│ ╟── Cons[?] & ?c | Nil & ?b is used as reference
 //│ ║  l.540: 	let rec findOddAndAddThem xs = match xs with
 //│ ║         	                                     ^^
-//│ ╟── The following tvars cannot be resolved α181'
+//│ ╟── The following tvars cannot be resolved α184'
 //│ ╟── ?d is used as reference
 //│ ║  l.540: 	let rec findOddAndAddThem xs = match xs with
 //│ ╙──       	                                     ^^

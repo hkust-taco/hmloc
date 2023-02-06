@@ -149,12 +149,12 @@ let rec interp f env e =
 //│ ╙──       	            ^^^^
 //│ interp: ((list[(string | 'a, Closure | error | int & {_0: int} | exp,) | 'b] | 'c) -> (option[list[string]] | 'd) -> env) -> 'c -> 'e -> ('f | 'g)
 //│   where
-//│     'e <: (Apply with {_0: 'e, _1: 'e}) | Closure & 'f & 'h & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'e}) | (If with {_0: 'e, _1: 'e, _2: 'e}) | int & 'g | (Lam with {_2: 'd}) | (Pair with {_0: 'e, _1: 'e}) | (Plus with {_0: 'e, _1: 'e}) | (Second with {_0: 'e}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
+//│     'e <: (Apply with {_0: 'e, _1: 'e}) | Closure & 'h & 'f & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'e}) | (If with {_0: 'e, _1: 'e, _2: 'e}) | int & 'g | (Lam with {_2: 'd}) | (Pair with {_0: 'e, _1: 'e}) | (Plus with {_0: 'e, _1: 'e}) | (Second with {_0: 'e}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
 //│     'g :> int & {_0: int}
-//│        <: 'f & 'h & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
+//│        <: 'h & 'f & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
+//│     'h <: 'f & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_0: 'a, _1: 'e, _2: list['b]}) | ~Closure)
 //│     'f :> Closure | error | int & {_0: int} | exp
 //│        <: 'h & (exp & int & {_0: int} | exp & ~int)
-//│     'h <: 'f & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_0: 'a, _1: 'e, _2: list['b]}) | ~Closure)
 
 let interp1 = interp (fun x _ -> x)
 //│ ╔══[ERROR] Unsupported pattern shape:
@@ -165,7 +165,7 @@ let interp1 = interp (fun x _ -> x)
 //│ ╙──       	                                 ^
 //│ interp1: error -> 'a -> ('b | 'c)
 //│   where
-//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'd & 'b & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | Lam | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
+//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'd | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | Lam | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
 //│     'c :> int & {_0: int}
 //│        <: 'd & 'b & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
 //│     'd <: 'b & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_1: 'a, _2: list[?]}) | ~Closure)
@@ -198,7 +198,7 @@ let interp2 = interp (fun (env:env) opt ->
 //│ ╙──       	                                                     ^^^
 //│ interp2: error -> 'a -> ('b | 'c)
 //│   where
-//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'd & 'b & (exp & int & {_0: int} | exp & ~int) | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | Lam | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
+//│     'a <: (Apply with {_0: 'a, _1: 'a}) | Closure & 'd | (First with {_0: 'a}) | (If with {_0: 'a, _1: 'a, _2: 'a}) | int & 'c | Lam | (Pair with {_0: 'a, _1: 'a}) | (Plus with {_0: 'a, _1: 'a}) | (Second with {_0: 'a}) | Var | ~Apply & ~Closure & ~First & ~If & ~int & ~Lam & ~Pair & ~Plus & ~Second & ~Var
 //│     'c :> int & {_0: int}
 //│        <: 'd & 'b & (exp & int & {_0: int} | exp & {_0: anything} & ~int)
 //│     'd <: 'b & (exp & int & {_0: int} | exp & ~int) & ((Closure with {_1: 'a, _2: list[?]}) | ~Closure)
