@@ -278,11 +278,11 @@ trait DeclImpl extends Located { self: Decl =>
     case _: TypeDef => "type declaration"
   }
   def show: Str = showHead + (this match {
-    case TypeDef(Als, _, _, _, _) => " = "; case _ => ": " }) + showBody
+    case TypeDef(Als, _, _, _, _, _) => " = "; case _ => ": " }) + showBody
   def showHead: Str = this match {
     case Def(true, n, b, isByname) => s"rec def $n"
     case Def(false, n, b, isByname) => s"def $n"
-    case TypeDef(k, n, tps, b, pos) =>
+    case TypeDef(k, n, tps, b, pos, _) =>
       s"${k.str} ${n.name}${if (tps.isEmpty) "" else tps.map(_.name).mkString("[", ", ", "]")}${
         if (pos.isEmpty) "" else pos.mkString("(", ", ", ")")
       }"
@@ -653,7 +653,7 @@ trait StatementImpl extends Located { self: Statement =>
     case With(t, fs) => t :: fs :: Nil
     case CaseOf(s, c) => s :: c :: Nil
     case d @ Def(_, n, b, _) => n :: d.body :: Nil
-    case TypeDef(kind, nme, tparams, body, pos) => nme :: tparams ::: pos ::: body :: Nil
+    case TypeDef(kind, nme, tparams, body, pos, _) => nme :: tparams ::: pos ::: body :: Nil
     case Subs(a, i) => a :: i :: Nil
     case Assign(lhs, rhs) => lhs :: rhs :: Nil
     case Splc(fields) => fields.map{case L(l) => l case R(r) => r.value}
@@ -801,7 +801,8 @@ object PrettyPrintHelper {
     case DataDefn(body) => s"DataDefn(${inspect(body)})"
     case DatatypeDefn(head, body) => s"DatatypeDefn(head: ${inspect(head)}, body: ${inspect(body)}"
     case LetS(isRec, pat, rhs) => s"LetS(isRec: $isRec, pat: ${inspect(pat)}, rhs: ${inspect(rhs)}"
-    case TypeDef(kind, nme, tname, tbody, tvars) => s"TypeDef($kind, $nme, $tname, $tbody, $tvars)"
+    case TypeDef(Cls, nme, tname, tbody, tvars, adtData) => s"TypeDef($Cls, $nme, $tname, $tbody, $tvars) of adt: $adtData"
+    case TypeDef(kind, nme, tname, tbody, tvars, _) => s"TypeDef($kind, $nme, $tname, $tbody, $tvars)"
     case Def(rec, nme, rhs, isByname) =>
       s"Def($rec, $nme, ${rhs.fold(inspect, "" + _)}, $isByname)"
   }

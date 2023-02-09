@@ -492,8 +492,12 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     ).map {
       // parsed data constructors create classes and helper functions
       // create an alias for the type itself
-      case (tparams, tname, L(bodies), moreTypes) =>
+      case (tparams, alsName, L(bodies), moreTypes) =>
         val paramSet = tparams.toSet
+        val bodyUpdateAdtInfo = bodies.map(tyDef => {
+          val paramMapIndex = tyDef.tparams.filter(paramSet(_)).map(elem => tparams.zipWithIndex.filter(_._1 == elem).head._2)
+          tyDef.copy(adtData = S((alsName, paramMapIndex)))
+        })
         val unionType: TypeDef => Type = (tyDef) => {
           val appliedParams = tyDef.tparams.filter(paramSet(_))
           appliedParams match {
@@ -501,12 +505,12 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
             case applied => AppliedType(tyDef.nme, applied)
           }
         }
-        val initialBody = unionType(bodies(0))
-        val aliasBody = bodies.foldLeft[Type](initialBody){
+        val initialBody = unionType(bodyUpdateAdtInfo.head)
+        val aliasBody = bodyUpdateAdtInfo.foldLeft[Type](initialBody){
           case (union, tdef) => Union(unionType(tdef), union)
         }
-        val helpers = bodies.flatMap(cls => ocamlTyDeclHelper(cls, tname, tparams)).toList
-        TypeDef(Als, tname, tparams, aliasBody, Nil) :: bodies ::: helpers ::: moreTypes.getOrElse(Nil)
+        val helpers = bodyUpdateAdtInfo.flatMap(cls => ocamlTyDeclHelper(cls, alsName, tparams)).toList
+        TypeDef(Als, alsName, tparams, aliasBody, Nil) :: bodyUpdateAdtInfo ::: helpers ::: moreTypes.getOrElse(Nil)
       // a type name, variable or applied type as alias
       case (tparams, tname, R((_, t)), moreTypes) =>
         TypeDef(Als, tname, tparams.toList, t, Nil) :: moreTypes.getOrElse(Nil)

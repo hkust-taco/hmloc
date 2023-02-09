@@ -35,6 +35,11 @@ class TypeDefs extends ConstraintSolver { self: Typer =>
     baseClasses: Set[TypeName],
     toLoc: Opt[Loc],
     positionals: Ls[Str],
+    // maps a class to it's adt by name and maps params to adt param by position
+    // for e.g. in type 'a, 'b either = Left of 'a | Right of 'b
+    // Right will have an adtData = S((TypeName("either"), List(1)))
+    // indicating that it's adt is either and it's param is the 1th param of either
+    adtData: Opt[(TypeName, Ls[Int])] = N
   ) {
     def allBaseClasses(ctx: Ctx)(implicit traversed: Set[TypeName]): Set[TypeName] =
       baseClasses.map(v => TypeName(v.name)) ++
@@ -136,7 +141,7 @@ class TypeDefs extends ConstraintSolver { self: Typer =>
           val tparamsargs = td.tparams.lazyZip(dummyTargs)
           val (bodyTy, tvars) = 
             typeType2(td.body, simplify = false)(ctx.copy(lvl = 0), raise, tparamsargs.map(_.name -> _).toMap, newDefsInfo)
-          val td1 = TypeDef(td.kind, td.nme, tparamsargs.toList, tvars, bodyTy, baseClassesOf(td), td.toLoc, td.positionals.map(_.name))
+          val td1 = TypeDef(td.kind, td.nme, tparamsargs.toList, tvars, bodyTy, baseClassesOf(td), td.toLoc, td.positionals.map(_.name), td.adtData)
           allDefs += n -> td1
           S(td1)
       }
@@ -422,7 +427,7 @@ class TypeDefs extends ConstraintSolver { self: Typer =>
       val visitedSet: MutSet[Bool -> TypeVariable] = MutSet()
       varianceUpdated = false;
       tyDefs.foreach {
-        case t @ TypeDef(k, nme, _, _, body, _, _, _) =>
+        case t @ TypeDef(k, nme, _, _, body, _, _, _, _) =>
           trace(s"${k.str} ${nme.name}  ${
                 t.tvarVariances.getOrElse(die).iterator.map(kv => s"${kv._2} ${kv._1}").mkString("  ")}") {
             updateVariance(body, VarianceInfo.co)(t, visitedSet)
