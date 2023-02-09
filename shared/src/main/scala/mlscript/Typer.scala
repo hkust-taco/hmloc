@@ -462,10 +462,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   def hintProv(p: TP): TP = noProv
   
   /** Infer the type of a term. */
-  def typeTerm(term: Term)(implicit ctx: Ctx, raise: Raise, vars: Map[Str, SimpleType] = Map.empty): SimpleType
+  def typeTerm(term: Term, desc: String = "")(implicit ctx: Ctx, raise: Raise, vars: Map[Str, SimpleType] = Map.empty): SimpleType
         = trace(s"$lvl. Typing ${if (ctx.inPattern) "pattern" else "term"} $term") {
     // implicit val prov: TypeProvenance = ttp(term)
-    implicit def prov(implicit file: FileName, line: Line): TypeProvenance = ttp(term)
+    implicit def prov(implicit file: FileName, line: Line): TypeProvenance = ttp(term, desc)
     
     /** Constrain lhs and rhs type and handle errors if any
       *
@@ -718,15 +718,69 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         }
         val cs_ty = freshVar(prov, lbs = cs_ty_ls)
         con(s_ty, req, cs_ty)
-      case iff @ If(body, fallback) =>
-        // TODO handle this differently that ucs
-        ???
-//        try {
-////          iff.desugaredIf = S(trm)
-////          typeTerm()
-//        } catch {
-//          case e: Throwable => throw e
-//        }
+      case iff @ If(cond, body) =>
+        println(PrettyPrintHelper.inspect(iff))
+        body match {
+          // handle if-then-else separately
+          case Ls(IfThen(Var("True"), trueArm), IfThen(Var("False"), falseArm)) =>
+            val cond_ty = typeTerm(cond, "if-then-else condition type")
+            con(cond_ty, BoolType, cond_ty)
+            val ret_ty = freshVar(prov.copy(desc = "if-then-else return type"))
+            con(typeTerm(trueArm, "if-then-else true condition"), ret_ty, ret_ty)
+            con(typeTerm(falseArm, "if-then-else false condition"), ret_ty, ret_ty)
+          // TODO handle let deconstruction differently
+          case _ =>
+            // find constructor for each arm
+            val adtData = body.flatMap(_.topLevelCtors).map { case Var(name) =>
+              ctx.tyDefs.getOrElse(name, lastWords(s"could not find type defintion ${name}"))
+                .adtData.getOrElse(lastWords(s"could not find adt data for type defintion ${name}"))
+            }
+            // find and retrieve the common adt for all the constructors
+            val adtName = adtData match {
+              case Nil => lastWords("match case without any arms")
+              case adt :: Nil => adt._1
+              case head :: tail =>
+                val adtName = head._1
+                tail.foreach(v => if (v._1 =/= adtName) lastWords(s"incompatible adt data for ${head} and ${v}"))
+                adtName
+            }
+
+            val adtDef = ctx.tyDefs.getOrElse(adtName.name, lastWords(s"Could not find ${adtName} in context"))
+            // TODO should the type variables be cloned here
+            val adt_ty = TypeRef(adtName, adtDef.targs)(TypeProvenance(cond.toLoc, "match-case condition type"))
+            val cond_ty = typeTerm(cond)
+            val ret_ty = freshVar(prov.copy(desc = "match-case return type"))
+            con(cond_ty, adt_ty, adt_ty)
+
+            // the assumed shape of an IfBody is a List[IfThen, IfThen, IfElse] with an optional IfElse at the end
+            body.zipWithIndex.foreach {
+              // case x -> expr catch all with a new variable in the context
+              case (IfThen(v@Var(name), rhs), _) =>
+                // update context with variables
+                val newCtx = ctx.nest
+                newCtx += name -> VarSymbol(cond_ty, v)
+                con(typeTerm(rhs), ret_ty, ret_ty)
+              // case Left x -> expr or Left 2 -> expr the type variable for the adt is constrained
+              // with the argument to the constructor Left in this case
+              case (IfThen(App(Var(_), Tup(fields)), rhs), index) =>
+                val adtArgIndex = adtData(index)._2
+                val nestCtx = ctx.nest
+                fields.map(_._2.value).zip(adtArgIndex).foreach {
+                  // in case of Left x also add x to nested scope
+                  case (argTerm: Var, adtArgIndex) =>
+                    val adtTvar = adtDef.targs(adtArgIndex)
+                    nestCtx += argTerm.name -> VarSymbol(adtTvar, argTerm)
+                    con(adtTvar, typeTerm(argTerm), adtTvar)
+                  case (argTerm, adtArgIndex) =>
+                    val adtTvar = adtDef.targs(adtArgIndex)
+                    con(adtTvar, typeTerm(argTerm), adtTvar)
+                }
+                con(typeTerm(rhs), ret_ty, ret_ty)
+              case (IfElse(expr), _) => con(typeTerm(expr), ret_ty, ret_ty)
+              case ifbody => lastWords(s"Cannot handle case expression ${ifbody}")
+            }
+            ret_ty
+        }
       case New(S((nmedTy, trm)), TypingUnit(Nil)) =>
         typeTerm(App(Var(nmedTy.base.name).withLocOf(nmedTy), trm))
       case New(base, args) => ???

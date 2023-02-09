@@ -390,7 +390,7 @@ trait TermImpl extends StatementImpl { self: Term =>
     case Assign(lhs, rhs) => s" $lhs <- $rhs" |> bra
     case New(S((at, ar)), bod) => s"new ${at.show}($ar) ${bod.show}" |> bra
     case New(N, bod) => s"new ${bod.show}" |> bra
-    case If(body, els) => s"if $body" + els.fold("")(" else " + _) |> bra
+    case If(cond, body) => s"if $cond" + body.mkString(" then ") |> bra
     case TyApp(lhs, targs) => s"$lhs‹${targs.map(_.show).mkString(", ")}›"
   }}
   
@@ -720,12 +720,8 @@ trait IfBodyImpl extends Located { self: IfBody =>
     // case Wildcard(body) => body :: Nil
     // case NoCases => Nil
     case _ if false => ??? // TODO
-    case IfBlock(ts) => ts.map(_.fold(identity, identity))
     case IfThen(l, r) => l :: r :: Nil
     case IfElse(t) => t :: Nil
-    case IfLet(_, v, r, b) => v :: r :: b :: Nil
-    case IfOpApp(t, v, b) => t :: v :: b :: Nil
-    case IfOpsApp(t, ops) => t :: ops.flatMap(x => x._1 :: x._2 :: Nil)
   }
   
   // lazy val toList: Ls[Case] = this match {
@@ -737,13 +733,15 @@ trait IfBodyImpl extends Located { self: IfBody =>
     // case IfThen(lhs, rhs) => s"${lhs.print(true)} then $rhs"
     case IfThen(lhs, rhs) => s"($lhs) then $rhs"
     case IfElse(trm) => s"else $trm"
-    case IfBlock(ts) => s"‹${ts.map(_.fold(identity, identity)).mkString("; ")}›"
-    case IfOpApp(lhs, op, ib) => s"$lhs $op $ib"
-    case IfOpsApp(lhs, ops) => s"$lhs ‹${ops.iterator.map{case(v, r) => s"· $v $r"}.mkString("; ")}›"
-    case IfLet(isRec, v, r, b) => s"${if (isRec) "rec " else ""}let $v = $r in $b"
     // case _ => ??? // TODO
   }
-  
+
+  def topLevelCtors: Ls[Var] = this match {
+    case IfThen(v: Var, _) => v :: Nil
+    case IfThen(App(v: Var, _), _) => v :: Nil
+    case IfElse(_) => Nil
+    case _ => Nil
+  }
 }
 
 trait IfImpl { self: If =>
@@ -819,19 +817,5 @@ object PrettyPrintHelper {
   def inspect(body: IfBody): Str = body match {
     case IfElse(expr) => s"IfElse(${inspect(expr)}"
     case IfThen(expr, rhs) => s"IfThen(${inspect(expr)}, ${inspect(rhs)}"
-    case IfBlock(lines) => s"IfBlock(${
-      lines.iterator.map {
-        case L(body) => inspect(body)
-        case R(_) => ???
-      }.mkString(";")
-    })"
-    case IfOpsApp(lhs, opsRhss) => s"IfOpsApp(${inspect(lhs)}, ${
-      opsRhss.iterator.map { case (op, body) =>
-        s"$op -> ${inspect(body)}"
-      }
-    }".mkString("; ")
-    case IfLet(isRec, name, rhs, body) => ???
-    case IfOpApp(lhs, op, rhs) =>
-      s"IfOpApp(${inspect(lhs)}, ${inspect(op)}, ${inspect(rhs)}"
   }
 }

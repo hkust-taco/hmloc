@@ -137,15 +137,15 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     kw("let") ~ subterm ~ "=" ~ term ~ kw("in") ~ term
   ) map {
     case (matVar, matExpr, bod) =>
-      val matchArm = L(IfThen(matVar, bod)) :: Nil
-      If(IfOpApp(matExpr, Var("is"), IfBlock(matchArm)), N)
+      val matchArm = IfThen(matVar, bod) :: Nil
+      If(matExpr, matchArm)
   })
 
-  def ite[p: P]: P[Term] = P( kw("if") ~/ term ~ kw("then") ~ term ~ kw("else") ~ term ).map(ite =>
-    // App(App(App(Var("if"), ite._1), ite._2), ite._3)
-    If(IfThen(ite._1, ite._2), S(ite._3))
-    )
-  
+  def ite[p: P]: P[Term] = locate(P( kw("if") ~/ term ~ kw("then") ~ term ~ kw("else") ~ term ).map{
+    case (cond, ifbody, elsebody) =>
+      If(cond, Ls(IfThen(Var("True"), ifbody), IfThen(Var("False"), elsebody)))
+  })
+
   /** Parses an expression of the form `expr (: type) (= expr2)`. This is the
     * an important term parser because it is the one that actually parses the
     * sub terms
@@ -159,7 +159,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     *
     * Ocaml parses comma-separated terms as a tuple handle them differently
     */
-  def ocamlWithAsc[p: P]: P[Term] = P(withs
+  def ocamlWithAsc[p: P]: P[Term] = locate(P(withs
     ~ (":" ~/ ty).rep  // ascription
     ~ ("=" ~/ term).?  // equality check
     ~ ("," ~/ withsAsc).?  // ocaml creates implicit tuples for comma separated terms
@@ -168,7 +168,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       val trm1 = ascs.foldLeft(withs)(Asc)
       val trm2 = equateTerm.fold(trm1)(rhs => App(OpApp("eq", toParams(trm1)), toParams(rhs)))
       tupleTerm.fold(trm2)(trm3 => toParams(trm2 :: trm3))
-  }
+  })
   /** Inner call to withsAsc term which parses a list of terms optionally
     * type ascribed
     * equated
@@ -226,9 +226,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   
   def _match[p: P]: P[If] =
     locate(P( kw("match") ~/ term ~ "with" ~ "|".? ~ matchArms).map {
-      case (matchVar, branches) =>
-        val ifBlocks = IfBlock(branches.map(L.apply))
-        If(IfOpApp(matchVar, Var("is"), ifBlocks), N)
+      case (expr, arms) => If(expr, arms)
     })
   def matchArms[p:P]: P[Ls[IfBody]] = P(
    (

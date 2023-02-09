@@ -72,18 +72,12 @@ final case class Subs(arr: Term, idx: Term)                          extends Ter
 final case class Assign(lhs: Term, rhs: Term)                        extends Term
 final case class Splc(fields: Ls[Either[Term, Fld]])                 extends Term
 final case class New(head: Opt[(NamedType, Term)], body: TypingUnit) extends Term // `new C(...)` or `new C(){...}` or `new{...}`
-final case class If(body: IfBody, els: Opt[Term])                    extends Term with IfImpl
+final case class If(lhs: Term, rhs: Ls[IfBody])                    extends Term with IfImpl
 final case class TyApp(lhs: Term, targs: Ls[Type])                   extends Term
 
 sealed abstract class IfBody extends IfBodyImpl
-// final case class IfTerm(expr: Term) extends IfBody // rm?
 final case class IfThen(expr: Term, rhs: Term) extends IfBody
 final case class IfElse(expr: Term) extends IfBody
-final case class IfLet(isRec: Bool, name: Var, rhs: Term, body: IfBody) extends IfBody
-final case class IfOpApp(lhs: Term, op: Var, rhs: IfBody) extends IfBody
-final case class IfOpsApp(lhs: Term, opsRhss: Ls[Var -> IfBody]) extends IfBody
-final case class IfBlock(lines: Ls[IfBody \/ Statement]) extends IfBody
-// final case class IfApp(fun: Term, opsRhss: Ls[Var -> IfBody]) extends IfBody
 
 /** A Fld is used to store values in tuples, records and specialization terms.
   * class Foo(#x, y) indicates that Foo is specialized for type of `#x`
