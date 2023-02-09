@@ -860,22 +860,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   }
   
   case class UnificationStore() {
-    // TODO: remove and use the one defined in TypeHelpers
-    def firstAndLastUseLocation(t: ST)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-      val stUseLocation = t.typeUseLocations
-      val st = t.unwrapProvs
-      (stUseLocation.headOption, stUseLocation.lastOption) match {
-        // only show one location in case of duplicates
-        case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.expPos} is used as ${prov1.desc}" -> prov1.loco :: Nil
-        case ((S(prov1), S(prov2))) =>
-          msg"${st.expPos} is used as ${prov1.desc}" -> prov1.loco ::
-          msg"${st.expPos} is used as ${prov2.desc}" -> prov2.loco ::
-            Nil
-        case ((S(prov), N)) => msg"${st.expPos} is used as ${prov.desc}" -> prov.loco :: Nil
-        case (N, (S(prov))) => msg"${st.expPos} is used as ${prov.desc}" -> prov.loco :: Nil
-        case ((N, N)) => Nil
-      }
-    }
   /** Unification happens because of previous type variable. Dir indicates
    * if the st is an lb of the prev (true) or an ub of prev (false)
      */
@@ -887,56 +871,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       def toDiagnostic(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
         val stUnder = st.unwrapProvs
         val prevUnder = prev.unwrapProvs
-        dir match {
-          // st is lower bound to prev
-          case true => msg"${stUnder.toString} flows into ${prevUnder.toString}" -> N ::
+        if (dir) {
+          msg"${stUnder.toString} flows into ${prevUnder.toString}" -> N ::
             firstAndLastUseLocation(prev) ::: firstAndLastUseLocation(st)
-          // st is upper bound to prev
-          case false => msg"${prevUnder.toString} flows into ${stUnder.toString}" -> N ::
-            firstAndLastUseLocation(st) ::: firstAndLastUseLocation(prev)
-        }
-      }
-    }
-    type UR = UnificationReason
-    
-    val store: MutMap[ST, ST] = MutMap()
-    val chain: MutMap[ST, Ls[UnificationReason]] = MutMap()
-    
-    /** Return the the top level type a type variable is unified with. By
-      * recursively traversing the mapping.
-      * 
-      * TODO: Ocaml does not have recursive types without constructors.
-      * next === st case may not be needed.
-      */
-    def getUnifiedType(st: ST): ST = {
-      store.get(st).map(next => {
-        // recursive type is unified with itself
-        if (next === st) {
-          st
         } else {
-          getUnifiedType(next)
-        }
-      }).getOrElse(st)
-    }
-    
-    /** Level of type error depends on the number of convergences and
-     * divergences of unification flow.
-     * 
-     * Increment level when two consecutive reasons have opposite bounds
-     * or when they have the same type and the same bounds
-      */
-    def getUnificationErrorLevel(path: Ls[UnificationReason]): Int = {
-      path match {
-        case immutable.Nil => 0
-        case head :: Nil => 0
-        case _ :: next => {
-          // add a level to the type error where two flows converge or diverge
-          // this happens when 
-          (path zip next).foldLeft(0) { case (level, ((UnificationReason(st1, prev1, dir1), UnificationReason(st2, prev2, dir2)))) =>
-            if (prev1 === prev2 && dir1 === dir2) level + 1
-            else if ((st1 === prev2 || st2 === prev1) && dir1 =/= dir2) level + 1
-            else level
-          }
+          msg"${prevUnder.toString} flows into ${stUnder.toString}" -> N ::
+            firstAndLastUseLocation(st) ::: firstAndLastUseLocation(prev)
         }
       }
     }
@@ -1041,109 +981,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       })
       tv.unification = u :: tv.unification
     }
-
-    /** Unify so that type variable map to concrete types - Functions, Records,
-     * Class tags into/from which it flows
-     */
-    def unify(a: ST, b: ST)(implicit ctx: Ctx, raise: Raise): Unit = 
-      trace(s"unify(${a}, ${b}) because ${chain.getOrElse(b, Nil).mkString(", ")}")
-    {
-      println(s"with store: ${store.mkString(", ")}")
-      val aType = getUnifiedType(a)
-      val bType = getUnifiedType(b)
-      
-      if (aType === bType) return
-  
-      (aType, bType) match {
-        case (ProvType(u), t) =>
-          unify(u.unwrapProvs, t)
-        case (t, ProvType(u)) =>
-          unify(t, u.unwrapProvs)
-        case (tv1: TypeVariable, tv2: TypeVariable) =>
-          // unify in any order
-          store += ((tv1, tv2))
-          println(s"add entry: ${tv1} -> ${tv2}")
-        case (tv1: TypeVariable, st: ST) =>
-          // unify where tv1 maps to st
-          store += ((tv1, st))
-          println(s"add entry: ${tv1} -> ${st}")
-        case (st: ST, tv2: TypeVariable) =>
-          // unify where tv2 maps to st
-          store += ((tv2, st))
-          println(s"add entry: ${tv2} -> ${st}")
-        case (f1@FunctionType(lhs1, rhs1), f2@FunctionType(lhs2, rhs2)) =>
-          // TODO: recursively unify type argument types
-          // unify(lhs1, lhs2)
-          // unify(rhs1, rhs2)
-          // store += ((f1, f2))
-        case (ClassTag(id1, _), ClassTag(id2, _)) =>
-          // raise warning with path and level info
-          if (id1 =/= id2) {
-            reportUnificationError(aType, bType)
-          }
-        case (tv1, tv2) =>
-          // these types can't be unified. Raise a unification error
-          // show and how it happened
-          reportUnificationError(aType, bType)
-      }
-    } ()
-    
-    def reportUnificationError(a: ST, b: ST)(implicit ctx: Ctx, raise: Raise): Unit = {
-      val aPath = chain.getOrElse(a, Nil)
-      val bPath = chain.getOrElse(b, Nil)
-      val bPathSet = bPath.iterator.map(_.prev).toSet
-      println(s"ERROR ${a} = ${b}")
-      println(s"REASON for ${a} is ${aPath.mkString(", ")}")
-      println(s"REASON for ${b} is ${bPath.mkString(", ")}")
-
-      val commonUnifier = aPath.find(ur => bPathSet(ur.prev))
-        .getOrElse(throw new Exception("No common type variable in unification error"))
-      val aIndex = aPath.indexWhere(_.prev === commonUnifier.prev)
-      val bIndex = bPath.indexWhere(_.prev === commonUnifier.prev)
-
-      val errorPath = aPath.take(aIndex + 1) ::: bPath.take(bIndex + 1).reverse
-      val errorLevel = getUnificationErrorLevel(errorPath)
-      
-      val report =
-        msg"Unification error (level ${errorLevel.toString}): ${a.toString} and ${b.toString} cannot be unified" -> N ::
-          errorPath.flatMap(_.toDiagnostic)
-      raise(WarningReport(report))
-    }
-    
-    /** Traverse type variable bounds and store the chain of reasons for
-      * unifying those types.
-      */
-    def traverseTypeBounds(st: SimpleType, reason: Ls[UnificationReason])(implicit ctx: Ctx, raise: Raise): Unit =
-      trace(s"${st} traverse bounds because ${reason.headOption.map(_.toString).getOrElse("")}")
-    {
-      st match {
-        // type variable with upper and lower type bounds that need to be
-        // unified. We track why two variable are being unified by keeping
-        // storing their common predecessor which causes their unification
-        case tv: TypeVariable =>
-          // skip if a type variable has been visited before otherwise set it's previous
-          // type variable which shows why it's being unified
-          if (chain.contains(st)) {
-            println(s"${st} has been visited before")
-            return
-          } else chain.put(st, reason)
-
-          println(s":> ${tv.lowerBounds.mkString(", ")}")
-          println(s"<: ${tv.upperBounds.mkString(", ")}")
-          tv.lowerBounds.foreach(lb => traverseTypeBounds(lb.unwrapProvs, UnificationReason(lb, tv, true) :: reason))
-          tv.upperBounds.foreach(ub => traverseTypeBounds(ub.unwrapProvs, UnificationReason(ub, tv, false) :: reason))
-          tv.lowerBounds.foreach(lb => unify(tv, lb.unwrapProvs))
-          tv.upperBounds.foreach(ub => unify(tv, ub.unwrapProvs))
-        case pv: ProvType => traverseTypeBounds(pv.unwrapProvs, reason)
-        case _ =>
-          // skip if a type variable has been visited before otherwise set it's previous
-          // type variable which shows why it's being unified
-          if (chain.contains(st)) {
-            println(s"${st} has been visited before")
-            return
-          } else chain.put(st, reason)
-      }
-    } ()
   }
   
   /** Unifies type bounds to find unification errors. These errors are not
