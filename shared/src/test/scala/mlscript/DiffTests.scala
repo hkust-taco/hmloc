@@ -419,33 +419,7 @@ class DiffTests
         
         // try to parse block of text into mlscript ast
         val ans = try {
-          if (newParser || basePath.headOption.contains("compiler")) {
-            
-            val origin = Origin(testName, globalStartLineNum, fph)
-            val lexer = new NewLexer(origin, raise, dbg = mode.dbgParsing)
-            
-            val tokens = lexer.bracketedTokens
-            
-            if (mode.showParse || mode.dbgParsing || parseOnly)
-              output(NewLexer.printTokens(tokens))
-            
-            val p = new NewParser(origin, tokens, raise, dbg = mode.dbgParsing, N) {
-              def doPrintDbg(msg: => Str): Unit = if (dbg) output(msg)
-            }
-            val res = p.parseAll(p.typingUnit)
-            
-            if (parseOnly)
-              output("Parsed: " + res.show)
-            
-            postProcess(mode, basePath, testName, res).foreach(output)
-            
-            if (parseOnly)
-              Success(Pgrm(Nil), 0)
-            else
-              Success(Pgrm(res.entities), 0)
-            
-          }
-          else parse(processedBlockStr, p =>
+          parse(processedBlockStr, p =>
             if (file.ext =:= "fun") new Parser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
             else if (ocamlMode) new OcamlParser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
             else new MLParser(Origin(testName, globalStartLineNum, fph)).pgrm(p),

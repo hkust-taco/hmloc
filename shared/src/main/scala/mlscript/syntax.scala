@@ -166,25 +166,4 @@ final case class PolyType(targs: Ls[TypeName], body: Type) extends PolyTypeImpl
 
 final case class TypingUnit(entities: Ls[Statement]) extends PgrmOrTypingUnit with TypingUnitImpl
 
-sealed abstract class NuDecl extends Statement with NuDeclImpl
-
-final case class NuTypeDef(
-  kind: TypeDefKind,
-  nme: TypeName,
-  tparams: Ls[TypeName],
-  params: Tup, // the specialized parameters for that type
-  parents: Ls[Term],
-  body: TypingUnit
-) extends NuDecl with Statement
-
-final case class NuFunDef(
-  isLetRec: Opt[Bool], // None means it's a `fun`, which is always recursive; Some means it's a `let`
-  nme: Var,
-  targs: Ls[TypeName],
-  rhs: Term \/ PolyType,
-) extends NuDecl with DesugaredStatement {
-  val body: Located = rhs.fold(identity, identity)
-}
-
-
 sealed abstract class PgrmOrTypingUnit

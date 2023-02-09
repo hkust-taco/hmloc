@@ -16,7 +16,7 @@ import mlscript.Diagnostic._
  *  In order to turn the resulting CompactType into a mlscript.Type, we use `expandCompactType`.
  */
 class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
-    extends ucs.Desugarer with TypeSimplifier {
+    extends TypeDefs with TypeSimplifier {
   
   def funkyTuples: Bool = false
   def doFactorize: Bool = false
@@ -54,7 +54,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       lvl: Int,
       inPattern: Bool,
       tyDefs: Map[Str, TypeDef],
-      nuTyDefs: Map[Str, TypedNuTypeDef],
   ) {
     def +=(b: Str -> TypeInfo): Unit = env += b
     def ++=(bs: IterableOnce[Str -> TypeInfo]): Unit = bs.iterator.foreach(+=)
@@ -73,7 +72,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       lvl = 0,
       inPattern = false,
       tyDefs = Map.from(builtinTypes.map(t => t.nme.name -> t)),
-      nuTyDefs = Map.empty,
     )
     val empty: Ctx = init
   }
@@ -721,28 +719,14 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val cs_ty = freshVar(prov, lbs = cs_ty_ls)
         con(s_ty, req, cs_ty)
       case iff @ If(body, fallback) =>
-        import mlscript.ucs._
-        try {
-          println(PrettyPrintHelper.inspect(iff))
-          val cnf = desugarIf(body, fallback)
-          Clause.print(println, cnf)
-          val caseTree = MutCaseOf.build(cnf)
-          println("The mutable CaseOf tree")
-          MutCaseOf.show(caseTree).foreach(println(_))
-          val scrutineePatternMap = summarizePatterns(caseTree)
-          println("Exhaustiveness map")
-          scrutineePatternMap.foreach { case (scrutinee, patterns) =>
-            println(s"- $scrutinee => " + patterns.keys.mkString(", "))
-          }
-          checkExhaustive(caseTree, N)(scrutineePatternMap, ctx, raise)
-          val trm = MutCaseOf.toTerm(caseTree)
-          println(s"Desugared term: ${trm.print(false)}")
-          iff.desugaredIf = S(trm)
-          typeTerm(trm)
-        } catch {
-          case e: DesugaringException => e.report(this)
-          case e: Throwable => throw e
-        }
+        // TODO handle this differently that ucs
+        ???
+//        try {
+////          iff.desugaredIf = S(trm)
+////          typeTerm()
+//        } catch {
+//          case e: Throwable => throw e
+//        }
       case New(S((nmedTy, trm)), TypingUnit(Nil)) =>
         typeTerm(App(Var(nmedTy.base.name).withLocOf(nmedTy), trm))
       case New(base, args) => ???

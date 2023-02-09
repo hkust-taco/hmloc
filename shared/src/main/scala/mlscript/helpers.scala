@@ -252,8 +252,6 @@ trait PgrmImpl { self: Pgrm =>
     }.partitionMap {
       case td: TypeDef => L(td)
       case ot: Terms => R(ot)
-      case NuFunDef(isLetRec, nme, tys, rhs) =>
-        R(Def(isLetRec.getOrElse(true), nme, rhs, isLetRec.isEmpty))
    }
     diags.toList -> res
   }
@@ -291,34 +289,9 @@ trait DeclImpl extends Located { self: Decl =>
   }
 }
 
-trait NuDeclImpl extends Located { self: NuDecl =>
-  val body: Located
-  def showBody: Str = this match {
-    case NuFunDef(_, _, _, rhs) => rhs.fold(_.toString, _.show)
-    case td: NuTypeDef => td.body.show
-  }
-  def describe: Str = this match {
-    case _: NuFunDef => "definition"
-    case _: NuTypeDef => "type declaration"
-  }
-  def show: Str = showHead + (this match {
-    case NuTypeDef(Als, _, _, _, _, _) | NuFunDef(_, _, _, L(_)) => " = "
-    case NuTypeDef(Cls, _, _, _, _, _) => " "
-    case _ => ": " }) + showBody
-  def showHead: Str = this match {
-    case NuFunDef(N, n, _, b) => s"fun $n"
-    case NuFunDef(S(false), n, _, b) => s"let $n"
-    case NuFunDef(S(true), n, _, b) => s"let rec $n"
-    case NuTypeDef(k, n, tps, sps, parents, bod) =>
-      s"${k.str} ${n.name}${if (tps.isEmpty) "" else tps.map(_.name).mkString("[", ", ", "]")}(${
-        // sps.mkString("(",",",")")
-        sps})${if (parents.isEmpty) "" else ": "}${parents.mkString(", ")}"
-  }
-}
 trait TypingUnitImpl extends Located { self: TypingUnit =>
   def show: Str = entities.map {
     case t: Term => t.toString
-    case d: NuDecl => d.show
     case _ => die
   }.mkString("{", "; ", "}")
   lazy val children: List[Located] = entities
@@ -580,28 +553,6 @@ trait StatementImpl extends Located { self: Statement =>
       (diags ::: diags2 ::: diags3) -> (TypeDef(Als, TypeName(v.name).withLocOf(v), targs,
           dataDefs.map(td => AppliedType(td.nme, td.tparams)).reduceOption(Union).getOrElse(Bot), Nil
         ).withLocOf(hd) :: cs)
-      case NuTypeDef(k, nme, tps, tup @ Tup(fs), pars, unit) =>
-        val diags = Buffer.empty[Diagnostic]
-        def tt(trm: Term): Type = trm.toType match {
-          case L(ds) => diags += ds; Top
-          case R(ty) => ty
-        }
-        val params = fs.map {
-          case (S(nme), Fld(mut, spec, trm)) =>
-            val ty = tt(trm)
-            nme -> Field(if (mut) S(ty) else N, ty)
-          case (N, Fld(mut, spec, nme: Var)) => nme -> Field(if (mut) S(Bot) else N, Top)
-          case _ => die
-        }
-        val pos = params.unzip._1
-        val bod = pars.map(tt).foldRight(Record(params): Type)(Inter)
-        val termName = Var(nme.name).withLocOf(nme)
-        val ctor = Def(false, termName, L(Lam(tup, App(termName, Tup(N -> Fld(false, false, Rcd(fs.map {
-          case (S(nme), fld) => nme -> fld
-          case (N, fld @ Fld(mut, spec, nme: Var)) => nme -> fld
-          case _ => die
-        })) :: Nil)))), true)
-        diags.toList -> (TypeDef(k, nme, tps, bod, pos) :: ctor :: Nil)
     case d: DesugaredStatement => Nil -> (d :: Nil)
   }
   import Message._
@@ -707,10 +658,8 @@ trait StatementImpl extends Located { self: Statement =>
     case Assign(lhs, rhs) => lhs :: rhs :: Nil
     case Splc(fields) => fields.map{case L(l) => l case R(r) => r.value}
     case If(body, els) => body :: els.toList
-    case d @ NuFunDef(_, v, ts, rhs) => v :: ts ::: d.body :: Nil
     case TyApp(lhs, targs) => lhs :: targs
     case New(base, bod) => base.toList.flatMap(ab => ab._1 :: ab._2 :: Nil) ::: bod :: Nil
-    case NuTypeDef(_, _, _, _, _, _) => ???
   }
   
   
@@ -720,7 +669,6 @@ trait StatementImpl extends Located { self: Statement =>
     case DataDefn(head) => s"data $head"
     case _: Term => super.toString
     case d: Decl => d.show
-    case d: NuDecl => d.show
   }
 }
 
@@ -863,13 +811,6 @@ object PrettyPrintHelper {
   def inspect(t: TypingUnit): Str = t.entities.iterator
     .map {
       case term: Term => inspect(term)
-      case NuFunDef(lt, nme, targs, L(term)) =>
-        s"NuFunDef(${lt}, ${nme.name}, ${targs.mkString("[", ", ", "]")}, ${inspect(term)})"
-      case NuFunDef(lt, nme, targs, R(ty)) =>
-        s"NuFunDef(${lt}, ${nme.name}, ${targs.mkString("[", ", ", "]")}, $ty)"
-      case NuTypeDef(kind, nme, tparams, params, parents, body) =>
-        s"NuTypeDef(${kind.str}, ${nme.name}, ${tparams.mkString("(", ", ", ")")}, ${
-          inspect(params)}, ${parents.map(inspect).mkString("(", ", ", ")")}, ${inspect(body)})"
       case others => others.toString()
     }
     .mkString("TypingUnit(", ", ", ")")
@@ -880,8 +821,6 @@ object PrettyPrintHelper {
     case IfBlock(lines) => s"IfBlock(${
       lines.iterator.map {
         case L(body) => inspect(body)
-        case R(NuFunDef(S(isRec), nme, _, L(rhs))) =>
-          s"Let($isRec, ${nme.name}, ${inspect(rhs)})"
         case R(_) => ???
       }.mkString(";")
     })"
