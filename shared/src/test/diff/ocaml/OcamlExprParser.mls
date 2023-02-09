@@ -62,15 +62,15 @@ let check e =
   match e with
    a :: b -> []
    | [] -> Nil
-//│ Desugared: def check: e, => if e is ‹(Something (a,) (b,) (c,)) then here; (Nothing (d,) (e,) (f,)) then nothere›
-//│ Desugared: rec def interp_e: h : TypeName(heap), => e : TypeName(exp), => if e is ‹(Plus (e1, e2,)) then + (interp_e (h,) (e1,),) (interp_e (h,) (e2,),); (Times (e1, e2,)) then * (interp_e (h,) (e1,),) (interp_e (h,) (e2,),)›
-//│ Desugared: def check: e, => if e is ‹(Something (here,)) then let nothere = here in nothere; (Nothing) then beat (it,)›
-//│ Desugared: def check: e, => if e is ‹(Cons (a, b,)) then Nil; (Nil) then Nil›
+//│ Desugared: def check: e, => if e(Something (a,) (b,) (c,)) then here then (Nothing (d,) (e,) (f,)) then nothere
+//│ Desugared: rec def interp_e: h : TypeName(heap), => e : TypeName(exp), => if e(Plus (e1, e2,)) then + (interp_e (h,) (e1,),) (interp_e (h,) (e2,),) then (Times (e1, e2,)) then * (interp_e (h,) (e1,),) (interp_e (h,) (e2,),)
+//│ Desugared: def check: e, => if e(Something (here,)) then let nothere = here in nothere then (Nothing) then beat (it,)
+//│ Desugared: def check: e, => if e(Cons (a, b,)) then Nil then (Nil) then Nil
 
 match n < 0 with
   | true -> 1
   | false -> 0
-//│ Desugared: if < (n,) (0,) is ‹(true) then 1; (false) then 0›
+//│ Desugared: if < (n,) (0,)(true) then 1 then (false) then 0
 
 // define lambdas using fun
 fun (env: env) _ -> []
@@ -78,7 +78,7 @@ let interp2 = interp (fun (env:env) opt ->
   match opt with
      None -> 0)
 //│ Desugared: '(' env : TypeName(env) ')' (_,), => Nil
-//│ Desugared: def interp2: interp ('(' env : TypeName(env) ')' (opt,), => if opt is ‹(None) then 0›,)
+//│ Desugared: def interp2: interp ('(' env : TypeName(env) ')' (opt,), => if opt(None) then 0,)
 
 // TODO floats and floating point operators
 2.0
@@ -164,7 +164,7 @@ let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
 //│ Desugared: def ::: a, => b, => Cons (a,) (b,)
-//│ Desugared: def head: xs, => if xs is ‹(Cons (x, xs,)) then x; else raise (Error,)›
+//│ Desugared: def head: xs, => if xs(Cons (x, xs,)) then x then else raise (Error,)
 
 // FIXME
 let head xs = match xs with
@@ -175,7 +175,7 @@ let head xs = match xs with
 :dp
 type h = H of int
 //│ Parsed: TypeDef(Als, TypeName(h), List(), Union(TypeName(H),TypeName(H)), List())
-//│ TypeDef(Cls, TypeName(H), List(), Record(List((_0,Field(None,TypeName(int))))), List(_0))
+//│ TypeDef(Cls, TypeName(H), List(), Record(List((_0,Field(None,TypeName(int))))), List(_0)) of adt: Some((TypeName(h),List()))
 //│ Def(false, H, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(int))))),TypeName(h))), true)
 //│ Desugared: type alias h = H
 //│ Desugared: class H(_0): {_0: int}
@@ -228,17 +228,17 @@ type ('a, 'b) heapb = HeapB of 'a
 type ('a, 'b) heapc = HeapC of 'a list
 type 'a list = Cons of 'a * 'a list | Nil
 //│ Parsed: TypeDef(Als, TypeName(heap), List(TypeName('a)), Union(AppliedType(TypeName(HeapA),List(TypeName('a))),AppliedType(TypeName(HeapA),List(TypeName('a)))), List())
-//│ TypeDef(Cls, TypeName(HeapA), List(TypeName('a)), Record(List((_0,Field(None,TypeName('a))))), List(_0))
+//│ TypeDef(Cls, TypeName(HeapA), List(TypeName('a)), Record(List((_0,Field(None,TypeName('a))))), List(_0)) of adt: Some((TypeName(heap),List(0)))
 //│ Def(false, HeapA, PolyType(List(TypeName('a)),Function(Tuple(List((None,Field(None,TypeName('a))))),AppliedType(TypeName(heap),List(TypeName('a))))), true)
 //│ TypeDef(Als, TypeName(heapb), List(TypeName('a), TypeName('b)), Union(AppliedType(TypeName(HeapB),List(TypeName('a))),AppliedType(TypeName(HeapB),List(TypeName('a)))), List())
-//│ TypeDef(Cls, TypeName(HeapB), List(TypeName('a)), Record(List((_0,Field(None,TypeName('a))))), List(_0))
+//│ TypeDef(Cls, TypeName(HeapB), List(TypeName('a)), Record(List((_0,Field(None,TypeName('a))))), List(_0)) of adt: Some((TypeName(heapb),List(0)))
 //│ Def(false, HeapB, PolyType(List(TypeName('a), TypeName('b)),Function(Tuple(List((None,Field(None,TypeName('a))))),AppliedType(TypeName(heapb),List(TypeName('a), TypeName('b))))), true)
 //│ TypeDef(Als, TypeName(heapc), List(TypeName('a), TypeName('b)), Union(AppliedType(TypeName(HeapC),List(TypeName('a))),AppliedType(TypeName(HeapC),List(TypeName('a)))), List())
-//│ TypeDef(Cls, TypeName(HeapC), List(TypeName('a)), Record(List((_0,Field(None,AppliedType(TypeName(list),List(TypeName('a))))))), List(_0))
+//│ TypeDef(Cls, TypeName(HeapC), List(TypeName('a)), Record(List((_0,Field(None,AppliedType(TypeName(list),List(TypeName('a))))))), List(_0)) of adt: Some((TypeName(heapc),List(0)))
 //│ Def(false, HeapC, PolyType(List(TypeName('a), TypeName('b)),Function(Tuple(List((None,Field(None,AppliedType(TypeName(list),List(TypeName('a))))))),AppliedType(TypeName(heapc),List(TypeName('a), TypeName('b))))), true)
 //│ TypeDef(Als, TypeName(list), List(TypeName('a)), Union(TypeName(Nil),Union(AppliedType(TypeName(Cons),List(TypeName('a))),AppliedType(TypeName(Cons),List(TypeName('a))))), List())
-//│ TypeDef(Cls, TypeName(Cons), List(TypeName('a)), Record(List((_0,Field(None,TypeName('a))), (_1,Field(None,AppliedType(TypeName(list),List(TypeName('a))))))), List(_0, _1))
-//│ TypeDef(Cls, TypeName(Nil), List(), Record(List()), List())
+//│ TypeDef(Cls, TypeName(Cons), List(TypeName('a)), Record(List((_0,Field(None,TypeName('a))), (_1,Field(None,AppliedType(TypeName(list),List(TypeName('a))))))), List(_0, _1)) of adt: Some((TypeName(list),List(0)))
+//│ TypeDef(Cls, TypeName(Nil), List(), Record(List()), List()) of adt: Some((TypeName(list),List()))
 //│ Def(false, Cons, PolyType(List(TypeName('a)),Function(Tuple(List((None,Field(None,TypeName('a))), (None,Field(None,AppliedType(TypeName(list),List(TypeName('a))))))),AppliedType(TypeName(list),List(TypeName('a))))), true)
 //│ Def(false, Nil, PolyType(List(TypeName('a)),AppliedType(TypeName(list),List(TypeName('a)))), true)
 //│ Desugared: type alias heap['a] = HeapA['a]
@@ -371,7 +371,7 @@ let ( ** ): float -> float -> float
 :dp
 type heapVar = Heap of heap and heap = (string * int) List
 //│ Parsed: TypeDef(Als, TypeName(heapVar), List(), Union(TypeName(Heap),TypeName(Heap)), List())
-//│ TypeDef(Cls, TypeName(Heap), List(), Record(List((_0,Field(None,TypeName(heap))))), List(_0))
+//│ TypeDef(Cls, TypeName(Heap), List(), Record(List((_0,Field(None,TypeName(heap))))), List(_0)) of adt: Some((TypeName(heapVar),List()))
 //│ Def(false, Heap, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(heap))))),TypeName(heapVar))), true)
 //│ TypeDef(Als, TypeName(heap), List(), AppliedType(TypeName(List),List(Tuple(List((None,Field(None,TypeName(string))), (None,Field(None,TypeName(int))))))), List())
 //│ Desugared: type alias heapVar = Heap
@@ -382,5 +382,5 @@ type heapVar = Heap of heap and heap = (string * int) List
 :dp
 let check a b =
   let (sum, sub) = (a + b, a - b) in sum * sub
-//│ Parsed: Def(false, check, Lam(Tup(_: Var(a)), Lam(Tup(_: Var(b)), If(IfOpApp(Bra(rcd = false, Tup(_: App(App(Var(+), Tup(_: Var(a))), Tup(_: Var(b))), _: App(App(Var(-), Tup(_: Var(a))), Tup(_: Var(b))))), Var(is), IfBlock(IfThen(Bra(rcd = false, Tup(_: Var(sum), _: Var(sub))), App(App(Var(*), Tup(_: Var(sum))), Tup(_: Var(sub)))), None))), true)
-//│ Desugared: def check: a, => b, => if '(' + (a,) (b,), - (a,) (b,), ')' is ‹('(' sum, sub, ')') then * (sum,) (sub,)›
+//│ Parsed: Def(false, check, Lam(Tup(_: Var(a)), Lam(Tup(_: Var(b)), If(Bra(rcd = false, Tup(_: App(App(Var(+), Tup(_: Var(a))), Tup(_: Var(b))), _: App(App(Var(-), Tup(_: Var(a))), Tup(_: Var(b))))), List(IfThen(Bra(rcd = false, Tup(_: Var(sum), _: Var(sub))), App(App(Var(*), Tup(_: Var(sum))), Tup(_: Var(sub))))))), true)
+//│ Desugared: def check: a, => b, => if '(' + (a,) (b,), - (a,) (b,), ')'('(' sum, sub, ')') then * (sum,) (sub,)

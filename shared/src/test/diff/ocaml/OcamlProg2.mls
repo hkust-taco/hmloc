@@ -23,17 +23,25 @@ let rec union lst1 lst2 =
    match lst1 with
      [] -> lst2
    | hd::tl -> add hd (union tl lst2)
-//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
-//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:723)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:735)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:651)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:735)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:651)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:735)
+//│ empty_set: list[nothing]
+//│ ╔══[ERROR] identifier not found: List
+//│ ║  l.20: 	let add str lst = if List.mem str lst then lst else str::lst
+//│ ╙──      	                     ^^^^
+//│ add: 'a -> list['a] -> list['a]
+//│ ╔══[ERROR] identifier not found: List
+//│ ║  l.21: 	let remove str lst = List.filter (fun x -> x <> str) lst
+//│ ╙──      	                     ^^^^
+//│ remove: anything -> anything -> error
+//│ ╔══[ERROR] identifier not found: hd
+//│ ║  l.25: 	   | hd::tl -> add hd (union tl lst2)
+//│ ╙──      	     ^^
+//│ ╔══[ERROR] identifier not found: hd
+//│ ║  l.25: 	   | hd::tl -> add hd (union tl lst2)
+//│ ╙──      	                   ^^
+//│ ╔══[ERROR] identifier not found: tl
+//│ ║  l.25: 	   | hd::tl -> add hd (union tl lst2)
+//│ ╙──      	                             ^^
+//│ union: list[error] -> (list['a] & 'b) -> (list[error | 'a] | 'b)
 
 (* ################################################ *)
 
@@ -50,16 +58,16 @@ type exp = Var of string
 	 | Second of exp
   and env = (string * exp) list
 //│ Parsed: TypeDef(Als, TypeName(exp), List(), Union(TypeName(Second),Union(TypeName(First),Union(TypeName(Pair),Union(TypeName(If),Union(TypeName(Plus),Union(TypeName(Int),Union(TypeName(Closure),Union(TypeName(Apply),Union(TypeName(Lam),Union(TypeName(Var),TypeName(Var))))))))))), List())
-//│ TypeDef(Cls, TypeName(Var), List(), Record(List((_0,Field(None,TypeName(string))))), List(_0))
-//│ TypeDef(Cls, TypeName(Lam), List(), Record(List((_0,Field(None,TypeName(string))), (_1,Field(None,TypeName(exp))), (_2,Field(None,AppliedType(TypeName(option),List(AppliedType(TypeName(list),List(TypeName(string))))))))), List(_0, _1, _2))
-//│ TypeDef(Cls, TypeName(Apply), List(), Record(List((_0,Field(None,TypeName(exp))), (_1,Field(None,TypeName(exp))))), List(_0, _1))
-//│ TypeDef(Cls, TypeName(Closure), List(), Record(List((_0,Field(None,TypeName(string))), (_1,Field(None,TypeName(exp))), (_2,Field(None,TypeName(env))))), List(_0, _1, _2))
-//│ TypeDef(Cls, TypeName(Int), List(), Record(List((_0,Field(None,TypeName(int))))), List(_0))
-//│ TypeDef(Cls, TypeName(Plus), List(), Record(List((_0,Field(None,TypeName(exp))), (_1,Field(None,TypeName(exp))))), List(_0, _1))
-//│ TypeDef(Cls, TypeName(If), List(), Record(List((_0,Field(None,TypeName(exp))), (_1,Field(None,TypeName(exp))), (_2,Field(None,TypeName(exp))))), List(_0, _1, _2))
-//│ TypeDef(Cls, TypeName(Pair), List(), Record(List((_0,Field(None,TypeName(exp))), (_1,Field(None,TypeName(exp))))), List(_0, _1))
-//│ TypeDef(Cls, TypeName(First), List(), Record(List((_0,Field(None,TypeName(exp))))), List(_0))
-//│ TypeDef(Cls, TypeName(Second), List(), Record(List((_0,Field(None,TypeName(exp))))), List(_0))
+//│ TypeDef(Cls, TypeName(Var), List(), Record(List((_0,Field(None,TypeName(string))))), List(_0)) of adt: Some((TypeName(exp),List()))
+//│ TypeDef(Cls, TypeName(Lam), List(), Record(List((_0,Field(None,TypeName(string))), (_1,Field(None,TypeName(exp))), (_2,Field(None,AppliedType(TypeName(option),List(AppliedType(TypeName(list),List(TypeName(string))))))))), List(_0, _1, _2)) of adt: Some((TypeName(exp),List()))
+//│ TypeDef(Cls, TypeName(Apply), List(), Record(List((_0,Field(None,TypeName(exp))), (_1,Field(None,TypeName(exp))))), List(_0, _1)) of adt: Some((TypeName(exp),List()))
+//│ TypeDef(Cls, TypeName(Closure), List(), Record(List((_0,Field(None,TypeName(string))), (_1,Field(None,TypeName(exp))), (_2,Field(None,TypeName(env))))), List(_0, _1, _2)) of adt: Some((TypeName(exp),List()))
+//│ TypeDef(Cls, TypeName(Int), List(), Record(List((_0,Field(None,TypeName(int))))), List(_0)) of adt: Some((TypeName(exp),List()))
+//│ TypeDef(Cls, TypeName(Plus), List(), Record(List((_0,Field(None,TypeName(exp))), (_1,Field(None,TypeName(exp))))), List(_0, _1)) of adt: Some((TypeName(exp),List()))
+//│ TypeDef(Cls, TypeName(If), List(), Record(List((_0,Field(None,TypeName(exp))), (_1,Field(None,TypeName(exp))), (_2,Field(None,TypeName(exp))))), List(_0, _1, _2)) of adt: Some((TypeName(exp),List()))
+//│ TypeDef(Cls, TypeName(Pair), List(), Record(List((_0,Field(None,TypeName(exp))), (_1,Field(None,TypeName(exp))))), List(_0, _1)) of adt: Some((TypeName(exp),List()))
+//│ TypeDef(Cls, TypeName(First), List(), Record(List((_0,Field(None,TypeName(exp))))), List(_0)) of adt: Some((TypeName(exp),List()))
+//│ TypeDef(Cls, TypeName(Second), List(), Record(List((_0,Field(None,TypeName(exp))))), List(_0)) of adt: Some((TypeName(exp),List()))
 //│ Def(false, Var, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(string))))),TypeName(exp))), true)
 //│ Def(false, Lam, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(string))), (None,Field(None,TypeName(exp))), (None,Field(None,AppliedType(TypeName(option),List(AppliedType(TypeName(list),List(TypeName(string))))))))),TypeName(exp))), true)
 //│ Def(false, Apply, PolyType(List(),Function(Tuple(List((None,Field(None,TypeName(exp))), (None,Field(None,TypeName(exp))))),TypeName(exp))), true)
@@ -140,26 +148,85 @@ let rec interp f env e =
       Pair(e1,e2) -> e2
      | _ -> raise RuntimeTypeError)
  | _ -> raise Unimplemented (* ############## *)
-//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
-//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:723)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:735)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:689)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:735)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:651)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:735)
+//│ ╔══[ERROR] identifier not found: List
+//│ ║  l.113: 	   Var s -> List.assoc s env (* ############# *)
+//│ ╙──       	            ^^^^
+//│ ╔══[ERROR] identifier not found: s
+//│ ║  l.113: 	   Var s -> List.assoc s env (* ############# *)
+//│ ╙──       	                       ^
+//│ ╔══[ERROR] identifier not found: s
+//│ ║  l.114: 	 | Lam(s,e2,opt) -> Closure(s,e2,f env opt) (*store env!*) 
+//│ ╙──       	                            ^
+//│ ╔══[ERROR] identifier not found: e2
+//│ ║  l.114: 	 | Lam(s,e2,opt) -> Closure(s,e2,f env opt) (*store env!*) 
+//│ ╙──       	                              ^^
+//│ ╔══[ERROR] identifier not found: opt
+//│ ║  l.114: 	 | Lam(s,e2,opt) -> Closure(s,e2,f env opt) (*store env!*) 
+//│ ╙──       	                                       ^^^
+//│ ╔══[ERROR] identifier not found: e1
+//│ ║  l.117: 	    let v1 = interp env e1 in
+//│ ╙──       	                        ^^
+//│ ╔══[ERROR] identifier not found: e2
+//│ ║  l.118: 	    let v2 = interp env e2 in
+//│ ╙──       	                        ^^
+//│ ╔══[ERROR] identifier not found: s
+//│ ║  l.120: 	      Closure(s,e3,env2) -> interp((s,v2)::env2) e3
+//│ ╙──       	                                    ^
+//│ ╔══[ERROR] identifier not found: env2
+//│ ║  l.120: 	      Closure(s,e3,env2) -> interp((s,v2)::env2) e3
+//│ ╙──       	                                           ^^^^
+//│ ╔══[ERROR] identifier not found: e3
+//│ ║  l.120: 	      Closure(s,e3,env2) -> interp((s,v2)::env2) e3
+//│ ╙──       	                                                 ^^
+//│ ╔══[ERROR] identifier not found: e1
+//│ ║  l.124: 	    let v1 = interp env e1 in
+//│ ╙──       	                        ^^
+//│ ╔══[ERROR] identifier not found: e2
+//│ ║  l.125: 	    let v2 = interp env e2 in
+//│ ╙──       	                        ^^
+//│ ╔══[ERROR] identifier not found: i1
+//│ ║  l.128: 	                   Int(i2) -> Int(i1 + i2)
+//│ ╙──       	                                  ^^
+//│ ╔══[ERROR] identifier not found: i2
+//│ ║  l.128: 	                   Int(i2) -> Int(i1 + i2)
+//│ ╙──       	                                       ^^
+//│ ╔══[ERROR] identifier not found: e1
+//│ ║  l.132: 	    let v1 = interp env e1 in
+//│ ╙──       	                        ^^
+//│ ╔══[ERROR] identifier not found: e3
+//│ ║  l.134: 	      Int(i1) -> if v1 = 0 then interp env e3 else interp env e2 (* FOUND ERROR: 0 should be Int(0) *)
+//│ ╙──       	                                           ^^
+//│ ╔══[ERROR] identifier not found: e2
+//│ ║  l.134: 	      Int(i1) -> if v1 = 0 then interp env e3 else interp env e2 (* FOUND ERROR: 0 should be Int(0) *)
+//│ ╙──       	                                                              ^^
+//│ ╔══[ERROR] identifier not found: e1
+//│ ║  l.137: 	    let v1 = interp env e1 in
+//│ ╙──       	                        ^^
+//│ ╔══[ERROR] identifier not found: e2
+//│ ║  l.138: 	    let v2 = interp env e2 in
+//│ ╙──       	                        ^^
+//│ ╔══[ERROR] identifier not found: e1
+//│ ║  l.143: 	      Pair(e1,e2) -> e1
+//│ ╙──       	                     ^^
+//│ ╔══[ERROR] identifier not found: e2
+//│ ║  l.148: 	      Pair(e1,e2) -> e2
+//│ ╙──       	                     ^^
+//│ interp: ((list[(error, error | exp,)] | 'a) -> error -> env) -> 'a -> (exp & 'b) -> 'b
+//│   where
+//│     'b :> error | exp
+//│        <: exp
 
 let interp1 = interp (fun x _ -> x)
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.155: 	let interp1 = interp (fun x _ -> x)
+//│ ║  l.219: 	let interp1 = interp (fun x _ -> x)
 //│ ╙──       	                          ^^^
 //│ ╔══[ERROR] identifier not found: x
-//│ ║  l.155: 	let interp1 = interp (fun x _ -> x)
+//│ ║  l.219: 	let interp1 = interp (fun x _ -> x)
 //│ ╙──       	                                 ^
-//│ interp1: nothing
+//│ interp1: error -> (exp & 'a) -> 'a
+//│   where
+//│     'a :> error | exp
+//│        <: exp
 
 (****** Problem 3: complete this function *******)
 
@@ -170,17 +237,31 @@ let interp2 = interp (fun (env:env) opt ->
   match opt with
      None -> raise BadPrecomputation
    | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
-//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
-//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:723)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:735)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:651)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:735)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:563)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:735)
+//│ ╔══[ERROR] Unsupported pattern shape:
+//│ ║  l.236: 	let interp2 = interp (fun (env:env) opt ->
+//│ ╙──       	                          ^^^^^^^^^^^^^
+//│ ╔══[ERROR] identifier not found: opt
+//│ ║  l.237: 	  match opt with
+//│ ╙──       	        ^^^
+//│ ╔══[ERROR] identifier not found: lst
+//│ ║  l.239: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
+//│ ╙──       	          ^^^
+//│ ╔══[ERROR] identifier not found: List
+//│ ║  l.239: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
+//│ ╙──       	                 ^^^^
+//│ ╔══[ERROR] identifier not found: List
+//│ ║  l.239: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
+//│ ╙──       	                                        ^^^^
+//│ ╔══[ERROR] identifier not found: env
+//│ ║  l.239: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
+//│ ╙──       	                                                     ^^^
+//│ ╔══[ERROR] identifier not found: lst
+//│ ║  l.239: 	   | Some lst -> List.map (fun s -> (s, List.assoc s env)) lst)
+//│ ╙──       	                                                           ^^^
+//│ interp2: error -> (exp & 'a) -> 'a
+//│   where
+//│     'a :> error | exp
+//│        <: exp
 
 (******* Problem 4: not programming (see assignment) ********)
 
@@ -188,9 +269,24 @@ let interp2 = interp (fun (env:env) opt ->
 
 let interp3 = interp (fun (env:env) _ -> [])
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.189: 	let interp3 = interp (fun (env:env) _ -> [])
+//│ ║  l.270: 	let interp3 = interp (fun (env:env) _ -> [])
 //│ ╙──       	                          ^^^^^^^^^^^
-//│ interp3: nothing
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.270: 	let interp3 = interp (fun (env:env) _ -> [])
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `Nil` is not a function
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	                                      ^^^
+//│ ╟── but it flows into reference with expected type `error -> ?a`
+//│ ║  l.270: 	let interp3 = interp (fun (env:env) _ -> [])
+//│ ║         	                                         ^^
+//│ ╟── Note: constraint arises from application:
+//│ ║  l.114: 	 | Lam(s,e2,opt) -> Closure(s,e2,f env opt) (*store env!*) 
+//│ ╙──       	                                 ^^^^^
+//│ interp3: error -> (exp & 'a) -> 'a
+//│   where
+//│     'a :> error | exp
+//│        <: exp
 
 (****** Problem 5b (EXTRA CREDIT): explain the next two functions ******)
 
@@ -220,7 +316,7 @@ let rec translate varlist exp =
  | If(e1,e2,e3) -> If(translate varlist e1,
                       translate varlist e2,
                       translate varlist e3)
-//│ /!\ Parse error: Expected (Index ~ parens | Index ~ record | Index ~ ("-".? ~ floatnumber | number | stringliteral | lit) | Index ~ filter | ocamlList):9:24, found "match varl" at l.206:24:                        match varlist with [] -> Int 0 | _ -> Var "arg")
+//│ /!\ Parse error: Expected (Index ~ parens | Index ~ record | Index ~ ("-".? ~ floatnumber | number | stringliteral | lit) | Index ~ filter | ocamlList):9:24, found "match varl" at l.302:24:                        match varlist with [] -> Int 0 | _ -> Var "arg")
 
 (********** examples and testing ***********)
 
@@ -272,46 +368,40 @@ let ex2 = (app (app fix sum) (Int 1000))
 
 let ans1 = interp1 [] ex1
 let ans2 = interp1 [] ex2
-//│ ans1: nothing
-//│ ans2: nothing
+//│ ans1: error | exp
+//│ ans2: error | exp
 
 let ans3 = interp2 [] (fst (computeFreeVars ex1))
 let ans4 = interp2 [] (fst (computeFreeVars ex2))
-//│ ╔══[ERROR] identifier not found: interp2
-//│ ║  l.278: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
-//│ ╙──       	           ^^^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.278: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
-//│ ║         	                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.374: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
+//│ ║         	                       ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── argument of type `(?a,)` does not match type `(?b, ?c,)`
-//│ ║  l.278: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
+//│ ║  l.374: 	let ans3 = interp2 [] (fst (computeFreeVars ex1))
 //│ ║         	                            ^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from tuple type:
 //│ ║  l.5: 	let fst: ('a * 'b) -> 'a
 //│ ╙──     	          ^^^^^^^
-//│ ans3: error
-//│ ╔══[ERROR] identifier not found: interp2
-//│ ║  l.279: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
-//│ ╙──       	           ^^^^^^^
+//│ ans3: error | exp
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.279: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
-//│ ║         	                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.375: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
+//│ ║         	                       ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── argument of type `(?a,)` does not match type `(?b, ?c,)`
-//│ ║  l.279: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
+//│ ║  l.375: 	let ans4 = interp2 [] (fst (computeFreeVars ex2))
 //│ ║         	                            ^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from tuple type:
 //│ ║  l.5: 	let fst: ('a * 'b) -> 'a
 //│ ╙──     	          ^^^^^^^
-//│ ans4: error
+//│ ans4: error | exp
 
 let ans5 = interp3 [] (translate [] ex1)
 let ans6 = interp3 [] (translate [] ex2)
 //│ ╔══[ERROR] identifier not found: translate
-//│ ║  l.307: 	let ans5 = interp3 [] (translate [] ex1)
+//│ ║  l.397: 	let ans5 = interp3 [] (translate [] ex1)
 //│ ╙──       	                       ^^^^^^^^^
-//│ ans5: nothing
+//│ ans5: error | exp
 //│ ╔══[ERROR] identifier not found: translate
-//│ ║  l.308: 	let ans6 = interp3 [] (translate [] ex2)
+//│ ║  l.398: 	let ans6 = interp3 [] (translate [] ex2)
 //│ ╙──       	                       ^^^^^^^^^
-//│ ans6: nothing
+//│ ans6: error | exp
 
