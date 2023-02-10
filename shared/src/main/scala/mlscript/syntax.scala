@@ -70,7 +70,6 @@ final case class With(trm: Term, fields: Rcd)                        extends Ter
 final case class CaseOf(trm: Term, cases: CaseBranches)              extends Term
 final case class Subs(arr: Term, idx: Term)                          extends Term
 final case class Assign(lhs: Term, rhs: Term)                        extends Term
-final case class Splc(fields: Ls[Either[Term, Fld]])                 extends Term
 final case class New(head: Opt[(NamedType, Term)], body: TypingUnit) extends Term // `new C(...)` or `new C(){...}` or `new{...}`
 final case class If(lhs: Term, rhs: Ls[IfBody])                    extends Term with IfImpl
 final case class TyApp(lhs: Term, targs: Ls[Type])                   extends Term
@@ -135,7 +134,6 @@ final case class Neg(base: Type)                         extends Type
 final case class Rem(base: Type, names: Ls[Var])         extends Type
 final case class Bounds(lb: Type, ub: Type)              extends Type
 final case class WithExtension(base: Type, rcd: Record)  extends Type
-final case class Splice(fields: Ls[Either[Type, Field]]) extends Type
 final case class Constrained(base: Type, where: Ls[TypeVar -> Bounds]) extends Type
 
 final case class Field(in: Opt[Type], out: Type)         extends FieldImpl

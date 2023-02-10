@@ -89,15 +89,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def parens[p: P]: P[Term] = locate(P( "(" ~/ parenCell.rep(0, ",") ~ ",".!.? ~ ")" ).map {
     case (Seq(Right(t -> false)), N) => Bra(false, t)
     case (Seq(Right(t -> true)), N) => Tup(N -> Fld(true, false, t) :: Nil) // ? single tuple with mutable
-    case (ts, _) => 
-      if (ts.forall(_.isRight)) Tup(ts.iterator.map {
-        case R(f) => N -> Fld(f._2, false, f._1)
-        case _ => die // left unreachable
-      }.toList)
-      else Splc(ts.map {
-        case R((v, m)) => R(Fld(m, false, v))
-        case L(spl) => L(spl)
-      }.toList)
+    case (ts, _) => Tup(ts.iterator.map {
+      case R(f) => N -> Fld(f._2, false, f._1)
+      case _ => die // left unreachable
+    }.toList)
   })
 
   def subtermNoSel[p: P]: P[Term] = P( parens | record | lit | variable | ocamlList )
@@ -602,18 +597,11 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   def parTy[p: P]: P[Type] = locate(P( "(" ~/ parTyCell.rep(0, ",").map(_.map(N -> _).toList) ~ ",".!.? ~ ")" ).map {
     case (N -> Right(ty -> false) :: Nil, N) => ty
-    case (fs, _) => 
-      if (fs.forall(_._2.isRight))
-        Tuple(fs.map {
-          case (l, Right(t -> false)) => l -> Field(None, t)
-          case (l, Right(t -> true)) => l -> Field(Some(t), t)
-          case _ => ??? // unreachable
-        })
-      else Splice(fs.map{ _._2 match { 
-        case L(l) => L(l) 
-        case R(r -> true) => R(Field(Some(r), r))
-        case R(r -> false) => R(Field(None, r))
-      } })
+    case (fs, _) => Tuple(fs.map {
+      case (l, Right(t -> false)) => l -> Field(None, t)
+      case (l, Right(t -> true)) => l -> Field(Some(t), t)
+      case _ => ??? // unreachable
+    })
   })
   def litTy[p: P]: P[Type] = P( lit.map(l => Literal(l).withLocOf(l)) )
 
