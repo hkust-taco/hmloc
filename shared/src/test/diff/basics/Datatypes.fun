@@ -160,7 +160,7 @@ not (Cons 42 Nil).head
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.159: 	not (Cons 42 Nil).head
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `int` is not an instance of type `bool`
+//│ ╟── integer literal of type `int` is not an instance of `bool`
 //│ ║  l.159: 	not (Cons 42 Nil).head
 //│ ║         	          ^^
 //│ ╟── but it flows into application with expected type `bool`

@@ -99,15 +99,19 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   
   val TopType: ExtrType = ExtrType(false)(noTyProv)
   val BotType: ExtrType = ExtrType(true)(noTyProv)
-  val UnitType: ClassTag = ClassTag(Var("unit"), Set.empty)(noTyProv)
-  val BoolType: ClassTag = ClassTag(Var("bool"), Set.empty)(noTyProv)
-  val TrueType: ClassTag = ClassTag(Var("true"), Set.single(TypeName("bool")))(noTyProv)
-  val FalseType: ClassTag = ClassTag(Var("false"), Set.single(TypeName("bool")))(noTyProv)
-  val IntType: ClassTag = ClassTag(Var("int"), Set.empty)(noTyProv)
+  // val UnitType: ClassTag = ClassTag(Var("unit"), Set.empty)(noTyProv)
+  val UnitType: TypeRef = TypeRef(TypeName("unit"), Nil)(noTyProv)
+  // val BoolType: ClassTag = ClassTag(Var("bool"), Set.empty)(noTyProv)
+  val BoolType: TypeRef = TypeRef(TypeName("bool"), Nil)(noTyProv)
+  // val TrueType: ClassTag = ClassTag(Var("true"), Set.single(TypeName("bool")))(noTyProv)
+  // val FalseType: ClassTag = ClassTag(Var("false"), Set.single(TypeName("bool")))(noTyProv)
+  // val IntType: ClassTag = ClassTag(Var("int"), Set.empty)(noTyProv)
+  val IntType: TypeRef = TypeRef(TypeName("int"), Nil)(noTyProv)
   val DecType: ClassTag = ClassTag(Var("number"), Set.empty)(noTyProv)
-  val StrType: ClassTag = ClassTag(Var("string"), Set.empty)(noTyProv)
+  // val StrType: ClassTag = ClassTag(Var("string"), Set.empty)(noTyProv)
+  val StrType: TypeRef = TypeRef(TypeName("string"), Nil)(noTyProv)
   // Add class tags for list constructors
-  val FloatType: ClassTag = ClassTag(Var("float"), Set.empty)(noTyProv)
+  val FloatType: TypeRef = TypeRef(TypeName("float"), Nil)(noTyProv)
   
   val ErrTypeId: SimpleTerm = Var("error")
   
@@ -117,12 +121,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       "anything" -> TopType, "nothing" -> BotType, "float" -> FloatType)
   
   val builtinTypes: Ls[TypeDef] =
-    TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("number"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("bool"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("true"), Nil, Nil, TopType, Set.single(TypeName("bool")), N, Nil) ::
-    TypeDef(Cls, TypeName("false"), Nil, Nil, TopType, Set.single(TypeName("bool")), N, Nil) ::
-    TypeDef(Cls, TypeName("string"), Nil, Nil, TopType, Set.empty, N, Nil) ::
+    TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("int")->Nil)) ::
+    TypeDef(Cls, TypeName("number"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("number")->Nil)) ::
+    TypeDef(Cls, TypeName("bool"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("bool")->Nil)) ::
+    TypeDef(Cls, TypeName("true"), Nil, Nil, TopType, Set.single(TypeName("bool")), N, Nil, S(TypeName("bool")->Nil)) ::
+    TypeDef(Cls, TypeName("false"), Nil, Nil, TopType, Set.single(TypeName("bool")), N, Nil, S(TypeName("bool")->Nil)) ::
+    TypeDef(Cls, TypeName("string"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("string")->Nil)) ::
     TypeDef(Als, TypeName("undefined"), Nil, Nil, ClassTag(UnitLit(true), Set.empty)(noProv), Set.empty, N, Nil) ::
     TypeDef(Als, TypeName("null"), Nil, Nil, ClassTag(UnitLit(false), Set.empty)(noProv), Set.empty, N, Nil) ::
     TypeDef(Als, TypeName("anything"), Nil, Nil, TopType, Set.empty, N, Nil) ::
@@ -165,8 +169,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     val numberBinOpTy = fun(singleTup(DecType), fun(singleTup(DecType), DecType)(noProv))(noProv)
     val numberBinPred = fun(singleTup(DecType), fun(singleTup(DecType), BoolType)(noProv))(noProv)
     Map(
-      "true" -> TrueType,
-      "false" -> FalseType,
+      "true" -> BoolType,
+      "false" -> BoolType,
       "document" -> BotType,
       "window" -> BotType,
       "toString" -> fun(singleTup(TopType), StrType)(noProv),

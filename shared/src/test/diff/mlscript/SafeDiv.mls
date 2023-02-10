@@ -4,7 +4,7 @@ def safeDiv x (y: ~0) = div x y
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.3: 	def safeDiv x (y: ~0) = div x y
 //│ ║       	                        ^^^^^^^
-//│ ╟── type `~0` is not an instance of type `int`
+//│ ╟── type `~0` is not an instance of `int`
 //│ ║  l.3: 	def safeDiv x (y: ~0) = div x y
 //│ ║       	                  ^^
 //│ ╟── but it flows into reference with expected type `int`
@@ -84,6 +84,21 @@ def tryDiv: int -> int -> Option[int]
 //│ tryDiv: int -> int -> Option[int]
 
 def tryDiv x y = case y of { 0 -> None{} | _ -> Some { value = safeDiv x y } }
+//│ ╔══[ERROR] Type mismatch in def definition:
+//│ ║  l.86: 	def tryDiv x y = case y of { 0 -> None{} | _ -> Some { value = safeDiv x y } }
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `int` is not an instance of type `int`
+//│ ║  l.18: 	def safeDiv x (y: int & ~0) = div x y
+//│ ║        	                              ^^^^^^^
+//│ ╟── but it flows into application with expected type `int`
+//│ ║  l.86: 	def tryDiv x y = case y of { 0 -> None{} | _ -> Some { value = safeDiv x y } }
+//│ ║        	                                                               ^^^^^^^^^^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.83: 	def tryDiv: int -> int -> Option[int]
+//│ ║        	                          ^^^^^^^^^^^
+//│ ╟── from type reference:
+//│ ║  l.83: 	def tryDiv: int -> int -> Option[int]
+//│ ╙──      	                                 ^^^
 //│ int -> (0 | int & ~0) -> (None | Some[int])
 //│   <:  tryDiv:
 //│ int -> int -> Option[int]

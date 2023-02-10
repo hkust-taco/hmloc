@@ -80,7 +80,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   case class FunctionType(lhs: SimpleType, rhs: SimpleType)(val prov: TypeProvenance) extends MiscBaseType {
     lazy val level: Int = lhs.level max rhs.level
     override def toString = s"(${lhs match {
-      case TupleType((N, f) :: Nil) => f.toString
+      // case TupleType((N, f) :: Nil) => f.toString
       case lhs => lhs
     }} -> $rhs)"
   }

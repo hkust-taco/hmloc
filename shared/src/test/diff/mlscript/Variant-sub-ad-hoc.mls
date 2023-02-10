@@ -44,14 +44,29 @@ rec def evalOpt = fun x -> case x of {
 //│ evalOpt: 'a -> (None & {err: string} | Some & {v: int})
 //│   where
 //│     'a <: Lit & {v: int} | Neg & {sub: 'a} | Plus & {lhs: 'a, rhs: 'a} | Var & {nme: string}
-//│ constrain calls  : 747
+//│ constrain calls  : 741
 //│ annoying  calls  : 148
 //│ subtyping calls  : 720
 
 :stats
 evalOpt (Plus{} with {lhs = Lit{} with {v=2}; rhs = Lit{} with {v=2}})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.52: 	evalOpt (Plus{} with {lhs = Lit{} with {v=2}; rhs = Lit{} with {v=2}})
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of `int`
+//│ ║  l.52: 	evalOpt (Plus{} with {lhs = Lit{} with {v=2}; rhs = Lit{} with {v=2}})
+//│ ║        	                                          ^
+//│ ╟── but it flows into application with expected type `int`
+//│ ║  l.52: 	evalOpt (Plus{} with {lhs = Lit{} with {v=2}; rhs = Lit{} with {v=2}})
+//│ ║        	                            ^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.32: 	rec def evalOpt = fun x -> case x of {
+//│ ║        	                                ^
+//│ ╟── from argument:
+//│ ║  l.36: 	      flatMap (fun s -> Some (0 - s)) (evalOpt x.sub)
+//│ ╙──      	                                  ^
 //│ res: None & {err: string} | Some & {v: int}
-//│ constrain calls  : 241
+//│ constrain calls  : 259
 //│ annoying  calls  : 34
-//│ subtyping calls  : 394
+//│ subtyping calls  : 397
 

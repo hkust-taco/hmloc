@@ -510,7 +510,7 @@ class ConstraintSolver extends NormalForms { self: Typer =>
           case (RecordType(fs1), err @ ClassTag(ErrTypeId, _)) =>
             fs1.foreach(f => rec(f._2.ub, err, provChain))
             
-          case (tr1: TypeRef, tr2: TypeRef) if tr1.defn.name =/= "Array" =>
+          case (tr1: TypeRef, tr2: TypeRef) if tr1.defn.name =/= "Array" && tr1.defn === tr2.defn =>
             if (tr1.defn === tr2.defn) {
               assert(tr1.targs.sizeCompare(tr2.targs) === 0)
               val td = ctx.tyDefs(tr1.defn.name)
@@ -520,7 +520,7 @@ class ConstraintSolver extends NormalForms { self: Typer =>
                 if (!v.isContravariant) rec(targ1, targ2, provChain)
                 if (!v.isCovariant) rec(targ2, targ1, provChain)
               }
-            } else {
+            } else { // TODO rm dead branch
               (tr1.mkTag, tr2.mkTag) match {
                 case (S(tag1), S(tag2)) if !(tag1 <:< tag2) =>
                   reportError()
@@ -528,8 +528,12 @@ class ConstraintSolver extends NormalForms { self: Typer =>
                   rec(tr1.expand, tr2.expand)
               }
             }
-          case (tr: TypeRef, _) => rec(tr.expand, rhs)
-          case (_, tr: TypeRef) => rec(lhs, tr.expand)
+          // case (tr: TypeRef, _) => rec(tr.expand, rhs)
+          // case (_, tr: TypeRef) => rec(lhs, tr.expand)
+          // case (tr: TypeRef, _) if ctx.tyDefs(tr.defn.name).kind is Als => rec(tr.expand, rhs)
+          // case (_, tr: TypeRef) if ctx.tyDefs(tr.defn.name).kind is Als => rec(lhs, tr.expand)
+          case (tr: TypeRef, _) if ctx.tyDefs(tr.defn.name).adtData.isEmpty => rec(tr.expand, rhs)
+          case (_, tr: TypeRef) if ctx.tyDefs(tr.defn.name).adtData.isEmpty => rec(lhs, tr.expand)
           
           case (ClassTag(ErrTypeId, _), _) => ()
           case (_, ClassTag(ErrTypeId, _)) => ()

@@ -37,7 +37,7 @@ foo arg
 
 :stats
 foo (arg with { fC = true })
-//│ res: int | string | true
+//│ res: bool | int | string
 //│ constrain calls  : 72
 //│ annoying  calls  : 28
 //│ subtyping calls  : 109
@@ -68,7 +68,7 @@ foo arg
 //│ ║  l.46: 	  | A -> add x.fA x.payload
 //│ ╙──      	                  ^
 //│ res: int | string | {l: bool, r: nothing}
-//│ constrain calls  : 68
+//│ constrain calls  : 72
 //│ annoying  calls  : 40
 //│ subtyping calls  : 102
 
@@ -79,8 +79,23 @@ foo arg
 
 :stats
 foo (arg with { payload = 1 })
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.81: 	foo (arg with { payload = 1 })
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of `int`
+//│ ║  l.81: 	foo (arg with { payload = 1 })
+//│ ║        	                          ^
+//│ ╟── but it flows into `with` extension with expected type `int`
+//│ ║  l.81: 	foo (arg with { payload = 1 })
+//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.45: 	def foo x = case x of {
+//│ ║        	                 ^
+//│ ╟── from argument:
+//│ ║  l.46: 	  | A -> add x.fA x.payload
+//│ ╙──      	                  ^^^^^^^^^
 //│ res: int | string | {l: bool, r: int}
-//│ constrain calls  : 59
+//│ constrain calls  : 67
 //│ annoying  calls  : 38
 //│ subtyping calls  : 123
 

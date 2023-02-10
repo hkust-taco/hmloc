@@ -62,9 +62,39 @@ def e = ex
 //│     'e :> Add['e] | Lit | Nega['e]
 
 eval e
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.64: 	eval e
+//│ ║        	^^^^^^
+//│ ╟── type `int` is not an instance of `int`
+//│ ║  l.2: 	class Lit: { val: int }
+//│ ║       	                  ^^^
+//│ ╟── but it flows into reference with expected type `int`
+//│ ║  l.64: 	eval e
+//│ ║        	     ^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.27: 	rec def eval e = case e of {
+//│ ║        	                      ^
+//│ ╟── from argument:
+//│ ║  l.29: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ╙──      	           ^^^^^^^^^^
 //│ res: int
 
 eval (e : Lit | Add['e] | Nega['e] as 'e)
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.82: 	eval (e : Lit | Add['e] | Nega['e] as 'e)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `int` is not an instance of `int`
+//│ ║  l.2: 	class Lit: { val: int }
+//│ ║       	                  ^^^
+//│ ╟── but it flows into reference with expected type `int`
+//│ ║  l.82: 	eval (e : Lit | Add['e] | Nega['e] as 'e)
+//│ ║        	      ^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.27: 	rec def eval e = case e of {
+//│ ║        	                      ^
+//│ ╟── from argument:
+//│ ║  l.29: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ╙──      	           ^^^^^^^^^^
 //│ res: int
 
 
@@ -123,15 +153,18 @@ eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int` does not match type `Add[?] & ?a | Lit & ?b | Nega[?] & ?c`
+//│ ╟── type `int` is not an instance of `int`
+//│ ║  l.2: 	class Lit: { val: int }
+//│ ║       	                  ^^^
+//│ ╟── but it flows into reference with expected type `int`
 //│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
-//│ ║        	                               ^^^
-//│ ╟── but it flows into applied type reference with expected type `Add[?] & ?d | Lit & ?e | Nega[?] & ?f`
-//│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
-//│ ║        	                          ^^^^^^^^^
+//│ ║        	      ^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.27: 	rec def eval e = case e of {
-//│ ╙──      	                      ^
+//│ ║        	                      ^
+//│ ╟── from argument:
+//│ ║  l.29: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ╙──      	           ^^^^^^^^^^
 //│ res: int
 
 

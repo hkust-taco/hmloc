@@ -15,8 +15,23 @@ def arg = if true then Some{value = 42} with {payload = 23} else None {}
 // > TODO don't distribute neg inters + handle better at constraint top level
 :stats
 flatMap3 (fun x -> add x.value x.payload) arg
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.17: 	flatMap3 (fun x -> add x.value x.payload) arg
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of `int`
+//│ ║  l.12: 	def arg = if true then Some{value = 42} with {payload = 23} else None {}
+//│ ║        	                                                        ^^
+//│ ╟── but it flows into reference with expected type `int`
+//│ ║  l.17: 	flatMap3 (fun x -> add x.value x.payload) arg
+//│ ║        	                                          ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.8: 	def flatMap3 = fun f -> fun opt -> case opt of { Some -> f opt | _ -> opt }
+//│ ║       	                                        ^^^
+//│ ╟── from argument:
+//│ ║  l.17: 	flatMap3 (fun x -> add x.value x.payload) arg
+//│ ╙──      	                               ^^^^^^^^^
 //│ res: int | None
-//│ constrain calls  : 135
+//│ constrain calls  : 134
 //│ annoying  calls  : 23
 //│ subtyping calls  : 59
 
@@ -76,13 +91,13 @@ simpler (fun x -> x.value)
 :e
 res 1
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.77: 	res 1
+//│ ║  l.92: 	res 1
 //│ ║        	^^^^^
 //│ ╟── integer literal of type `int` does not match type `None & ?a | Some[?] & ?b`
-//│ ║  l.77: 	res 1
+//│ ║  l.92: 	res 1
 //│ ║        	    ^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.70: 	def simpler = fun f -> fun opt -> case opt of { Some -> f opt | None -> opt }
+//│ ║  l.85: 	def simpler = fun f -> fun opt -> case opt of { Some -> f opt | None -> opt }
 //│ ╙──      	                                       ^^^
 //│ res: nothing
 

@@ -17,7 +17,7 @@ let t = x: 1, y: 2, z: 3
 
 (1, true, "hey")._2
 (1, true, "hey")._3
-//│ res: true
+//│ res: bool
 //│ res: string
 
 :e
@@ -25,7 +25,7 @@ let t = x: 1, y: 2, z: 3
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.24: 	(1, true, "hey")._4
 //│ ║        	                ^^^
-//│ ╟── tuple of type `(int, true, string,)` does not have field '_4'
+//│ ╟── tuple of type `(int, bool, string,)` does not have field '_4'
 //│ ║  l.24: 	(1, true, "hey")._4
 //│ ║        	 ^^^^^^^^^^^^^^
 //│ ╟── but it flows into receiver with expected type `{_4: ?a}`
@@ -42,7 +42,7 @@ let t = x: 1, y: 2, z: 3
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.41: 	(1, true, "hey").2
 //│ ║        	^^^^^^^^^^^^^^^^^^
-//│ ╟── tuple of type `(int, true, string,)` is not a function
+//│ ╟── tuple of type `(int, bool, string,)` is not a function
 //│ ║  l.41: 	(1, true, "hey").2
 //│ ╙──      	 ^^^^^^^^^^^^^^
 //│ res: nothing

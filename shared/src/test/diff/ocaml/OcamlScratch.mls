@@ -1,6 +1,18 @@
 :OcamlParser
 
-:d
+type a = int
+//│ Defined type alias a
+
+1 : a
+//│ res: a
+
+true : bool
+//│ res: bool
+
+match true with true -> 1 | false -> 2
+//│ res: int
+
+// :d
 :dp
 type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
 //│ Parsed: TypeDef(Als, TypeName(either), List(TypeName('a), TypeName('b)), Union(AppliedType(TypeName(Right),List(TypeName('b))),Union(AppliedType(TypeName(Left),List(TypeName('a))),AppliedType(TypeName(Left),List(TypeName('a))))), List())
@@ -8,36 +20,17 @@ type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
 //│ TypeDef(Cls, TypeName(Right), List(TypeName('b)), Record(List((_0,Field(None,TypeName('b))))), List(_0)) of adt: Some((TypeName(either),List(1)))
 //│ Def(false, Left, PolyType(List(TypeName('a), TypeName('b)),Function(Tuple(List((None,Field(None,Tuple(List((None,Field(None,TypeName('a))), (None,Field(None,TypeName('a))))))))),AppliedType(TypeName(either),List(TypeName('a), TypeName('b))))), true)
 //│ Def(false, Right, PolyType(List(TypeName('a), TypeName('b)),Function(Tuple(List((None,Field(None,TypeName('b))))),AppliedType(TypeName(either),List(TypeName('a), TypeName('b))))), true)
-//│ 0. Typing type Union(AppliedType(TypeName(Right),List(TypeName('b))),Union(AppliedType(TypeName(Left),List(TypeName('a))),AppliedType(TypeName(Left),List(TypeName('a)))))
-//│ | vars=Map('a -> 'a22', 'b -> 'b23') newDefsInfo=Map(either -> (Als,2), Left -> (Cls,1), Right -> (Cls,1))
-//│ => (Right['b23'] | (Left['a22'] | Left['a22'])) | 
-//│ 0. Typing type Record(List((_0,Field(None,Tuple(List((None,Field(None,TypeName('a))), (None,Field(None,TypeName('a)))))))))
-//│ | vars=Map('a -> 'a25') newDefsInfo=Map(either -> (Als,2), Left -> (Cls,1), Right -> (Cls,1))
-//│ => {_0: ('a25', 'a25',)} | 
-//│ 0. Typing type Record(List((_0,Field(None,TypeName('b)))))
-//│ | vars=Map('b -> 'b27') newDefsInfo=Map(either -> (Als,2), Left -> (Cls,1), Right -> (Cls,1))
-//│ => {_0: 'b27'} | 
 //│ Defined type alias either[+'a, +'b]
 //│ Defined class Left[+'a]
 //│ Defined class Right[+'b]
-//│ 1. Typing type Function(Tuple(List((None,Field(None,Tuple(List((None,Field(None,TypeName('a))), (None,Field(None,TypeName('a))))))))),AppliedType(TypeName(either),List(TypeName('a), TypeName('b))))
-//│ | vars=Map('a -> α31', 'b -> α32') newDefsInfo=Map()
-//│ => ((α31', α31',) -> either[α31',α32']) | 
-//│ ⬤ Typed as: ((α31', α31',) -> either[α31',α32'])
-//│  where: 
-//│ 1. Typing type Function(Tuple(List((None,Field(None,TypeName('b))))),AppliedType(TypeName(either),List(TypeName('a), TypeName('b))))
-//│ | vars=Map('a -> α37', 'b -> α38') newDefsInfo=Map()
-//│ => (α38' -> either[α37',α38']) | 
-//│ ⬤ Typed as: (α38' -> either[α37',α38'])
-//│  where: 
 //│ Left: ('a, 'a,) -> either['a, nothing]
 //│ Right: 'a -> either[nothing, 'a]
 
 :d
 Left
 //│ 0. Typing term Left
-//│ 0. : ((α43, α43,) -> either[α43,α44])
-//│ ⬤ Typed as: ((α43, α43,) -> either[α43,α44])
+//│ 0. : (((α46, α46,),) -> either[α46,α47])
+//│ ⬤ Typed as: (((α46, α46,),) -> either[α46,α47])
 //│  where: 
 //│ res: ('a, 'a,) -> either['a, nothing]
 
@@ -47,52 +40,11 @@ Left
 // let test x =
 //  match x with True -> 0 | False -> 1
 
-:d
+// :d
 :dp
 let text x =
   match x with Left l -> l | Right r -> r
 //│ Parsed: Def(false, text, Lam(Tup(_: Var(x)), If(Var(x), List(IfThen(App(Var(Left), Tup(_: Var(l))), Var(l), IfThen(App(Var(Right), Tup(_: Var(r))), Var(r)))), true)
-//│ 1. Typing term x, => if x(Left (l,)) then l then (Right (r,)) then r
-//│ | 1. Typing pattern x,
-//│ | | 1. Typing pattern x
-//│ | | 1. : α49'
-//│ | 1. : (α49',)
-//│ | 1. Typing term if x(Left (l,)) then l then (Right (r,)) then r
-//│ | | If(Var(x), List(IfThen(App(Var(Left), Tup(_: Var(l))), Var(l), IfThen(App(Var(Right), Tup(_: Var(r))), Var(r)))
-//│ | | ADT name: TypeName(either)
-//│ | | ADT type: either['a50','b51']
-//│ | | 1. Typing term x
-//│ | | 1. : α49'
-//│ | | CONSTRAIN α49' <! either['a50','b51']
-//│ | |   where 
-//│ | | C α49' <! either['a50','b51']    (0) where TypeVariable <: TypeRef}
-//│ | | Typing case 0 (Left)
-//│ | | ctor type: ((α31', α31',) -> either[α31',α32'])
-//│ | | fieldTypes: List((('a50', 'a50',),))
-//│ | | Typing field l (0)
-//│ | | Field l : (('a50', 'a50',),)
-//│ | | 1. Typing term l
-//│ | | 1. : (('a50', 'a50',),)
-//│ | | CONSTRAIN (('a50', 'a50',),) <! α52'
-//│ | |   where 
-//│ | | C (('a50', 'a50',),) <! α52'    (0) where TupleType <: TypeVariable}
-//│ | | Typing case 1 (Right)
-//│ | | ctor type: (α38' -> either[α37',α38'])
-//│ | | fieldTypes: List(('b51',))
-//│ | | Typing field r (1)
-//│ | | Field r : ('b51',)
-//│ | | 1. Typing term r
-//│ | | 1. : ('b51',)
-//│ | | CONSTRAIN ('b51',) <! α52'
-//│ | |   where 
-//│ 		α52' :> (('a50', 'a50',),)
-//│ | | C ('b51',) <! α52'    (0) where TupleType <: TypeVariable}
-//│ | 1. : α52'
-//│ 1. : (α49' -> α52')
-//│ ⬤ Typed as: (α49' -> α52')
-//│  where: 
-//│ 		α49' <: either['a50','b51']
-//│ 		α52' :> ('b51',) | (('a50', 'a50',),)
 //│ text: either['a, 'b] -> ('b | ('a, 'a,),)
 
 :d
@@ -100,154 +52,242 @@ let f x = let (a, b) = x in a + b
 //│ 1. Typing term x, => if x('(' a, b, ')') then + (a,) (b,)
 //│ | 1. Typing pattern x,
 //│ | | 1. Typing pattern x
-//│ | | 1. : α61'
-//│ | 1. : (α61',)
+//│ | | 1. : α64'
+//│ | 1. : (α64',)
 //│ | 1. Typing term if x('(' a, b, ')') then + (a,) (b,)
 //│ | | If(Var(x), List(IfThen(Bra(rcd = false, Tup(_: Var(a), _: Var(b))), App(App(Var(+), Tup(_: Var(a))), Tup(_: Var(b)))))
 //│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
 //│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:740)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:744)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:823)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:651)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:827)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:655)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:823)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:418)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:827)
+//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:422)
 //│ 	at: mlscript.DiffTests.$anonfun$new$45(DiffTests.scala:589)
 //│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
 
-:d
+// :d
 :unifyDbg
 if 1 == 2 then Left true else Right false
-//│ 0. Typing term if == (1,) (2,)(True) then Left (true,) then (False) then Right (false,)
-//│ | If(App(App(Var(==), Tup(_: IntLit(1))), Tup(_: IntLit(2))), List(IfThen(Var(True), App(Var(Left), Tup(_: Var(true))), IfThen(Var(False), App(Var(Right), Tup(_: Var(false)))))
-//│ | 0. Typing term == (1,) (2,)
-//│ | | 0. Typing term == (1,)
-//│ | | | 0. Typing term ==
-//│ | | | 0. : (int<> -> (int<> -> bool<>))
-//│ | | | 0. Typing term 1,
-//│ | | | | 0. Typing term 1
-//│ | | | | 0. : Int
-//│ | | | 0. : (Int,)
-//│ | | | CONSTRAIN (int<> -> (int<> -> bool<>)) <! (Int -> α62)
-//│ | | |   where 
-//│ | | | C (int<> -> (int<> -> bool<>)) <! (Int -> α62)    (0) where FunctionType <: FunctionType}
-//│ | | | | C (Int,) <! (int<>,)    (1) where TupleType <: TupleType}
-//│ | | | | | C Int <! int<>    (2) where TypeRef <: ClassTag}
-//│ | | | | | | C int<> <! int<>    (3) where ClassTag <: ClassTag}
-//│ | | | | C (int<> -> bool<>) <! α62    (3) where FunctionType <: TypeVariable}
-//│ | | 0. : α62
-//│ | | 0. Typing term 2,
-//│ | | | 0. Typing term 2
-//│ | | | 0. : Int
-//│ | | 0. : (Int,)
-//│ | | CONSTRAIN α62 <! (Int -> α63)
-//│ | |   where 
-//│ 		α62 :> (int<> -> bool<>)
-//│ | | C α62 <! (Int -> α63)    (0) where TypeVariable <: FunctionType}
-//│ | | | C (int<> -> bool<>) <! (Int -> α63)    (1) where FunctionType <: FunctionType}
-//│ | | | | C (Int,) <! (int<>,)    (2) where TupleType <: TupleType}
-//│ | | | | | C Int <! int<>    (3) where TypeRef <: ClassTag}
-//│ | | | | | | C int<> <! int<>    (4) where ClassTag <: ClassTag}
-//│ | | | | C bool<> <! α63    (4) where ClassTag <: TypeVariable}
-//│ | 0. : α63
-//│ | CONSTRAIN α63 <! bool<>
-//│ |   where 
-//│ 		α63 :> bool<>
-//│ | C α63 <! bool<>    (0) where TypeVariable <: ClassTag}
-//│ | | C bool<> <! bool<>    (1) where ClassTag <: ClassTag}
-//│ | 0. Typing term Left (true,)
-//│ | | 0. Typing term Left
-//│ | | 0. : ((α65, α65,) -> either[α65,α66])
-//│ | | 0. Typing term true,
-//│ | | | 0. Typing term true
-//│ | | | 0. : true<bool>
-//│ | | 0. : (true<bool>,)
-//│ | | CONSTRAIN ((α65, α65,) -> either[α65,α66]) <! (true<bool> -> α67)
-//│ | |   where 
-//│ | | C ((α65, α65,) -> either[α65,α66]) <! (true<bool> -> α67)    (0) where FunctionType <: FunctionType}
-//│ | | | C (true<bool>,) <! ((α65, α65,),)    (1) where TupleType <: TupleType}
-//│ | | | | C true<bool> <! (α65, α65,)    (2) where ClassTag <: TupleType}
-//│ | | | | | allVarPols: 
-//│ | | | | | norm[+] true<bool>
-//│ | | | | | | DNF: DNF(true<bool>{})
-//│ | | | | | ~> true<bool>
-//│ | | | C either[α65,α66] <! α67    (3) where TypeRef <: TypeVariable}
-//│ | 0. : α67
-//│ | CONSTRAIN α67 <! α64
-//│ |   where 
-//│ 		α67 :> either[α65,α66]
-//│ | C α67 <! α64    (0) where TypeVariable <: TypeVariable}
-//│ | | C either[α65,α66] <! α64    (1) where TypeRef <: TypeVariable}
-//│ | 0. Typing term Right (false,)
-//│ | | 0. Typing term Right
-//│ | | 0. : (α68 -> either[α69,α68])
-//│ | | 0. Typing term false,
-//│ | | | 0. Typing term false
-//│ | | | 0. : false<bool>
-//│ | | 0. : (false<bool>,)
-//│ | | CONSTRAIN (α68 -> either[α69,α68]) <! (false<bool> -> α70)
-//│ | |   where 
-//│ | | C (α68 -> either[α69,α68]) <! (false<bool> -> α70)    (0) where FunctionType <: FunctionType}
-//│ | | | C (false<bool>,) <! (α68,)    (1) where TupleType <: TupleType}
-//│ | | | | C false<bool> <! α68    (2) where ClassTag <: TypeVariable}
-//│ | | | C either[α69,α68] <! α70    (3) where TypeRef <: TypeVariable}
-//│ | 0. : α70
-//│ | CONSTRAIN α70 <! α64
-//│ |   where 
-//│ 		α64 :> either[α65,α66]
-//│ 		α68 :> false<bool>
-//│ 		α70 :> either[α69,α68]
-//│ | C α70 <! α64    (0) where TypeVariable <: TypeVariable}
-//│ | | C either[α69,α68] <! α64    (1) where TypeRef <: TypeVariable}
-//│ 0. : α64
-//│ ⬤ Typed as: α64
-//│  where: 
-//│ 		α64 :> either[α69,α68] | either[α65,α66]
-//│ 		α68 :> false<bool>
-//│ [ERROR 0] Int != int<> unifying because Int = int<> are arg type in (Int -> α63) = (int<> -> bool<>)
-//│ allVarPols: 
-//│ norm[+] Int
-//│ | DNF: DNF(int<>{})
-//│ ~> int<>
-//│ allVarPols: 
-//│ norm[+] int<>
-//│ | DNF: DNF(int<>{})
-//│ ~> int<>
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] int and int cannot be unified but flows into the same location
-//│ ╟── Int is here
-//│ ║  l.126: 	if 1 == 2 then Left true else Right false
-//│ ╙──       	        ^
-//│ unified α62
-//│  α62 :> (int<> -> bool<>)
-//│  α62 <: (Int -> α63)
-//│ unified α63
-//│  α63 = bool<> are result type in (Int -> α63) = (int<> -> bool<>)
-//│ unified α64
-//│  α64 :> either[α65,α66]
-//│  α64 :> either[α69,α68]
 //│ unified α65
+//│  α65 :> [[((Int,) -> Bool)]]
+//│  α65 <: [([(Int,)] -> α66)]
 //│ unified α66
-//│  α66 = false<bool> because α68 = α66 are TypeName(either)(1) arg type and α68 :> false<bool>
+//│  α66 = Bool are result type in ([(Int,)] -> α66) = ((Int,) -> Bool)
 //│ unified α67
-//│  α67 :> either[α65,α66]
-//│  α67 <: α64
+//│  α67 :> [[[[either[α68,α69]]]]]
+//│  α67 :> [[[[either[α72,α71]]]]]
 //│ unified α68
-//│  α68 :> false<bool>
-//│  α68 = α66 are TypeName(either)(1) arg type
 //│ unified α69
-//│  α69 = α65 are TypeName(either)(0) arg type
+//│  α69 = [[[[[Bool]]]]] because α71 = α69 are TypeName(either)(1) arg type and α71 :> [[[[[Bool]]]]]
 //│ unified α70
-//│  α70 :> either[α69,α68]
-//│  α70 <: α64
+//│  α70 :> [[[either[α68,α69]]]]
+//│  α70 <: [[α67]]
+//│ unified α71
+//│  α71 :> [[[[[Bool]]]]]
+//│  α71 = α69 are TypeName(either)(1) arg type
+//│ unified α72
+//│  α72 = α68 are TypeName(either)(0) arg type
+//│ unified α73
+//│  α73 :> [[[either[α72,α71]]]]
+//│  α73 <: [[α67]]
 //│ ╔══[ERROR] Type mismatch in if-then-else true condition:
-//│ ║  l.126: 	if 1 == 2 then Left true else Right false
-//│ ║         	               ^^^^^^^^^
-//│ ╟── type `true` is not a 2-element tuple
+//│ ║  l.73: 	if 1 == 2 then Left true else Right false
+//│ ║        	               ^^^^^^^^^
+//│ ╟── reference of type `bool` is not a 2-element tuple
+//│ ║  l.73: 	if 1 == 2 then Left true else Right false
+//│ ║        	                    ^^^^
 //│ ╟── Note: constraint arises from tuple type:
-//│ ║  l.5: 	type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
-//│ ╙──     	                                ^^^^^^^
-//│ res: either[nothing, false]
+//│ ║  l.17: 	type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
+//│ ╙──      	                                ^^^^^^^
+//│ res: either[nothing, bool]
+
+// :d
+// succ
+
+let f x = x
+//│ f: 'a -> 'a
+
+:d
+f(true, false)
+//│ 0. Typing term f (true, false,)
+//│ | 0. Typing term f
+//│ | 0. : ((α83,) -> [α83])
+//│ | 0. Typing term true, false,
+//│ | | 0. Typing term true
+//│ | | 0. : Bool
+//│ | | 0. Typing term false
+//│ | | 0. : Bool
+//│ | 0. : (Bool, Bool,)
+//│ | CONSTRAIN ((α83,) -> [α83]) <! ((Bool, Bool,) -> α84)
+//│ |   where 
+//│ | C ((α83,) -> [α83]) <! ((Bool, Bool,) -> α84)    (0) where FunctionType <: FunctionType}
+//│ | | C (Bool, Bool,) <! (α83,)    (1) where TupleType <: TupleType}
+//│ | | | allVarPols: -α83
+//│ | | | norm[-] (α83,)
+//│ | | | | DNF: DNF((α83,){})
+//│ | | | | norm[-] α83
+//│ | | | | | DNF: DNF(α83)
+//│ | | | | ~> α83
+//│ | | | ~> (α83,)
+//│ | | | allVarPols: 
+//│ | | | norm[+] (Bool, Bool,)
+//│ | | | | DNF: DNF((Bool, Bool,){})
+//│ | | | | norm[+] Bool
+//│ | | | | | DNF: DNF(bool<>{})
+//│ | | | | ~> bool<>
+//│ | | | | norm[+] Bool
+//│ | | | | | DNF: DNF(bool<>{})
+//│ | | | | ~> bool<>
+//│ | | | ~> (bool<>, bool<>,)
+//│ | | C [α83] <! α84    (2) where ProvType <: TypeVariable}
+//│ | | | C α83 <! α84    (2) where TypeVariable <: TypeVariable}
+//│ 0. : α84
+//│ ⬤ Typed as: α84
+//│  where: 
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.114: 	f(true, false)
+//│ ║         	^^^^^^^^^^^^^^
+//│ ╟── tuple literal of type `(bool, bool,)` does not match type `(?a,)`
+//│ ║  l.114: 	f(true, false)
+//│ ╙──       	  ^^^^^^^^^^^
+//│ res: nothing
+
+:d
+f((true, false))
+//│ 0. Typing term f (true, false,)
+//│ | 0. Typing term f
+//│ | 0. : ((α86,) -> [α86])
+//│ | 0. Typing term true, false,
+//│ | | 0. Typing term true
+//│ | | 0. : Bool
+//│ | | 0. Typing term false
+//│ | | 0. : Bool
+//│ | 0. : (Bool, Bool,)
+//│ | CONSTRAIN ((α86,) -> [α86]) <! ((Bool, Bool,) -> α87)
+//│ |   where 
+//│ | C ((α86,) -> [α86]) <! ((Bool, Bool,) -> α87)    (0) where FunctionType <: FunctionType}
+//│ | | C (Bool, Bool,) <! (α86,)    (1) where TupleType <: TupleType}
+//│ | | | allVarPols: -α86
+//│ | | | norm[-] (α86,)
+//│ | | | | DNF: DNF((α86,){})
+//│ | | | | norm[-] α86
+//│ | | | | | DNF: DNF(α86)
+//│ | | | | ~> α86
+//│ | | | ~> (α86,)
+//│ | | | allVarPols: 
+//│ | | | norm[+] (Bool, Bool,)
+//│ | | | | DNF: DNF((Bool, Bool,){})
+//│ | | | | norm[+] Bool
+//│ | | | | | DNF: DNF(bool<>{})
+//│ | | | | ~> bool<>
+//│ | | | | norm[+] Bool
+//│ | | | | | DNF: DNF(bool<>{})
+//│ | | | | ~> bool<>
+//│ | | | ~> (bool<>, bool<>,)
+//│ | | C [α86] <! α87    (2) where ProvType <: TypeVariable}
+//│ | | | C α86 <! α87    (2) where TypeVariable <: TypeVariable}
+//│ 0. : α87
+//│ ⬤ Typed as: α87
+//│  where: 
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.159: 	f((true, false))
+//│ ║         	^^^^^^^^^^^^^^^^
+//│ ╟── tuple literal of type `(bool, bool,)` does not match type `(?a,)`
+//│ ║  l.159: 	f((true, false))
+//│ ╙──       	   ^^^^^^^^^^^
+//│ res: nothing
+
+:d
+Left((true, false))
+//│ 0. Typing term Left (true, false,)
+//│ | 0. Typing term Left
+//│ | 0. : (((α89, α89,),) -> either[α89,α90])
+//│ | 0. Typing term true, false,
+//│ | | 0. Typing term true
+//│ | | 0. : Bool
+//│ | | 0. Typing term false
+//│ | | 0. : Bool
+//│ | 0. : (Bool, Bool,)
+//│ | CONSTRAIN (((α89, α89,),) -> either[α89,α90]) <! ((Bool, Bool,) -> α91)
+//│ |   where 
+//│ | C (((α89, α89,),) -> either[α89,α90]) <! ((Bool, Bool,) -> α91)    (0) where FunctionType <: FunctionType}
+//│ | | C (Bool, Bool,) <! ((α89, α89,),)    (1) where TupleType <: TupleType}
+//│ | | | allVarPols: -α89
+//│ | | | norm[-] ((α89, α89,),)
+//│ | | | | DNF: DNF(((α89, α89,),){})
+//│ | | | | norm[-] (α89, α89,)
+//│ | | | | | DNF: DNF((α89, α89,){})
+//│ | | | | | norm[-] α89
+//│ | | | | | | DNF: DNF(α89)
+//│ | | | | | ~> α89
+//│ | | | | | norm[-] α89
+//│ | | | | | | DNF: DNF(α89)
+//│ | | | | | ~> α89
+//│ | | | | ~> (α89, α89,)
+//│ | | | ~> ((α89, α89,),)
+//│ | | | allVarPols: 
+//│ | | | norm[+] (Bool, Bool,)
+//│ | | | | DNF: DNF((Bool, Bool,){})
+//│ | | | | norm[+] Bool
+//│ | | | | | DNF: DNF(bool<>{})
+//│ | | | | ~> bool<>
+//│ | | | | norm[+] Bool
+//│ | | | | | DNF: DNF(bool<>{})
+//│ | | | | ~> bool<>
+//│ | | | ~> (bool<>, bool<>,)
+//│ | | C either[α89,α90] <! α91    (2) where TypeRef <: TypeVariable}
+//│ 0. : α91
+//│ ⬤ Typed as: α91
+//│  where: 
+//│ 		α91 :> either[α89,α90]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.204: 	Left((true, false))
+//│ ║         	^^^^^^^^^^^^^^^^^^^
+//│ ╟── tuple literal of type `(bool, bool,)` does not match type `((?a, ?a,),)`
+//│ ║  l.204: 	Left((true, false))
+//│ ║         	      ^^^^^^^^^^^
+//│ ╟── Note: constraint arises from tuple type:
+//│ ║  l.17: 	type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
+//│ ╙──      	                                ^^^^^^^
+//│ res: either[nothing, nothing]
+
+:unifyDbg
+if 1 == 2 then Left((true, false)) else Right false
+//│ unified α95
+//│  α95 :> [[((Int,) -> Bool)]]
+//│  α95 <: [([(Int,)] -> α96)]
+//│ unified α96
+//│  α96 = Bool are result type in ([(Int,)] -> α96) = ((Int,) -> Bool)
+//│ unified α97
+//│  α97 :> [[[[either[α98,α99]]]]]
+//│  α97 :> [[[[either[α102,α101]]]]]
+//│ unified α98
+//│ unified α99
+//│  α99 = [[[[[Bool]]]]] because α101 = α99 are TypeName(either)(1) arg type and α101 :> [[[[[Bool]]]]]
+//│ unified α100
+//│  α100 :> [[[either[α98,α99]]]]
+//│  α100 <: [[α97]]
+//│ unified α101
+//│  α101 :> [[[[[Bool]]]]]
+//│  α101 = α99 are TypeName(either)(1) arg type
+//│ unified α102
+//│  α102 = α98 are TypeName(either)(0) arg type
+//│ unified α103
+//│  α103 :> [[[either[α102,α101]]]]
+//│  α103 <: [[α97]]
+//│ ╔══[ERROR] Type mismatch in if-then-else true condition:
+//│ ║  l.258: 	if 1 == 2 then Left((true, false)) else Right false
+//│ ║         	               ^^^^^^^^^^^^^^^^^^^
+//│ ╟── tuple literal of type `(bool, bool,)` does not match type `((?a, ?a,),)`
+//│ ║  l.258: 	if 1 == 2 then Left((true, false)) else Right false
+//│ ║         	                     ^^^^^^^^^^^
+//│ ╟── Note: constraint arises from tuple type:
+//│ ║  l.17: 	type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
+//│ ╙──      	                                ^^^^^^^
+//│ res: either[nothing, bool]
 
 :unifyDbg
 //let test x =

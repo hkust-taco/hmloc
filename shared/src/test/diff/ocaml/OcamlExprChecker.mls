@@ -184,7 +184,25 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 (("hi", 1) :: Nil):heap
 (("hi", 1) :: ("bye", 2) :: Nil):heap
 //│ res: list[(string, int,)]
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.184: 	(("hi", 1) :: Nil):heap
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── string literal of type `string` is not an instance of type `string`
+//│ ║  l.184: 	(("hi", 1) :: Nil):heap
+//│ ║         	  ^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.124: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ╙──       	                                                         ^^^^^^
 //│ res: heap
+//│ ╔══[ERROR] Type mismatch in type ascription:
+//│ ║  l.185: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── string literal of type `string` is not an instance of type `string`
+//│ ║  l.185: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ ║         	  ^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.124: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ╙──       	                                                         ^^^^^^
 //│ res: heap
 
 let update h str i = (str,i)::h
@@ -197,38 +215,26 @@ let interp2 = (fun (env:env) opt ->
   match opt with
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.195: 	fun (env: env) _ -> []
+//│ ║  l.213: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
 //│ res: error -> list[nothing]
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.196: 	let interp2 = (fun (env:env) opt ->
+//│ ║  l.214: 	let interp2 = (fun (env:env) opt ->
 //│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
-//│ ║  l.197: 	  match opt with
+//│ ║  l.215: 	  match opt with
 //│ ╙──       	        ^^^
 //│ interp2: error -> int
 
 let head xs = match xs with
   Cons(x, xs) -> x
   | _ -> raise Error
-//│ ╔══[ERROR] identifier not found: x
-//│ ║  l.212: 	  Cons(x, xs) -> x
-//│ ╙──       	       ^
-//│ ╔══[ERROR] identifier not found: x
-//│ ║  l.212: 	  Cons(x, xs) -> x
-//│ ╙──       	                 ^
-//│ head: list[error] -> error
+//│ head: list['a] -> ('a, list['a],)
 
 let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
-//│ ╔══[ERROR] identifier not found: x
-//│ ║  l.223: 	  x :: xs -> x
-//│ ╙──       	  ^
-//│ ╔══[ERROR] identifier not found: x
-//│ ║  l.223: 	  x :: xs -> x
-//│ ╙──       	             ^
-//│ head: list[error] -> error
+//│ head: list['a] -> ('a, list['a],)
 
 type ('a) bigHeap =
   NoHeap of 'a list
@@ -279,18 +285,21 @@ match n < 0 with
   true  -> 0
   | false  -> 1
 //│ Parsed: If(App(App(Var(<), Tup(_: Var(n))), Tup(_: IntLit(0))), List(IfThen(Var(true), IntLit(0), IfThen(Var(false), IntLit(1)))
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: could not find adt data for type defintion true
+//│ ╔══[ERROR] identifier not found: n
+//│ ║  l.284: 	match n < 0 with
+//│ ╙──       	      ^
+//│ res: int
 
 let check a b =
   let (sum, sub) = (a + b, a - b) in sum * sub
 //│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
 //│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:740)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:744)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:789)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:651)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:827)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:655)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:789)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:651)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:827)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:655)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:789)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:827)

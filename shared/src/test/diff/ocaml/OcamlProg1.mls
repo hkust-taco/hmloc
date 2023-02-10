@@ -53,22 +53,17 @@ let rec lookup (h:heap) str =
   (* FOUND ERROR: this should return an int *)
     [] -> HeapInt(0) (* ############### *)
   | Tup2(s,i)::tl -> if s=str then i else lookup tl str
-//│ ╔══[ERROR] identifier not found: s
-//│ ║  l.55: 	  | Tup2(s,i)::tl -> if s=str then i else lookup tl str
-//│ ╙──      	         ^
-//│ ╔══[ERROR] identifier not found: i
-//│ ║  l.55: 	  | Tup2(s,i)::tl -> if s=str then i else lookup tl str
-//│ ╙──      	           ^
-//│ ╔══[ERROR] identifier not found: s
-//│ ║  l.55: 	  | Tup2(s,i)::tl -> if s=str then i else lookup tl str
-//│ ╙──      	                        ^
-//│ ╔══[ERROR] identifier not found: i
-//│ ║  l.55: 	  | Tup2(s,i)::tl -> if s=str then i else lookup tl str
-//│ ╙──      	                                   ^
-//│ ╔══[ERROR] identifier not found: tl
-//│ ║  l.55: 	  | Tup2(s,i)::tl -> if s=str then i else lookup tl str
-//│ ╙──      	                                                 ^^
-//│ lookup: heap -> anything -> (error | heapVar)
+//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
+//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$36(Typer.scala:810)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$36$adapted(Typer.scala:798)
+//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$29(Typer.scala:798)
+//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:764)
+//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:827)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:655)
 
 let update h str i = Tup2(str,i)::h
 //│ update: list['a] -> 'b -> 'c -> list[Tuple2['b, 'c] | 'a]
@@ -80,74 +75,24 @@ let rec interp_e (h:heap) (e:exp) =
  |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
  |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
 //│ ╔══[ERROR] identifier not found: i
-//│ ║  l.78: 	  Int i       ->i
+//│ ║  l.73: 	  Int i       ->i
 //│ ╙──      	                ^
 //│ ╔══[ERROR] identifier not found: str
-//│ ║  l.79: 	 |Var str     ->lookup h str
+//│ ║  l.74: 	 |Var str     ->lookup h str
 //│ ╙──      	                         ^^^
 //│ ╔══[ERROR] identifier not found: e1
-//│ ║  l.80: 	 |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
+//│ ║  l.75: 	 |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
 //│ ╙──      	                            ^^
 //│ ╔══[ERROR] identifier not found: e2
-//│ ║  l.80: 	 |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
+//│ ║  l.75: 	 |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
 //│ ╙──      	                                            ^^
 //│ ╔══[ERROR] identifier not found: e1
-//│ ║  l.81: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
+//│ ║  l.76: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
 //│ ╙──      	                            ^^
 //│ ╔══[ERROR] identifier not found: e2
-//│ ║  l.81: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
+//│ ║  l.76: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
 //│ ╙──      	                                            ^^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.76: 	let rec interp_e (h:heap) (e:exp) =
-//│ ║        	                  ^^^^^^^^^^^^^^^^^
-//│ ║  l.77: 	 match e with
-//│ ║        	^^^^^^^^^^^^^
-//│ ║  l.78: 	  Int i       ->i
-//│ ║        	^^^^^^^^^^^^^^^^^
-//│ ║  l.79: 	 |Var str     ->lookup h str
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.80: 	 |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.81: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `Heap` is not an instance of type `int`
-//│ ║  l.19: 	type heapVar = HeapInt of int | Heap of heap and heap = ((string, int) Tuple2) list
-//│ ║        	                                ^^^^
-//│ ╟── but it flows into application with expected type `int`
-//│ ║  l.79: 	 |Var str     ->lookup h str
-//│ ║        	                ^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.81: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
-//│ ║        	                                 ^^^^^^^^^^^^^
-//│ ╟── from type reference:
-//│ ║  l.18: 	let ( * ): int -> int -> int
-//│ ╙──      	                  ^^^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.76: 	let rec interp_e (h:heap) (e:exp) =
-//│ ║        	                  ^^^^^^^^^^^^^^^^^
-//│ ║  l.77: 	 match e with
-//│ ║        	^^^^^^^^^^^^^
-//│ ║  l.78: 	  Int i       ->i
-//│ ║        	^^^^^^^^^^^^^^^^^
-//│ ║  l.79: 	 |Var str     ->lookup h str
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.80: 	 |Plus(e1,e2) ->(interp_e h e1)+(interp_e h e2)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.81: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `HeapInt` is not an instance of type `int`
-//│ ║  l.19: 	type heapVar = HeapInt of int | Heap of heap and heap = ((string, int) Tuple2) list
-//│ ║        	               ^^^^^^^
-//│ ╟── but it flows into application with expected type `int`
-//│ ║  l.79: 	 |Var str     ->lookup h str
-//│ ║        	                ^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.81: 	 |Times(e1,e2)->(interp_e h e1)*(interp_e h e2)
-//│ ║        	                                 ^^^^^^^^^^^^^
-//│ ╟── from type reference:
-//│ ║  l.18: 	let ( * ): int -> int -> int
-//│ ╙──      	                  ^^^
-//│ interp_e: heap -> exp -> (error | int | heapVar)
+//│ interp_e: heap -> exp -> (error | int)
 
 let rec test (h:heap) (s:stmt) = update h
 //│ test: heap -> stmt -> 'a -> 'b -> list[Tuple2[string | 'a, int | 'b]]
@@ -168,113 +113,107 @@ let rec interp_s (h:heap) (s:stmt) =
   |SaveHeap(str) -> []
   |RestoreHeap(str) -> []
 //│ ╔══[ERROR] identifier not found: s1
-//│ ║  l.158: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
+//│ ║  l.103: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
 //│ ╙──       	                                     ^^
 //│ ╔══[ERROR] identifier not found: s2
-//│ ║  l.159: 	                 interp_s h2 s2
+//│ ║  l.104: 	                 interp_s h2 s2
 //│ ╙──       	                             ^^
 //│ ╔══[ERROR] identifier not found: e
-//│ ║  l.160: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ║  l.105: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
 //│ ╙──       	                                 ^
 //│ ╔══[ERROR] identifier not found: s1
-//│ ║  l.161: 	                  then interp_s h s1 
+//│ ║  l.106: 	                  then interp_s h s1 
 //│ ╙──       	                                  ^^
 //│ ╔══[ERROR] identifier not found: s2
-//│ ║  l.162: 	                  else interp_s h s2
+//│ ║  l.107: 	                  else interp_s h s2
 //│ ╙──       	                                  ^^
 //│ ╔══[ERROR] identifier not found: str
-//│ ║  l.163: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║  l.108: 	  |Assign(str,e) -> update h str (interp_e h e)
 //│ ╙──       	                             ^^^
 //│ ╔══[ERROR] identifier not found: e
-//│ ║  l.163: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║  l.108: 	  |Assign(str,e) -> update h str (interp_e h e)
 //│ ╙──       	                                             ^
 //│ ╔══[ERROR] identifier not found: e
-//│ ║  l.164: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ║  l.109: 	  |While(e,s1) -> if (interp_e h e) <> 0
 //│ ╙──       	                                 ^
 //│ ╔══[ERROR] identifier not found: s1
-//│ ║  l.165: 	                  then let h2 = interp_s h s1 in
+//│ ║  l.110: 	                  then let h2 = interp_s h s1 in
 //│ ╙──       	                                           ^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.155: 	let rec interp_s (h:heap) (s:stmt) =
+//│ ║  l.100: 	let rec interp_s (h:heap) (s:stmt) =
 //│ ║         	                  ^^^^^^^^^^^^^^^^^^
-//│ ║  l.156: 	  match s with
+//│ ║  l.101: 	  match s with
 //│ ║         	^^^^^^^^^^^^^^
-//│ ║  l.157: 	   Skip -> h
+//│ ║  l.102: 	   Skip -> h
 //│ ║         	^^^^^^^^^^^^
-//│ ║  l.158: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
+//│ ║  l.103: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.159: 	                 interp_s h2 s2
+//│ ║  l.104: 	                 interp_s h2 s2
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.160: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ║  l.105: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.161: 	                  then interp_s h s1 
+//│ ║  l.106: 	                  then interp_s h s1 
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.162: 	                  else interp_s h s2
+//│ ║  l.107: 	                  else interp_s h s2
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.163: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║  l.108: 	  |Assign(str,e) -> update h str (interp_e h e)
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.164: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ║  l.109: 	  |While(e,s1) -> if (interp_e h e) <> 0
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.165: 	                  then let h2 = interp_s h s1 in
+//│ ║  l.110: 	                  then let h2 = interp_s h s1 in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.166: 	                       interp_s h2 s
+//│ ║  l.111: 	                       interp_s h2 s
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.167: 	                  else h
+//│ ║  l.112: 	                  else h
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.168: 	  |SaveHeap(str) -> []
+//│ ║  l.113: 	  |SaveHeap(str) -> []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.169: 	  |RestoreHeap(str) -> []
+//│ ║  l.114: 	  |RestoreHeap(str) -> []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `Heap` is not an instance of type `int`
+//│ ╟── type `string` is not an instance of type `string`
 //│ ║  l.19: 	type heapVar = HeapInt of int | Heap of heap and heap = ((string, int) Tuple2) list
-//│ ║        	                                ^^^^
-//│ ╟── but it flows into application with expected type `int`
-//│ ║  l.163: 	  |Assign(str,e) -> update h str (interp_e h e)
-//│ ║         	                                  ^^^^^^^^^^^^
+//│ ║        	                                                          ^^^^^^
 //│ ╟── Note: constraint arises from type reference:
 //│ ║  l.19: 	type heapVar = HeapInt of int | Heap of heap and heap = ((string, int) Tuple2) list
-//│ ╙──      	                                                                  ^^^
+//│ ╙──      	                                                          ^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.155: 	let rec interp_s (h:heap) (s:stmt) =
+//│ ║  l.100: 	let rec interp_s (h:heap) (s:stmt) =
 //│ ║         	                  ^^^^^^^^^^^^^^^^^^
-//│ ║  l.156: 	  match s with
+//│ ║  l.101: 	  match s with
 //│ ║         	^^^^^^^^^^^^^^
-//│ ║  l.157: 	   Skip -> h
+//│ ║  l.102: 	   Skip -> h
 //│ ║         	^^^^^^^^^^^^
-//│ ║  l.158: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
+//│ ║  l.103: 	  |Seq(s1,s2) -> let h2 = interp_s h s1 in 
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.159: 	                 interp_s h2 s2
+//│ ║  l.104: 	                 interp_s h2 s2
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.160: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
+//│ ║  l.105: 	  |If(e,s1,s2) -> if (interp_e h e) <> 0
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.161: 	                  then interp_s h s1 
+//│ ║  l.106: 	                  then interp_s h s1 
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.162: 	                  else interp_s h s2
+//│ ║  l.107: 	                  else interp_s h s2
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.163: 	  |Assign(str,e) -> update h str (interp_e h e)
+//│ ║  l.108: 	  |Assign(str,e) -> update h str (interp_e h e)
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.164: 	  |While(e,s1) -> if (interp_e h e) <> 0
+//│ ║  l.109: 	  |While(e,s1) -> if (interp_e h e) <> 0
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.165: 	                  then let h2 = interp_s h s1 in
+//│ ║  l.110: 	                  then let h2 = interp_s h s1 in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.166: 	                       interp_s h2 s
+//│ ║  l.111: 	                       interp_s h2 s
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.167: 	                  else h
+//│ ║  l.112: 	                  else h
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.168: 	  |SaveHeap(str) -> []
+//│ ║  l.113: 	  |SaveHeap(str) -> []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.169: 	  |RestoreHeap(str) -> []
+//│ ║  l.114: 	  |RestoreHeap(str) -> []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `HeapInt` is not an instance of type `int`
+//│ ╟── type `int` is not an instance of type `int`
 //│ ║  l.19: 	type heapVar = HeapInt of int | Heap of heap and heap = ((string, int) Tuple2) list
-//│ ║        	               ^^^^^^^
-//│ ╟── but it flows into application with expected type `int`
-//│ ║  l.163: 	  |Assign(str,e) -> update h str (interp_e h e)
-//│ ║         	                                  ^^^^^^^^^^^^
+//│ ║        	                                                                  ^^^
 //│ ╟── Note: constraint arises from type reference:
 //│ ║  l.19: 	type heapVar = HeapInt of int | Heap of heap and heap = ((string, int) Tuple2) list
 //│ ╙──      	                                                                  ^^^
-//│ interp_s: heap -> stmt -> (heap | list[Tuple2[error | string, error | int | heapVar]])
+//│ interp_s: heap -> stmt -> (heap | list[Tuple2[error | string, error | int]])
 
 let mt_heap = [] 
 //│ mt_heap: list[nothing]
@@ -282,16 +221,7 @@ let mt_heap = []
 // FIXME
 let interp_prog s = 
   lookup (interp_s mt_heap s) "ans"
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.284: 	  lookup (interp_s mt_heap s) "ans"
-//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `Heap` is not an instance of type `int`
-//│ ║  l.19: 	type heapVar = HeapInt of int | Heap of heap and heap = ((string, int) Tuple2) list
-//│ ║        	                                ^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.19: 	type heapVar = HeapInt of int | Heap of heap and heap = ((string, int) Tuple2) list
-//│ ╙──      	                                                                  ^^^
-//│ interp_prog: stmt -> (error | heapVar)
+//│ interp_prog: stmt -> nothing
 
 
 (******************** Test Program in IMP **************************)

@@ -34,7 +34,7 @@ let twice = f => x => f (f x)
 
 
 true
-//│ res: true
+//│ res: bool
 
 not true
 //│ res: bool
@@ -56,7 +56,7 @@ succ true
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	succ true
 //│ ║        	^^^^^^^^^
-//│ ╟── reference of type `true` is not an instance of type `int`
+//│ ╟── reference of type `bool` is not an instance of `int`
 //│ ║  l.+1: 	succ true
 //│ ╙──      	     ^^^^
 //│ res: int
@@ -68,7 +68,7 @@ x => succ (not x)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	x => succ (not x)
 //│ ║        	     ^^^^^^^^^^^^
-//│ ╟── application of type `bool` is not an instance of type `int`
+//│ ╟── application of type `bool` is not an instance of `int`
 //│ ║  l.+1: 	x => succ (not x)
 //│ ║        	           ^^^^^
 //│ ╟── but it flows into argument with expected type `int`
@@ -84,7 +84,7 @@ x => succ (not x)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(x => not x.f) { f: 123 }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `int` is not an instance of type `bool`
+//│ ╟── integer literal of type `int` is not an instance of `bool`
 //│ ║  l.+1: 	(x => not x.f) { f: 123 }
 //│ ║        	                    ^^^
 //│ ╟── Note: constraint arises from field selection:
@@ -104,7 +104,7 @@ x => succ (not x)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	(f => x => not (f x.u)) false
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── reference of type `false` is not a function
+//│ ╟── reference of type `bool` is not a function
 //│ ║  l.+1: 	(f => x => not (f x.u)) false
 //│ ║        	                        ^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -151,7 +151,7 @@ if true then { a: 1, b: true } else { b: false, c: 42 }
 //│ ╔══[ERROR] Type mismatch in field selection:
 //│ ║  l.+1: 	{ a: 123, b: true }.c
 //│ ║        	                   ^^
-//│ ╟── record of type `{a: int, b: true}` does not have field 'c'
+//│ ╟── record of type `{a: int, b: bool}` does not have field 'c'
 //│ ║  l.+1: 	{ a: 123, b: true }.c
 //│ ╙──      	^^^^^^^^^^^^^^^^^^^
 //│ res: nothing
@@ -224,13 +224,13 @@ x => {l: x x, r: x }
 let rec trutru = g => trutru (g true)
 //│ trutru: 'a -> nothing
 //│   where
-//│     'a <: true -> 'a
+//│     'a <: bool -> 'a
 
 i => if ((i i) true) then true else true
 // ^ for: λi. if ((i i) true) then true else true,
 //    Dolan's thesis says MLsub infers: (α → ((bool → bool) ⊓ α)) → bool
 //    which does seem equivalent, despite being quite syntactically different
-//│ res: ('a -> true -> bool & 'a) -> true
+//│ res: ('a -> bool -> bool & 'a) -> bool
 
 
 
@@ -239,16 +239,16 @@ i => if ((i i) true) then true else true
 
 let f = x => x; {a: f 0, b: f true}
 //│ f: 'a -> 'a
-//│ res: {a: int, b: true}
+//│ res: {a: int, b: bool}
 
 y => (let f = x => x; {a: f y, b: f true})
-//│ res: 'a -> {a: 'a, b: true}
+//│ res: 'a -> {a: 'a, b: bool}
 
 y => (let f = x => y x; {a: f 0, b: f true})
-//│ res: ((int | true) -> 'a) -> {a: 'a, b: 'a}
+//│ res: ((bool | int) -> 'a) -> {a: 'a, b: 'a}
 
 y => (let f = x => x y; {a: f (z => z), b: f (z => true)})
-//│ res: 'a -> {a: 'a, b: true}
+//│ res: 'a -> {a: 'a, b: bool}
 
 y => (let f = x => x y; {a: f (z => z), b: f (z => succ z)})
 //│ res: (int & 'a) -> {a: 'a, b: int}

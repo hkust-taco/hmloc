@@ -9,6 +9,24 @@ rcd with { y = 2 }
 //│ res: {x: int, y: int}
 
 add res.x res.y
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.11: 	add res.x res.y
+//│ ║        	^^^^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of `int`
+//│ ║  l.2: 	def rcd = { x = 1 }
+//│ ║       	                ^
+//│ ╟── but it flows into reference with expected type `int`
+//│ ║  l.11: 	add res.x res.y
+//│ ╙──      	    ^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.11: 	add res.x res.y
+//│ ║        	^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of `int`
+//│ ║  l.8: 	rcd with { y = 2 }
+//│ ║       	               ^
+//│ ╟── but it flows into reference with expected type `int`
+//│ ║  l.11: 	add res.x res.y
+//│ ╙──      	          ^^^
 //│ res: int
 
 rcd with { x = "oops" }
@@ -94,16 +112,16 @@ def foo x =
 :e
 foo 42
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.95: 	foo 42
-//│ ║        	^^^^^^
+//│ ║  l.113: 	foo 42
+//│ ║         	^^^^^^
 //│ ╟── integer literal of type `int` does not have field 'f'
-//│ ║  l.95: 	foo 42
-//│ ║        	    ^^
+//│ ║  l.113: 	foo 42
+//│ ║         	    ^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.91: 	  in { l = getf xf; r = getf x; s = x }
-//│ ║        	                             ^
+//│ ║  l.109: 	  in { l = getf xf; r = getf x; s = x }
+//│ ║         	                             ^
 //│ ╟── from record literal:
-//│ ║  l.67: 	def getf { f } = f
+//│ ║  l.85: 	def getf { f } = f
 //│ ╙──      	         ^^^^^
 //│ res: {l: int, r: nothing, s: int}
 
@@ -127,13 +145,13 @@ add r.s 1
 :e
 res.z
 //│ ╔══[ERROR] Type mismatch in field selection:
-//│ ║  l.128: 	res.z
+//│ ║  l.146: 	res.z
 //│ ║         	^^^^^
 //│ ╟── `with` extension of type `{x: int, y: int}` does not have field 'z'
-//│ ║  l.124: 	{} with { x = 1 } with { y = 2 }
+//│ ║  l.142: 	{} with { x = 1 } with { y = 2 }
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `{z: ?z}`
-//│ ║  l.128: 	res.z
+//│ ║  l.146: 	res.z
 //│ ╙──       	^^^
 //│ res: nothing
 

@@ -2,7 +2,7 @@
 let a = succ
 let x = true
 //│ a: int -> int
-//│ x: true
+//│ x: bool
 
 x => add (a x)
 //│ res: int -> int -> int
@@ -93,7 +93,7 @@ f (x: 42, y: 43)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.92: 	f (x: 42, y: 43)
 //│ ║        	^^^^^^^^^^^^^^^^
-//│ ╟── tuple of type `(x: int, y: int,)` is not an instance of type `int`
+//│ ╟── tuple of type `(x: int, y: int,)` is not an instance of `int`
 //│ ║  l.92: 	f (x: 42, y: 43)
 //│ ║        	   ^^^^^^^^^^^^
 //│ ╟── but it flows into argument with expected type `int`

@@ -15,11 +15,11 @@ let object1 = { x: 42, y: id }
 //│ object1: {x: int, y: 'a -> 'a}
 
 let object2 = { x: 17, y: false }
-//│ object2: {x: int, y: false}
+//│ object2: {x: int, y: bool}
 
 let pick_an_object = b =>
   if b then object1 else object2
-//│ pick_an_object: bool -> {x: int, y: 'a -> 'a | false}
+//│ pick_an_object: bool -> {x: int, y: 'a -> 'a | bool}
 
 let rec recursive_monster = x =>
   { thing: x, self: recursive_monster x }
@@ -36,7 +36,7 @@ let id = x => x
 //│ id: 'a -> 'a
 
 let ab = {u: id 0, v: id true}
-//│ ab: {u: int, v: true}
+//│ ab: {u: int, v: bool}
 
 
 
