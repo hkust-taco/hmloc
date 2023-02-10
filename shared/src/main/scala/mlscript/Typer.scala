@@ -731,8 +731,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             val cond_ty = typeTerm(cond, "if-then-else condition type")
             con(cond_ty, BoolType, cond_ty)
             val ret_ty = freshVar(prov.copy(desc = "if-then-else return type"))
-            con(typeTerm(trueArm, "if-then-else true condition"), ret_ty, ret_ty)
-            con(typeTerm(falseArm, "if-then-else false condition"), ret_ty, ret_ty)
+            con(typeTerm(trueArm, "if-then-else true condition return type"), ret_ty, ret_ty)
+            con(typeTerm(falseArm, "if-then-else false condition return type"), ret_ty, ret_ty)
           // TODO handle let deconstruction differently
           case _ =>
             // find constructor for each arm
@@ -754,6 +754,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             val adtDef = ctx.tyDefs.getOrElse(adtName.name, lastWords(s"Could not find ${adtName} in context"))
             // TODO should the type variables be cloned here
             val newTargs = adtDef.targs.map(tv => freshVar(tv.prov, tv.nameHint))
+            // TODO: pass the location of the actual condition from which we got the constructor adt name
             val adt_ty = TypeRef(adtName, newTargs)(TypeProvenance(cond.toLoc, "match-case condition type"))
             println(s"ADT type: $adt_ty")
             
@@ -1002,24 +1003,30 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
 
     /** A unification can create an message showing relevant locations */
     def createErrorMessage(u: Unification)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-      def helper(a: ST, b: ST, u: Unification): Ls[Message -> Opt[Loc]] = {
+      def helper(a: ST, b: ST): Ls[Message -> Opt[Loc]] = {
         val tvars = u.unifyingTypeVars.filter{case (_, (l, r)) => l >= 2 || r >= 2}.keys
         val tvarMessage: Ls[Message -> Opt[Loc]] = if (tvars.nonEmpty) {
-          msg"The following tvars cannot be resolved ${tvars.mkString(", ")}" -> N :: tvars.flatMap(firstAndLastUseLocation).toList
+          msg"The following tvars cannot be resolved: " -> N :: tvars.flatMap(firstAndLastUseLocation).toList
         } else {
           Nil
         }
-        msg"[UNIFICATION ERROR ${u.level.toString}] ${a.expPos} and ${b.expPos} cannot be unified but flows into the same location" -> N ::
+        msg"[UNIFICATION ERROR ${u.level.toString}] ${a.expPos} and ${b.expPos} cannot be unified but flows into the same location ${u.toString}" -> N ::
           firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b) ::: tvarMessage
       }
+      def simplerErrorHelper(common: ST, a: ST, b: ST): Ls[Message -> Opt[Loc]] = {
+       msg"[UNIFICATION ERROR ${u.level.toString}] ${a.expPos} and ${b.expPos} cannot be unified but flows into the same location" -> N ::
+        a.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"${a.expPos} is ${desc}" -> loc :: Nil}.getOrElse(Nil) :::
+        b.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"${b.expPos} is ${desc}" -> loc :: Nil }.getOrElse(Nil) :::
+        common.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"both flow into ${desc}" -> loc :: Nil }.getOrElse(Nil)
+      }
       u match {
-        case CommonLower(common, a, b) => helper(a, b, u)
-        case CommonUpper(common, a, b) => helper(a, b, u)
-        case TypeRefArg(a, b, _, _, _, _) => helper(a, b, u)
-        case TupleField(a, b, _, _, _) => helper(a, b, u)
-        case FunctionArg(a, b, _, _) => helper(a, b, u)
-        case FunctionResult(a, b, _, _) => helper(a, b, u)
-        case Connector(a, b, uforB, uforA) => helper(a, b, u)
+        case CommonLower(common, a, b) => simplerErrorHelper(common, a, b)
+        case CommonUpper(common, a, b) => simplerErrorHelper(common, a, b)
+        case TypeRefArg(a, b, _, _, _, _) => helper(a, b)
+        case TupleField(a, b, _, _, _) => helper(a, b)
+        case FunctionArg(a, b, _, _) => helper(a, b)
+        case FunctionResult(a, b, _, _) => helper(a, b)
+        case Connector(a, b, uforB, uforA) => helper(a, b)
         // these unifications cannot produce an error by themselves
         case LowerBound(tv, st) => firstAndLastUseLocation(st)
         case UpperBound(tv, st) => firstAndLastUseLocation(st)
@@ -1030,8 +1037,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       val st1 = a.unwrapProvs
       val st2 = b.unwrapProvs
 
-      if (cache((st1, st2))) return
-      else cache += ((st1, st2))
+      // unification doesn't have an ordering
+      if (cache((st1, st2)) || cache(st2, st1)) return
+      else {
+        cache += ((st1, st2))
+        cache += ((st2, st1))
+      }
 
       (st1, st2) match {
         case (c1: ClassTag, c2: ClassTag) =>

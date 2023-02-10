@@ -1,0 +1,123 @@
+:OcamlParser
+
+:unify
+let boolToInt x = if x then "0" else 1
+//│ ╔══[WARNING] [UNIFICATION ERROR 1] int and string cannot be unified but flows into the same location
+//│ ╟── int is if-then-else false condition return type
+//│ ║  l.4: 	let boolToInt x = if x then "0" else 1
+//│ ║       	                                     ^
+//│ ╟── string is if-then-else true condition return type
+//│ ║  l.4: 	let boolToInt x = if x then "0" else 1
+//│ ║       	                            ^^^
+//│ ╟── both flow into if-then-else return type
+//│ ║  l.4: 	let boolToInt x = if x then "0" else 1
+//│ ╙──     	                  ^^^^^^^^^^^^^^^^^^^^
+//│ boolToInt: bool -> (int | string)
+
+type ('a, 'b) either = Left of 'a | Right of 'b
+//│ Defined type alias either[+'a, +'b]
+//│ Defined class Left[+'a]
+//│ Defined class Right[+'b]
+//│ Left: 'a -> either['a, nothing]
+//│ Right: 'a -> either[nothing, 'a]
+
+:unify
+let destructEither x = match x with
+ | Left l -> l + 1
+ | Right r -> r && true
+//│ ╔══[WARNING] [UNIFICATION ERROR 1] bool and int cannot be unified but flows into the same location
+//│ ╟── bool is operator application
+//│ ║  l.27: 	 | Right r -> r && true
+//│ ║        	              ^^^^^^^^^^
+//│ ╟── int is operator application
+//│ ║  l.26: 	 | Left l -> l + 1
+//│ ║        	             ^^^^^
+//│ ╟── both flow into match-case return type
+//│ ║  l.25: 	let destructEither x = match x with
+//│ ║        	                       ^^^^^^^^^^^^
+//│ ║  l.26: 	 | Left l -> l + 1
+//│ ║        	^^^^^^^^^^^^^^^^^^
+//│ ║  l.27: 	 | Right r -> r && true
+//│ ╙──      	^^^^^^^^^^^^^^^^^^^^^^^^
+//│ destructEither: either[int, bool] -> (bool | int)
+
+:unify
+let destructEither x = if x
+  then match x with
+    | Left l -> l + 1
+    | Right r -> r - 1
+  else x
+//│ ╔══[WARNING] [UNIFICATION ERROR 1] either[?a, ?b] and bool cannot be unified but flows into the same location
+//│ ╟── either[?a0, ?b0] is match-case condition type
+//│ ║  l.46: 	  then match x with
+//│ ║        	             ^
+//│ ╟── bool is if-then-else condition type
+//│ ║  l.45: 	let destructEither x = if x
+//│ ╙──      	                          ^
+//│ ╔══[WARNING] [UNIFICATION ERROR 2] bool and int cannot be unified but flows into the same location [[[Bool]]] = [[[[[Int]]]]] because [[[α60']]] & [[[Bool]]] :> α59' and α60' :> [[[[[Int]]]]]
+//│ ╟── bool is used as if-then-else condition type
+//│ ║  l.45: 	let destructEither x = if x
+//│ ║        	                          ^
+//│ ╟── int is operator application
+//│ ║  l.48: 	    | Right r -> r - 1
+//│ ║        	                 ^^^^^
+//│ ╟── int is if-then-else return type
+//│ ║  l.45: 	let destructEither x = if x
+//│ ║        	                       ^^^^
+//│ ║  l.46: 	  then match x with
+//│ ║        	^^^^^^^^^^^^^^^^^^^
+//│ ║  l.47: 	    | Left l -> l + 1
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.48: 	    | Right r -> r - 1
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.49: 	  else x
+//│ ║        	^^^^^^^^^
+//│ ╟── The following tvars cannot be resolved: 
+//│ ╟── ?a is if-then-else return type
+//│ ║  l.45: 	let destructEither x = if x
+//│ ║        	                       ^^^^
+//│ ║  l.46: 	  then match x with
+//│ ║        	^^^^^^^^^^^^^^^^^^^
+//│ ║  l.47: 	    | Left l -> l + 1
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.48: 	    | Right r -> r - 1
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.49: 	  else x
+//│ ║        	^^^^^^^^^
+//│ ╟── ?b is if-then-else false condition return type
+//│ ║  l.49: 	  else x
+//│ ╙──      	       ^^
+//│ ╔══[WARNING] [UNIFICATION ERROR 2] either[?a, ?b] and int cannot be unified but flows into the same location [[[either['a61','b62']]]] = [[[[[Int]]]]] because [[[α60']]] & [[[either['a61','b62']]]] :> α59' and α60' :> [[[[[Int]]]]]
+//│ ╟── either[?a0, ?b0] is used as reference
+//│ ║  l.46: 	  then match x with
+//│ ║        	             ^
+//│ ╟── int is operator application
+//│ ║  l.48: 	    | Right r -> r - 1
+//│ ║        	                 ^^^^^
+//│ ╟── int is if-then-else return type
+//│ ║  l.45: 	let destructEither x = if x
+//│ ║        	                       ^^^^
+//│ ║  l.46: 	  then match x with
+//│ ║        	^^^^^^^^^^^^^^^^^^^
+//│ ║  l.47: 	    | Left l -> l + 1
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.48: 	    | Right r -> r - 1
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.49: 	  else x
+//│ ║        	^^^^^^^^^
+//│ ╟── The following tvars cannot be resolved: 
+//│ ╟── ?c is if-then-else return type
+//│ ║  l.45: 	let destructEither x = if x
+//│ ║        	                       ^^^^
+//│ ║  l.46: 	  then match x with
+//│ ║        	^^^^^^^^^^^^^^^^^^^
+//│ ║  l.47: 	    | Left l -> l + 1
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.48: 	    | Right r -> r - 1
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.49: 	  else x
+//│ ║        	^^^^^^^^^
+//│ ╟── ?d is if-then-else false condition return type
+//│ ║  l.49: 	  else x
+//│ ╙──      	       ^^
+//│ destructEither: (either[int, int] & bool & 'a) -> (int | 'a)

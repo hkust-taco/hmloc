@@ -706,13 +706,13 @@ abstract class TyperHelpers { Typer: Typer =>
     val st = t.unwrapProvs
     (stUseLocation.headOption, stUseLocation.lastOption) match {
       // only show one location in case of duplicates
-      case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.toString} is here" -> prov1.loco :: Nil
+      case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.expPos} is used as ${prov1.desc}" -> prov1.loco :: Nil
       case ((S(prov1), S(prov2))) =>
-        msg"${st.toString} is here" -> prov2.loco ::
-          msg"${st.toString} is here" -> prov1.loco ::
+        msg"${st.expPos} is ${prov2.desc}" -> prov2.loco ::
+          msg"${st.expPos} is ${prov1.desc}" -> prov1.loco ::
           Nil
-      case ((S(prov), N)) => msg"${st.toString} is here" -> prov.loco :: Nil
-      case (N, (S(prov))) => msg"${st.toString} is here" -> prov.loco :: Nil
+      case ((S(prov), N)) => msg"${st.expPos} is ${prov.desc}" -> prov.loco :: Nil
+      case (N, (S(prov))) => msg"${st.expPos} is ${prov.desc}" -> prov.loco :: Nil
       case ((N, N)) => Nil
     }
   }
