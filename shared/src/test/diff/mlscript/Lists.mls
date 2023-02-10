@@ -13,69 +13,51 @@ def Nil = Nil {}
 //│ Nil: Nil
 
 def Cons head tail = Cons { head; tail }
-//│ Cons: ('head & 'A) -> (List['A] & 'tail) -> (Cons['A] with {head: 'head, tail: 'tail})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.15: 	def Cons head tail = Cons { head; tail }
+//│ ║        	                     ^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({head: ?a, tail: ?b},)` is not a record (expected a record with fields: head, tail)
+//│ ║  l.15: 	def Cons head tail = Cons { head; tail }
+//│ ╙──      	                          ^^^^^^^^^^^^^^
+//│ Cons: anything -> anything -> (Cons[nothing] & {tail: nothing})
 
 
 Cons 2
-//│ res: (List['A] & 'tail) -> (Cons['A | int] with {head: int, tail: 'tail})
+//│ res: anything -> (Cons[nothing] & {tail: nothing})
 
 def c = Cons 2 Nil
-//│ c: Cons[int] with {tail: Nil}
+//│ c: Cons[nothing] & {tail: nothing}
 
 def d = Cons 1 c
-//│ d: Cons[int] with {tail: Cons[int] with {tail: Nil}}
+//│ d: Cons[nothing] & {tail: nothing}
 
 d.head
-//│ res: int
+//│ res: nothing
 
 res: 1
-//│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.31: 	res: 1
-//│ ║        	^^^
-//│ ╟── integer literal of type `int` does not match type `1`
-//│ ║  l.25: 	def d = Cons 1 c
-//│ ║        	             ^
-//│ ╟── but it flows into reference with expected type `1`
-//│ ║  l.31: 	res: 1
-//│ ║        	^^^
-//│ ╟── Note: constraint arises from literal type:
-//│ ║  l.31: 	res: 1
-//│ ╙──      	     ^
 //│ res: 1
 
 d.tail
-//│ res: Cons[int] with {tail: Nil}
+//│ res: nothing
 
 Cons 1 res
-//│ res: Cons[int] with {tail: Cons[int] with {tail: Nil}}
+//│ res: Cons[nothing] & {tail: nothing}
 
 res.tail
-//│ res: Cons[int] with {tail: Nil}
+//│ res: nothing
 
 Cons 1 (Cons 2 Nil)
-//│ res: Cons[int] with {tail: Cons[int] with {tail: Nil}}
+//│ res: Cons[nothing] & {tail: nothing}
 
 res.tail
-//│ res: Cons[int] with {tail: Nil}
+//│ res: nothing
 
 // We can now access the tail's tail, thanks to the refined type
 res.tail
-//│ res: Nil
+//│ res: nothing
 
 :e
 res.tail.head
-//│ ╔══[ERROR] Type mismatch in field selection:
-//│ ║  l.66: 	res.tail.head
-//│ ║        	^^^^^^^^
-//│ ╟── application of type `Nil` does not have field 'tail'
-//│ ║  l.12: 	def Nil = Nil {}
-//│ ║        	          ^^^^^^
-//│ ╟── but it flows into reference with expected type `{tail: ?tail}`
-//│ ║  l.66: 	res.tail.head
-//│ ║        	^^^
-//│ ╟── Note: class Nil is defined at:
-//│ ║  l.2: 	class Nil: {}
-//│ ╙──     	      ^^^
 //│ res: nothing
 
 
@@ -86,36 +68,27 @@ res.tail.head
 
 // This used to yield a more precise Cons constructor, but it's no longer necessary in the new class semantics
 def Cons head tail = originalCons { head; tail } with { head; tail }
-//│ Cons: ('A & 'head) -> (List['A] & 'tail) -> (Cons['A] & {head: 'head, tail: 'tail})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.70: 	def Cons head tail = originalCons { head; tail } with { head; tail }
+//│ ║        	                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({head: ?a, tail: ?b},)` is not a record (expected a record with fields: head, tail)
+//│ ║  l.70: 	def Cons head tail = originalCons { head; tail } with { head; tail }
+//│ ╙──      	                                  ^^^^^^^^^^^^^^
+//│ Cons: 'a -> 'b -> (Cons[nothing] with {head: 'a, tail: 'b})
 
 
 Cons 2
-//│ res: (List['A] & 'tail) -> (Cons['A | int] with {head: int, tail: 'tail})
+//│ res: 'a -> (Cons[nothing] with {tail: 'a})
 
 Cons 2 Nil
-//│ res: Cons[int] with {tail: Nil}
+//│ res: Cons[nothing] with {tail: Nil}
 
 res.head
 //│ res: int
 
 :e
 Cons 1 res
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.102: 	Cons 1 res
-//│ ║         	^^^^^^^^^^
-//│ ╟── integer literal of type `int` does not match type `Cons[?A] | Nil`
-//│ ║  l.95: 	Cons 2 Nil
-//│ ║        	     ^
-//│ ╟── but it flows into reference with expected type `Cons[?A0] | Nil`
-//│ ║  l.102: 	Cons 1 res
-//│ ║         	       ^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.88: 	def Cons head tail = originalCons { head; tail } with { head; tail }
-//│ ║        	                                          ^^^^
-//│ ╟── from union type:
-//│ ║  l.4: 	type List[A] = Nil | Cons[A]
-//│ ╙──     	               ^^^^^^^^^^^^^
-//│ res: Cons[int] with {tail: int}
+//│ res: Cons[nothing] with {tail: int}
 
 
 
@@ -132,19 +105,37 @@ Cons 1 res
 // But then I reverted to the use of simple field-hiding types, as they are simpler!
 // 
 Cons 1 (Cons 2 Nil)
-//│ res: Cons[int] with {tail: Cons[int] with {tail: Nil}}
+//│ res: Cons[nothing] with {tail: Cons[nothing] with {tail: Nil}}
 
 { a = res.head; b = res.tail.head; c = res.tail.tail }
 //│ res: {a: int, b: int, c: Nil}
 
 Cons 2 Nil
-//│ res: Cons[int] with {tail: Nil}
+//│ res: Cons[nothing] with {tail: Nil}
 
 Cons 1 (id res)
-//│ res: Cons[int] with {tail: Cons[int] with {tail: Nil}}
+//│ res: Cons[nothing] with {tail: (Cons[nothing] with {tail: Nil},)}
 
 { a = res.head; b = res.tail.head; c = res.tail.tail }
-//│ res: {a: int, b: int, c: Nil}
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.119: 	{ a = res.head; b = res.tail.head; c = res.tail.tail }
+//│ ║         	                    ^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` does not have field 'head'
+//│ ║  l.116: 	Cons 1 (id res)
+//│ ║         	           ^^^
+//│ ╟── but it flows into reference with expected type `{head: ?head}`
+//│ ║  l.119: 	{ a = res.head; b = res.tail.head; c = res.tail.tail }
+//│ ╙──       	                    ^^^
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.119: 	{ a = res.head; b = res.tail.head; c = res.tail.tail }
+//│ ║         	                                       ^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` does not have field 'tail'
+//│ ║  l.116: 	Cons 1 (id res)
+//│ ║         	           ^^^
+//│ ╟── but it flows into reference with expected type `{tail: ?tail}`
+//│ ║  l.119: 	{ a = res.head; b = res.tail.head; c = res.tail.tail }
+//│ ╙──       	                                       ^^^
+//│ res: {a: int, b: nothing, c: nothing}
 
 
 
@@ -154,23 +145,29 @@ rec def filter p ls = case ls of
   }
 //│ filter: ('head -> bool) -> 'a -> 'b
 //│   where
-//│     'b :> Nil | Cons['head]\head\tail & {tail: 'b}\head\tail & {head: 'head, tail: 'b}
+//│     'b :> (Cons[nothing] with {head: 'head, tail: 'b}) | Nil
 //│     'a <: (Cons[?] with {head: 'head, tail: 'a}) | Nil
 
 
 
 
 def Cons head = originalCons { head=0; tail=Nil } with { head }
-//│ Cons: 'a -> (Cons[int] with {head: 'a, tail: Nil})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.154: 	def Cons head = originalCons { head=0; tail=Nil } with { head }
+//│ ║         	                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({head: int, tail: ?a},)` is not a record (expected a record with fields: head, tail)
+//│ ║  l.154: 	def Cons head = originalCons { head=0; tail=Nil } with { head }
+//│ ╙──       	                             ^^^^^^^^^^^^^^^^^^^^
+//│ Cons: 'a -> (Cons[nothing] with {head: 'a, tail: nothing})
 
 Cons 1
-//│ res: Cons[int] with {tail: Nil}
+//│ res: Cons[nothing] with {tail: nothing}
 
 res.head
 //│ res: int
 
 def c = Cons 1
-//│ c: Cons[int] with {tail: Nil}
+//│ c: Cons[nothing] with {tail: nothing}
 
 c.head
 //│ res: int

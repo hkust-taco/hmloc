@@ -28,19 +28,21 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   /** Implicitly tupled function argument is marked differently so that
    * type checking and error reporting can ignore it
    */
-  def toParams(t: Term): Tup = t match {
-    case t: Tup => t
-    case Bra(false, t) => toParams(t)
-    case _ => new ImplicitTup((N, Fld(false, false, t)) :: Nil)
-  }
+  def toParams(t: Term): Term = t
+  // def toParams(t: Term): Tup = t match {
+  //   case t: Tup => t
+  //   case Bra(false, t) => toParams(t)
+  //   case _ => new ImplicitTup((N, Fld(false, false, t)) :: Nil)
+  // }
   def toParams(t: Ls[Term]): Tup = {
     val fields = t.map(t => (N, Fld(false, false, t)))
     Tup(fields)
   }
-  def toParamsTy(t: Type): Tuple = t match {
-    case t: Tuple => t
-    case _ => Tuple((N, Field(None, t)) :: Nil)
-  }
+  // def toParamsTy(t: Type): Tuple = t match {
+  //   case t: Tuple => t
+  //   case _ => Tuple((N, Field(None, t)) :: Nil)
+  // }
+  def toParamsTy(t: Type): Type = t
   
   def letter[p: P]     = P( lowercase | uppercase )
   def lowercase[p: P]  = P( CharIn("a-z") )
@@ -538,8 +540,12 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
             val fun = Def(false, Var(tyDef.nme.name), R(funAppTy), true)
             S(fun)
           case Record(fields) =>
-            val funArg = Tuple(fields.map(N -> _._2))
-            val funTy = PolyType(alsParams, Function(toParamsTy(funArg), alsTy))
+            // val funArg = if (fields.size > 1) Tuple(fields.map(N -> _._2))  
+            val funArg = fields match {
+              case f :: Nil => f._2.out
+              case _ => Tuple(fields.map(N -> _._2))
+            }
+            val funTy = PolyType(alsParams, Function(funArg, alsTy))
             val fun = Def(false, Var(tyDef.nme.name), R(funTy), true)
             S(fun)
           case _ => N

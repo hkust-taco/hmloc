@@ -199,7 +199,7 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── string literal of type `string` is not an instance of type `string`
 //│ ║  l.185: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ ║         	  ^^^^
+//│ ║         	               ^^^^^
 //│ ╟── Note: constraint arises from type reference:
 //│ ║  l.124: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
 //│ ╙──       	                                                         ^^^^^^
@@ -229,12 +229,22 @@ let interp2 = (fun (env:env) opt ->
 let head xs = match xs with
   Cons(x, xs) -> x
   | _ -> raise Error
-//│ head: list['a] -> ('a, list['a],)
+//│ head: list['a] -> 'a
 
 let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
-//│ head: list['a] -> ('a, list['a],)
+//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
+//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:745)
+//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:656)
+//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)
+//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:423)
+//│ 	at: mlscript.DiffTests.$anonfun$new$45(DiffTests.scala:591)
+//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
 
 type ('a) bigHeap =
   NoHeap of 'a list
@@ -284,9 +294,9 @@ let checkagain (v: (int, int, (int, int))) =
 match n < 0 with
   true  -> 0
   | false  -> 1
-//│ Parsed: If(App(App(Var(<), Tup(_: Var(n))), Tup(_: IntLit(0))), List(IfThen(Var(true), IntLit(0), IfThen(Var(false), IntLit(1)))
+//│ Parsed: If(App(App(Var(<), Var(n)), IntLit(0)), List(IfThen(Var(true), IntLit(0), IfThen(Var(false), IntLit(1)))
 //│ ╔══[ERROR] identifier not found: n
-//│ ║  l.284: 	match n < 0 with
+//│ ║  l.294: 	match n < 0 with
 //│ ╙──       	      ^
 //│ res: int
 
@@ -294,12 +304,12 @@ let check a b =
   let (sum, sub) = (a + b, a - b) in sum * sub
 //│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
 //│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:744)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:745)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:827)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:655)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:656)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:827)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:655)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:656)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:827)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)

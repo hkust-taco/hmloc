@@ -12,21 +12,15 @@ add res.x res.y
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.11: 	add res.x res.y
 //│ ║        	^^^^^^^^^
-//│ ╟── integer literal of type `int` is not an instance of `int`
-//│ ║  l.2: 	def rcd = { x = 1 }
-//│ ║       	                ^
-//│ ╟── but it flows into reference with expected type `int`
+//│ ╟── argument of type `(?x,)` is not an instance of `int`
 //│ ║  l.11: 	add res.x res.y
-//│ ╙──      	    ^^^
+//│ ╙──      	    ^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.11: 	add res.x res.y
 //│ ║        	^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `int` is not an instance of `int`
-//│ ║  l.8: 	rcd with { y = 2 }
-//│ ║       	               ^
-//│ ╟── but it flows into reference with expected type `int`
+//│ ╟── argument of type `(?y,)` is not an instance of `int`
 //│ ║  l.11: 	add res.x res.y
-//│ ╙──      	          ^^^
+//│ ╙──      	          ^^^^^
 //│ res: int
 
 rcd with { x = "oops" }
@@ -36,7 +30,7 @@ res.x
 //│ res: string
 
 id rcd with { x = "oops" }
-//│ res: {x: string}
+//│ res: ({x: int},) & {x: string}
 
 res.x
 //│ res: string
@@ -46,7 +40,7 @@ def rcd = { }
 //│ rcd: anything
 
 id rcd with { x = "oops" }
-//│ res: {x: string}
+//│ res: (anything,) & {x: string}
 
 res.x
 //│ res: string
@@ -102,7 +96,19 @@ fooManual 123
 def foo x =
   let xf = x with { f = 42 }
   in add (getf xf) (getf x)
-//│ foo: (anything\f & {f: int}) -> int
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.98: 	  in add (getf xf) (getf x)
+//│ ║        	     ^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.98: 	  in add (getf xf) (getf x)
+//│ ╙──      	         ^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.98: 	  in add (getf xf) (getf x)
+//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.98: 	  in add (getf xf) (getf x)
+//│ ╙──      	                   ^^^^^^^^
+//│ foo: (({f: anything} | ~{f: int})\f & {f: anything}) -> int
 
 def foo x =
   let xf = x with { f = 42 }
@@ -112,16 +118,16 @@ def foo x =
 :e
 foo 42
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.113: 	foo 42
+//│ ║  l.119: 	foo 42
 //│ ║         	^^^^^^
 //│ ╟── integer literal of type `int` does not have field 'f'
-//│ ║  l.113: 	foo 42
+//│ ║  l.119: 	foo 42
 //│ ║         	    ^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.109: 	  in { l = getf xf; r = getf x; s = x }
+//│ ║  l.115: 	  in { l = getf xf; r = getf x; s = x }
 //│ ║         	                             ^
 //│ ╟── from record literal:
-//│ ║  l.85: 	def getf { f } = f
+//│ ║  l.79: 	def getf { f } = f
 //│ ╙──      	         ^^^^^
 //│ res: {l: int, r: nothing, s: int}
 
@@ -136,6 +142,18 @@ r.s.f
 //│ res: int
 
 add r.s 1
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.144: 	add r.s 1
+//│ ║         	^^^^^^^
+//│ ╟── argument of type `(?s,)` is not an instance of `int`
+//│ ║  l.144: 	add r.s 1
+//│ ╙──       	    ^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.144: 	add r.s 1
+//│ ║         	^^^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.144: 	add r.s 1
+//│ ╙──       	        ^
 //│ res: int
 
 
@@ -145,13 +163,13 @@ add r.s 1
 :e
 res.z
 //│ ╔══[ERROR] Type mismatch in field selection:
-//│ ║  l.146: 	res.z
+//│ ║  l.164: 	res.z
 //│ ║         	^^^^^
 //│ ╟── `with` extension of type `{x: int, y: int}` does not have field 'z'
-//│ ║  l.142: 	{} with { x = 1 } with { y = 2 }
+//│ ║  l.160: 	{} with { x = 1 } with { y = 2 }
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `{z: ?z}`
-//│ ║  l.146: 	res.z
+//│ ║  l.164: 	res.z
 //│ ╙──       	^^^
 //│ res: nothing
 
@@ -166,22 +184,28 @@ class C[A]: { x: A }
 //│ Defined class C[+A]
 
 c = C{x = 1}
-//│ c: C[int]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.186: 	c = C{x = 1}
+//│ ║         	    ^^^^^^^^
+//│ ╟── argument of type `({x: int},)` does not have field 'x'
+//│ ║  l.186: 	c = C{x = 1}
+//│ ╙──       	     ^^^^^^^
+//│ c: C[nothing]
 
 c.x
-//│ res: int
+//│ res: nothing
 
 d = c with { x = "hi"; y = 2 }
-//│ d: C[int] with {x: string, y: int}
+//│ d: C[nothing] with {y: int}
 
 d.x
 //│ res: string
 
 d: C['a]
-//│ res: C[int | string]
+//│ res: C[string]
 
 res.x
-//│ res: int | string
+//│ res: string
 
 
 def f x = (x with { a = 1 }).b

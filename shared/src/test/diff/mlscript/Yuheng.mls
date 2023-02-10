@@ -1,9 +1,33 @@
 
 1 + 2
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.2: 	1 + 2
+//│ ║       	^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.2: 	1 + 2
+//│ ╙──     	^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.2: 	1 + 2
+//│ ║       	^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.2: 	1 + 2
+//│ ╙──     	    ^
 //│ res: int
 
 def foo(x) = x + 1
-//│ foo: int -> int
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.17: 	def foo(x) = x + 1
+//│ ║        	             ^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.17: 	def foo(x) = x + 1
+//│ ╙──      	             ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.17: 	def foo(x) = x + 1
+//│ ║        	             ^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.17: 	def foo(x) = x + 1
+//│ ╙──      	                 ^
+//│ foo: anything -> int
 
 class A: { x: number }
 //│ Defined class A
@@ -21,46 +45,34 @@ def f v = case v of {
 
 a1 = A { x = 0 }
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.22: 	a1 = A { x = 0 }
+//│ ║  l.46: 	a1 = A { x = 0 }
 //│ ║        	     ^^^^^^^^^^^
-//│ ╟── integer literal of type `int` is not an instance of `number`
-//│ ║  l.22: 	a1 = A { x = 0 }
-//│ ║        	             ^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.8: 	class A: { x: number }
-//│ ╙──     	              ^^^^^^
-//│ a1: A with {x: int}
+//│ ╟── argument of type `({x: int},)` does not have field 'x'
+//│ ║  l.46: 	a1 = A { x = 0 }
+//│ ╙──      	       ^^^^^^^^^
+//│ a1: A & {x: nothing}
 
 f a1
 //│ res: int
 
 a2 = A { x = 0: number }
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.37: 	a2 = A { x = 0: number }
+//│ ║  l.58: 	a2 = A { x = 0: number }
 //│ ║        	             ^
 //│ ╟── integer literal of type `int` is not an instance of `number`
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.37: 	a2 = A { x = 0: number }
+//│ ║  l.58: 	a2 = A { x = 0: number }
 //│ ╙──      	                ^^^^^^
-//│ a2: A
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.58: 	a2 = A { x = 0: number }
+//│ ║        	     ^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({x: number},)` does not have field 'x'
+//│ ║  l.58: 	a2 = A { x = 0: number }
+//│ ╙──      	       ^^^^^^^^^^^^^^^^^
+//│ a2: A & {x: nothing}
 
 :e
 f a2
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.48: 	f a2
-//│ ║        	^^^^
-//│ ╟── type `number` is not an instance of `int`
-//│ ║  l.37: 	a2 = A { x = 0: number }
-//│ ║        	                ^^^^^^
-//│ ╟── but it flows into reference with expected type `int`
-//│ ║  l.48: 	f a2
-//│ ║        	  ^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.16: 	def f v = case v of {
-//│ ║        	               ^
-//│ ╟── from type reference:
-//│ ║  l.17: 	    A -> (v.x : int)
-//│ ╙──      	                ^^^
 //│ res: int
 
 
@@ -82,11 +94,11 @@ a = (0, 1)
 
 1 : 1
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.83: 	1 : 1
+//│ ║  l.95: 	1 : 1
 //│ ║        	^
 //│ ╟── integer literal of type `int` does not match type `1`
 //│ ╟── Note: constraint arises from literal type:
-//│ ║  l.83: 	1 : 1
+//│ ║  l.95: 	1 : 1
 //│ ╙──      	    ^
 //│ res: 1
 
@@ -98,11 +110,11 @@ a = (0, 1)
 class Expr[A]
 //│ Defined class Expr[±A]
 //│ ╔══[WARNING] Type definition Expr has bivariant type parameters:
-//│ ║  l.98: 	class Expr[A]
-//│ ║        	      ^^^^
+//│ ║  l.110: 	class Expr[A]
+//│ ║         	      ^^^^
 //│ ╟── A is irrelevant and may be removed
-//│ ║  l.98: 	class Expr[A]
-//│ ╙──      	           ^
+//│ ║  l.110: 	class Expr[A]
+//│ ╙──       	           ^
 
 
 
@@ -113,13 +125,13 @@ class IntLit: Expr[int] & { value: int }
 class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
 //│ Defined class Pair[±A, ±B]
 //│ ╔══[WARNING] Type definition Pair has bivariant type parameters:
-//│ ║  l.113: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
+//│ ║  l.125: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
 //│ ║         	      ^^^^
 //│ ╟── A is irrelevant and may be removed
-//│ ║  l.113: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
+//│ ║  l.125: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
 //│ ║         	           ^
 //│ ╟── B is irrelevant and may be removed
-//│ ║  l.113: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
+//│ ║  l.125: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
 //│ ╙──       	              ^
 
 
@@ -145,29 +157,48 @@ rec def eval(e) = case e of
 //│     'b :> ('b, 'b,)
 
 eval (IntLit { value = 1 })
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.159: 	eval (IntLit { value = 1 })
+//│ ║         	      ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.159: 	eval (IntLit { value = 1 })
+//│ ╙──       	             ^^^^^^^^^^^^^
 //│ res: 'a
 //│   where
-//│     'a :> ('a, 'a,) | int
+//│     'a :> ('a, 'a,)
 
 eval (Pair {
   lhs = IntLit { value = 1 };
   rhs = IntLit { value = 2 } })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.152: 	eval (Pair {
-//│ ║         	      ^^^^^^
-//│ ║  l.153: 	  lhs = IntLit { value = 1 };
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.154: 	  rhs = IntLit { value = 2 } })
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `IntLit` is not an instance of type `Expr`
-//│ ║  l.153: 	  lhs = IntLit { value = 1 };
+//│ ║  l.171: 	  lhs = IntLit { value = 1 };
 //│ ║         	        ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.113: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
-//│ ╙──       	                                        ^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.171: 	  lhs = IntLit { value = 1 };
+//│ ╙──       	               ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.172: 	  rhs = IntLit { value = 2 } })
+//│ ║         	        ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.172: 	  rhs = IntLit { value = 2 } })
+//│ ╙──       	               ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.170: 	eval (Pair {
+//│ ║         	      ^^^^^^
+//│ ║  l.171: 	  lhs = IntLit { value = 1 };
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.172: 	  rhs = IntLit { value = 2 } })
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.170: 	eval (Pair {
+//│ ║         	           ^
+//│ ║  l.171: 	  lhs = IntLit { value = 1 };
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.172: 	  rhs = IntLit { value = 2 } })
+//│ ╙──       	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ res: 'a
 //│   where
-//│     'a :> ('a, 'a,) | int
+//│     'a :> ('a, 'a,)
 
 p = Pair {
   lhs = IntLit { value = 1 };
@@ -175,41 +206,65 @@ p = Pair {
     lhs = IntLit { value = 2 };
     rhs = IntLit { value = 3 } } }
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.174: 	  rhs = Pair {
-//│ ║         	        ^^^^^^
-//│ ║  l.175: 	    lhs = IntLit { value = 2 };
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.176: 	    rhs = IntLit { value = 3 } } }
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `IntLit` is not an instance of type `Expr`
-//│ ║  l.175: 	    lhs = IntLit { value = 2 };
-//│ ║         	          ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.113: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
-//│ ╙──       	                                        ^^^^^^^
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.172: 	p = Pair {
-//│ ║         	    ^^^^^^
-//│ ║  l.173: 	  lhs = IntLit { value = 1 };
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.174: 	  rhs = Pair {
-//│ ║         	^^^^^^^^^^^^^^
-//│ ║  l.175: 	    lhs = IntLit { value = 2 };
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.176: 	    rhs = IntLit { value = 3 } } }
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `IntLit` is not an instance of type `Expr`
-//│ ║  l.173: 	  lhs = IntLit { value = 1 };
+//│ ║  l.204: 	  lhs = IntLit { value = 1 };
 //│ ║         	        ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.113: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
-//│ ╙──       	                                        ^^^^^^^
-//│ p: Pair[?, ?] with {lhs: IntLit, rhs: Pair[?, ?] with {lhs: IntLit, rhs: IntLit}}
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.204: 	  lhs = IntLit { value = 1 };
+//│ ╙──       	               ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.206: 	    lhs = IntLit { value = 2 };
+//│ ║         	          ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.206: 	    lhs = IntLit { value = 2 };
+//│ ╙──       	                 ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.207: 	    rhs = IntLit { value = 3 } } }
+//│ ║         	          ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.207: 	    rhs = IntLit { value = 3 } } }
+//│ ╙──       	                 ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.205: 	  rhs = Pair {
+//│ ║         	        ^^^^^^
+//│ ║  l.206: 	    lhs = IntLit { value = 2 };
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.207: 	    rhs = IntLit { value = 3 } } }
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.205: 	  rhs = Pair {
+//│ ║         	             ^
+//│ ║  l.206: 	    lhs = IntLit { value = 2 };
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.207: 	    rhs = IntLit { value = 3 } } }
+//│ ╙──       	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.203: 	p = Pair {
+//│ ║         	    ^^^^^^
+//│ ║  l.204: 	  lhs = IntLit { value = 1 };
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.205: 	  rhs = Pair {
+//│ ║         	^^^^^^^^^^^^^^
+//│ ║  l.206: 	    lhs = IntLit { value = 2 };
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.207: 	    rhs = IntLit { value = 3 } } }
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.203: 	p = Pair {
+//│ ║         	         ^
+//│ ║  l.204: 	  lhs = IntLit { value = 1 };
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.205: 	  rhs = Pair {
+//│ ║         	^^^^^^^^^^^^^^
+//│ ║  l.206: 	    lhs = IntLit { value = 2 };
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.207: 	    rhs = IntLit { value = 3 } } }
+//│ ╙──       	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ p: Pair[?, ?] & {lhs: nothing, rhs: nothing}
 
 ep = eval p
 //│ ep: 'a
 //│   where
-//│     'a :> ('a, 'a,) | int
+//│     'a :> ('a, 'a,)
 
 
 // FUTURE:
@@ -237,13 +292,13 @@ ep = eval p
 class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
 //│ Defined class Pair2[±A, ±B]
 //│ ╔══[WARNING] Type definition Pair2 has bivariant type parameters:
-//│ ║  l.237: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
+//│ ║  l.292: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
 //│ ║         	      ^^^^^
 //│ ╟── A is irrelevant and may be removed
-//│ ║  l.237: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
+//│ ║  l.292: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
 //│ ║         	            ^
 //│ ╟── B is irrelevant and may be removed
-//│ ║  l.237: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
+//│ ║  l.292: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
 //│ ╙──       	               ^
 
 
@@ -260,30 +315,24 @@ ep + 1
 //│ ╔══[ERROR] Type mismatch in operator application:
 //│ ║  l.+1: 	ep + 1
 //│ ║        	^^^^
-//│ ╟── tuple literal of type `(?a, ?b,)` is not an instance of `int`
-//│ ║  l.139: 	  | Pair -> (eval e.lhs, eval e.rhs)
-//│ ║         	            ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `int`
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
 //│ ║  l.+1: 	ep + 1
 //│ ╙──      	^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.+1: 	ep + 1
+//│ ║        	^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.+1: 	ep + 1
+//│ ╙──      	     ^
 //│ res: int
 
 
 
 
 ep[0]
-//│ ╔══[ERROR] Type mismatch in array access:
-//│ ║  l.+1: 	ep[0]
-//│ ║        	^^^^^
-//│ ╟── integer literal of type `int` does not match type `Array[?a]`
-//│ ║  l.176: 	    rhs = IntLit { value = 3 } } }
-//│ ║         	                           ^
-//│ ╟── but it flows into reference with expected type `Array[?b]`
-//│ ║  l.+1: 	ep[0]
-//│ ╙──      	^^
 //│ res: undefined | 'a
 //│   where
-//│     'a :> ('a, 'a,) | int
+//│     'a :> ('a, 'a,)
 
 
 
@@ -295,18 +344,37 @@ eval (Pair {
     lhs = IntLit { value = 2 };
     rhs = IntLit { value = 3 } } } })
 //│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.+2: 	  lhs = IntLit { value = 1 };
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.+2: 	  lhs = IntLit { value = 1 };
+//│ ╙──      	               ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.+4: 	    lhs = IntLit { value = 2 };
+//│ ║        	          ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.+4: 	    lhs = IntLit { value = 2 };
+//│ ╙──      	                 ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.+5: 	    rhs = IntLit { value = 3 } } } })
+//│ ║        	          ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.+5: 	    rhs = IntLit { value = 3 } } } })
+//│ ╙──      	                 ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+3: 	  rhs = IntLit { value = Pair {
 //│ ║        	                         ^^^^^^
 //│ ║  l.+4: 	    lhs = IntLit { value = 2 };
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+5: 	    rhs = IntLit { value = 3 } } } })
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `IntLit` is not an instance of type `Expr`
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.+3: 	  rhs = IntLit { value = Pair {
+//│ ║        	                              ^
 //│ ║  l.+4: 	    lhs = IntLit { value = 2 };
-//│ ║        	          ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.113: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
-//│ ╙──       	                                        ^^^^^^^
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.+5: 	    rhs = IntLit { value = 3 } } } })
+//│ ╙──      	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+3: 	  rhs = IntLit { value = Pair {
 //│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^
@@ -314,16 +382,13 @@ eval (Pair {
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+5: 	    rhs = IntLit { value = 3 } } } })
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Pair[?, ?] with {Pair#A = ?A, Pair#B = ?B, lhs: ?lhs, rhs: ?rhs}` is not an instance of `int`
+//│ ╟── argument of type `({value: ?a},)` does not have field 'value'
 //│ ║  l.+3: 	  rhs = IntLit { value = Pair {
-//│ ║        	                         ^^^^^^
+//│ ║        	               ^^^^^^^^^^^^^^^^
 //│ ║  l.+4: 	    lhs = IntLit { value = 2 };
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+5: 	    rhs = IntLit { value = 3 } } } })
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.109: 	class IntLit: Expr[int] & { value: int }
-//│ ╙──       	                                   ^^^
+//│ ╙──      	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	eval (Pair {
 //│ ║        	      ^^^^^^
@@ -335,15 +400,20 @@ eval (Pair {
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+5: 	    rhs = IntLit { value = 3 } } } })
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `IntLit` is not an instance of type `Expr`
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.+1: 	eval (Pair {
+//│ ║        	           ^
 //│ ║  l.+2: 	  lhs = IntLit { value = 1 };
-//│ ║        	        ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.113: 	class Pair[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[B] }
-//│ ╙──       	                                        ^^^^^^^
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.+3: 	  rhs = IntLit { value = Pair {
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.+4: 	    lhs = IntLit { value = 2 };
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.+5: 	    rhs = IntLit { value = 3 } } } })
+//│ ╙──      	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ res: 'a
 //│   where
-//│     'a :> ('a, 'a,) | int | (Pair[?, ?] with {lhs: IntLit, rhs: IntLit})
+//│     'a :> ('a, 'a,)
 
 
 
@@ -359,18 +429,37 @@ p = Pair2 {
     lhs = IntLit { value = 2 };
     rhs = IntLit { value = 3 } } }
 //│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.+2: 	  lhs = IntLit { value = 1 };
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.+2: 	  lhs = IntLit { value = 1 };
+//│ ╙──      	               ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.+4: 	    lhs = IntLit { value = 2 };
+//│ ║        	          ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.+4: 	    lhs = IntLit { value = 2 };
+//│ ╙──      	                 ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.+5: 	    rhs = IntLit { value = 3 } } }
+//│ ║        	          ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.+5: 	    rhs = IntLit { value = 3 } } }
+//│ ╙──      	                 ^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+3: 	  rhs = Pair2 {
 //│ ║        	        ^^^^^^^
 //│ ║  l.+4: 	    lhs = IntLit { value = 2 };
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+5: 	    rhs = IntLit { value = 3 } } }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `IntLit` is not an instance of type `Expr`
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.+3: 	  rhs = Pair2 {
+//│ ║        	              ^
 //│ ║  l.+4: 	    lhs = IntLit { value = 2 };
-//│ ║        	          ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.237: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
-//│ ╙──       	                                         ^^^^^^^
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.+5: 	    rhs = IntLit { value = 3 } } }
+//│ ╙──      	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	p = Pair2 {
 //│ ║        	    ^^^^^^^
@@ -382,13 +471,18 @@ p = Pair2 {
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.+5: 	    rhs = IntLit { value = 3 } } }
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `IntLit` is not an instance of type `Expr`
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.+1: 	p = Pair2 {
+//│ ║        	          ^
 //│ ║  l.+2: 	  lhs = IntLit { value = 1 };
-//│ ║        	        ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.237: 	class Pair2[A, B]: Expr[(A, B)] & { lhs: Expr[A]; rhs: Expr[A] }
-//│ ╙──       	                                         ^^^^^^^
-//│ p: Pair2[?, ?] with {lhs: IntLit, rhs: Pair2[?, ?] with {lhs: IntLit, rhs: IntLit}}
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.+3: 	  rhs = Pair2 {
+//│ ║        	^^^^^^^^^^^^^^^
+//│ ║  l.+4: 	    lhs = IntLit { value = 2 };
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.+5: 	    rhs = IntLit { value = 3 } } }
+//│ ╙──      	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ p: Pair2[?, ?] & {lhs: nothing, rhs: nothing}
 
 
 
@@ -409,7 +503,7 @@ rec def eval(e) = case e of
 //│ ║  l.+4: 	  }
 //│ ║        	^^^
 //│ ╟── type `Expr[?]` does not match type `IntLit & ?a | Pair[?, ?] & ?b`
-//│ ║  l.395: 	def eval: Expr['a] -> 'a
+//│ ║  l.489: 	def eval: Expr['a] -> 'a
 //│ ║         	          ^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.+1: 	rec def eval(e) = case e of
@@ -436,7 +530,7 @@ rec def eval(e) = case e of
 //│ ║  l.+4: 	  }
 //│ ║        	^^^
 //│ ╟── Note: constraint arises from type variable:
-//│ ║  l.395: 	def eval: Expr['a] -> 'a
+//│ ║  l.489: 	def eval: Expr['a] -> 'a
 //│ ╙──       	                      ^^
 //│ 'a -> (('b, 'b,) | 'value)
 //│   where
@@ -506,7 +600,7 @@ rec def eval(e) = case e of
 //│ ║  l.+5: 	  }
 //│ ║        	^^^
 //│ ╟── Note: constraint arises from type variable:
-//│ ║  l.395: 	def eval: Expr['a] -> 'a
+//│ ║  l.489: 	def eval: Expr['a] -> 'a
 //│ ╙──       	                      ^^
 //│ 'a -> (('b, 'b,) | 'value)
 //│   where

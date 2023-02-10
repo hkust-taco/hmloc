@@ -10,7 +10,13 @@ class Success: { result: anything }
 def NotFound = NotFound {}
 def Success result = Success { result }
 //│ NotFound: NotFound
-//│ Success: 'result -> (Success with {result: 'result})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.11: 	def Success result = Success { result }
+//│ ║        	                     ^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({result: ?a},)` does not have field 'result'
+//│ ║  l.11: 	def Success result = Success { result }
+//│ ╙──      	                             ^^^^^^^^^^
+//│ Success: anything -> (Success & {result: nothing})
 
 type Tuple[A, B] = (A, B)
 //│ Defined type alias Tuple[+A, +B]
@@ -29,7 +35,13 @@ def Nil = Nil {}
 //│ Nil: Nil
 
 def Cons head tail = Cons { head; tail }
-//│ Cons: ('head & 'A) -> (List['A] & 'tail) -> (Cons['A] with {head: 'head, tail: 'tail})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.37: 	def Cons head tail = Cons { head; tail }
+//│ ║        	                     ^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({head: ?a, tail: ?b},)` is not a record (expected a record with fields: head, tail)
+//│ ║  l.37: 	def Cons head tail = Cons { head; tail }
+//│ ╙──      	                          ^^^^^^^^^^^^^^
+//│ Cons: anything -> anything -> (Cons[nothing] & {tail: nothing})
 
 def eq: string -> string -> bool
 //│ eq: string -> string -> bool
@@ -40,12 +52,12 @@ rec def list_assoc s l = case l of {
       else list_assoc s l.tail
   | Nil -> NotFound
   }
-//│ list_assoc: string -> 'a -> (NotFound | (Success with {result: 'result}))
+//│ list_assoc: string -> 'a -> (NotFound | Success & {result: nothing})
 //│   where
-//│     'a <: (Cons[?] with {head: {_1: string, _2: 'result}, tail: 'a}) | Nil
+//│     'a <: (Cons[?] with {head: {_1: string, _2: anything}, tail: 'a}) | Nil
 
 list_assoc "2" (Cons (Tuple "2" 1) Nil )
-//│ res: NotFound | Success & {result: int}
+//│ res: NotFound | Success & {result: nothing}
 
 // ***************************** Var *******************************
 
@@ -63,9 +75,9 @@ def eval_var sub v = case v of {
           | Success -> res.result
           }
   }
-//│ eval_var: 'a -> (Var & 'result) -> 'result
+//│ eval_var: 'a -> (Var & 'b) -> 'b
 //│   where
-//│     'a <: (Cons[?] with {head: {_1: string, _2: 'result}, tail: 'a}) | Nil
+//│     'a <: (Cons[?] with {head: {_1: string, _2: anything}, tail: 'a}) | Nil
 
 // *************************** Lambda ********************************
 
@@ -99,24 +111,40 @@ def eval_lambda eval_rec subst v = case v of {
     Abs { name = new_name;
           body = eval_rec (Cons (Tuple v.name (Var { name = new_name })) subst) v.body }
   }
-//│ eval_lambda: (((Cons[('a, 'rhs | Var,) | 'A] with {head: ('a, 'rhs | Var,), tail: Nil | 'tail}) | 'tail) -> 'body -> ('rhs & 'b & ((Abs[?] with {body: 'body, name: 'a}) | 'lhs & ~#Abs))) -> ('c & List['A] & 'tail) -> ((Abs[?] with {body: 'body, name: 'a}) | (App[?] with {lhs: 'body, rhs: 'body}) | Var & 'b) -> (Abs['rhs] | (App['rhs] with {lhs: 'lhs, rhs: 'rhs}) | 'b)
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.108: 	    | _ -> App { lhs = l1; rhs = l2 }
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.108: 	    | _ -> App { lhs = l1; rhs = l2 }
+//│ ╙──       	               ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.112: 	          body = eval_rec (Cons (Tuple v.name (Var { name = new_name })) subst) v.body }
+//│ ║         	                                               ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({name: ?a},)` does not have field 'name'
+//│ ║  l.112: 	          body = eval_rec (Cons (Tuple v.name (Var { name = new_name })) subst) v.body }
+//│ ╙──       	                                                   ^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.111: 	    Abs { name = new_name;
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.112: 	          body = eval_rec (Cons (Tuple v.name (Var { name = new_name })) subst) v.body }
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({body: ?a, name: ?b},)` is not a record (expected a record with fields: name, body)
+//│ ║  l.111: 	    Abs { name = new_name;
+//│ ║         	        ^^^^^^^^^^^^^^^^^^
+//│ ║  l.112: 	          body = eval_rec (Cons (Tuple v.name (Var { name = new_name })) subst) v.body }
+//│ ╙──       	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ eval_lambda: ((Cons[nothing] & {tail: nothing} | 'a) -> 'body -> ('b & ((Abs[?] with {body: 'body}) | ~#Abs))) -> ('a & 'c) -> ((Abs[?] with {body: 'body}) | (App[?] with {lhs: 'body, rhs: 'body}) | Var & 'b) -> (Abs[nothing] & {name: nothing} | App[nothing] | 'b)
 //│   where
-//│     'c <: (Cons[?] with {head: {_1: string, _2: 'b}, tail: 'c}) | Nil
+//│     'c <: (Cons[?] with {head: {_1: string, _2: anything}, tail: 'c}) | Nil
 
 rec def eval1 subst = eval_lambda eval1 subst
-//│ eval1: (List[?] & 'tail) -> 'b -> ('rhs | 'c)
+//│ eval1: 'a -> 'b -> (Abs[nothing] & {name: nothing} | 'c)
 //│   where
-//│     'tail <: (Cons[?] with {head: {_1: string, _2: 'd}, tail: 'tail}) | Nil
-//│     'd <: 'body & (Abs[?] & {body: 'b} | 'lhs & ~#Abs) & 'rhs
-//│     'body :> Var | 'c
-//│           <: 'd & 'b
-//│     'c :> Abs['body] & {body: 'body} | App['a] & {lhs: 'lhs, rhs: 'rhs}
-//│     'a :> App['a] & {lhs: 'lhs, rhs: 'rhs} | Var | 'c
-//│     'lhs :> App['a] & {lhs: 'lhs, rhs: 'rhs} | Var
-//│          <: 'a & 'b
-//│     'rhs :> Var | 'c
-//│          <: 'd & 'body & 'a & 'b
-//│     'b <: Abs[?] & {body: 'b} | App[?] & {lhs: 'b, rhs: 'b} | Var & 'rhs
+//│     'b <: (Abs[?] with {body: 'b}) | App[?] & {lhs: 'b, rhs: 'b} | Var & 'd
+//│     'd <: ((Abs[?] with {body: 'b}) | ~Abs[?]) & 'c
+//│     'c :> Abs[nothing] & {name: nothing} | App[nothing]
+//│        <: 'd
+//│     'a <: (Cons[?] with {head: {_1: string, _2: anything}, tail: 'a}) | Nil
 
 // ------------- OCaml's type -------------
 // val eval_lambda :
@@ -145,7 +173,19 @@ def map_expr f v = case v of {
   | Add -> Add { lhs = f v.lhs; rhs = f v.rhs }
   | Mul -> Mul { lhs = f v.lhs; rhs = f v.rhs }
   }
-//│ map_expr: ('rhs -> 'rhs0) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Mul[?] with {lhs: 'rhs, rhs: 'rhs}) | 'a & (Num | Var)) -> (Add['rhs0] | Mul['rhs0] | 'a)
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.173: 	  | Add -> Add { lhs = f v.lhs; rhs = f v.rhs }
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.173: 	  | Add -> Add { lhs = f v.lhs; rhs = f v.rhs }
+//│ ╙──       	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.174: 	  | Mul -> Mul { lhs = f v.lhs; rhs = f v.rhs }
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.174: 	  | Mul -> Mul { lhs = f v.lhs; rhs = f v.rhs }
+//│ ╙──       	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ map_expr: ('rhs -> anything) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Mul[?] with {lhs: 'rhs, rhs: 'rhs}) | 'a & (Num | Var)) -> (Add[nothing] | Mul[nothing] | 'a)
 
 rec def eval_expr eval_rec subst v =
   let vv = map_expr (eval_rec subst) v in
@@ -171,21 +211,51 @@ rec def eval_expr eval_rec subst v =
               }
     | Num -> vv // _ -> vv
     }
-//│ eval_expr: ('a -> 'lhs -> 'lhs0) -> ('a & 'b) -> ((Add[?] with {lhs: 'lhs, rhs: 'lhs}) | (Mul[?] with {lhs: 'lhs, rhs: 'lhs}) | 'c & (Num | Var)) -> (Add['lhs0] | Mul['lhs0] | Num | 'c)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.198: 	                | Num -> Num { num = vv1.num + vv2.num }
+//│ ║         	                                     ^^^^^^^^^
+//│ ╟── argument of type `(?num,)` is not an instance of `int`
+//│ ║  l.198: 	                | Num -> Num { num = vv1.num + vv2.num }
+//│ ╙──       	                                     ^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.198: 	                | Num -> Num { num = vv1.num + vv2.num }
+//│ ║         	                                     ^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?num,)` is not an instance of `int`
+//│ ║  l.198: 	                | Num -> Num { num = vv1.num + vv2.num }
+//│ ╙──       	                                               ^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.198: 	                | Num -> Num { num = vv1.num + vv2.num }
+//│ ║         	                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({num: ?a},)` does not have field 'num'
+//│ ║  l.198: 	                | Num -> Num { num = vv1.num + vv2.num }
+//│ ╙──       	                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.207: 	                | Num -> Num { num = vv1.num * vv2.num }
+//│ ║         	                                     ^^^^^^^^^
+//│ ╟── argument of type `(?num,)` is not an instance of `int`
+//│ ║  l.207: 	                | Num -> Num { num = vv1.num * vv2.num }
+//│ ╙──       	                                     ^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.207: 	                | Num -> Num { num = vv1.num * vv2.num }
+//│ ║         	                                     ^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?num,)` is not an instance of `int`
+//│ ║  l.207: 	                | Num -> Num { num = vv1.num * vv2.num }
+//│ ╙──       	                                               ^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.207: 	                | Num -> Num { num = vv1.num * vv2.num }
+//│ ║         	                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({num: ?a},)` does not have field 'num'
+//│ ║  l.207: 	                | Num -> Num { num = vv1.num * vv2.num }
+//│ ╙──       	                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ eval_expr: ('a -> 'lhs -> anything) -> ('a & 'b) -> ((Add[?] with {lhs: 'lhs, rhs: 'lhs}) | (Mul[?] with {lhs: 'lhs, rhs: 'lhs}) | 'c & (Num | Var)) -> (Add[nothing] | Mul[nothing] | Num & {num: nothing} | 'c)
 //│   where
-//│     'b <: (Cons[?] with {head: {_1: string, _2: 'c}, tail: 'b}) | Nil
+//│     'b <: (Cons[?] with {head: {_1: string, _2: anything}, tail: 'b}) | Nil
 
 rec def eval2 subst = eval_expr eval2 subst
-//│ eval2: 'b -> 'c -> (Add['a] & {lhs: 'lhs, rhs: 'lhs} | Mul['a0] & {lhs: 'rhs, rhs: 'rhs} | Num | 'd)
+//│ eval2: 'a -> 'b -> (Add[nothing] | Mul[nothing] | Num & {num: nothing} | 'c)
 //│   where
-//│     'c <: Add[?] & {lhs: 'c, rhs: 'c} | Mul[?] & {lhs: 'c, rhs: 'c} | 'd & 'rhs & 'lhs & (Num | Var)
-//│     'b <: (Cons[?] with {head: {_1: string, _2: 'd & 'rhs & 'lhs}, tail: 'b}) | Nil
-//│     'rhs :> Add['a] & {lhs: 'lhs, rhs: 'lhs} | Mul['a0] & {lhs: 'rhs, rhs: 'rhs} | Num
-//│          <: (Num | ~#Num) & 'a0 & (~#Num | Num)
-//│     'a :> Add['a] & {lhs: 'lhs, rhs: 'lhs} | Mul['a0] & {lhs: 'rhs, rhs: 'rhs} | Num | 'rhs
-//│     'lhs :> Add['a] & {lhs: 'lhs, rhs: 'lhs} | Mul['a0] & {lhs: 'rhs, rhs: 'rhs} | Num
-//│          <: 'a & (~#Num | Num) & 'rhs
-//│     'a0 :> Add['a] & {lhs: 'lhs, rhs: 'lhs} | Mul['a0] & {lhs: 'rhs, rhs: 'rhs} | Num | 'rhs
+//│     'b <: Add[?] & {lhs: 'b, rhs: 'b} | Mul[?] & {lhs: 'b, rhs: 'b} | 'c & (Num | Var)
+//│     'a <: (Cons[?] with {head: {_1: string, _2: anything}, tail: 'a}) | Nil
 
 
 // ------------- OCaml's type -------------
@@ -220,110 +290,14 @@ def eval_lexpr eval_rec subst v = case v of {
   | Lambda -> eval_lambda eval_rec subst v
   | Expr -> eval_expr eval_rec subst v
   }
-//│ eval_lexpr: (((Cons[('b, 'a | Var,) | 'A] with {head: ('b, 'a | Var,), tail: Nil | 'tail}) | 'tail) -> 'body -> ('c & 'a & ((Abs[?] with {body: 'body, name: 'b}) | 'lhs & ~#Abs))) -> ('d & List['A] & 'tail) -> nothing -> (Abs['a] | Add['a] | (App['a] with {lhs: 'lhs, rhs: 'a}) | Mul['a] | Num | 'c)
+//│ eval_lexpr: ((Cons[nothing] & {tail: nothing} | 'a) -> 'body -> ('b & ((Abs[?] with {body: 'body}) | ~#Abs))) -> ('a & 'c) -> nothing -> (Abs[nothing] & {name: nothing} | Add[nothing] | App[nothing] | Mul[nothing] | Num & {num: nothing} | 'b)
 //│   where
-//│     'd <: (Cons[?] with {head: {_1: string, _2: 'c}, tail: 'd}) | Nil
+//│     'c <: (Cons[?] with {head: {_1: string, _2: anything}, tail: 'c}) | Nil
 
 rec def eval3 subst = eval_lexpr eval3 subst
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.227: 	rec def eval3 subst = eval_lexpr eval3 subst
-//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Num` does not match type `Expr & ?a | Lambda & ?b`
-//│ ║  l.158: 	                | Num -> Num { num = vv1.num + vv2.num }
-//│ ║         	                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.93: 	    let l1 = eval_rec subst v.rhs in
-//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
-//│ ╙──       	                                       ^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.227: 	rec def eval3 subst = eval_lexpr eval3 subst
-//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Add[?a] & {Add#a = ?a, lhs: ?lhs, rhs: ?rhs}` does not match type `Expr & ?b | Lambda & ?c`
-//│ ║  l.145: 	  | Add -> Add { lhs = f v.lhs; rhs = f v.rhs }
-//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.93: 	    let l1 = eval_rec subst v.rhs in
-//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
-//│ ╙──       	                                       ^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.227: 	rec def eval3 subst = eval_lexpr eval3 subst
-//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Num` does not match type `Expr & ?a | Lambda & ?b`
-//│ ║  l.167: 	                | Num -> Num { num = vv1.num * vv2.num }
-//│ ║         	                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.93: 	    let l1 = eval_rec subst v.rhs in
-//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
-//│ ╙──       	                                       ^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.227: 	rec def eval3 subst = eval_lexpr eval3 subst
-//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Mul[?a] & {Mul#a = ?a, lhs: ?lhs, rhs: ?rhs}` does not match type `Expr & ?b | Lambda & ?c`
-//│ ║  l.146: 	  | Mul -> Mul { lhs = f v.lhs; rhs = f v.rhs }
-//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.93: 	    let l1 = eval_rec subst v.rhs in
-//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
-//│ ╙──       	                                       ^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.227: 	rec def eval3 subst = eval_lexpr eval3 subst
-//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `App[?a] & {App#a = ?a, lhs: ?lhs, rhs: ?rhs}` does not match type `Expr & ?b | Lambda & ?c`
-//│ ║  l.96: 	    | _ -> App { lhs = l1; rhs = l2 }
-//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.93: 	    let l1 = eval_rec subst v.rhs in
-//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
-//│ ╙──       	                                       ^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.227: 	rec def eval3 subst = eval_lexpr eval3 subst
-//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Abs[?a] & {Abs#a = ?a, body: ?body}` does not match type `Expr & ?b | Lambda & ?c`
-//│ ║  l.99: 	    Abs { name = new_name;
-//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.100: 	          body = eval_rec (Cons (Tuple v.name (Var { name = new_name })) subst) v.body }
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.93: 	    let l1 = eval_rec subst v.rhs in
-//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
-//│ ╙──       	                                       ^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.227: 	rec def eval3 subst = eval_lexpr eval3 subst
-//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Var` does not match type `Expr & ?a | Lambda & ?b`
-//│ ║  l.100: 	          body = eval_rec (Cons (Tuple v.name (Var { name = new_name })) subst) v.body }
-//│ ║         	                                               ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.93: 	    let l1 = eval_rec subst v.rhs in
-//│ ║        	             ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
-//│ ╙──       	                                       ^
-//│ eval3: (List[?] & 'tail) -> nothing -> 'b
+//│ eval3: 'a -> nothing -> (Add[nothing] | Mul[nothing] | Num & {num: nothing} | Abs[nothing] & {name: nothing} | App[nothing])
 //│   where
-//│     'tail <: (Cons[?] with {head: {_1: string, _2: 'c}, tail: 'tail}) | Nil
-//│     'c <: 'body & 'b & (Abs[?] & {body: nothing} | 'lhs & ~#Abs)
-//│     'b :> Abs['body] | Add['a] & {lhs: 'body, rhs: 'body} | App['a0] & {lhs: 'lhs, rhs: 'body} | Mul['body] & {lhs: 'a, rhs: 'a} | Num | Var
-//│        <: 'c & 'body & 'a
-//│     'body :> Abs['body] | Add['a] & {lhs: 'body, rhs: 'body} | App['a0] & {lhs: 'lhs, rhs: 'body} | Mul['body] & {lhs: 'a, rhs: 'a} | Num | Var
-//│           <: nothing
-//│     'a :> Abs['body] | Add['a] & {lhs: 'body, rhs: 'body} | App['a0] & {lhs: 'lhs, rhs: 'body} | Mul['body] & {lhs: 'a, rhs: 'a} | Num | Var
-//│        <: 'body & (~#Num | Num)
-//│     'a0 :> Abs['body] | Add['a] & {lhs: 'body, rhs: 'body} | App['a0] & {lhs: 'lhs, rhs: 'body} | Mul['body] & {lhs: 'a, rhs: 'a} | Num | Var
-//│     'lhs :> Add['a] & {lhs: 'body, rhs: 'body} | App['a0] & {lhs: 'lhs, rhs: 'body} | Mul['body] & {lhs: 'a, rhs: 'a} | Num | Var
-//│          <: 'a0
+//│     'a <: (Cons[?] with {head: {_1: string, _2: anything}, tail: 'a}) | Nil
 
 // ------------- OCaml's type -------------
 // val eval_lexpr :
@@ -367,104 +341,154 @@ eval3 Nil (Var { name = "s" })
 //     | `Var of string ] as 'a
 // = `Var "s"
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.360: 	eval3 Nil (Var { name = "s" })
+//│ ║  l.334: 	eval3 Nil (Var { name = "s" })
+//│ ║         	           ^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({name: string},)` does not have field 'name'
+//│ ║  l.334: 	eval3 Nil (Var { name = "s" })
+//│ ╙──       	               ^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.334: 	eval3 Nil (Var { name = "s" })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Var` does not match type `Expr & ?a | Lambda & ?b`
-//│ ║  l.360: 	eval3 Nil (Var { name = "s" })
+//│ ╟── application of type `Var & {name: ?name}` does not match type `Expr & ?a | Lambda & ?b`
+//│ ║  l.334: 	eval3 Nil (Var { name = "s" })
 //│ ║         	           ^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into argument with expected type `Expr & ?c | Lambda & ?d`
-//│ ║  l.360: 	eval3 Nil (Var { name = "s" })
+//│ ║  l.334: 	eval3 Nil (Var { name = "s" })
 //│ ║         	          ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ║  l.289: 	def eval_lexpr eval_rec subst v = case v of {
 //│ ╙──       	                                       ^
-//│ res: 'a
-//│   where
-//│     'a :> Abs['a] | (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
-//│     'lhs0 :> (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
-//│     'lhs :> 'a
+//│ res: Abs[nothing] & {name: nothing} | Add[nothing] | App[nothing] | Mul[nothing] | Num & {num: nothing}
 
 
 eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.388: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
+//│ ║  l.364: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
+//│ ║         	                                    ^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({name: string},)` does not have field 'name'
+//│ ║  l.364: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
+//│ ╙──       	                                        ^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.364: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({body: ?a, name: string},)` is not a record (expected a record with fields: name, body)
+//│ ║  l.364: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
+//│ ╙──       	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.364: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Abs[?a] & {Abs#a = ?a, body: ?body}` does not match type `Expr & ?b | Lambda & ?c`
-//│ ║  l.388: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
+//│ ╟── application of type `Abs[?a] with {Abs#a = ?a, body: ?body, name: ?name}` does not match type `Expr & ?b | Lambda & ?c`
+//│ ║  l.364: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
 //│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into argument with expected type `Expr & ?d | Lambda & ?e`
-//│ ║  l.388: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
+//│ ║  l.364: 	eval3 Nil (Abs { name = "s"; body = Var { name = "s" } })
 //│ ║         	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ║  l.289: 	def eval_lexpr eval_rec subst v = case v of {
 //│ ╙──       	                                       ^
-//│ res: 'a
-//│   where
-//│     'a :> Abs['a] | (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
-//│     'lhs0 :> (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
-//│     'lhs :> 'a
+//│ res: Abs[nothing] & {name: nothing} | Add[nothing] | App[nothing] | Mul[nothing] | Num & {num: nothing}
 
 eval2 Nil (Num { num = 1 })
-//│ res: 'a
-//│   where
-//│     'a :> Add['a] | Mul['a] | Num
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.391: 	eval2 Nil (Num { num = 1 })
+//│ ║         	           ^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({num: int},)` does not have field 'num'
+//│ ║  l.391: 	eval2 Nil (Num { num = 1 })
+//│ ╙──       	               ^^^^^^^^^^^
+//│ res: Add[nothing] | Mul[nothing] | Num & {num: nothing}
 
 eval3 Nil (Num { num = 1 })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.412: 	eval3 Nil (Num { num = 1 })
+//│ ║  l.400: 	eval3 Nil (Num { num = 1 })
+//│ ║         	           ^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({num: int},)` does not have field 'num'
+//│ ║  l.400: 	eval3 Nil (Num { num = 1 })
+//│ ╙──       	               ^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.400: 	eval3 Nil (Num { num = 1 })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Num` does not match type `Expr & ?a | Lambda & ?b`
-//│ ║  l.412: 	eval3 Nil (Num { num = 1 })
+//│ ╟── application of type `Num & {num: ?num}` does not match type `Expr & ?a | Lambda & ?b`
+//│ ║  l.400: 	eval3 Nil (Num { num = 1 })
 //│ ║         	           ^^^^^^^^^^^^^^^
 //│ ╟── but it flows into argument with expected type `Expr & ?c | Lambda & ?d`
-//│ ║  l.412: 	eval3 Nil (Num { num = 1 })
+//│ ║  l.400: 	eval3 Nil (Num { num = 1 })
 //│ ║         	          ^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ║  l.289: 	def eval_lexpr eval_rec subst v = case v of {
 //│ ╙──       	                                       ^
-//│ res: 'a
-//│   where
-//│     'a :> Abs['a] | (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
-//│     'lhs0 :> (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
-//│     'lhs :> 'a
+//│ res: Abs[nothing] & {name: nothing} | Add[nothing] | App[nothing] | Mul[nothing] | Num & {num: nothing}
 
 eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.431: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ║  l.421: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ║         	                       ^^^^^^^^^^^^^
+//│ ╟── argument of type `({num: int},)` does not have field 'num'
+//│ ║  l.421: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ╙──       	                           ^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.421: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ║         	                                            ^^^^^^^^^^^^^
+//│ ╟── argument of type `({num: int},)` does not have field 'num'
+//│ ║  l.421: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ╙──       	                                                ^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.421: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.421: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ╙──       	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.421: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `App[?a] & {App#a = ?a, lhs: ?lhs, rhs: ?rhs}` does not match type `Expr & ?b | Lambda & ?c`
-//│ ║  l.431: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ╟── application of type `App[?a] with {App#a = ?a, lhs: ?lhs, rhs: ?rhs}` does not match type `Expr & ?b | Lambda & ?c`
+//│ ║  l.421: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
 //│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into argument with expected type `Expr & ?d | Lambda & ?e`
-//│ ║  l.431: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
+//│ ║  l.421: 	eval3 Nil (App { lhs = Num {num = 0}; rhs = Num {num = 0}})
 //│ ║         	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ║  l.289: 	def eval_lexpr eval_rec subst v = case v of {
 //│ ╙──       	                                       ^
-//│ res: 'a
-//│   where
-//│     'a :> Abs['a] | (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
-//│     'lhs0 :> (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
-//│     'lhs :> 'a
+//│ res: Abs[nothing] & {name: nothing} | Add[nothing] | App[nothing] | Mul[nothing] | Num & {num: nothing}
 
 eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.450: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ║         	                                                ^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({name: string},)` does not have field 'name'
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ╙──       	                                                    ^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ║         	                                                                          ^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({num: int},)` does not have field 'num'
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ╙──       	                                                                              ^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ║         	                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ╙──       	                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({body: ?a, name: string},)` is not a record (expected a record with fields: name, body)
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ╙──       	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Abs[?a] & {Abs#a = ?a, body: ?body}` does not match type `Expr & ?b | Lambda & ?c`
-//│ ║  l.450: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ╟── application of type `Abs[?a] with {Abs#a = ?a, body: ?body, name: ?name}` does not match type `Expr & ?b | Lambda & ?c`
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
 //│ ║         	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into argument with expected type `Expr & ?d | Lambda & ?e`
-//│ ║  l.450: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
+//│ ║  l.454: 	eval3 Nil (Abs { name = "s"; body = Add { lhs = Var { name = "s" }; rhs = Num { num = 1 } } })
 //│ ║         	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.219: 	def eval_lexpr eval_rec subst v = case v of {
+//│ ║  l.289: 	def eval_lexpr eval_rec subst v = case v of {
 //│ ╙──       	                                       ^
-//│ res: 'a
-//│   where
-//│     'a :> Abs['a] | (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
-//│     'lhs0 :> (Add['a] with {lhs: 'lhs, rhs: 'lhs}) | (App['a] with {lhs: 'lhs0, rhs: 'a}) | (Mul['lhs] with {lhs: 'lhs, rhs: 'lhs}) | Num | Var
-//│     'lhs :> 'a
+//│ res: Abs[nothing] & {name: nothing} | Add[nothing] | App[nothing] | Mul[nothing] | Num & {num: nothing}
 
 
 // *************************************
@@ -477,6 +501,6 @@ def eval_lexpr' eval_rec subst v = case v of {
   | Add -> eval_expr eval_rec subst v
   | Mul -> eval_expr eval_rec subst v
   }
-//│ eval_lexpr': ((Cons[('b, 'a | Var,)] with {head: ('b, 'a | Var,), tail: Nil}) -> 'lhs -> ('a & 'c & ((Abs[?] with {body: 'lhs, name: 'b}) | 'lhs0 & ((Abs[?] with {body: 'lhs, name: 'b}) & ~#Abs | 'lhs0 & ~#Abs))) & 'd) -> nothing -> ((Abs[?] with {body: 'lhs, name: 'b}) | (Add[?] with {lhs: 'lhs, rhs: 'lhs}) | (App[?] with {lhs: 'lhs, rhs: 'lhs}) | (Mul[?] with {lhs: 'lhs, rhs: 'lhs}) | Num & 'c | Var & 'e) -> (Abs['a] | Add['a] | (App['a] with {lhs: 'lhs0, rhs: 'a}) | Mul['a] | Num | 'c)
+//│ eval_lexpr': ((Cons[nothing] & {tail: nothing}) -> 'lhs -> ('a & ((Abs[?] with {body: 'lhs}) | ~#Abs)) & 'b) -> nothing -> ((Abs[?] with {body: 'lhs}) | (Add[?] with {lhs: 'lhs, rhs: 'lhs}) | (App[?] with {lhs: 'lhs, rhs: 'lhs}) | (Mul[?] with {lhs: 'lhs, rhs: 'lhs}) | Num & 'a | Var) -> (Abs[nothing] & {name: nothing} | Add[nothing] | App[nothing] | Mul[nothing] | Num & {num: nothing} | 'a)
 //│   where
-//│     'd <: (Cons[?] with {head: {_1: string, _2: 'e -> 'c}, tail: 'd}) | Nil
+//│     'b <: (Cons[?] with {head: {_1: string, _2: anything}, tail: 'b}) | Nil

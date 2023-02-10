@@ -8,9 +8,27 @@ def nega arg = Nega { arg }
 //│ Defined class Lit
 //│ Defined class Add[+E]
 //│ Defined class Nega[+E]
-//│ lit: (int & 'val) -> (Lit with {val: 'val})
-//│ add: ('lhs & 'E) -> ('E & 'rhs) -> (Add['E] with {lhs: 'lhs, rhs: 'rhs})
-//│ nega: 'arg -> Nega['arg]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.5: 	def lit val = Lit { val }
+//│ ║       	              ^^^^^^^^^^^
+//│ ╟── argument of type `({val: ?a},)` does not have field 'val'
+//│ ║  l.5: 	def lit val = Lit { val }
+//│ ╙──     	                  ^^^^^^^
+//│ lit: anything -> (Lit & {val: nothing})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.6: 	def add lhs rhs = Add { lhs; rhs }
+//│ ║       	                  ^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.6: 	def add lhs rhs = Add { lhs; rhs }
+//│ ╙──     	                      ^^^^^^^^^^^^
+//│ add: anything -> anything -> Add[nothing]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.7: 	def nega arg = Nega { arg }
+//│ ║       	               ^^^^^^^^^^^^
+//│ ╟── argument of type `({arg: ?a},)` does not have field 'arg'
+//│ ║  l.7: 	def nega arg = Nega { arg }
+//│ ╙──     	                    ^^^^^^^
+//│ nega: anything -> Nega[nothing]
 
 rec def evalStub1 e = case e of {
   Lit -> e.val
@@ -20,21 +38,57 @@ rec def evalStub1 e = case e of {
 rec def evalStub2 e = case e of {
   Lit -> e.val | Nega -> 0 - (evalStub2 e.arg)
   }
-//│ evalStub2: 'a -> int
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.39: 	  Lit -> e.val | Nega -> 0 - (evalStub2 e.arg)
+//│ ║        	                         ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.39: 	  Lit -> e.val | Nega -> 0 - (evalStub2 e.arg)
+//│ ╙──      	                         ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.39: 	  Lit -> e.val | Nega -> 0 - (evalStub2 e.arg)
+//│ ║        	                         ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.39: 	  Lit -> e.val | Nega -> 0 - (evalStub2 e.arg)
+//│ ╙──      	                             ^^^^^^^^^^^^^^^^^
+//│ evalStub2: 'a -> (int | 'val)
 //│   where
-//│     'a <: Lit | Nega[?] & {arg: 'a}
+//│     'a <: (Lit with {val: 'val}) | Nega[?] & {arg: 'a}
 
 rec def eval e = case e of {
   | Lit -> e.val
   | Add -> eval e.lhs + eval e.rhs
   | Nega -> 0 - (eval e.arg)
   }
-//│ eval: 'a -> int
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.59: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ║        	           ^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.59: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ╙──      	           ^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.59: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.59: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ╙──      	                        ^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.60: 	  | Nega -> 0 - (eval e.arg)
+//│ ║        	            ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.60: 	  | Nega -> 0 - (eval e.arg)
+//│ ╙──      	            ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.60: 	  | Nega -> 0 - (eval e.arg)
+//│ ║        	            ^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.60: 	  | Nega -> 0 - (eval e.arg)
+//│ ╙──      	                ^^^^^^^^^^^^
+//│ eval: 'a -> (int | 'val)
 //│   where
-//│     'a <: Add[?] & {lhs: 'a, rhs: 'a} | Lit | Nega[?] & {arg: 'a}
+//│     'a <: Add[?] & {lhs: 'a, rhs: 'a} | (Lit with {val: 'val}) | Nega[?] & {arg: 'a}
 
 def ex = add (lit 2) (lit 2)
-//│ ex: Add[Lit]
+//│ ex: Add[nothing]
 
 eval ex
 //│ res: int
@@ -55,46 +109,16 @@ def e: Lit | Add['e] | Nega['e] as 'e
 //│     'e :> Add['e] | Lit | Nega['e]
 
 def e = ex
-//│ Add[Lit]
+//│ Add[nothing]
 //│   <:  e:
 //│ 'e
 //│   where
 //│     'e :> Add['e] | Lit | Nega['e]
 
 eval e
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.64: 	eval e
-//│ ║        	^^^^^^
-//│ ╟── type `int` is not an instance of `int`
-//│ ║  l.2: 	class Lit: { val: int }
-//│ ║       	                  ^^^
-//│ ╟── but it flows into reference with expected type `int`
-//│ ║  l.64: 	eval e
-//│ ║        	     ^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.27: 	rec def eval e = case e of {
-//│ ║        	                      ^
-//│ ╟── from argument:
-//│ ║  l.29: 	  | Add -> eval e.lhs + eval e.rhs
-//│ ╙──      	           ^^^^^^^^^^
 //│ res: int
 
 eval (e : Lit | Add['e] | Nega['e] as 'e)
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.82: 	eval (e : Lit | Add['e] | Nega['e] as 'e)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int` is not an instance of `int`
-//│ ║  l.2: 	class Lit: { val: int }
-//│ ║       	                  ^^^
-//│ ╟── but it flows into reference with expected type `int`
-//│ ║  l.82: 	eval (e : Lit | Add['e] | Nega['e] as 'e)
-//│ ║        	      ^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.27: 	rec def eval e = case e of {
-//│ ║        	                      ^
-//│ ╟── from argument:
-//│ ║  l.29: 	  | Add -> eval e.lhs + eval e.rhs
-//│ ╙──      	           ^^^^^^^^^^
 //│ res: int
 
 
@@ -125,7 +149,7 @@ eval exp
 //│ ║  l.+2: 	eval exp
 //│ ║        	     ^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.27: 	rec def eval e = case e of {
+//│ ║  l.57: 	rec def eval e = case e of {
 //│ ╙──      	                      ^
 //│ res: int
 
@@ -139,8 +163,8 @@ eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ║        	      ^
 //│ ╟── type `Lit` is not an instance of type `int`
-//│ ║  l.52: 	def e: Lit | Add['e] | Nega['e] as 'e
-//│ ║        	       ^^^
+//│ ║  l.106: 	def e: Lit | Add['e] | Nega['e] as 'e
+//│ ║         	       ^^^
 //│ ╟── but it flows into reference with expected type `int`
 //│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ║        	      ^
@@ -153,18 +177,15 @@ eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int` is not an instance of `int`
-//│ ║  l.2: 	class Lit: { val: int }
-//│ ║       	                  ^^^
-//│ ╟── but it flows into reference with expected type `int`
+//│ ╟── type `int` does not match type `Add[?] & ?a | Lit & ?b | Nega[?] & ?c`
 //│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
-//│ ║        	      ^
+//│ ║        	                               ^^^
+//│ ╟── but it flows into applied type reference with expected type `Add[?] & ?d | Lit & ?e | Nega[?] & ?f`
+//│ ║  l.+1: 	eval (e : Lit | Add['e] | Nega[int] as 'e)
+//│ ║        	                          ^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.27: 	rec def eval e = case e of {
-//│ ║        	                      ^
-//│ ╟── from argument:
-//│ ║  l.29: 	  | Add -> eval e.lhs + eval e.rhs
-//│ ╙──      	           ^^^^^^^^^^
+//│ ║  l.57: 	rec def eval e = case e of {
+//│ ╙──      	                      ^
 //│ res: int
 
 

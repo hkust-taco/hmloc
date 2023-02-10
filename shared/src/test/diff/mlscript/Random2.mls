@@ -87,7 +87,13 @@ class Some[A]: { v: A }
 //│ Defined class Some[+A]
 
 def Some v = Some{v}
-//│ Some: 'v -> Some['v]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.89: 	def Some v = Some{v}
+//│ ║        	             ^^^^^^^
+//│ ╟── argument of type `({v: ?a},)` does not have field 'v'
+//│ ║  l.89: 	def Some v = Some{v}
+//│ ╙──      	                 ^^^
+//│ Some: anything -> Some[nothing]
 
 
 def foo(x: Some['a]) =
@@ -101,15 +107,51 @@ def f: Some['a]
 
 
 def foo(x: 'a) = (x + 1, x)
-//│ foo: (int & 'a) -> (int, 'a,)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.109: 	def foo(x: 'a) = (x + 1, x)
+//│ ║         	                  ^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.109: 	def foo(x: 'a) = (x + 1, x)
+//│ ╙──       	                  ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.109: 	def foo(x: 'a) = (x + 1, x)
+//│ ║         	                  ^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.109: 	def foo(x: 'a) = (x + 1, x)
+//│ ╙──       	                      ^
+//│ foo: 'a -> (int, 'a,)
 
 // * NOTE: currently each parameter type is typed independently – so these 'a are different!
 def foo(x: 'a, y: 'a) = (x + 1, y)
-//│ foo: (int, 'a,) -> (int, 'a,)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.125: 	def foo(x: 'a, y: 'a) = (x + 1, y)
+//│ ║         	                         ^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.125: 	def foo(x: 'a, y: 'a) = (x + 1, y)
+//│ ╙──       	                         ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.125: 	def foo(x: 'a, y: 'a) = (x + 1, y)
+//│ ║         	                         ^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.125: 	def foo(x: 'a, y: 'a) = (x + 1, y)
+//│ ╙──       	                             ^
+//│ foo: (anything, 'a,) -> (int, 'a,)
 
 def foo(f: 'a -> 'a, x: 'a) =
   let _ = x + 1
   in error: Some['a & some]
-//│ foo: ('a -> 'a, int,) -> Some[nothing]
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.141: 	  let _ = x + 1
+//│ ║         	          ^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.141: 	  let _ = x + 1
+//│ ╙──       	          ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.141: 	  let _ = x + 1
+//│ ║         	          ^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.141: 	  let _ = x + 1
+//│ ╙──       	              ^
+//│ foo: ('a -> 'a, anything,) -> Some[nothing]
 
 

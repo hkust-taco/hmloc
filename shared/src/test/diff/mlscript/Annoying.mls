@@ -208,21 +208,30 @@ v.x
 //│ res: int
 
 (id v).x
-//│ res: int
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.210: 	(id v).x
+//│ ║         	^^^^^^^^
+//│ ╟── argument of type `(~int\x & {x: int},)` does not have field 'x'
+//│ ║  l.210: 	(id v).x
+//│ ║         	    ^
+//│ ╟── but it flows into application with expected type `{x: ?x}`
+//│ ║  l.210: 	(id v).x
+//│ ╙──       	 ^^^^
+//│ res: nothing
 
 :e
 negInt: A | { x: 'a }
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.214: 	negInt: A | { x: 'a }
+//│ ║  l.223: 	negInt: A | { x: 'a }
 //│ ║         	^^^^^^
 //│ ╟── type `~int` does not match type `A | {x: ?a}`
 //│ ║  l.201: 	def negInt: ~int
 //│ ║         	            ^^^^
 //│ ╟── but it flows into reference with expected type `A | {x: ?a}`
-//│ ║  l.214: 	negInt: A | { x: 'a }
+//│ ║  l.223: 	negInt: A | { x: 'a }
 //│ ║         	^^^^^^
 //│ ╟── Note: constraint arises from union type:
-//│ ║  l.214: 	negInt: A | { x: 'a }
+//│ ║  l.223: 	negInt: A | { x: 'a }
 //│ ╙──       	        ^^^^^^^^^^^^^
 //│ res: A | {x: nothing}
 
@@ -241,7 +250,7 @@ v: A | { x: 'a }
 //│ res: A | {x: nothing}
 
 id (error: A) with { x = 1 } : A | { x: 'a }
-//│ res: A | {x: nothing}
+//│ res: A | {x: int}
 
 def negWeird: ~(~(~(A & { x: int })))
 //│ negWeird: ~A
@@ -281,13 +290,13 @@ funny.x
 :e
 (error: { x: int }): int | string
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.282: 	(error: { x: int }): int | string
+//│ ║  l.291: 	(error: { x: int }): int | string
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `{x: int}` does not match type `int | string`
-//│ ║  l.282: 	(error: { x: int }): int | string
+//│ ║  l.291: 	(error: { x: int }): int | string
 //│ ║         	        ^^^^^^^^^^
 //│ ╟── Note: constraint arises from union type:
-//│ ║  l.282: 	(error: { x: int }): int | string
+//│ ║  l.291: 	(error: { x: int }): int | string
 //│ ╙──       	                     ^^^^^^^^^^^^
 //│ res: int | string
 
@@ -303,13 +312,13 @@ idx = id with { x = 1 }
 //│ idx: 'a -> 'a & {x: int}
 
 idx idx.x
-//│ res: int
+//│ res: (int,)
 
 def indirect i = i i.x
 //│ indirect: ('x -> 'a & {x: 'x}) -> 'a
 
 indirect idx
-//│ res: int
+//│ res: (int,)
 
 if true then id else idx
 //│ res: 'a -> 'a
@@ -318,17 +327,17 @@ r =  if true then id with { x = "a"; y = "b" } else idx
 //│ r: 'a -> 'a & {x: int | string}
 
 r r.x
-//│ res: int | string
+//│ res: (int | string,)
 
 indirect r
-//│ res: int | string
+//│ res: (int | string,)
 
 def takeFunOrRecord: (int -> int | { x: int }) -> int
 //│ takeFunOrRecord: anything -> int
 
 :pe
 takeFunOrRecord x = case x of { { x = v } -> 0 | _ -> 1 }
-//│ /!\ Parse error: Expected "}":1:33, found "{ x = v } " at l.330:33: takeFunOrRecord x = case x of { { x = v } -> 0 | _ -> 1 }
+//│ /!\ Parse error: Expected "}":1:33, found "{ x = v } " at l.339:33: takeFunOrRecord x = case x of { { x = v } -> 0 | _ -> 1 }
 <<<<<<<
 //│ /!\ Parse error: Expected "}":1:33, found "{ x = v } " at l.315:33: takeFunOrRecord x = case x of { { x = v } -> 0 | _ -> 1 }
 
@@ -373,16 +382,16 @@ def ty2: TT & { x: int }
 :e
 ty = ty2
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.374: 	ty = ty2
+//│ ║  l.383: 	ty = ty2
 //│ ║         	^^^^^^^^
 //│ ╟── type `TT & {x: int}` does not match type `'a\x | AA`
-//│ ║  l.366: 	def ty2: TT & { x: int }
+//│ ║  l.375: 	def ty2: TT & { x: int }
 //│ ║         	         ^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `'a\x | AA`
-//│ ║  l.374: 	ty = ty2
+//│ ║  l.383: 	ty = ty2
 //│ ║         	     ^^^
 //│ ╟── Note: constraint arises from union type:
-//│ ║  l.365: 	def ty: AA | ('a \ x)
+//│ ║  l.374: 	def ty: AA | ('a \ x)
 //│ ╙──       	        ^^^^^^^^^^^^^
 //│ TT & {x: int}
 //│   <:  ty:

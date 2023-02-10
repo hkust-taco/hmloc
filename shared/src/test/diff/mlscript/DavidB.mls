@@ -82,30 +82,33 @@ type List0[A] = C[A] | ()
 //│ Defined type alias List0[+A]
 
 list1 = C { h = 1; t = C { h = 2; t = () }}
-//│ list1: C[int] with {t: C[int] with {t: ()}}
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.84: 	list1 = C { h = 1; t = C { h = 2; t = () }}
+//│ ║        	                       ^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({h: int, t: ()},)` is not a record (expected a record with fields: h, t)
+//│ ║  l.84: 	list1 = C { h = 1; t = C { h = 2; t = () }}
+//│ ╙──      	                         ^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.84: 	list1 = C { h = 1; t = C { h = 2; t = () }}
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({h: int, t: ?a},)` is not a record (expected a record with fields: h, t)
+//│ ║  l.84: 	list1 = C { h = 1; t = C { h = 2; t = () }}
+//│ ╙──      	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ list1: C[nothing] & {t: nothing}
 
 list2 = C { h = 3; t = () }
-//│ list2: C[int] with {t: ()}
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.99: 	list2 = C { h = 3; t = () }
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({h: int, t: ()},)` is not a record (expected a record with fields: h, t)
+//│ ║  l.99: 	list2 = C { h = 3; t = () }
+//│ ╙──      	          ^^^^^^^^^^^^^^^^^
+//│ list2: C[nothing] & {t: nothing}
 
 ls = if true then list1 else list2
-//│ ls: C[int] with {t: () | (C[int] with {t: ()})}
+//│ ls: C[nothing] & {t: nothing}
 
 ls : List0[int]
-//│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.93: 	ls : List0[int]
-//│ ║        	^^
-//│ ╟── integer literal of type `int` is not an instance of type `int`
-//│ ║  l.84: 	list1 = C { h = 1; t = C { h = 2; t = () }}
-//│ ║        	                ^
-//│ ╟── but it flows into reference with expected type `int`
-//│ ║  l.93: 	ls : List0[int]
-//│ ║        	^^
-//│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.93: 	ls : List0[int]
-//│ ║        	     ^^^^^^^^^^
-//│ ╟── from type reference:
-//│ ║  l.93: 	ls : List0[int]
-//│ ╙──      	           ^^^
 //│ res: List0[int]
 
 

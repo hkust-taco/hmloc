@@ -10,7 +10,13 @@ def foo x = case x of
 
 // Q: why type of `value` widened?
 def t = Test { value = 0 }
-//│ t: Test
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.12: 	def t = Test { value = 0 }
+//│ ║        	        ^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.12: 	def t = Test { value = 0 }
+//│ ╙──      	             ^^^^^^^^^^^^^
+//│ t: Test & {value: nothing}
 
 foo Test
 //│ res: int
@@ -31,13 +37,13 @@ def bar x = case x of
 :e
 bar Test
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.32: 	bar Test
+//│ ║  l.38: 	bar Test
 //│ ║        	^^^^^^^^
 //│ ╟── reference of type `{value: ?value} -> (Test & {value: ?value})` does not match type `Test & ?a | Toast & ?b`
-//│ ║  l.32: 	bar Test
+//│ ║  l.38: 	bar Test
 //│ ║        	    ^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.25: 	def bar x = case x of
+//│ ║  l.31: 	def bar x = case x of
 //│ ║        	                 ^
 //│ ╟── Note: class constructor Test is defined at:
 //│ ║  l.2: 	class Test: { value: int }
@@ -51,13 +57,13 @@ bar Test
 :e
 bar "ops"
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.52: 	bar "ops"
+//│ ║  l.58: 	bar "ops"
 //│ ║        	^^^^^^^^^
 //│ ╟── string literal of type `string` does not match type `Test & ?a | Toast & ?b`
-//│ ║  l.52: 	bar "ops"
+//│ ║  l.58: 	bar "ops"
 //│ ║        	    ^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.25: 	def bar x = case x of
+//│ ║  l.31: 	def bar x = case x of
 //│ ╙──      	                 ^
 //│ res: nothing
 
@@ -74,13 +80,13 @@ def baz x = case x of
 :e
 baz "oops"
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.75: 	baz "oops"
+//│ ║  l.81: 	baz "oops"
 //│ ║        	^^^^^^^^^^
 //│ ╟── string literal of type `string` does not match type `Test & ?a | Toast & ?b`
-//│ ║  l.75: 	baz "oops"
+//│ ║  l.81: 	baz "oops"
 //│ ║        	    ^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.68: 	def baz x = case x of
+//│ ║  l.74: 	def baz x = case x of
 //│ ╙──      	                 ^
 //│ res: nothing
 

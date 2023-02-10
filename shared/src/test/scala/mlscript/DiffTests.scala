@@ -107,6 +107,7 @@ class DiffTests
       override def println(): Unit = print('\n') // to avoid inserting CRLF on Windows
     }
     var stdout = false
+    // var ocamlMode = false
     def output(str: String) =
       // out.println(outputMarker + str)
       if (stdout) System.out.println(str) else
@@ -115,6 +116,7 @@ class DiffTests
     val allStatements = mutable.Buffer.empty[DesugaredStatement]
     val typer = new Typer(dbg = false, verbose = false, explainErrors = false) {
       override def funkyTuples = file.ext =:= "fun"
+      // override def funkyTuples = file.ext =:= "fun" || ocamlMode
       // override def emitDbg(str: String): Unit = if (stdout) System.out.println(str) else output(str)
       override def emitDbg(str: String): Unit = output(str)
     }

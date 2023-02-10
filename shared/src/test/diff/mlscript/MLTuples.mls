@@ -20,26 +20,41 @@ Hey t
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.19: 	Hey t
 //│ ║        	^^^^^
-//│ ╟── tuple literal of type `(int, int, int,)` does not have field 'x'
-//│ ║  l.2: 	t = (1, 2, 3)
-//│ ║       	    ^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `{x: int}`
+//│ ╟── argument of type `((int, int, int,),)` does not have field 'x'
 //│ ║  l.19: 	Hey t
 //│ ║        	    ^
 //│ ╟── Note: constraint arises from record type:
 //│ ║  l.15: 	trait Hey: { x: int }
 //│ ╙──      	           ^^^^^^^^^^
-//│ res: (int, int, int,) & #Hey
+//│ res: ((int, int, int,),) & #Hey
 
 
 
 
 
 htx = Hey tx
-//│ htx: (int, int, int,) & {x: int} & #Hey
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.35: 	htx = Hey tx
+//│ ║        	      ^^^^^^
+//│ ╟── argument of type `((int, int, int,) & {x: int},)` does not have field 'x'
+//│ ║  l.35: 	htx = Hey tx
+//│ ║        	          ^^
+//│ ╟── Note: constraint arises from record type:
+//│ ║  l.15: 	trait Hey: { x: int }
+//│ ╙──      	           ^^^^^^^^^^
+//│ htx: ((int, int, int,) & {x: int},) & #Hey
 
 htx.x
-//│ res: int
+//│ ╔══[ERROR] Type mismatch in field selection:
+//│ ║  l.47: 	htx.x
+//│ ║        	^^^^^
+//│ ╟── argument of type `((int, int, int,) & {x: int},)` does not have field 'x'
+//│ ║  l.35: 	htx = Hey tx
+//│ ║        	          ^^
+//│ ╟── but it flows into reference with expected type `{x: ?x}`
+//│ ║  l.47: 	htx.x
+//│ ╙──      	^^^
+//│ res: nothing
 
 f ((a, b, c)) = { a; b; c }
 //│ f: ('a, 'b, 'c,) -> {a: 'a, b: 'b, c: 'c}
@@ -51,52 +66,76 @@ f tx
 //│ res: {a: int, b: int, c: int}
 
 f htx
-//│ res: {a: int, b: int, c: int}
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.68: 	f htx
+//│ ║        	^^^^^
+//│ ╟── argument of type `((int, int, int,) & {x: int},)` does not match type `(?a, ?b, ?c,)`
+//│ ║  l.35: 	htx = Hey tx
+//│ ║        	          ^^
+//│ ╟── but it flows into reference with expected type `(?a, ?b, ?c,)`
+//│ ║  l.68: 	f htx
+//│ ║        	  ^^^
+//│ ╟── Note: constraint arises from tuple literal:
+//│ ║  l.59: 	f ((a, b, c)) = { a; b; c }
+//│ ╙──      	   ^^^^^^^^^
+//│ res: {a: nothing, b: nothing, c: nothing}
 
 f ((a, b)) = add a b
-//│ f: (int, int,) -> int
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.83: 	f ((a, b)) = add a b
+//│ ║        	             ^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.83: 	f ((a, b)) = add a b
+//│ ╙──      	                 ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.83: 	f ((a, b)) = add a b
+//│ ║        	             ^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.83: 	f ((a, b)) = add a b
+//│ ╙──      	                   ^
+//│ f: (anything, anything,) -> int
 
 :e
 f t
 f tx
 f htx
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.60: 	f t
+//│ ║  l.99: 	f t
 //│ ║        	^^^
 //│ ╟── tuple literal of type `(int, int, int,)` does not match type `(?a, ?b,)`
 //│ ║  l.2: 	t = (1, 2, 3)
 //│ ║       	    ^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `(?c, ?d,)`
-//│ ║  l.60: 	f t
+//│ ╟── but it flows into reference with expected type `(?a, ?b,)`
+//│ ║  l.99: 	f t
 //│ ║        	  ^
 //│ ╟── Note: constraint arises from tuple literal:
-//│ ║  l.56: 	f ((a, b)) = add a b
+//│ ║  l.83: 	f ((a, b)) = add a b
 //│ ╙──      	   ^^^^^^
 //│ res: int
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.61: 	f tx
-//│ ║        	^^^^
+//│ ║  l.100: 	f tx
+//│ ║         	^^^^
 //│ ╟── `with` extension of type `(int, int, int,) & {x: int}` is not a 2-element tuple
 //│ ║  l.9: 	tx = t with { x = 1 }
 //│ ║       	     ^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `(?a, ?b,)`
-//│ ║  l.61: 	f tx
-//│ ║        	  ^^
+//│ ║  l.100: 	f tx
+//│ ║         	  ^^
 //│ ╟── Note: constraint arises from tuple literal:
-//│ ║  l.56: 	f ((a, b)) = add a b
+//│ ║  l.83: 	f ((a, b)) = add a b
 //│ ╙──      	   ^^^^^^
 //│ res: int
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.62: 	f htx
-//│ ║        	^^^^^
-//│ ╟── `with` extension of type `(int, int, int,) & {x: int}` is not a 2-element tuple
-//│ ║  l.9: 	tx = t with { x = 1 }
-//│ ║       	     ^^^^^^^^^^^^^^^^
+//│ ║  l.101: 	f htx
+//│ ║         	^^^^^
+//│ ╟── argument of type `((int, int, int,) & {x: int},)` does not match type `(?a, ?b,)`
+//│ ║  l.35: 	htx = Hey tx
+//│ ║        	          ^^
 //│ ╟── but it flows into reference with expected type `(?a, ?b,)`
-//│ ║  l.62: 	f htx
-//│ ║        	  ^^^
+//│ ║  l.101: 	f htx
+//│ ║         	  ^^^
 //│ ╟── Note: constraint arises from tuple literal:
-//│ ║  l.56: 	f ((a, b)) = add a b
+//│ ║  l.83: 	f ((a, b)) = add a b
 //│ ╙──      	   ^^^^^^
 //│ res: int
 
@@ -118,7 +157,22 @@ g arg = case arg of { Hey -> arg.x | _ -> () }
 
 g htx
 g tx
-//│ res: () | int
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.158: 	g htx
+//│ ║         	^^^^^
+//│ ╟── argument of type `((int, int, int,) & {x: int},)` does not have field 'x'
+//│ ║  l.35: 	htx = Hey tx
+//│ ║        	          ^^
+//│ ╟── but it flows into reference with expected type `{x: ?x}`
+//│ ║  l.158: 	g htx
+//│ ║         	  ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.155: 	g arg = case arg of { Hey -> arg.x | _ -> () }
+//│ ║         	             ^^^
+//│ ╟── from receiver:
+//│ ║  l.155: 	g arg = case arg of { Hey -> arg.x | _ -> () }
+//│ ╙──       	                             ^^^
+//│ res: ()
 //│ res: () | int
 
 // TODO: pattern match for traits in JavaScript
@@ -127,25 +181,40 @@ g arg = case arg of { Hey -> arg.x | _ -> arg.y }
 
 g htx
 g (tx with { y = 2 })
-//│ res: int
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.182: 	g htx
+//│ ║         	^^^^^
+//│ ╟── argument of type `((int, int, int,) & {x: int},)` does not have field 'x'
+//│ ║  l.35: 	htx = Hey tx
+//│ ║        	          ^^
+//│ ╟── but it flows into reference with expected type `{x: ?x}`
+//│ ║  l.182: 	g htx
+//│ ║         	  ^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.179: 	g arg = case arg of { Hey -> arg.x | _ -> arg.y }
+//│ ║         	             ^^^
+//│ ╟── from receiver:
+//│ ║  l.179: 	g arg = case arg of { Hey -> arg.x | _ -> arg.y }
+//│ ╙──       	                             ^^^
+//│ res: nothing
 //│ res: int
 
 :e
 g tx
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.134: 	g tx
+//│ ║  l.203: 	g tx
 //│ ║         	^^^^
 //│ ╟── `with` extension of type `(int, int, int,) & {x: int} & ~#Hey` does not have field 'y'
 //│ ║  l.9: 	tx = t with { x = 1 }
 //│ ║       	     ^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `{y: ?y}`
-//│ ║  l.134: 	g tx
+//│ ║  l.203: 	g tx
 //│ ║         	  ^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.125: 	g arg = case arg of { Hey -> arg.x | _ -> arg.y }
+//│ ║  l.179: 	g arg = case arg of { Hey -> arg.x | _ -> arg.y }
 //│ ║         	             ^^^
 //│ ╟── from receiver:
-//│ ║  l.125: 	g arg = case arg of { Hey -> arg.x | _ -> arg.y }
+//│ ║  l.179: 	g arg = case arg of { Hey -> arg.x | _ -> arg.y }
 //│ ╙──       	                                          ^^^
 //│ res: int
 
@@ -195,16 +264,16 @@ t = (1, 2, 3) with {_1 = "oops"}
 :e
 (t: ("oops",int,int,))._1
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.196: 	(t: ("oops",int,int,))._1
+//│ ║  l.265: 	(t: ("oops",int,int,))._1
 //│ ║         	 ^
 //│ ╟── `with` extension of type `{_1: string, _2: int, _3: int}` is not a 3-element tuple
-//│ ║  l.191: 	t = (1, 2, 3) with {_1 = "oops"}
+//│ ║  l.260: 	t = (1, 2, 3) with {_1 = "oops"}
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `("oops", int, int,)`
-//│ ║  l.196: 	(t: ("oops",int,int,))._1
+//│ ║  l.265: 	(t: ("oops",int,int,))._1
 //│ ║         	 ^
 //│ ╟── Note: constraint arises from tuple type:
-//│ ║  l.196: 	(t: ("oops",int,int,))._1
+//│ ║  l.265: 	(t: ("oops",int,int,))._1
 //│ ╙──       	    ^^^^^^^^^^^^^^^^^
 //│ res: "oops"
 

@@ -34,7 +34,7 @@ Nil{}
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.33: 	Nil{}
 //│ ║        	^^^^^
-//│ ╟── record literal of type `anything` is not a 1-element tuple
+//│ ╟── argument of type `(anything,)` does not have field 'size'
 //│ ║  l.33: 	Nil{}
 //│ ╙──      	   ^^
 //│ res: Nil & {size: nothing}
@@ -42,22 +42,28 @@ Nil{}
 
 
 def Nil = Nil { size = 0 }
-//│ Nil: Nil
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.44: 	def Nil = Nil { size = 0 }
+//│ ║        	          ^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({size: int},)` does not have field 'size'
+//│ ║  l.44: 	def Nil = Nil { size = 0 }
+//│ ╙──      	              ^^^^^^^^^^^^
+//│ Nil: Nil & {size: nothing}
 
 :e
 :re
 Cons 1 Nil
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.49: 	Cons 1 Nil
+//│ ║  l.55: 	Cons 1 Nil
 //│ ║        	^^^^^^
-//│ ╟── integer literal of type `int` is not a 1-element tuple
-//│ ║  l.49: 	Cons 1 Nil
+//│ ╟── argument of type `(int,)` is not a record (expected a record with fields: size, tail, head)
+//│ ║  l.55: 	Cons 1 Nil
 //│ ╙──      	     ^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.49: 	Cons 1 Nil
+//│ ║  l.55: 	Cons 1 Nil
 //│ ║        	^^^^^^^^^^
 //│ ╟── application of type `Cons[?A] with {Cons#A = ?A, head: ?head, size: ?size, tail: ?tail}` is not a function
-//│ ║  l.49: 	Cons 1 Nil
+//│ ║  l.55: 	Cons 1 Nil
 //│ ╙──      	^^^^^^
 //│ res: nothing
 
@@ -71,102 +77,108 @@ Cons
 // In the old inheritance semantics, this used to be required:
 def Cons_old head tail =
   Cons (ListBase (Seq { size = succ tail.size }) with { head; tail })
-//│ Cons_old: ('head & 'A) -> (List['A] & {size: int} & 'tail) -> (Cons['A] with {head: 'head, tail: 'tail})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.79: 	  Cons (ListBase (Seq { size = succ tail.size }) with { head; tail })
+//│ ║        	                               ^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?size,)` is not an instance of `int`
+//│ ║  l.79: 	  Cons (ListBase (Seq { size = succ tail.size }) with { head; tail })
+//│ ╙──      	                                    ^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.79: 	  Cons (ListBase (Seq { size = succ tail.size }) with { head; tail })
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({size: ?a},)` does not have field 'size'
+//│ ║  l.79: 	  Cons (ListBase (Seq { size = succ tail.size }) with { head; tail })
+//│ ╙──      	                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.79: 	  Cons (ListBase (Seq { size = succ tail.size }) with { head; tail })
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` does not have field 'size'
+//│ ║  l.79: 	  Cons (ListBase (Seq { size = succ tail.size }) with { head; tail })
+//│ ╙──      	                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.79: 	  Cons (ListBase (Seq { size = succ tail.size }) with { head; tail })
+//│ ║        	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a\head\tail & {head: ?b, tail: ?c},)` is not a record (expected a record with fields: size, tail, head)
+//│ ║  l.79: 	  Cons (ListBase (Seq { size = succ tail.size }) with { head; tail })
+//│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ Cons_old: anything -> {size: anything} -> (Cons[nothing] & {size: nothing, tail: nothing})
 
 def Cons head tail =
   Cons { size = succ tail.size; head; tail }
-//│ Cons: ('head & 'A) -> (List['A] & {size: int} & 'tail) -> (Cons['A] with {head: 'head, tail: 'tail})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.107: 	  Cons { size = succ tail.size; head; tail }
+//│ ║         	                ^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?size,)` is not an instance of `int`
+//│ ║  l.107: 	  Cons { size = succ tail.size; head; tail }
+//│ ╙──       	                     ^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.107: 	  Cons { size = succ tail.size; head; tail }
+//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({head: ?a, size: ?b, tail: ?c},)` is not a record (expected a record with fields: size, tail, head)
+//│ ║  l.107: 	  Cons { size = succ tail.size; head; tail }
+//│ ╙──       	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ Cons: anything -> {size: anything} -> (Cons[nothing] & {size: nothing, tail: nothing})
 
 // * Works thanks to variance analysis
 Nil: ListBase[anything]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.81: 	Nil: ListBase[anything]
-//│ ║        	^^^
-//│ ╟── application of type `Nil` does not match type `nothing`
+//│ ║  l.123: 	Nil: ListBase[anything]
+//│ ║         	^^^
+//│ ╟── application of type `Nil & {size: ?size}` does not match type `nothing`
 //│ ║  l.44: 	def Nil = Nil { size = 0 }
 //│ ║        	          ^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `nothing`
-//│ ║  l.81: 	Nil: ListBase[anything]
-//│ ║        	^^^
+//│ ║  l.123: 	Nil: ListBase[anything]
+//│ ║         	^^^
 //│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.81: 	Nil: ListBase[anything]
-//│ ╙──      	     ^^^^^^^^^^^^^^^^^^
+//│ ║  l.123: 	Nil: ListBase[anything]
+//│ ╙──       	     ^^^^^^^^^^^^^^^^^^
 //│ res: ListBase[?]
 
 def c = Cons 1 Nil
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.96: 	def c = Cons 1 Nil
-//│ ║        	        ^^^^^^^^^^
-//│ ╟── application of type `Nil` does not match type `Cons[?A] | Nil`
-//│ ║  l.44: 	def Nil = Nil { size = 0 }
-//│ ║        	          ^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `Cons[?A0] | Nil`
-//│ ║  l.96: 	def c = Cons 1 Nil
-//│ ║        	               ^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.77: 	  Cons { size = succ tail.size; head; tail }
-//│ ║        	                                      ^^^^
-//│ ╟── from union type:
-//│ ║  l.27: 	type List[A] = Nil | Cons[A]
-//│ ╙──      	               ^^^^^^^^^^^^^
-//│ c: Cons[int] with {tail: Nil}
+//│ c: Cons[nothing] & {size: nothing, tail: nothing}
 
 c: ListBase[int]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.114: 	c: ListBase[int]
+//│ ║  l.141: 	c: ListBase[int]
 //│ ║         	^
-//│ ╟── application of type `Cons[?A] & {Cons#A = ?A, head: ?head, tail: ?tail}` does not match type `nothing`
-//│ ║  l.77: 	  Cons { size = succ tail.size; head; tail }
-//│ ║        	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── application of type `Cons[?A] with {Cons#A = ?A, head: ?head, size: ?size, tail: ?tail}` does not match type `nothing`
+//│ ║  l.107: 	  Cons { size = succ tail.size; head; tail }
+//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `nothing`
-//│ ║  l.114: 	c: ListBase[int]
+//│ ║  l.141: 	c: ListBase[int]
 //│ ║         	^
 //│ ╟── Note: constraint arises from applied type reference:
-//│ ║  l.114: 	c: ListBase[int]
+//│ ║  l.141: 	c: ListBase[int]
 //│ ╙──       	   ^^^^^^^^^^^^^
 //│ res: ListBase[?]
 
 c.head
-//│ res: int
+//│ res: nothing
 
 c.tail
-//│ res: Nil
+//│ res: nothing
 
 c.size
-//│ res: int
+//│ res: nothing
 
 def d = Cons 2 c
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.138: 	def d = Cons 2 c
-//│ ║         	        ^^^^^^^^
-//│ ╟── application of type `Cons[?A] & {Cons#A = ?A, head: ?head, tail: ?tail}` does not match type `Cons[?A0] | Nil`
-//│ ║  l.77: 	  Cons { size = succ tail.size; head; tail }
-//│ ║        	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `Cons[?A1] | Nil`
-//│ ║  l.138: 	def d = Cons 2 c
-//│ ║         	               ^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.77: 	  Cons { size = succ tail.size; head; tail }
-//│ ║        	                                      ^^^^
-//│ ╟── from union type:
-//│ ║  l.27: 	type List[A] = Nil | Cons[A]
-//│ ╙──      	               ^^^^^^^^^^^^^
-//│ d: Cons[int] with {tail: Cons[int] with {tail: Nil}}
+//│ d: Cons[nothing] & {size: nothing, tail: nothing}
 
 d.head
-//│ res: int
+//│ res: nothing
 
 d.size
-//│ res: int
+//│ res: nothing
 
 d.tail
-//│ res: Cons[int] with {tail: Nil}
+//│ res: nothing
 
 d.tail.size
-//│ res: int
+//│ res: nothing
 
 d.tail.head
 d.tail.tail
-//│ res: int
-//│ res: Nil
+//│ res: nothing
+//│ res: nothing
 

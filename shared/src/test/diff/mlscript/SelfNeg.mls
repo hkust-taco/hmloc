@@ -81,9 +81,15 @@ r[0] + 1
 //│ ╔══[ERROR] Type mismatch in operator application:
 //│ ║  l.80: 	r[0] + 1
 //│ ║        	^^^^^^
-//│ ╟── possibly-undefined array access of type `undefined` is not an instance of `int`
+//│ ╟── argument of type `(undefined | ?a,)` is not an instance of `int`
 //│ ║  l.80: 	r[0] + 1
 //│ ╙──      	^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.80: 	r[0] + 1
+//│ ║        	^^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.80: 	r[0] + 1
+//│ ╙──      	       ^
 //│ res: int
 
 
@@ -99,6 +105,24 @@ def bar: (('a & int & ~'a) -> 'b) -> 'b
 //│ bar: ((int & 'a & ~'a) -> 'b) -> 'b
 
 r = bar (fun x -> (x, x + 1, not x, x x))
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.107: 	r = bar (fun x -> (x, x + 1, not x, x x))
+//│ ║         	                      ^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.107: 	r = bar (fun x -> (x, x + 1, not x, x x))
+//│ ╙──       	                      ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.107: 	r = bar (fun x -> (x, x + 1, not x, x x))
+//│ ║         	                      ^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.107: 	r = bar (fun x -> (x, x + 1, not x, x x))
+//│ ╙──       	                          ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.107: 	r = bar (fun x -> (x, x + 1, not x, x x))
+//│ ║         	                             ^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `bool`
+//│ ║  l.107: 	r = bar (fun x -> (x, x + 1, not x, x x))
+//│ ╙──       	                                 ^
 //│ r: (int & 'a & ~'a, int, bool, nothing,)
 
 :ns
@@ -109,8 +133,8 @@ r
 //│     'e :> bool
 //│     'd :> int
 //│     'c :> 'a & int & ~'a
-//│        <: 'c -> 'f & bool & int
-//│     'a <: (int | ~(int & ~'a)) & (bool | ~(int & ~'a)) & ('c -> 'f | ~(int & ~'a))
+//│        <: 'c -> 'f
+//│     'a <: 'c -> 'f | ~(int & ~'a)
 
 r._1 : nothing
 //│ res: nothing

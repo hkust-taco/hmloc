@@ -13,7 +13,13 @@ def Nil = Nil {}
 //│ Nil: Nil
 
 def Cons head tail = Cons { head; tail }
-//│ Cons: ('head & 'A) -> (List['A] & 'tail) -> (Cons['A] with {head: 'head, tail: 'tail})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.15: 	def Cons head tail = Cons { head; tail }
+//│ ║        	                     ^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({head: ?a, tail: ?b},)` is not a record (expected a record with fields: head, tail)
+//│ ║  l.15: 	def Cons head tail = Cons { head; tail }
+//│ ╙──      	                          ^^^^^^^^^^^^^^
+//│ Cons: anything -> anything -> (Cons[nothing] & {tail: nothing})
 
 class A
 class B
@@ -45,10 +51,10 @@ f (id A{})
 // - : [> `A | `C] list
 
 Cons (A{}) (Cons (C{}) Nil)
-//│ res: Cons[A | C] with {head: A, tail: Cons[C] with {tail: Nil}}
+//│ res: Cons[nothing] & {tail: nothing}
 
 Cons (id A{}) (Cons (C{}) Nil)
-//│ res: Cons[A | C] with {head: A, tail: Cons[C] with {tail: Nil}}
+//│ res: Cons[nothing] & {tail: nothing}
 
 // val id2 : ([< `A | `B ] as 'a) -> 'a = <fun>
 
@@ -66,7 +72,7 @@ id2 (A{})
 // type [< `A | `B > `A ]. The second variant type does not allow tag(s) `C
 
 Cons (id2 (A{})) (Cons (C{}) Nil)
-//│ res: Cons[A | C] with {head: A, tail: Cons[C] with {tail: Nil}}
+//│ res: Cons[nothing] & {tail: nothing}
 
 //************** EXAMPLE 2: ROUGHLY-TYPED PATTERN MATCHING *************
 
@@ -90,17 +96,12 @@ rec def map f l = case l of {
   | Nil -> l
   | Cons -> Cons (f l.head) (map f l.tail)
   }
-//│ map: ('head -> ('head0 & 'A)) -> 'a -> ('b | 'c)
+//│ map: ('head -> anything) -> 'a -> (Cons[nothing] & {tail: nothing} | 'b)
 //│   where
-//│     'a <: (Cons[?] with {head: 'head, tail: 'a}) | Nil & 'b & 'tail
-//│     'tail :> 'c
-//│           <: List['A]
-//│     'c :> Cons['A] with {head: 'head0, tail: 'tail}
+//│     'a <: (Cons[?] with {head: 'head, tail: 'a}) | Nil & 'b
 
 map (fun x -> "lol") (Cons 2 (Cons 3 Nil))
-//│ res: 'tail
-//│   where
-//│     'tail :> (Cons[string] with {tail: 'tail}) | Nil
+//│ res: Cons[nothing] & {tail: nothing}
 
 //************** EXAMPLE 3: ROUGH APPROXIMATIONS *************
 
@@ -126,16 +127,16 @@ def f = fun x -> case x._1 of {
 :e
 f ({ _1 = A{}; _2 = C{} })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.127: 	f ({ _1 = A{}; _2 = C{} })
+//│ ║  l.128: 	f ({ _1 = A{}; _2 = C{} })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── application of type `C` does not match type `A | B`
-//│ ║  l.127: 	f ({ _1 = A{}; _2 = C{} })
+//│ ║  l.128: 	f ({ _1 = A{}; _2 = C{} })
 //│ ║         	                    ^^^
 //│ ╟── Note: constraint arises from field selection:
-//│ ║  l.119: 	  | _ -> case x._2 of {
+//│ ║  l.120: 	  | _ -> case x._2 of {
 //│ ║         	              ^^^^
 //│ ╟── Note: class C is defined at:
-//│ ║  l.20: 	class C
+//│ ║  l.26: 	class C
 //│ ╙──      	      ^
 //│ res: int
 
@@ -158,19 +159,19 @@ def f = fun (x: {_1: A | B; _2: anything} | {_1: anything; _2: A | B}) -> case x
     }
   }
 //│ ╔══[ERROR] Type mismatch in `case` expression:
-//│ ║  l.155: 	  | _ -> case x._2 of {
+//│ ║  l.156: 	  | _ -> case x._2 of {
 //│ ║         	         ^^^^^^^^^^^^^^
-//│ ║  l.156: 	    | A -> 3
+//│ ║  l.157: 	    | A -> 3
 //│ ║         	^^^^^^^^^^^^
-//│ ║  l.157: 	    | B -> 4
+//│ ║  l.158: 	    | B -> 4
 //│ ║         	^^^^^^^^^^^^
-//│ ║  l.158: 	    }
+//│ ║  l.159: 	    }
 //│ ║         	^^^^^
 //│ ╟── type `anything` does not match type `A | B`
-//│ ║  l.152: 	def f = fun (x: {_1: A | B; _2: anything} | {_1: anything; _2: A | B}) -> case x._1 of {
+//│ ║  l.153: 	def f = fun (x: {_1: A | B; _2: anything} | {_1: anything; _2: A | B}) -> case x._1 of {
 //│ ║         	                                ^^^^^^^^
 //│ ╟── but it flows into field selection with expected type `A | B`
-//│ ║  l.155: 	  | _ -> case x._2 of {
+//│ ║  l.156: 	  | _ -> case x._2 of {
 //│ ╙──       	              ^^^^
 //│ f: {_1: anything, _2: anything} -> int
 
@@ -213,19 +214,19 @@ def f = fun (x: L | R) -> case x._1 of {
     }
   }
 //│ ╔══[ERROR] Type mismatch in `case` expression:
-//│ ║  l.210: 	  | _ -> case x._2 of {
+//│ ║  l.211: 	  | _ -> case x._2 of {
 //│ ║         	         ^^^^^^^^^^^^^^
-//│ ║  l.211: 	    | A -> 3
+//│ ║  l.212: 	    | A -> 3
 //│ ║         	^^^^^^^^^^^^
-//│ ║  l.212: 	    | B -> 4
+//│ ║  l.213: 	    | B -> 4
 //│ ║         	^^^^^^^^^^^^
-//│ ║  l.213: 	    }
+//│ ║  l.214: 	    }
 //│ ║         	^^^^^
 //│ ╟── type `anything` does not match type `A | B`
-//│ ║  l.207: 	def f = fun (x: L | R) -> case x._1 of {
+//│ ║  l.208: 	def f = fun (x: L | R) -> case x._1 of {
 //│ ║         	                ^
 //│ ╟── but it flows into reference with expected type `A | B`
-//│ ║  l.210: 	  | _ -> case x._2 of {
+//│ ║  l.211: 	  | _ -> case x._2 of {
 //│ ╙──       	              ^
 //│ f: (L | R) -> int
 
@@ -235,4 +236,25 @@ def f = fun (x: L | R) -> case x._1 of {
 
 
 f (L { _1 = A{}; _2 = C{} })
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.238: 	f (L { _1 = A{}; _2 = C{} })
+//│ ║         	   ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── record literal of type `{_1: ?a, _2: ?b}` does not match type `A | B`
+//│ ║  l.238: 	f (L { _1 = A{}; _2 = C{} })
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from union type:
+//│ ║  l.202: 	class L: { _1: A | B; _2: anything }
+//│ ╙──       	               ^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.238: 	f (L { _1 = A{}; _2 = C{} })
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── record literal of type `{_1: ?a, _2: ?b}` does not match type `L | R`
+//│ ║  l.238: 	f (L { _1 = A{}; _2 = C{} })
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into application with expected type `L | R`
+//│ ║  l.238: 	f (L { _1 = A{}; _2 = C{} })
+//│ ║         	   ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from union type:
+//│ ║  l.208: 	def f = fun (x: L | R) -> case x._1 of {
+//│ ╙──       	                ^^^^^
 //│ res: int

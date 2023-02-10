@@ -10,15 +10,39 @@ rec def eval x = case x of {
   Lit -> x.val
   | Add -> eval x.lhs + eval x.rhs
   }
-//│ eval: 'a -> int
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.11: 	  | Add -> eval x.lhs + eval x.rhs
+//│ ║        	           ^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.11: 	  | Add -> eval x.lhs + eval x.rhs
+//│ ╙──      	           ^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.11: 	  | Add -> eval x.lhs + eval x.rhs
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.11: 	  | Add -> eval x.lhs + eval x.rhs
+//│ ╙──      	                        ^^^^^^^^^^
+//│ eval: 'a -> (int | 'val)
 //│   where
-//│     'a <: (Add with {lhs: 'a, rhs: 'a}) | Lit
+//│     'a <: (Add with {lhs: 'a, rhs: 'a}) | (Lit with {val: 'val})
 
 def eval eval x = case x of {
   Lit -> x.val
   | Add -> eval eval x.lhs + eval eval x.rhs
   }
-//│ eval: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'val})) -> (int | 'val)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.31: 	  | Add -> eval eval x.lhs + eval eval x.rhs
+//│ ║        	           ^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.31: 	  | Add -> eval eval x.lhs + eval eval x.rhs
+//│ ╙──      	           ^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.31: 	  | Add -> eval eval x.lhs + eval eval x.rhs
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.31: 	  | Add -> eval eval x.lhs + eval eval x.rhs
+//│ ╙──      	                             ^^^^^^^^^^^^^^^
+//│ eval: ('a -> 'rhs -> anything & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'val})) -> (int | 'val)
 
 eval eval
 //│ res: ((Add with {lhs: 'a, rhs: 'a}) | (Lit with {val: 'val})) -> (int | 'val)
@@ -32,7 +56,19 @@ def evalN evalN x = case x of {
   Neg -> 0 - (evalN evalN x.underlying)
   | _ -> eval evalN x
   }
-//│ evalN: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'b}) | (Neg with {underlying: 'rhs})) -> (int | 'b)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.56: 	  Neg -> 0 - (evalN evalN x.underlying)
+//│ ║        	         ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.56: 	  Neg -> 0 - (evalN evalN x.underlying)
+//│ ╙──      	         ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.56: 	  Neg -> 0 - (evalN evalN x.underlying)
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.56: 	  Neg -> 0 - (evalN evalN x.underlying)
+//│ ╙──      	             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ evalN: ('a -> 'rhs -> anything & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'b}) | (Neg with {underlying: 'rhs})) -> (int | 'b)
 
 evalN evalN
 //│ res: ((Add with {lhs: 'a, rhs: 'a}) | (Lit with {val: 'b}) | (Neg with {underlying: 'a})) -> (int | 'b)
@@ -41,24 +77,30 @@ evalN evalN
 
 e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
-//│ ║        	                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Lit` is not an instance of type `Expr`
-//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
-//│ ║        	                                                   ^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.28: 	class Neg: Expr & { underlying: Expr }
-//│ ╙──      	                                ^^^^
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
-//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Lit` is not an instance of type `Expr`
-//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ║  l.78: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
 //│ ║        	              ^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.4: 	class Add: Expr & { lhs: Expr; rhs: Expr }
-//│ ╙──     	                         ^^^^
-//│ e: Add with {lhs: Lit, rhs: Neg with {underlying: Lit}}
+//│ ╟── argument of type `({val: int},)` does not have field 'val'
+//│ ║  l.78: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ╙──      	                 ^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.78: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ║        	                                                   ^^^^^^^^^^^^
+//│ ╟── argument of type `({val: int},)` does not have field 'val'
+//│ ║  l.78: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ╙──      	                                                      ^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.78: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ║        	                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({underlying: ?a},)` does not have field 'underlying'
+//│ ║  l.78: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ╙──      	                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.78: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.78: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
+//│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ e: Add & {lhs: nothing, rhs: nothing}
 
 evalN evalN e
 //│ res: int
@@ -79,26 +121,23 @@ def evalN2 evalN2 x = case x of {
   Neg -> 0 - (evalN2 evalN2 x.underlying)
   | _ -> eval eval x
   }
-//│ evalN2: ('a -> 'underlying -> int & 'a) -> ((Add with {lhs: 'b, rhs: 'b}) | (Lit with {val: 'c}) | (Neg with {underlying: 'underlying})) -> (int | 'c)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.+2: 	  Neg -> 0 - (evalN2 evalN2 x.underlying)
+//│ ║        	         ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.+2: 	  Neg -> 0 - (evalN2 evalN2 x.underlying)
+//│ ╙──      	         ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.+2: 	  Neg -> 0 - (evalN2 evalN2 x.underlying)
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.+2: 	  Neg -> 0 - (evalN2 evalN2 x.underlying)
+//│ ╙──      	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ evalN2: ('a -> 'underlying -> anything & 'a) -> ((Add with {lhs: 'b, rhs: 'b}) | (Lit with {val: 'c}) | (Neg with {underlying: 'underlying})) -> (int | 'c)
 //│   where
 //│     'b <: (Add with {lhs: 'b, rhs: 'b}) | Lit
 
 evalN2 evalN2 e
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.+1: 	evalN2 evalN2 e
-//│ ║        	^^^^^^^^^^^^^^^
-//│ ╟── application of type `Neg & {underlying: ?underlying}` does not match type `Add & ?a | Lit & ?b`
-//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
-//│ ║        	                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `Add & ?c | Lit & ?d`
-//│ ║  l.+1: 	evalN2 evalN2 e
-//│ ║        	              ^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.78: 	def evalN2 evalN2 x = case x of {
-//│ ║        	                           ^
-//│ ╟── from reference:
-//│ ║  l.17: 	def eval eval x = case x of {
-//│ ╙──      	                       ^
 //│ res: int
 
 
@@ -112,20 +151,17 @@ def evalN3 evalN3 x = case x of {
   }
 //│ ╔══[ERROR] Type mismatch in operator application:
 //│ ║  l.+2: 	  Neg -> 0 - (evalN2 x.underlying)
-//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> ?b` is not an instance of `int`
-//│ ║  l.78: 	def evalN2 evalN2 x = case x of {
-//│ ║        	                  ^^^^^^^^^^^^^^^
-//│ ║  l.79: 	  Neg -> 0 - (evalN2 evalN2 x.underlying)
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.80: 	  | _ -> eval eval x
-//│ ║        	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.81: 	  }
-//│ ║        	^^^
-//│ ╟── but it flows into application with expected type `int`
+//│ ║        	         ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
 //│ ║  l.+2: 	  Neg -> 0 - (evalN2 x.underlying)
-//│ ╙──      	              ^^^^^^^^^^^^^^^^^^^
-//│ evalN3: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'b}) | (Neg with {underlying: 'c -> nothing -> int & 'c})) -> (int | 'b)
+//│ ╙──      	         ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.+2: 	  Neg -> 0 - (evalN2 x.underlying)
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.+2: 	  Neg -> 0 - (evalN2 x.underlying)
+//│ ╙──      	             ^^^^^^^^^^^^^^^^^^^^^
+//│ evalN3: ('a -> 'rhs -> anything & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'b}) | (Neg with {underlying: 'c -> nothing -> anything & 'c})) -> (int | 'b)
 
 
 
@@ -137,42 +173,21 @@ def evalN3 evalN3 x = case x of {
   Neg -> 0 - (evalN3 x.underlying)
   | _ -> eval evalN3 x
   }
-//│ evalN3: ('underlying -> nothing & 'underlying) -> ((Add with {lhs: anything, rhs: anything}) | (Lit with {val: 'a}) | (Neg with {underlying: 'underlying})) -> (int | 'a)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.+2: 	  Neg -> 0 - (evalN3 x.underlying)
+//│ ║        	         ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.+2: 	  Neg -> 0 - (evalN3 x.underlying)
+//│ ╙──      	         ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.+2: 	  Neg -> 0 - (evalN3 x.underlying)
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.+2: 	  Neg -> 0 - (evalN3 x.underlying)
+//│ ╙──      	             ^^^^^^^^^^^^^^^^^^^^^
+//│ evalN3: ('underlying -> 'rhs -> anything & 'underlying) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'a}) | (Neg with {underlying: 'underlying})) -> (int | 'a)
 
 evalN3 evalN3 e
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.+1: 	evalN3 evalN3 e
-//│ ║        	^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> ?b` is not an instance of `int`
-//│ ║  l.136: 	def evalN3 evalN3 x = case x of {
-//│ ║         	                  ^^^^^^^^^^^^^^^
-//│ ║  l.137: 	  Neg -> 0 - (evalN3 x.underlying)
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.138: 	  | _ -> eval evalN3 x
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.139: 	  }
-//│ ║         	^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.137: 	  Neg -> 0 - (evalN3 x.underlying)
-//│ ║         	              ^^^^^^^^^^^^^^^^^^^
-//│ ╟── from argument:
-//│ ║  l.137: 	  Neg -> 0 - (evalN3 x.underlying)
-//│ ╙──       	             ^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.+1: 	evalN3 evalN3 e
-//│ ║        	^^^^^^^^^^^^^^^
-//│ ╟── application of type `Lit` is not a function
-//│ ║  l.42: 	e = Add{lhs = Lit{val = 1}; rhs = Neg{underlying = Lit{val = 2}}}
-//│ ║        	                                                   ^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `?a -> ?b`
-//│ ║  l.+1: 	evalN3 evalN3 e
-//│ ║        	              ^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.136: 	def evalN3 evalN3 x = case x of {
-//│ ║         	                           ^
-//│ ╟── from reference:
-//│ ║  l.19: 	  | Add -> eval eval x.lhs + eval eval x.rhs
-//│ ╙──      	                             ^^^^
 //│ res: int
 
 

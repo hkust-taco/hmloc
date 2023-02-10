@@ -10,44 +10,53 @@ def flatMap3 = fun f -> fun opt -> case opt of { Some -> f opt | _ -> opt }
 
 
 def arg = if true then Some{value = 42} with {payload = 23} else None {}
-//│ arg: None | Some[int] & {payload: int}
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.12: 	def arg = if true then Some{value = 42} with {payload = 23} else None {}
+//│ ║        	                       ^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.12: 	def arg = if true then Some{value = 42} with {payload = 23} else None {}
+//│ ╙──      	                           ^^^^^^^^^^^^
+//│ arg: None | Some[nothing] & {payload: int}
 
 // > TODO don't distribute neg inters + handle better at constraint top level
 :stats
 flatMap3 (fun x -> add x.value x.payload) arg
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.17: 	flatMap3 (fun x -> add x.value x.payload) arg
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `int` is not an instance of `int`
-//│ ║  l.12: 	def arg = if true then Some{value = 42} with {payload = 23} else None {}
-//│ ║        	                                                        ^^
-//│ ╟── but it flows into reference with expected type `int`
-//│ ║  l.17: 	flatMap3 (fun x -> add x.value x.payload) arg
-//│ ║        	                                          ^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.8: 	def flatMap3 = fun f -> fun opt -> case opt of { Some -> f opt | _ -> opt }
-//│ ║       	                                        ^^^
-//│ ╟── from argument:
-//│ ║  l.17: 	flatMap3 (fun x -> add x.value x.payload) arg
+//│ ║  l.23: 	flatMap3 (fun x -> add x.value x.payload) arg
+//│ ║        	                   ^^^^^^^^^^^
+//│ ╟── argument of type `(?value,)` is not an instance of `int`
+//│ ║  l.23: 	flatMap3 (fun x -> add x.value x.payload) arg
+//│ ╙──      	                       ^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.23: 	flatMap3 (fun x -> add x.value x.payload) arg
+//│ ║        	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?payload,)` is not an instance of `int`
+//│ ║  l.23: 	flatMap3 (fun x -> add x.value x.payload) arg
 //│ ╙──      	                               ^^^^^^^^^
 //│ res: int | None
-//│ constrain calls  : 134
+//│ constrain calls  : 123
 //│ annoying  calls  : 23
 //│ subtyping calls  : 59
 
 
 def arg = if true then Some{value = 42} else None {}
-//│ arg: None | Some[int]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.42: 	def arg = if true then Some{value = 42} else None {}
+//│ ║        	                       ^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({value: int},)` does not have field 'value'
+//│ ║  l.42: 	def arg = if true then Some{value = 42} else None {}
+//│ ╙──      	                           ^^^^^^^^^^^^
+//│ arg: None | Some[nothing]
 
 flatMap3 (fun x -> x.value) arg
-//│ res: int | None
+//│ res: None
 
 
 def foo = flatMap3 (fun x -> x.value)
 //│ foo: ((Some[?] with {value: 'a}) | 'a & ~#Some) -> 'a
 
 foo arg
-//│ res: int | None
+//│ res: None
 
 foo 1
 //│ res: int
@@ -65,7 +74,7 @@ foo (None{})
 
 
 fun f -> flatMap3 f arg
-//│ res: (Some[int] -> 'a) -> (None | 'a)
+//│ res: (Some[nothing] -> 'a) -> (None | 'a)
 
 
 
@@ -91,13 +100,13 @@ simpler (fun x -> x.value)
 :e
 res 1
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.92: 	res 1
-//│ ║        	^^^^^
+//│ ║  l.101: 	res 1
+//│ ║         	^^^^^
 //│ ╟── integer literal of type `int` does not match type `None & ?a | Some[?] & ?b`
-//│ ║  l.92: 	res 1
-//│ ║        	    ^
+//│ ║  l.101: 	res 1
+//│ ║         	    ^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.85: 	def simpler = fun f -> fun opt -> case opt of { Some -> f opt | None -> opt }
+//│ ║  l.94: 	def simpler = fun f -> fun opt -> case opt of { Some -> f opt | None -> opt }
 //│ ╙──      	                                       ^^^
 //│ res: nothing
 

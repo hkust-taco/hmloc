@@ -17,14 +17,16 @@ addOne1 x = case x of {
 
 rec def loopy() =
   Integer { value = 1; addOne = fun x -> loopy() }
-//│ loopy: () -> 'a
-//│   where
-//│     'a :> Integer with {addOne: anything -> 'a}
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.19: 	  Integer { value = 1; addOne = fun x -> loopy() }
+//│ ║        	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: ?a -> ?b, value: int},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.19: 	  Integer { value = 1; addOne = fun x -> loopy() }
+//│ ╙──      	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ loopy: () -> (Integer & {addOne: nothing, value: nothing})
 
 addOne1 (loopy())
-//│ res: 'a
-//│   where
-//│     'a :> Integer with {addOne: anything -> 'a}
+//│ res: nothing
 
 res : Integer
 //│ res: Integer
@@ -34,86 +36,77 @@ res : Integer
 // *  so it could be anything; example:
 
 funny = loopy() with { value = "oops!" }
-//│ funny: 'a\value & {value: string}
-//│   where
-//│     'a :> Integer with {addOne: anything -> 'a}
+//│ funny: Integer with {addOne: nothing, value: string}
 
 addOne1 funny
-//│ res: 'a
-//│   where
-//│     'a :> Integer with {addOne: anything -> 'a}
+//│ res: nothing
 
 
 :re
 addOne1 (Integer { value = 1; addOne = fun x -> (error : Integer) } with { value = "oops!" })
-//│ res: Integer
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.46: 	addOne1 (Integer { value = 1; addOne = fun x -> (error : Integer) } with { value = "oops!" })
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: ?a -> Integer, value: int},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.46: 	addOne1 (Integer { value = 1; addOne = fun x -> (error : Integer) } with { value = "oops!" })
+//│ ╙──      	                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ res: nothing
 
 :e
 addOne1 ((Integer { value = 1; addOne = id }) with { value = "oops!" })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.52: 	addOne1 ((Integer { value = 1; addOne = id }) with { value = "oops!" })
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── string literal of type `string` is not an instance of type `int`
-//│ ║  l.52: 	addOne1 ((Integer { value = 1; addOne = id }) with { value = "oops!" })
-//│ ║        	                                                             ^^^^^^^
-//│ ╟── but it flows into application with expected type `int`
-//│ ║  l.52: 	addOne1 ((Integer { value = 1; addOne = id }) with { value = "oops!" })
+//│ ║  l.56: 	addOne1 ((Integer { value = 1; addOne = id }) with { value = "oops!" })
 //│ ║        	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.2: 	class Integer: { value: int; addOne: Integer -> Integer }
-//│ ║       	                                                ^^^^^^^
-//│ ╟── from type reference:
-//│ ║  l.2: 	class Integer: { value: int; addOne: Integer -> Integer }
-//│ ╙──     	                        ^^^
-//│ res: (Integer with {addOne: 'addOne, value: string}) | Integer
-//│   where
-//│     'addOne :> 'a -> 'a
-//│     'a :> (Integer with {addOne: 'addOne, value: string}) | Integer
-//│        <: Integer
+//│ ╟── argument of type `({addOne: ?a -> ?a, value: int},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.56: 	addOne1 ((Integer { value = 1; addOne = id }) with { value = "oops!" })
+//│ ╙──      	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ res: nothing
 
 
 
 
 
 addOne1 (Integer { value = 1; addOne = id })
-//│ res: (Integer with {addOne: 'addOne}) | Integer
-//│   where
-//│     'addOne :> 'a -> 'a
-//│     'a :> (Integer with {addOne: 'addOne}) | Integer
-//│        <: Integer
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.69: 	addOne1 (Integer { value = 1; addOne = id })
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: ?a -> ?a, value: int},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.69: 	addOne1 (Integer { value = 1; addOne = id })
+//│ ╙──      	                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ res: nothing
 
 
 // * Now for properly closing the loop with a constructor for Integer:
 
 rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.88: 	rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
-//│ ║        	                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int` is not an instance of `int`
-//│ ║  l.2: 	class Integer: { value: int; addOne: Integer -> Integer }
-//│ ║       	                        ^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.88: 	rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
-//│ ║        	                                                                        ^
-//│ ╟── from argument:
-//│ ║  l.88: 	rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.81: 	rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ║        	                                                                        ^^^^^^^^^
+//│ ╟── argument of type `(?value,)` is not an instance of `int`
+//│ ║  l.81: 	rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
 //│ ╙──      	                                                                        ^^^^^^^
-//│ mkInteger: int -> 'a
-//│   where
-//│     'a :> Integer with {addOne: {value: int} -> 'a}
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.81: 	rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ║        	                                                                        ^^^^^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.81: 	rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ╙──      	                                                                                  ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.81: 	rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ║        	                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: ?a -> ?b, value: ?c},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.81: 	rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ╙──      	                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ mkInteger: anything -> (Integer & {addOne: nothing, value: nothing})
 
 n = mkInteger 42
-//│ n: 'a
-//│   where
-//│     'a :> Integer with {addOne: {value: int} -> 'a}
+//│ n: Integer & {addOne: nothing, value: nothing}
 
 n : Integer
 //│ res: Integer
 
 m = addOne1 n
-//│ m: 'a
-//│   where
-//│     'a :> Integer with {addOne: {value: int} -> 'a}
+//│ m: nothing
 
 m : Integer
 //│ res: Integer
@@ -124,9 +117,7 @@ m : Integer
 def mkInteger2: int -> Integer
 def mkInteger2 = mkInteger
 //│ mkInteger2: int -> Integer
-//│ int -> 'a
-//│   where
-//│     'a :> Integer with {addOne: {value: int} -> 'a}
+//│ anything -> (Integer & {addOne: nothing, value: nothing})
 //│   <:  mkInteger2:
 //│ int -> Integer
 
@@ -137,36 +128,25 @@ addOne1 (mkInteger2 42)
 def mkInteger_oops: (int & 'a) -> (Integer & { value: 'a })
 rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
 //│ mkInteger_oops: (int & 'a) -> (Integer\addOne with {value: 'a})
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.138: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
-//│ ║         	                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int` is not an instance of `int`
-//│ ║  l.2: 	class Integer: { value: int; addOne: Integer -> Integer }
-//│ ║       	                        ^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.138: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
-//│ ║         	                                                                                  ^
-//│ ╟── from argument:
-//│ ║  l.138: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.129: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
+//│ ║         	                                                                                  ^^^^^^^^^
+//│ ╟── argument of type `(?value,)` is not an instance of `int`
+//│ ║  l.129: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
 //│ ╙──       	                                                                                  ^^^^^^^
-//│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.138: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── operator application of type `int` is not an instance of type `'a`
-//│ ║  l.138: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.129: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
 //│ ║         	                                                                                  ^^^^^^^^^^^
-//│ ╟── but it flows into argument with expected type `'a`
-//│ ║  l.138: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
-//│ ║         	                                                                                 ^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from intersection type:
-//│ ║  l.137: 	def mkInteger_oops: (int & 'a) -> (Integer & { value: 'a })
-//│ ║         	                                  ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── from type variable:
-//│ ║  l.137: 	def mkInteger_oops: (int & 'a) -> (Integer & { value: 'a })
-//│ ╙──       	                                                      ^^
-//│ int -> 'a
-//│   where
-//│     'a :> Integer with {addOne: {value: int} -> 'a}
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.129: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
+//│ ╙──       	                                                                                            ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.129: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
+//│ ║         	                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: ?a -> ?b, value: ?c},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.129: 	rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops (n.value + 1) }
+//│ ╙──       	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ anything -> (Integer & {addOne: nothing, value: nothing})
 //│   <:  mkInteger_oops:
 //│ (int & 'a) -> (Integer\addOne with {value: 'a})
 
@@ -177,47 +157,66 @@ rec def mkInteger_oops value = Integer { value; addOne = fun n -> mkInteger_oops
 // * We may still want to retain the precise typing of the `value` part:
 
 def mkIntegerPrecise value = Integer { value; addOne = addOne1 }
-//│ mkIntegerPrecise: (int & 'value) -> (Integer with {addOne: ((Integer\value with {addOne: (Integer | 'a) -> Integer}) & 'a | (Num\value with {addOne: 'b -> Integer}) & 'b) -> Integer, value: 'value})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.159: 	def mkIntegerPrecise value = Integer { value; addOne = addOne1 }
+//│ ║         	                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: ?a -> ?b, value: ?c},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.159: 	def mkIntegerPrecise value = Integer { value; addOne = addOne1 }
+//│ ╙──       	                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ mkIntegerPrecise: anything -> (Integer & {addOne: nothing, value: nothing})
 
 def mkIntegerPrecise value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.182: 	def mkIntegerPrecise value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
-//│ ║         	                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int` is not an instance of `int`
-//│ ║  l.2: 	class Integer: { value: int; addOne: Integer -> Integer }
-//│ ║       	                        ^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.182: 	def mkIntegerPrecise value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
-//│ ║         	                                                                           ^
-//│ ╟── from argument:
-//│ ║  l.182: 	def mkIntegerPrecise value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.168: 	def mkIntegerPrecise value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ║         	                                                                           ^^^^^^^^^
+//│ ╟── argument of type `(?value,)` is not an instance of `int`
+//│ ║  l.168: 	def mkIntegerPrecise value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
 //│ ╙──       	                                                                           ^^^^^^^
-//│ mkIntegerPrecise: (int & 'value) -> (Integer with {addOne: {value: int} -> 'a, value: 'value})
-//│   where
-//│     'a :> Integer with {addOne: {value: int} -> 'a}
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.168: 	def mkIntegerPrecise value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ║         	                                                                           ^^^^^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.168: 	def mkIntegerPrecise value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ╙──       	                                                                                     ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.168: 	def mkIntegerPrecise value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ║         	                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: ?a -> ?b, value: ?c},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.168: 	def mkIntegerPrecise value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
+//│ ╙──       	                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ mkIntegerPrecise: anything -> (Integer & {addOne: nothing, value: nothing})
 
 def mkIntegerPrecise value = Integer { value; addOne = fun (n: Integer) -> mkInteger2 (n.value + 1) }
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.199: 	def mkIntegerPrecise value = Integer { value; addOne = fun (n: Integer) -> mkInteger2 (n.value + 1) }
+//│ ║  l.189: 	def mkIntegerPrecise value = Integer { value; addOne = fun (n: Integer) -> mkInteger2 (n.value + 1) }
 //│ ║         	                                                                                       ^^^^^^^^^
-//│ ╟── type `int` is not an instance of `int`
-//│ ║  l.2: 	class Integer: { value: int; addOne: Integer -> Integer }
-//│ ║       	                        ^^^
-//│ ╟── but it flows into reference with expected type `int`
-//│ ║  l.199: 	def mkIntegerPrecise value = Integer { value; addOne = fun (n: Integer) -> mkInteger2 (n.value + 1) }
-//│ ╙──       	                                                                                       ^
-//│ mkIntegerPrecise: (int & 'value) -> (Integer with {value: 'value})
+//│ ╟── argument of type `(?value,)` is not an instance of `int`
+//│ ║  l.189: 	def mkIntegerPrecise value = Integer { value; addOne = fun (n: Integer) -> mkInteger2 (n.value + 1) }
+//│ ╙──       	                                                                                       ^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.189: 	def mkIntegerPrecise value = Integer { value; addOne = fun (n: Integer) -> mkInteger2 (n.value + 1) }
+//│ ║         	                                                                                       ^^^^^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.189: 	def mkIntegerPrecise value = Integer { value; addOne = fun (n: Integer) -> mkInteger2 (n.value + 1) }
+//│ ╙──       	                                                                                                 ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.189: 	def mkIntegerPrecise value = Integer { value; addOne = fun (n: Integer) -> mkInteger2 (n.value + 1) }
+//│ ║         	                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: Integer -> ?a, value: ?b},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.189: 	def mkIntegerPrecise value = Integer { value; addOne = fun (n: Integer) -> mkInteger2 (n.value + 1) }
+//│ ╙──       	                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ mkIntegerPrecise: anything -> (Integer & {addOne: nothing, value: nothing})
 
 n = mkIntegerPrecise 42
-//│ n: Integer
+//│ n: Integer & {addOne: nothing, value: nothing}
 
 addOne1 n
-//│ res: Integer
+//│ res: nothing
 
 def mkIntegerPrecise2: (int & 'a) -> (Integer & { value: 'a })
 def mkIntegerPrecise2 = mkIntegerPrecise
 //│ mkIntegerPrecise2: (int & 'a) -> (Integer\addOne with {value: 'a})
-//│ (int & 'value) -> (Integer with {value: 'value})
+//│ anything -> (Integer & {addOne: nothing, value: nothing})
 //│   <:  mkIntegerPrecise2:
 //│ (int & 'a) -> (Integer\addOne with {value: 'a})
 
@@ -234,21 +233,7 @@ addOne1 n
 def mkIntegerPrecise3: (int & 'a) -> (Integer & { value: 'a })
 def mkIntegerPrecise3 = mkInteger
 //│ mkIntegerPrecise3: (int & 'a) -> (Integer\addOne with {value: 'a})
-//│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.235: 	def mkIntegerPrecise3 = mkInteger
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── operator application of type `int` is not an instance of type `'a`
-//│ ║  l.88: 	rec def mkInteger value = Integer { value; addOne = fun n -> mkInteger (n.value + 1) }
-//│ ║        	                                                                        ^^^^^^^^^^^
-//│ ╟── Note: constraint arises from intersection type:
-//│ ║  l.234: 	def mkIntegerPrecise3: (int & 'a) -> (Integer & { value: 'a })
-//│ ║         	                                     ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── from type variable:
-//│ ║  l.234: 	def mkIntegerPrecise3: (int & 'a) -> (Integer & { value: 'a })
-//│ ╙──       	                                                         ^^
-//│ int -> 'a
-//│   where
-//│     'a :> Integer with {addOne: {value: int} -> 'a}
+//│ anything -> (Integer & {addOne: nothing, value: nothing})
 //│   <:  mkIntegerPrecise3:
 //│ (int & 'a) -> (Integer\addOne with {value: 'a})
 
@@ -259,13 +244,19 @@ def mkIntegerPrecise3 = mkInteger
 :e
 addOne1 (Str { value = ""; addOne = error })
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.260: 	addOne1 (Str { value = ""; addOne = error })
+//│ ║  l.245: 	addOne1 (Str { value = ""; addOne = error })
+//│ ║         	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: nothing, value: string},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.245: 	addOne1 (Str { value = ""; addOne = error })
+//│ ╙──       	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.245: 	addOne1 (Str { value = ""; addOne = error })
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Str & {addOne: ?addOne}` does not match type `Integer & ?a | Num & ?b`
-//│ ║  l.260: 	addOne1 (Str { value = ""; addOne = error })
+//│ ╟── application of type `Str & {addOne: ?addOne, value: ?value}` does not match type `Integer & ?a | Num & ?b`
+//│ ║  l.245: 	addOne1 (Str { value = ""; addOne = error })
 //│ ║         	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into argument with expected type `Integer & ?c | Num & ?d`
-//│ ║  l.260: 	addOne1 (Str { value = ""; addOne = error })
+//│ ║  l.245: 	addOne1 (Str { value = ""; addOne = error })
 //│ ║         	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.11: 	addOne1 x = case x of {
@@ -284,30 +275,40 @@ addOne2 x = case x of {
 //│ addOne2: ((Integer\value with {addOne: 'a -> 'b}) & 'a | (Num\value with {addOne: 'c -> 'b}) & 'c | (Str\value with {addOne: 'd -> 'b}) & 'd) -> 'b
 
 addOne2 (mkIntegerPrecise 42)
-//│ res: Integer
+//│ res: nothing
 
 :re
 addOne2 (Str { value = ""; addOne = error })
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.281: 	addOne2 (Str { value = ""; addOne = error })
+//│ ║         	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: nothing, value: string},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.281: 	addOne2 (Str { value = ""; addOne = error })
+//│ ╙──       	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ res: nothing
 
 def mkStr: string -> Str
 rec def mkStr value = Str { value; addOne = fun s -> mkStr (concat s.value "1") }
 //│ mkStr: string -> Str
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.294: 	rec def mkStr value = Str { value; addOne = fun s -> mkStr (concat s.value "1") }
-//│ ║         	                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `string` is not an instance of `string`
-//│ ║  l.8: 	class Str: { value: string; addOne: Str -> Str }
-//│ ║       	                    ^^^^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.294: 	rec def mkStr value = Str { value; addOne = fun s -> mkStr (concat s.value "1") }
-//│ ║         	                                                                   ^
-//│ ╟── from argument:
-//│ ║  l.294: 	rec def mkStr value = Str { value; addOne = fun s -> mkStr (concat s.value "1") }
+//│ ║  l.291: 	rec def mkStr value = Str { value; addOne = fun s -> mkStr (concat s.value "1") }
+//│ ║         	                                                            ^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?value,)` is not an instance of `string`
+//│ ║  l.291: 	rec def mkStr value = Str { value; addOne = fun s -> mkStr (concat s.value "1") }
 //│ ╙──       	                                                                   ^^^^^^^
-//│ string -> 'a
-//│   where
-//│     'a :> Str with {addOne: {value: string} -> 'a}
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.291: 	rec def mkStr value = Str { value; addOne = fun s -> mkStr (concat s.value "1") }
+//│ ║         	                                                            ^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(string,)` is not an instance of `string`
+//│ ║  l.291: 	rec def mkStr value = Str { value; addOne = fun s -> mkStr (concat s.value "1") }
+//│ ╙──       	                                                                           ^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.291: 	rec def mkStr value = Str { value; addOne = fun s -> mkStr (concat s.value "1") }
+//│ ║         	                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({addOne: ?a -> ?b, value: ?c},)` is not a record (expected a record with fields: value, addOne)
+//│ ║  l.291: 	rec def mkStr value = Str { value; addOne = fun s -> mkStr (concat s.value "1") }
+//│ ╙──       	                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ anything -> (Str & {addOne: nothing, value: nothing})
 //│   <:  mkStr:
 //│ string -> Str
 
@@ -315,11 +316,11 @@ addOne2 (mkStr "hello")
 //│ res: Str
 
 union = if true then mkIntegerPrecise 42 else mkStr "hello"
-//│ union: Integer | Str
+//│ union: Integer & {addOne: nothing, value: nothing} | Str
 
 union2 = addOne2 union
-//│ union2: Integer | Str
+//│ union2: Str
 
 addOne2 union2
-//│ res: Integer | Str
+//│ res: Str
 

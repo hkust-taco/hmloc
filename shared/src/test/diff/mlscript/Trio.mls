@@ -15,14 +15,20 @@ def foo x = case x of {
 
 :ShowRepl
 b = B { fB = "test" }
-//│ b: B
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.17: 	b = B { fB = "test" }
+//│ ║        	    ^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({fB: string},)` does not have field 'fB'
+//│ ║  l.17: 	b = B { fB = "test" }
+//│ ╙──      	      ^^^^^^^^^^^^^^^
+//│ b: B & {fB: nothing}
 
 :stats
 foo b
-//│ res: string
-//│ constrain calls  : 48
+//│ res: nothing
+//│ constrain calls  : 22
 //│ annoying  calls  : 10
-//│ subtyping calls  : 23
+//│ subtyping calls  : 22
 
 
 def arg: A | B | C
@@ -47,28 +53,40 @@ def foo x = case x of {
   | B -> x.fB
   | C -> { l = x.fC; r = x.payload }
   }
-//│ foo: (A & {payload: int} | (B with {fB: 'fB}) | (C with {fC: 'fC, payload: 'payload})) -> ('fB | int | {l: 'fC, r: 'payload})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.52: 	  | A -> add x.fA x.payload
+//│ ║        	         ^^^^^^^^
+//│ ╟── argument of type `(?fA,)` is not an instance of `int`
+//│ ║  l.52: 	  | A -> add x.fA x.payload
+//│ ╙──      	             ^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.52: 	  | A -> add x.fA x.payload
+//│ ║        	         ^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?payload,)` is not an instance of `int`
+//│ ║  l.52: 	  | A -> add x.fA x.payload
+//│ ╙──      	                  ^^^^^^^^^
+//│ foo: ((A with {payload: anything}) | (B with {fB: 'fB}) | (C with {fC: 'fC, payload: 'payload})) -> ('fB | int | {l: 'fC, r: 'payload})
 
 :e
 :stats
 foo arg
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.54: 	foo arg
+//│ ║  l.72: 	foo arg
 //│ ║        	^^^^^^^
 //│ ╟── type `A` does not have field 'payload'
-//│ ║  l.28: 	def arg: A | B | C
+//│ ║  l.34: 	def arg: A | B | C
 //│ ║        	         ^
 //│ ╟── but it flows into reference with expected type `{payload: ?payload}`
-//│ ║  l.54: 	foo arg
+//│ ║  l.72: 	foo arg
 //│ ║        	    ^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.45: 	def foo x = case x of {
+//│ ║  l.51: 	def foo x = case x of {
 //│ ║        	                 ^
 //│ ╟── from receiver:
-//│ ║  l.46: 	  | A -> add x.fA x.payload
+//│ ║  l.52: 	  | A -> add x.fA x.payload
 //│ ╙──      	                  ^
 //│ res: int | string | {l: bool, r: nothing}
-//│ constrain calls  : 72
+//│ constrain calls  : 67
 //│ annoying  calls  : 40
 //│ subtyping calls  : 102
 
@@ -79,23 +97,8 @@ foo arg
 
 :stats
 foo (arg with { payload = 1 })
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.81: 	foo (arg with { payload = 1 })
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── integer literal of type `int` is not an instance of `int`
-//│ ║  l.81: 	foo (arg with { payload = 1 })
-//│ ║        	                          ^
-//│ ╟── but it flows into `with` extension with expected type `int`
-//│ ║  l.81: 	foo (arg with { payload = 1 })
-//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.45: 	def foo x = case x of {
-//│ ║        	                 ^
-//│ ╟── from argument:
-//│ ║  l.46: 	  | A -> add x.fA x.payload
-//│ ╙──      	                  ^^^^^^^^^
 //│ res: int | string | {l: bool, r: int}
-//│ constrain calls  : 67
+//│ constrain calls  : 57
 //│ annoying  calls  : 38
 //│ subtyping calls  : 123
 

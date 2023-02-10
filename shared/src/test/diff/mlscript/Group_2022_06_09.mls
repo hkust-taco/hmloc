@@ -11,21 +11,42 @@ rec def eval e = case e of {
   | Lit -> e.n
   | Add -> eval e.lhs + eval e.rhs
   }
-//│ eval: 'a -> int
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.12: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ║        	           ^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.12: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ╙──      	           ^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.12: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.12: 	  | Add -> eval e.lhs + eval e.rhs
+//│ ╙──      	                        ^^^^^^^^^^
+//│ eval: 'a -> (int | 'n)
 //│   where
-//│     'a <: (Add with {lhs: 'a, rhs: 'a}) | Lit
+//│     'a <: (Add with {lhs: 'a, rhs: 'a}) | (Lit with {n: 'n})
 
 e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.18: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
-//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Lit` is not an instance of type `Exp`
-//│ ║  l.18: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
+//│ ║  l.30: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
 //│ ║        	                ^^^^^^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.6: 	class Add: { lhs: Exp; rhs: Exp } & Exp
-//│ ╙──     	                  ^^^
-//│ e: Add with {lhs: Lit, rhs: Lit}
+//│ ╟── argument of type `({n: int},)` does not have field 'n'
+//│ ║  l.30: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
+//│ ╙──      	                    ^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.30: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
+//│ ║        	                                 ^^^^^^^^^
+//│ ╟── argument of type `({n: int},)` does not have field 'n'
+//│ ║  l.30: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
+//│ ╙──      	                                     ^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.30: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.30: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
+//│ ╙──      	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ e: Add & {lhs: nothing, rhs: nothing}
 
 eval e
 //│ res: int
@@ -36,32 +57,26 @@ class Neg: { e: Exp } & Exp
 
 e2 = Neg { e }
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.37: 	e2 = Neg { e }
+//│ ║  l.58: 	e2 = Neg { e }
 //│ ║        	     ^^^^^^^^^
-//│ ╟── application of type `Add & {lhs: ?lhs, rhs: ?rhs}` is not an instance of type `Exp`
-//│ ║  l.18: 	e = Add { lhs = Lit {n=1}; rhs = Lit {n=2} }
-//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `Exp`
-//│ ║  l.37: 	e2 = Neg { e }
-//│ ║        	           ^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.34: 	class Neg: { e: Exp } & Exp
-//│ ╙──      	                ^^^
-//│ e2: Neg with {e: Add with {lhs: Lit, rhs: Lit}}
+//│ ╟── argument of type `({e: ?a},)` does not have field 'e'
+//│ ║  l.58: 	e2 = Neg { e }
+//│ ╙──      	         ^^^^^
+//│ e2: Neg & {e: nothing}
 
 e2.e.lhs.n
-//│ res: int
+//│ res: nothing
 
 :e
 eval e2
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.56: 	eval e2
+//│ ║  l.71: 	eval e2
 //│ ║        	^^^^^^^
 //│ ╟── application of type `Neg & {e: ?e}` does not match type `Add & ?a | Lit & ?b`
-//│ ║  l.37: 	e2 = Neg { e }
+//│ ║  l.58: 	e2 = Neg { e }
 //│ ║        	     ^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `Add & ?c | Lit & ?d`
-//│ ║  l.56: 	eval e2
+//│ ║  l.71: 	eval e2
 //│ ║        	     ^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.10: 	rec def eval e = case e of {
@@ -77,7 +92,19 @@ def eval eval e = case e of {
   | Lit -> e.n
   | Add -> eval eval e.lhs + eval eval e.rhs
   }
-//│ eval: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {n: 'n})) -> (int | 'n)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.93: 	  | Add -> eval eval e.lhs + eval eval e.rhs
+//│ ║        	           ^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.93: 	  | Add -> eval eval e.lhs + eval eval e.rhs
+//│ ╙──      	           ^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.93: 	  | Add -> eval eval e.lhs + eval eval e.rhs
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.93: 	  | Add -> eval eval e.lhs + eval eval e.rhs
+//│ ╙──      	                             ^^^^^^^^^^^^^^^
+//│ eval: ('a -> 'rhs -> anything & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {n: 'n})) -> (int | 'n)
 
 eval eval e
 //│ res: int
@@ -87,7 +114,19 @@ def evalN evalN e = case e of {
   | Neg -> 0 - evalN evalN e.e
   | _ -> eval evalN e
   }
-//│ evalN: ('a -> 'rhs -> int & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {n: 'b}) | (Neg with {e: 'rhs})) -> (int | 'b)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.114: 	  | Neg -> 0 - evalN evalN e.e
+//│ ║         	           ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.114: 	  | Neg -> 0 - evalN evalN e.e
+//│ ╙──       	           ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.114: 	  | Neg -> 0 - evalN evalN e.e
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.114: 	  | Neg -> 0 - evalN evalN e.e
+//│ ╙──       	               ^^^^^^^^^^^^^^^
+//│ evalN: ('a -> 'rhs -> anything & 'a) -> ((Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {n: 'b}) | (Neg with {e: 'rhs})) -> (int | 'b)
 
 evalN eval e
 //│ res: int
@@ -106,24 +145,30 @@ ev = evalN evalN
 
 e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.107: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
-//│ ║         	                 ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Lit` is not an instance of type `Exp`
-//│ ║  l.107: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ║  l.146: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
 //│ ║         	                           ^^^^^^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.34: 	class Neg: { e: Exp } & Exp
-//│ ╙──      	                ^^^
+//│ ╟── argument of type `({n: int},)` does not have field 'n'
+//│ ║  l.146: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ╙──       	                               ^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.107: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
-//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Neg & {e: ?e}` is not an instance of type `Exp`
-//│ ║  l.107: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ║  l.146: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
 //│ ║         	                 ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from type reference:
-//│ ║  l.6: 	class Add: { lhs: Exp; rhs: Exp } & Exp
-//│ ╙──     	                  ^^^
-//│ e3: Add with {lhs: Neg with {e: Lit}, rhs: Lit}
+//│ ╟── argument of type `({e: ?a},)` does not have field 'e'
+//│ ║  l.146: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ╙──       	                     ^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.146: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ║         	                                              ^^^^^^^^^
+//│ ╟── argument of type `({n: int},)` does not have field 'n'
+//│ ║  l.146: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ╙──       	                                                  ^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.146: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ║         	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.146: 	e3 = Add { lhs = Neg { e = Lit {n=1} }; rhs = Lit {n=2} }
+//│ ╙──       	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ e3: Add & {lhs: nothing, rhs: nothing}
 
 ev e3
 //│ res: int
@@ -135,29 +180,40 @@ def evalN evalN k e = case e of {
   | Neg -> 0 - evalN evalN k e.e
   | _ -> k e
   }
-//│ evalN: ('a -> 'b -> 'e -> int & 'a) -> ('c -> 'd & 'b) -> ((Neg with {e: 'e}) | 'c & ~#Neg) -> (int | 'd)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.180: 	  | Neg -> 0 - evalN evalN k e.e
+//│ ║         	           ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.180: 	  | Neg -> 0 - evalN evalN k e.e
+//│ ╙──       	           ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.180: 	  | Neg -> 0 - evalN evalN k e.e
+//│ ║         	           ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.180: 	  | Neg -> 0 - evalN evalN k e.e
+//│ ╙──       	               ^^^^^^^^^^^^^^^^^
+//│ evalN: ('a -> 'b -> 'e -> anything & 'a) -> ('c -> 'd & 'b) -> ((Neg with {e: 'e}) | 'c & ~#Neg) -> (int | 'd)
 
 
 def evalComposed evalComposed = evalN evalN (fun e -> eval evalComposed e)
-//│ evalComposed: ('a -> 'rhs -> int & 'a) -> 'b -> int
+//│ evalComposed: ('a -> 'rhs -> anything & 'a) -> 'b -> (int | 'c)
 //│   where
-//│     'b <: (Add with {lhs: 'rhs, rhs: 'rhs}) | Lit | (Neg with {e: 'b})
+//│     'b <: (Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {n: 'c}) | (Neg with {e: 'b})
 
 def evalComposed evalComposed = evalN evalN (eval evalComposed)
-//│ evalComposed: ('a -> 'rhs -> int & 'a) -> 'b -> int
+//│ evalComposed: ('a -> 'rhs -> anything & 'a) -> 'b -> (int | 'c)
 //│   where
-//│     'b <: (Add with {lhs: 'rhs, rhs: 'rhs}) | Lit | (Neg with {e: 'b})
+//│     'b <: (Add with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {n: 'c}) | (Neg with {e: 'b})
 
 
 // * NOTE: This inferred type is a good example
 // *    of the need for an algorithm to tie recursive TV knots and inline the rest;
 // *    once we inline, `b` we should get the expected simplified recursive type.
 ev2 = evalComposed evalComposed
-//│ ev2: 'a -> int
+//│ ev2: 'a -> (int | 'b)
 //│   where
-//│     'a <: 'b | (Neg with {e: 'a})
-//│     'b <: (Add with {lhs: 'c, rhs: 'c}) | Lit
-//│     'c <: (Neg with {e: 'c}) | 'b & ~#Neg
+//│     'a <: (Add with {lhs: 'c, rhs: 'c}) | (Lit with {n: 'b}) | (Neg with {e: 'a})
+//│     'c <: (Neg with {e: 'c}) | ((Add with {lhs: 'c, rhs: 'c}) | Lit) & ~#Neg
 
 ev2 e3
 //│ res: int
@@ -169,11 +225,10 @@ def ev2_ty: (Add & { lhs: 'a; rhs: 'a } | Lit | Neg & { e: 'a } as 'a) -> int
 //│     'a <: (Add with {lhs: 'a, rhs: 'a}) | Lit | (Neg with {e: 'a})
 
 ev2_ty = ev2
-//│ 'a -> int
+//│ 'a -> (int | 'b)
 //│   where
-//│     'a <: 'b | (Neg with {e: 'a})
-//│     'b <: (Add with {lhs: 'c, rhs: 'c}) | Lit
-//│     'c <: (Neg with {e: 'c}) | 'b & ~#Neg
+//│     'a <: (Add with {lhs: 'c, rhs: 'c}) | (Lit with {n: 'b}) | (Neg with {e: 'a})
+//│     'c <: (Neg with {e: 'c}) | ((Add with {lhs: 'c, rhs: 'c}) | Lit) & ~#Neg
 //│   <:  ev2_ty:
 //│ 'a -> int
 //│   where

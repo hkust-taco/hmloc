@@ -81,10 +81,46 @@ if true then l else r
 //│     'l :> int -> int -> 'l
 
 if true then (fun x -> add x 1) else (fun y -> not y)
-//│ res: nothing -> (bool | int)
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.83: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ║        	                       ^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.83: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ╙──      	                           ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.83: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ║        	                       ^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.83: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ╙──      	                             ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.83: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ║        	                                               ^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `bool`
+//│ ║  l.83: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ╙──      	                                                   ^
+//│ res: anything -> (bool | int)
 
 if true then (fun x -> add x 1) else (fun y -> not y)
-//│ res: nothing -> (bool | int)
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.104: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ║         	                       ^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.104: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ╙──       	                           ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.104: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ║         	                       ^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.104: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ╙──       	                             ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.104: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ║         	                                               ^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `bool`
+//│ ║  l.104: 	if true then (fun x -> add x 1) else (fun y -> not y)
+//│ ╙──       	                                                   ^
+//│ res: anything -> (bool | int)
 
 
 
@@ -228,9 +264,13 @@ foo_ty2 = foo
 
 
 rec def bar = C { a = bar }
-//│ bar: 'A
-//│   where
-//│     'A :> C['A]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.266: 	rec def bar = C { a = bar }
+//│ ║         	              ^^^^^^^^^^^^^
+//│ ╟── argument of type `({a: ?bar},)` does not have field 'a'
+//│ ║  l.266: 	rec def bar = C { a = bar }
+//│ ╙──       	                ^^^^^^^^^^^
+//│ bar: C[nothing]
 
 type Rec2 = C[Rec2]
 def bar_ty: Rec2
@@ -238,9 +278,7 @@ def bar_ty: Rec2
 //│ bar_ty: Rec2
 
 bar_ty = bar
-//│ 'A
-//│   where
-//│     'A :> C['A]
+//│ C[nothing]
 //│   <:  bar_ty:
 //│ Rec2
 
@@ -275,9 +313,7 @@ bar_ty2 = bar_ty
 //│     'r :> C['r]
 
 bar_ty2 = bar
-//│ 'A
-//│   where
-//│     'A :> C['A]
+//│ C[nothing]
 //│   <:  bar_ty2:
 //│ 'r
 //│   where
@@ -313,16 +349,16 @@ bar2_ty2 = bar2_ty
 :e
 bar2_ty2 = bar_ty2
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.314: 	bar2_ty2 = bar_ty2
+//│ ║  l.350: 	bar2_ty2 = bar_ty2
 //│ ║         	^^^^^^^^^^^^^^^^^^
 //│ ╟── type `C[?r]` does not match type `{x: ?r0} | 'r`
-//│ ║  l.247: 	def bar_ty2: C['r] as 'r
+//│ ║  l.285: 	def bar_ty2: C['r] as 'r
 //│ ║         	             ^^^^^
 //│ ╟── but it flows into reference with expected type `{x: ?r1} | 'r`
-//│ ║  l.314: 	bar2_ty2 = bar_ty2
+//│ ║  l.350: 	bar2_ty2 = bar_ty2
 //│ ║         	           ^^^^^^^
 //│ ╟── Note: constraint arises from local type binding:
-//│ ║  l.294: 	def bar2_ty2: { x: 'r } as 'r
+//│ ║  l.330: 	def bar2_ty2: { x: 'r } as 'r
 //│ ╙──       	              ^^^^^^^^^
 //│ 'r
 //│   where
@@ -339,40 +375,40 @@ bar2_ty2 = bar_ty2
 :e
 bar_ty2 = bar2_ty2
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.340: 	bar_ty2 = bar2_ty2
+//│ ║  l.376: 	bar_ty2 = bar2_ty2
 //│ ║         	^^^^^^^^^^^^^^^^^^
 //│ ╟── type `{x: ?r}` does not match type `C[?r0] | 'r`
-//│ ║  l.294: 	def bar2_ty2: { x: 'r } as 'r
+//│ ║  l.330: 	def bar2_ty2: { x: 'r } as 'r
 //│ ║         	              ^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `C[?r1] | 'r`
-//│ ║  l.340: 	bar_ty2 = bar2_ty2
+//│ ║  l.376: 	bar_ty2 = bar2_ty2
 //│ ║         	          ^^^^^^^^
 //│ ╟── Note: constraint arises from local type binding:
-//│ ║  l.247: 	def bar_ty2: C['r] as 'r
+//│ ║  l.285: 	def bar_ty2: C['r] as 'r
 //│ ╙──       	             ^^^^^
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.340: 	bar_ty2 = bar2_ty2
+//│ ║  l.376: 	bar_ty2 = bar2_ty2
 //│ ║         	^^^^^^^^^^^^^^^^^^
 //│ ╟── type `{x: ?r}` does not match type `C[?r0] | 'r`
-//│ ║  l.294: 	def bar2_ty2: { x: 'r } as 'r
+//│ ║  l.330: 	def bar2_ty2: { x: 'r } as 'r
 //│ ║         	              ^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `C[?r1] | 'r`
-//│ ║  l.340: 	bar_ty2 = bar2_ty2
+//│ ║  l.376: 	bar_ty2 = bar2_ty2
 //│ ║         	          ^^^^^^^^
 //│ ╟── Note: constraint arises from local type binding:
-//│ ║  l.247: 	def bar_ty2: C['r] as 'r
+//│ ║  l.285: 	def bar_ty2: C['r] as 'r
 //│ ╙──       	             ^^^^^
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.340: 	bar_ty2 = bar2_ty2
+//│ ║  l.376: 	bar_ty2 = bar2_ty2
 //│ ║         	^^^^^^^^^^^^^^^^^^
 //│ ╟── type `{x: ?r}` does not match type `C[?r0] | 'r`
-//│ ║  l.294: 	def bar2_ty2: { x: 'r } as 'r
+//│ ║  l.330: 	def bar2_ty2: { x: 'r } as 'r
 //│ ║         	              ^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `C[?r1] | 'r`
-//│ ║  l.340: 	bar_ty2 = bar2_ty2
+//│ ║  l.376: 	bar_ty2 = bar2_ty2
 //│ ║         	          ^^^^^^^^
 //│ ╟── Note: constraint arises from local type binding:
-//│ ║  l.247: 	def bar_ty2: C['r] as 'r
+//│ ║  l.285: 	def bar_ty2: C['r] as 'r
 //│ ╙──       	             ^^^^^
 //│ 'r
 //│   where
@@ -401,10 +437,33 @@ bar_ty2 = bar2_ty2
 
 
 rec def f x = if x > 0 then f (x with { a = x - 1 }) else x
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.439: 	rec def f x = if x > 0 then f (x with { a = x - 1 }) else x
+//│ ║         	                 ^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.439: 	rec def f x = if x > 0 then f (x with { a = x - 1 }) else x
+//│ ╙──       	                 ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.439: 	rec def f x = if x > 0 then f (x with { a = x - 1 }) else x
+//│ ║         	                 ^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.439: 	rec def f x = if x > 0 then f (x with { a = x - 1 }) else x
+//│ ╙──       	                     ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.439: 	rec def f x = if x > 0 then f (x with { a = x - 1 }) else x
+//│ ║         	                                            ^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.439: 	rec def f x = if x > 0 then f (x with { a = x - 1 }) else x
+//│ ╙──       	                                            ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.439: 	rec def f x = if x > 0 then f (x with { a = x - 1 }) else x
+//│ ║         	                                            ^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.439: 	rec def f x = if x > 0 then f (x with { a = x - 1 }) else x
+//│ ╙──       	                                                ^
 //│ f: 'a -> 'a
 //│   where
 //│     'a :> 'a\a & {a: int}
-//│        <: (int | ~{a: int})\a & int
 
 f 1
 //│ res: 'a
@@ -413,12 +472,36 @@ f 1
 
 :ns
 rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║         	                 ^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ╙──       	                 ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║         	                 ^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ╙──       	                     ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║         	                                             ^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ╙──       	                                             ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║         	                                             ^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ╙──       	                                                 ^
 //│ f: 'f
 //│   where
 //│     'f :> 'b -> 'c
 //│        <: ('b\a & {a: 'd}) -> 'e
 //│     'b :> 'b\a & {a: 'd}
-//│        <: ({a: 'a} | ~{a: 'd} | ~{})\a & ({a: 'a} | ~{a: 'd})\a & (int | ~{a: 'd} | ~{})\a & (int | ~{a: 'd})\a & 'g & int
+//│        <: ({a: 'a} | ~{a: 'd} | ~{})\a & ({a: 'a} | ~{a: 'd})\a & 'g
 //│     'a <: 'g
 //│     'g :> 'b\a & {a: 'd}
 //│        <: 'c
@@ -432,7 +515,7 @@ f
 //│ res: 'a -> 'b
 //│   where
 //│     'a :> 'a\a & {a: int}
-//│        <: (int & 'c | ~{a: int})\a & int & 'b
+//│        <: ('c | ~{a: int})\a & 'b
 //│     'c <: {a: 'b}
 //│     'b :> 'a\a & {a: int}
 //│        <: 'c
@@ -445,19 +528,19 @@ f
 :e
 f 1
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.446: 	f 1
+//│ ║  l.529: 	f 1
 //│ ║         	^^^
 //│ ╟── operator application of type `int` does not have field 'a'
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ║         	                                             ^^^^^
 //│ ╟── but it flows into integer literal with expected type `{a: ?a}`
-//│ ║  l.446: 	f 1
+//│ ║  l.529: 	f 1
 //│ ║         	  ^
 //│ ╟── Note: constraint arises from `with` extension:
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ║         	                                ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── from receiver:
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ╙──       	                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ res: 'a
 //│   where
@@ -469,21 +552,21 @@ f 1
 :e
 f { a = 1 }
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.470: 	f { a = 1 }
+//│ ║  l.553: 	f { a = 1 }
 //│ ║         	^^^^^^^^^^^
 //│ ╟── operator application of type `int` does not have field 'a'
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ║         	                                             ^^^^^
 //│ ╟── but it flows into record literal with expected type `{a: ?a}`
-//│ ║  l.470: 	f { a = 1 }
+//│ ║  l.553: 	f { a = 1 }
 //│ ║         	  ^^^^^^^^^
 //│ ╟── Note: constraint arises from `with` extension:
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ║         	                                ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── from receiver:
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ╙──       	                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ res: nothing
+//│ res: int | {a: int}
 
 
 
@@ -501,21 +584,24 @@ f ainf
 //│   where
 //│     'ainf :> {a: 'ainf}
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.499: 	f ainf
+//│ ║  l.582: 	f ainf
 //│ ║         	^^^^^^
 //│ ╟── operator application of type `int` does not have field 'a'
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ║         	                                             ^^^^^
 //│ ╟── but it flows into reference with expected type `{a: ?a}`
-//│ ║  l.499: 	f ainf
+//│ ║  l.582: 	f ainf
 //│ ║         	  ^^^^
 //│ ╟── Note: constraint arises from `with` extension:
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ║         	                                ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── from receiver:
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ╙──       	                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ res: nothing
+//│ res: 'ainf | int | 'a\a & {a: int}
+//│   where
+//│     'a :> 'ainf | 'a\a & {a: int}
+//│     'ainf :> {a: 'ainf}
 
 
 
@@ -527,19 +613,19 @@ f infina
 //│   where
 //│     'infina :> int & {a: 'infina}
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.525: 	f infina
+//│ ║  l.611: 	f infina
 //│ ║         	^^^^^^^^
 //│ ╟── operator application of type `int` does not have field 'a'
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ║         	                                             ^^^^^
 //│ ╟── but it flows into reference with expected type `{a: ?a}`
-//│ ║  l.525: 	f infina
+//│ ║  l.611: 	f infina
 //│ ║         	  ^^^^^^
 //│ ╟── Note: constraint arises from `with` extension:
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ║         	                                ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── from receiver:
-//│ ║  l.415: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
+//│ ║  l.474: 	rec def f x = if x > 0 then (f (x with { a = x - 1 })).a else x
 //│ ╙──       	                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ res: 'infina | int | 'a\a & {a: int}
 //│   where
@@ -559,16 +645,16 @@ def f_manual: (({a: 'b & 'a & 'c} as 'a) & 'd) -> ('c | ('d | 'e\a & {a: int} as
 :e
 f_manual 1
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.560: 	f_manual 1
+//│ ║  l.646: 	f_manual 1
 //│ ║         	^^^^^^^^^^
 //│ ╟── integer literal of type `int` does not have field 'a'
-//│ ║  l.560: 	f_manual 1
+//│ ║  l.646: 	f_manual 1
 //│ ║         	         ^
 //│ ╟── Note: constraint arises from tuple type:
-//│ ║  l.553: 	def f_manual: (({a: 'b & 'a & 'c} as 'a) & 'd) -> ('c | ('d | 'e\a & {a: int} as 'e))
+//│ ║  l.639: 	def f_manual: (({a: 'b & 'a & 'c} as 'a) & 'd) -> ('c | ('d | 'e\a & {a: int} as 'e))
 //│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── from record type:
-//│ ║  l.553: 	def f_manual: (({a: 'b & 'a & 'c} as 'a) & 'd) -> ('c | ('d | 'e\a & {a: int} as 'e))
+//│ ║  l.639: 	def f_manual: (({a: 'b & 'a & 'c} as 'a) & 'd) -> ('c | ('d | 'e\a & {a: int} as 'e))
 //│ ╙──       	                ^^^^^^^^^^^^^^^^^
 //│ res: 'e
 //│   where
@@ -581,16 +667,16 @@ f_manual 1
 :e
 f_manual { a = 1 }
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.582: 	f_manual { a = 1 }
+//│ ║  l.668: 	f_manual { a = 1 }
 //│ ║         	^^^^^^^^^^^^^^^^^^
 //│ ╟── integer literal of type `int` does not have field 'a'
-//│ ║  l.582: 	f_manual { a = 1 }
+//│ ║  l.668: 	f_manual { a = 1 }
 //│ ║         	               ^
 //│ ╟── Note: constraint arises from intersection type:
-//│ ║  l.553: 	def f_manual: (({a: 'b & 'a & 'c} as 'a) & 'd) -> ('c | ('d | 'e\a & {a: int} as 'e))
+//│ ║  l.639: 	def f_manual: (({a: 'b & 'a & 'c} as 'a) & 'd) -> ('c | ('d | 'e\a & {a: int} as 'e))
 //│ ║         	                    ^^^^^^^^^^^^
 //│ ╟── from record type:
-//│ ║  l.553: 	def f_manual: (({a: 'b & 'a & 'c} as 'a) & 'd) -> ('c | ('d | 'e\a & {a: int} as 'e))
+//│ ║  l.639: 	def f_manual: (({a: 'b & 'a & 'c} as 'a) & 'd) -> ('c | ('d | 'e\a & {a: int} as 'e))
 //│ ╙──       	                ^^^^^^^^^^^^^^^^^
 //│ res: {a: int} | int
 
@@ -624,16 +710,16 @@ def f_manual_ns: 'a | ('b & (({a: 'd & 'c} as 'c) | ~{a: 'e | int} | ~{})\a & ((
 :e
 f_manual_ns ainf
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.625: 	f_manual_ns ainf
+//│ ║  l.711: 	f_manual_ns ainf
 //│ ║         	^^^^^^^^^^^^^^^^
 //│ ╟── type `int` does not have field 'a'
-//│ ║  l.616: 	def f_manual_ns: 'a | ('b & (({a: 'd & 'c} as 'c) | ~{a: 'e | int} | ~{})\a & (({a: 'd & 'c} as 'c) | ~{a: 'e | int})\a & (({a: 'f} as 'c) as 'f) & (int | ~{a: 'e | int} | ~{})\a & (int | ~{a: 'e | int})\a & int & int) -> ('g | 'd | ('b | 'h\a & {a: 'e | int} as 'h))
+//│ ║  l.702: 	def f_manual_ns: 'a | ('b & (({a: 'd & 'c} as 'c) | ~{a: 'e | int} | ~{})\a & (({a: 'd & 'c} as 'c) | ~{a: 'e | int})\a & (({a: 'f} as 'c) as 'f) & (int | ~{a: 'e | int} | ~{})\a & (int | ~{a: 'e | int})\a & int & int) -> ('g | 'd | ('b | 'h\a & {a: 'e | int} as 'h))
 //│ ║         	                                                              ^^^
 //│ ╟── Note: constraint arises from intersection type:
-//│ ║  l.616: 	def f_manual_ns: 'a | ('b & (({a: 'd & 'c} as 'c) | ~{a: 'e | int} | ~{})\a & (({a: 'd & 'c} as 'c) | ~{a: 'e | int})\a & (({a: 'f} as 'c) as 'f) & (int | ~{a: 'e | int} | ~{})\a & (int | ~{a: 'e | int})\a & int & int) -> ('g | 'd | ('b | 'h\a & {a: 'e | int} as 'h))
+//│ ║  l.702: 	def f_manual_ns: 'a | ('b & (({a: 'd & 'c} as 'c) | ~{a: 'e | int} | ~{})\a & (({a: 'd & 'c} as 'c) | ~{a: 'e | int})\a & (({a: 'f} as 'c) as 'f) & (int | ~{a: 'e | int} | ~{})\a & (int | ~{a: 'e | int})\a & int & int) -> ('g | 'd | ('b | 'h\a & {a: 'e | int} as 'h))
 //│ ║         	                                  ^^^^^^^
 //│ ╟── from record type:
-//│ ║  l.616: 	def f_manual_ns: 'a | ('b & (({a: 'd & 'c} as 'c) | ~{a: 'e | int} | ~{})\a & (({a: 'd & 'c} as 'c) | ~{a: 'e | int})\a & (({a: 'f} as 'c) as 'f) & (int | ~{a: 'e | int} | ~{})\a & (int | ~{a: 'e | int})\a & int & int) -> ('g | 'd | ('b | 'h\a & {a: 'e | int} as 'h))
+//│ ║  l.702: 	def f_manual_ns: 'a | ('b & (({a: 'd & 'c} as 'c) | ~{a: 'e | int} | ~{})\a & (({a: 'd & 'c} as 'c) | ~{a: 'e | int})\a & (({a: 'f} as 'c) as 'f) & (int | ~{a: 'e | int} | ~{})\a & (int | ~{a: 'e | int})\a & int & int) -> ('g | 'd | ('b | 'h\a & {a: 'e | int} as 'h))
 //│ ╙──       	                              ^^^^^^^^^^^^
 //│ res: nothing
 
@@ -662,10 +748,21 @@ f_manual_2 ainf
 
 
 rec def f x = if error then f (x with { a = x - 1 }) else x
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.750: 	rec def f x = if error then f (x with { a = x - 1 }) else x
+//│ ║         	                                            ^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.750: 	rec def f x = if error then f (x with { a = x - 1 }) else x
+//│ ╙──       	                                            ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.750: 	rec def f x = if error then f (x with { a = x - 1 }) else x
+//│ ║         	                                            ^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.750: 	rec def f x = if error then f (x with { a = x - 1 }) else x
+//│ ╙──       	                                                ^
 //│ f: 'a -> 'a
 //│   where
 //│     'a :> 'a\a & {a: int}
-//│        <: (int | ~{a: int})\a & int
 
 r = f 1
 //│ r: 'a
@@ -673,18 +770,30 @@ r = f 1
 //│     'a :> int | 'a\a & {a: int}
 
 r + 1
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.772: 	r + 1
+//│ ║         	^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.772: 	r + 1
+//│ ╙──       	^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.772: 	r + 1
+//│ ║         	^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.772: 	r + 1
+//│ ╙──       	    ^
 //│ res: int
 
 :e
 r.a
 //│ ╔══[ERROR] Type mismatch in field selection:
-//│ ║  l.679: 	r.a
+//│ ║  l.788: 	r.a
 //│ ║         	^^^
 //│ ╟── integer literal of type `int` does not have field 'a'
-//│ ║  l.670: 	r = f 1
+//│ ║  l.767: 	r = f 1
 //│ ║         	      ^
 //│ ╟── but it flows into reference with expected type `{a: ?a}`
-//│ ║  l.679: 	r.a
+//│ ║  l.788: 	r.a
 //│ ╙──       	^
 //│ res: int
 
@@ -701,6 +810,18 @@ r2.a
 //│ res: nothing
 
 r2 + 1
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.812: 	r2 + 1
+//│ ║         	^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.812: 	r2 + 1
+//│ ╙──       	^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.812: 	r2 + 1
+//│ ║         	^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.812: 	r2 + 1
+//│ ╙──       	     ^
 //│ res: int
 
 r: int
@@ -746,12 +867,48 @@ def impossible: 'a -> ('a & int)
 //│ impossible: 'a -> (int & 'a)
 
 rec def f (x: int | string) = f (impossible x) + 1
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.869: 	rec def f (x: int | string) = f (impossible x) + 1
+//│ ║         	                              ^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.869: 	rec def f (x: int | string) = f (impossible x) + 1
+//│ ╙──       	                              ^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.869: 	rec def f (x: int | string) = f (impossible x) + 1
+//│ ║         	                              ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.869: 	rec def f (x: int | string) = f (impossible x) + 1
+//│ ╙──       	                                                 ^
 //│ f: (int | string) -> int
 
 rec def f (x: int | string) = (case x of {int -> f "ok" | string -> f (impossible x)}) + 1
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.884: 	rec def f (x: int | string) = (case x of {int -> f "ok" | string -> f (impossible x)}) + 1
+//│ ║         	                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.884: 	rec def f (x: int | string) = (case x of {int -> f "ok" | string -> f (impossible x)}) + 1
+//│ ╙──       	                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.884: 	rec def f (x: int | string) = (case x of {int -> f "ok" | string -> f (impossible x)}) + 1
+//│ ║         	                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.884: 	rec def f (x: int | string) = (case x of {int -> f "ok" | string -> f (impossible x)}) + 1
+//│ ╙──       	                                                                                         ^
 //│ f: (int | string) -> int
 
 rec def f x = (case x of {int -> f "ok" | string -> f (impossible x)}) + 1
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.899: 	rec def f x = (case x of {int -> f "ok" | string -> f (impossible x)}) + 1
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.899: 	rec def f x = (case x of {int -> f "ok" | string -> f (impossible x)}) + 1
+//│ ╙──       	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.899: 	rec def f x = (case x of {int -> f "ok" | string -> f (impossible x)}) + 1
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.899: 	rec def f x = (case x of {int -> f "ok" | string -> f (impossible x)}) + 1
+//│ ╙──       	                                                                         ^
 //│ f: (int | string & (int | string | ~int)) -> int
 
 f 1

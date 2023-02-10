@@ -1,6 +1,18 @@
 
 def incr x = x.a <- x.a + 1
-//│ incr: {mut a: int} -> unit
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.2: 	def incr x = x.a <- x.a + 1
+//│ ║       	                    ^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.2: 	def incr x = x.a <- x.a + 1
+//│ ╙──     	                    ^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.2: 	def incr x = x.a <- x.a + 1
+//│ ║       	                    ^^^^^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.2: 	def incr x = x.a <- x.a + 1
+//│ ╙──     	                          ^
+//│ incr: {mut a: in int} -> unit
 
 
 :p
@@ -68,16 +80,18 @@ type List[A] = Nil | Cons[A]
 def Nil = Nil {}
 def Cons head tail = Cons { head; tail }
 //│ Nil: Nil
-//│ Cons: ('head & 'A) -> (List['A] & 'tail) -> (Cons['A] with {head: 'head, tail: 'tail})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.81: 	def Cons head tail = Cons { head; tail }
+//│ ║        	                     ^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({head: ?a, tail: ?b},)` is not a record (expected a record with fields: head, tail)
+//│ ║  l.81: 	def Cons head tail = Cons { head; tail }
+//│ ╙──      	                          ^^^^^^^^^^^^^^
+//│ Cons: anything -> anything -> (Cons[nothing] & {tail: nothing})
 
 
 rec def xs = Cons 0 (Cons 1 xs)
-//│ xs: 'tail
-//│   where
-//│     'tail :> Cons[int] with {tail: Cons[int] with {tail: 'tail}}
+//│ xs: Cons[nothing] & {tail: nothing}
 
 :re
 xs
-//│ res: 'tail
-//│   where
-//│     'tail :> Cons[int] with {tail: Cons[int] with {tail: 'tail}}
+//│ res: Cons[nothing] & {tail: nothing}

@@ -10,7 +10,7 @@ if true then if true then a else b else a
 //│ res: int
 
 if true then if true then id a else id b else a
-//│ res: int
+//│ res: (int,) | int
 
 class Foo[A]: { field: A }
 class Bar: {}
@@ -18,13 +18,25 @@ class Bar: {}
 //│ Defined class Bar
 
 def foo = Foo { field = id 1 }
-//│ foo: Foo[int]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.20: 	def foo = Foo { field = id 1 }
+//│ ║        	          ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({field: ?a},)` does not have field 'field'
+//│ ║  l.20: 	def foo = Foo { field = id 1 }
+//│ ╙──      	              ^^^^^^^^^^^^^^^^
+//│ foo: Foo[nothing]
 
 (if true then foo else { field = 2 }).field
 //│ res: int
 
 Foo { field = id 1 }
-//│ res: Foo[int]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.32: 	Foo { field = id 1 }
+//│ ║        	^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({field: ?a},)` does not have field 'field'
+//│ ║  l.32: 	Foo { field = id 1 }
+//│ ╙──      	    ^^^^^^^^^^^^^^^^
+//│ res: Foo[nothing]
 
 def test x = case x of { Bar -> 1 | Foo -> 2 }
 //│ test: (Bar | Foo[?]) -> int
@@ -39,6 +51,12 @@ test foo
 //│ res: int
 
 test (Foo { field = 2 })
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.53: 	test (Foo { field = 2 })
+//│ ║        	      ^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({field: int},)` does not have field 'field'
+//│ ║  l.53: 	test (Foo { field = 2 })
+//│ ╙──      	          ^^^^^^^^^^^^^
 //│ res: int
 
 def test x = case x of { Foo -> x.field | _ -> 1 }

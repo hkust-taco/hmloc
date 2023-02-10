@@ -8,8 +8,20 @@ def lit val = Lit { val }
 def add lhs rhs = Add { lhs; rhs }
 //│ Defined class Lit
 //│ Defined class Add[+E]
-//│ lit: (int & 'val) -> (Lit with {val: 'val})
-//│ add: ('lhs & 'E) -> ('E & 'rhs) -> (Add['E] with {lhs: 'lhs, rhs: 'rhs})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.7: 	def lit val = Lit { val }
+//│ ║       	              ^^^^^^^^^^^
+//│ ╟── argument of type `({val: ?a},)` does not have field 'val'
+//│ ║  l.7: 	def lit val = Lit { val }
+//│ ╙──     	                  ^^^^^^^
+//│ lit: anything -> (Lit & {val: nothing})
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.8: 	def add lhs rhs = Add { lhs; rhs }
+//│ ║       	                  ^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({lhs: ?a, rhs: ?b},)` is not a record (expected a record with fields: lhs, rhs)
+//│ ║  l.8: 	def add lhs rhs = Add { lhs; rhs }
+//│ ╙──     	                      ^^^^^^^^^^^^
+//│ add: anything -> anything -> Add[nothing]
 
 
 :stats
@@ -17,10 +29,22 @@ def eval1 eval1 e = case e of {
   | Lit -> e.val
   | Add -> eval1 eval1 e.lhs + eval1 eval1 e.rhs
   }
-//│ eval1: ('a -> 'rhs -> int & 'a) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'val})) -> (int | 'val)
-//│ constrain calls  : 31
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.30: 	  | Add -> eval1 eval1 e.lhs + eval1 eval1 e.rhs
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.30: 	  | Add -> eval1 eval1 e.lhs + eval1 eval1 e.rhs
+//│ ╙──      	           ^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.30: 	  | Add -> eval1 eval1 e.lhs + eval1 eval1 e.rhs
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.30: 	  | Add -> eval1 eval1 e.lhs + eval1 eval1 e.rhs
+//│ ╙──      	                               ^^^^^^^^^^^^^^^^^
+//│ eval1: ('a -> 'rhs -> anything & 'a) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'val})) -> (int | 'val)
+//│ constrain calls  : 29
 //│ annoying  calls  : 0
-//│ subtyping calls  : 56
+//│ subtyping calls  : 54
 
 :stats
 
@@ -28,11 +52,23 @@ def eval1f eval1 e = case e of {
   | Lit -> e.val
   | Add -> eval1 e.lhs + eval1 e.rhs
   }
-//│ eval1f: ('rhs -> int) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'val})) -> (int | 'val)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.53: 	  | Add -> eval1 e.lhs + eval1 e.rhs
+//│ ║        	           ^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.53: 	  | Add -> eval1 e.lhs + eval1 e.rhs
+//│ ╙──      	           ^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.53: 	  | Add -> eval1 e.lhs + eval1 e.rhs
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.53: 	  | Add -> eval1 e.lhs + eval1 e.rhs
+//│ ╙──      	                         ^^^^^^^^^^^
+//│ eval1f: ('rhs -> anything) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'val})) -> (int | 'val)
 
 
 e1 = add (lit 1) (add (lit 2) (lit 3))
-//│ e1: Add[Add[Lit] | Lit] & {lhs: Lit, rhs: Add[Lit]}
+//│ e1: Add[nothing]
 
 
 eval1 eval1 e1
@@ -48,9 +84,10 @@ eval1_fixed_1 e1
 
 
 rec def eval1_fixed_2 = eval1f (fun x -> eval1f eval1_fixed_2 x)
-//│ eval1_fixed_2: 'a -> int
+//│ eval1_fixed_2: 'a -> (int | 'val)
 //│   where
-//│     'a <: Add[?] & {lhs: 'a, rhs: 'a} | Lit
+//│     'a <: Add[?] & {lhs: 'b, rhs: 'b} | (Lit with {val: 'val})
+//│     'b <: Add[?] & {lhs: 'a, rhs: 'a} | Lit
 
 eval1_fixed_2 e1
 //│ res: int
@@ -75,24 +112,54 @@ eval1_fixed_3 e1
 class Nega[E]: { arg: E }
 def nega arg = Nega { arg }
 //│ Defined class Nega[+E]
-//│ nega: 'arg -> Nega['arg]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.113: 	def nega arg = Nega { arg }
+//│ ║         	               ^^^^^^^^^^^^
+//│ ╟── argument of type `({arg: ?a},)` does not have field 'arg'
+//│ ║  l.113: 	def nega arg = Nega { arg }
+//│ ╙──       	                    ^^^^^^^
+//│ nega: anything -> Nega[nothing]
 
 
 def eval2 eval2 e = case e of {
   | Nega -> 0 - (eval2 eval2 e.arg)
   | _ -> eval1 eval2 e
   }
-//│ eval2: ('a -> 'rhs -> int & 'a) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'b}) | (Nega[?] with {arg: 'rhs})) -> (int | 'b)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.125: 	  | Nega -> 0 - (eval2 eval2 e.arg)
+//│ ║         	            ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.125: 	  | Nega -> 0 - (eval2 eval2 e.arg)
+//│ ╙──       	            ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.125: 	  | Nega -> 0 - (eval2 eval2 e.arg)
+//│ ║         	            ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.125: 	  | Nega -> 0 - (eval2 eval2 e.arg)
+//│ ╙──       	                ^^^^^^^^^^^^^^^^^^^
+//│ eval2: ('a -> 'rhs -> anything & 'a) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'b}) | (Nega[?] with {arg: 'rhs})) -> (int | 'b)
 
 def eval2f eval2 e = case e of {
   | Nega -> 0 - (eval2 e.arg)
   | _ -> eval1f eval2 e
   }
-//│ eval2f: ('rhs -> int) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'a}) | (Nega[?] with {arg: 'rhs})) -> (int | 'a)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.143: 	  | Nega -> 0 - (eval2 e.arg)
+//│ ║         	            ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.143: 	  | Nega -> 0 - (eval2 e.arg)
+//│ ╙──       	            ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.143: 	  | Nega -> 0 - (eval2 e.arg)
+//│ ║         	            ^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.143: 	  | Nega -> 0 - (eval2 e.arg)
+//│ ╙──       	                ^^^^^^^^^^^^^
+//│ eval2f: ('rhs -> anything) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'a}) | (Nega[?] with {arg: 'rhs})) -> (int | 'a)
 
 
 e2 = add (lit 1) (nega e1)
-//│ e2: Add[Lit | Nega[Add[Add[Lit] | Lit] & {lhs: Lit, rhs: Add[Lit]}]] & {lhs: Lit, rhs: Nega[Add[Add[Lit] | Lit] & {lhs: Lit, rhs: Add[Lit]}]}
+//│ e2: Add[nothing]
 
 
 def eval2_fixed_1 = eval2 eval2
@@ -109,9 +176,9 @@ def fix f = let fixed = fun x -> f (fun v -> (x x) v) in fixed fixed
 //│ fix: (('a -> 'b) -> ('a -> 'b & 'c)) -> 'c
 
 def eval2_fixed_2 = fix eval2f
-//│ eval2_fixed_2: 'a -> int
+//│ eval2_fixed_2: 'a -> (int | 'b)
 //│   where
-//│     'a <: Add[?] & {lhs: 'a, rhs: 'a} | Lit | Nega[?] & {arg: 'a}
+//│     'a <: Add[?] & {lhs: 'a, rhs: 'a} | (Lit with {val: 'b}) | Nega[?] & {arg: 'a}
 
 eval2_fixed_2 e1
 eval2_fixed_2 e2
@@ -128,14 +195,16 @@ eval2_fixed_2 e2
 // FIXME should be a code-gen error
 
 rec def eval1_fixed = eval1f (eval1f eval1_fixed)
-//│ eval1_fixed: 'a -> int
+//│ eval1_fixed: 'a -> (int | 'val)
 //│   where
-//│     'a <: Add[?] & {lhs: 'a, rhs: 'a} | Lit
+//│     'a <: Add[?] & {lhs: 'b, rhs: 'b} | (Lit with {val: 'val})
+//│     'b <: Add[?] & {lhs: 'a, rhs: 'a} | Lit
 
 rec def eval1_fixed() = eval1f (eval1f (eval1_fixed()))
-//│ eval1_fixed: () -> 'a -> int
+//│ eval1_fixed: () -> 'a -> (int | 'val)
 //│   where
-//│     'a <: Add[?] & {lhs: 'a, rhs: 'a} | Lit
+//│     'a <: Add[?] & {lhs: 'b, rhs: 'b} | (Lit with {val: 'val})
+//│     'b <: Add[?] & {lhs: 'a, rhs: 'a} | Lit
 
 :re
 eval1_fixed() e1
@@ -149,22 +218,7 @@ eval1_fixed() e1
 
 
 def eval1_fixed = eval1f (fun x -> eval1f eval1f x)
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.+1: 	def eval1_fixed = eval1f (fun x -> eval1f eval1f x)
-//│ ║        	                                   ^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> ?b` is not an instance of `int`
-//│ ║  l.27: 	def eval1f eval1 e = case e of {
-//│ ║        	                 ^^^^^^^^^^^^^^^
-//│ ║  l.28: 	  | Lit -> e.val
-//│ ║        	^^^^^^^^^^^^^^^^
-//│ ║  l.29: 	  | Add -> eval1 e.lhs + eval1 e.rhs
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.30: 	  }
-//│ ║        	^^^
-//│ ╟── Note: constraint arises from application:
-//│ ║  l.29: 	  | Add -> eval1 e.lhs + eval1 e.rhs
-//│ ╙──      	                         ^^^^^^^^^^^
-//│ eval1_fixed: (Add[?] & {lhs: Add[?] & {lhs: nothing -> int, rhs: nothing -> int} | Lit, rhs: Add[?] & {lhs: nothing -> int, rhs: nothing -> int} | Lit} | (Lit with {val: 'val})) -> (int | 'val)
+//│ eval1_fixed: (Add[?] & {lhs: Add[?] & {lhs: nothing -> anything, rhs: nothing -> anything} | Lit, rhs: Add[?] & {lhs: nothing -> anything, rhs: nothing -> anything} | Lit} | (Lit with {val: 'val})) -> (int | 'val)
 
 
 
@@ -177,30 +231,30 @@ rec def eval1_fixed = eval1f (fun x -> eval1_fixed eval1_fixed x)
 //│ ║  l.+1: 	rec def eval1_fixed = eval1f (fun x -> eval1_fixed eval1_fixed x)
 //│ ║        	                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── function of type `?a -> ?b` does not match type `Add[?] & ?c | Lit & ?d`
-//│ ║  l.27: 	def eval1f eval1 e = case e of {
+//│ ║  l.51: 	def eval1f eval1 e = case e of {
 //│ ║        	                 ^^^^^^^^^^^^^^^
-//│ ║  l.28: 	  | Lit -> e.val
+//│ ║  l.52: 	  | Lit -> e.val
 //│ ║        	^^^^^^^^^^^^^^^^
-//│ ║  l.29: 	  | Add -> eval1 e.lhs + eval1 e.rhs
+//│ ║  l.53: 	  | Add -> eval1 e.lhs + eval1 e.rhs
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.30: 	  }
+//│ ║  l.54: 	  }
 //│ ║        	^^^
 //│ ╟── but it flows into application with expected type `Add[?] & ?e | Lit & ?f`
 //│ ║  l.+1: 	rec def eval1_fixed = eval1f (fun x -> eval1_fixed eval1_fixed x)
 //│ ║        	                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.27: 	def eval1f eval1 e = case e of {
+//│ ║  l.51: 	def eval1f eval1 e = case e of {
 //│ ╙──      	                          ^
 //│ ╔══[ERROR] Type mismatch in binding of application:
 //│ ║  l.+1: 	rec def eval1_fixed = eval1f (fun x -> eval1_fixed eval1_fixed x)
 //│ ║        	                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── operator application of type `int` is not a function
-//│ ║  l.29: 	  | Add -> eval1 e.lhs + eval1 e.rhs
+//│ ║  l.53: 	  | Add -> eval1 e.lhs + eval1 e.rhs
 //│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
 //│ ║  l.+1: 	rec def eval1_fixed = eval1f (fun x -> eval1_fixed eval1_fixed x)
 //│ ╙──      	                                       ^^^^^^^^^^^^^^^^^^^^^^^
-//│ eval1_fixed: ((Add[?] with {lhs: 'a, rhs: 'a}) | (Lit with {val: 'a -> int & 'val})) -> (int | 'val)
+//│ eval1_fixed: ((Add[?] with {lhs: 'a, rhs: 'a}) | (Lit with {val: 'a -> anything & 'val})) -> (int | 'val)
 
 
 
@@ -219,7 +273,7 @@ rec def eval1_fixed = eval1f eval1_fixed e1
 //│ ║  l.+1: 	rec def eval1_fixed = eval1f eval1_fixed e1
 //│ ║        	                      ^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── operator application of type `int` is not a function
-//│ ║  l.29: 	  | Add -> eval1 e.lhs + eval1 e.rhs
+//│ ║  l.53: 	  | Add -> eval1 e.lhs + eval1 e.rhs
 //│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into application with expected type `?rhs -> ?a`
 //│ ║  l.+1: 	rec def eval1_fixed = eval1f eval1_fixed e1
@@ -228,13 +282,13 @@ rec def eval1_fixed = eval1f eval1_fixed e1
 //│ ║  l.+1: 	rec def eval1_fixed = eval1f eval1_fixed e1
 //│ ║        	                             ^^^^^^^^^^^
 //│ ╟── from reference:
-//│ ║  l.29: 	  | Add -> eval1 e.lhs + eval1 e.rhs
+//│ ║  l.53: 	  | Add -> eval1 e.lhs + eval1 e.rhs
 //│ ╙──      	                         ^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of application:
 //│ ║  l.+1: 	rec def eval1_fixed = eval1f eval1_fixed e1
 //│ ║        	                      ^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── operator application of type `int` is not a function
-//│ ║  l.29: 	  | Add -> eval1 e.lhs + eval1 e.rhs
+//│ ║  l.53: 	  | Add -> eval1 e.lhs + eval1 e.rhs
 //│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into application with expected type `?lhs -> ?a`
 //│ ║  l.+1: 	rec def eval1_fixed = eval1f eval1_fixed e1
@@ -243,7 +297,7 @@ rec def eval1_fixed = eval1f eval1_fixed e1
 //│ ║  l.+1: 	rec def eval1_fixed = eval1f eval1_fixed e1
 //│ ║        	                             ^^^^^^^^^^^
 //│ ╟── from reference:
-//│ ║  l.29: 	  | Add -> eval1 e.lhs + eval1 e.rhs
+//│ ║  l.53: 	  | Add -> eval1 e.lhs + eval1 e.rhs
 //│ ╙──      	           ^^^^^
 //│ eval1_fixed: int
 
@@ -262,25 +316,10 @@ def eval2_broken eval2 e = case e of {
   | Nega -> e.arg
   | _ -> eval1 eval2 e
   }
-//│ eval2_broken: ('a -> 'rhs -> int & 'a) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'arg}) | (Nega[?] with {arg: 'arg})) -> ('arg | int)
+//│ eval2_broken: ('a -> 'rhs -> anything & 'a) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'arg}) | (Nega[?] with {arg: 'arg})) -> ('arg | int)
 
 :e
 eval2_broken eval2_broken e2
-//│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.+1: 	eval2_broken eval2_broken e2
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── application of type `Add[?E] & {Add#E = ?E, lhs: ?lhs, rhs: ?rhs}` is not an instance of `int`
-//│ ║  l.8: 	def add lhs rhs = Add { lhs; rhs }
-//│ ║       	                  ^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `int`
-//│ ║  l.+1: 	eval2_broken eval2_broken e2
-//│ ║        	                          ^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.261: 	def eval2_broken eval2 e = case e of {
-//│ ║         	                                ^
-//│ ╟── from argument:
-//│ ║  l.18: 	  | Add -> eval1 eval1 e.lhs + eval1 eval1 e.rhs
-//│ ╙──      	           ^^^^^^^^^^^^^^^^^
 //│ res: int
 
 
@@ -292,7 +331,19 @@ def eval2f_oops eval2 e = case e of {
   | Nega -> 0 - (eval2 e.arg)
   | _ -> eval1 eval2 e // should be: eval1f eval2 e
   }
-//│ eval2f_oops: ('arg -> nothing & 'arg) -> ((Add[?] with {lhs: anything, rhs: anything}) | (Lit with {val: 'a}) | (Nega[?] with {arg: 'arg})) -> (int | 'a)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.+2: 	  | Nega -> 0 - (eval2 e.arg)
+//│ ║        	            ^^^
+//│ ╟── argument of type `(int,)` is not an instance of `int`
+//│ ║  l.+2: 	  | Nega -> 0 - (eval2 e.arg)
+//│ ╙──      	            ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.+2: 	  | Nega -> 0 - (eval2 e.arg)
+//│ ║        	            ^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `(?a,)` is not an instance of `int`
+//│ ║  l.+2: 	  | Nega -> 0 - (eval2 e.arg)
+//│ ╙──      	                ^^^^^^^^^^^^^
+//│ eval2f_oops: ('arg -> 'rhs -> anything & 'arg) -> ((Add[?] with {lhs: 'rhs, rhs: 'rhs}) | (Lit with {val: 'a}) | (Nega[?] with {arg: 'arg})) -> (int | 'a)
 
 :e
 fix eval2f_oops e2
@@ -300,13 +351,13 @@ fix eval2f_oops e2
 //│ ║  l.+1: 	fix eval2f_oops e2
 //│ ║        	^^^^^^^^^^^^^^^
 //│ ╟── function of type `?a -> ?b` does not match type `Add[?] & ?c | Lit & ?d`
-//│ ║  l.108: 	def fix f = let fixed = fun x -> f (fun v -> (x x) v) in fixed fixed
+//│ ║  l.175: 	def fix f = let fixed = fun x -> f (fun v -> (x x) v) in fixed fixed
 //│ ║         	                                    ^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.291: 	def eval2f_oops eval2 e = case e of {
+//│ ║  l.330: 	def eval2f_oops eval2 e = case e of {
 //│ ║         	                               ^
 //│ ╟── from reference:
-//│ ║  l.16: 	def eval1 eval1 e = case e of {
+//│ ║  l.28: 	def eval1 eval1 e = case e of {
 //│ ╙──      	                         ^
 //│ res: int
 

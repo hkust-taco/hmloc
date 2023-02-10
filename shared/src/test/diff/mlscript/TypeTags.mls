@@ -7,10 +7,16 @@ def foo: #Foo
 //│ foo: Foo[?]
 
 foo12 = Foo { x = 1; y = 2 }
-//│ foo12: Foo[int]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.9: 	foo12 = Foo { x = 1; y = 2 }
+//│ ║       	        ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── argument of type `({x: int, y: int},)` is not a record (expected a record with fields: x, y)
+//│ ║  l.9: 	foo12 = Foo { x = 1; y = 2 }
+//│ ╙──     	            ^^^^^^^^^^^^^^^^
+//│ foo12: Foo[nothing]
 
 foo = foo12
-//│ Foo[int]
+//│ Foo[nothing]
 //│   <:  foo:
 //│ Foo[?]
 
@@ -24,23 +30,23 @@ def test2 f = case f of { Foo -> f.x }
 //│ test2: (Foo[?]\y with {x: 'x}) -> 'x
 
 test2 foo12
-//│ res: int
+//│ res: nothing
 
 
 // * Only has the tag in its type, not the field
 :e
 test2 foo
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.32: 	test2 foo
+//│ ║  l.38: 	test2 foo
 //│ ║        	^^^^^^^^^
 //│ ╟── reference of type `Foo[?]` does not have field 'x'
-//│ ║  l.32: 	test2 foo
+//│ ║  l.38: 	test2 foo
 //│ ║        	      ^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.23: 	def test2 f = case f of { Foo -> f.x }
+//│ ║  l.29: 	def test2 f = case f of { Foo -> f.x }
 //│ ║        	                   ^
 //│ ╟── from receiver:
-//│ ║  l.23: 	def test2 f = case f of { Foo -> f.x }
+//│ ║  l.29: 	def test2 f = case f of { Foo -> f.x }
 //│ ╙──      	                                 ^
 //│ res: nothing
 
@@ -52,10 +58,10 @@ test2 foo
 :e
 foo = Foo
 //│ ╔══[ERROR] Type mismatch in def definition:
-//│ ║  l.53: 	foo = Foo
+//│ ║  l.59: 	foo = Foo
 //│ ║        	^^^^^^^^^
 //│ ╟── reference of type `{x: ?x, y: ?y} -> (Foo[?A] with {Foo#A = ?A, x: ?x, y: ?y})` is not an instance of type `Foo`
-//│ ║  l.53: 	foo = Foo
+//│ ║  l.59: 	foo = Foo
 //│ ║        	      ^^^
 //│ ╟── Note: class constructor Foo is defined at:
 //│ ║  l.3: 	class Foo[A]: { x: A; y: A }
