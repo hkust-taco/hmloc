@@ -29,15 +29,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
    * type checking and error reporting can ignore it
    */
   def toParams(t: Term): Term = t
-  // def toParams(t: Term): Tup = t match {
-  //   case t: Tup => t
-  //   case Bra(false, t) => toParams(t)
-  //   case _ => new ImplicitTup((N, Fld(false, false, t)) :: Nil)
-  // }
-  def toParams(t: Ls[Term]): Tup = {
-    val fields = t.map(t => (N, Fld(false, false, t)))
-    Tup(fields)
-  }
+
   // def toParamsTy(t: Type): Tuple = t match {
   //   case t: Tuple => t
   //   case _ => Tuple((N, Field(None, t)) :: Nil)
@@ -74,7 +66,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     // also defines a helper function to create lists
     val emptyList: Term = Var("Nil")
     vals.foldRight(emptyList)((v, list) =>
-      mkApp(Var("Cons"), Tup((N, Fld(false, false, v)) :: (N, Fld(false, false, list)) :: Nil)
+      mkApp(Var("Cons"), Tup(v :: list :: Nil)
     ))
   })
   def variable[p: P]: P[Var] = locate(ident.map(Var))
@@ -88,9 +80,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   def parens[p: P]: P[Term] = locate(P( "(" ~/ parenCell.rep(0, ",") ~ ",".!.? ~ ")" ).map {
     case (Seq(Right(t -> false)), N) => Bra(false, t)
-    case (Seq(Right(t -> true)), N) => Tup(N -> Fld(true, false, t) :: Nil) // ? single tuple with mutable
+    case (Seq(Right(t -> true)), N) => Tup(t :: Nil) // ? single tuple with mutable
     case (ts, _) => Tup(ts.iterator.map {
-      case R(f) => N -> Fld(f._2, false, f._1)
+      case R(f) => f._1
       case _ => die // left unreachable
     }.toList)
   })
@@ -116,8 +108,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def record[p: P]: P[Rcd] = locate(P(
       "{" ~/ (kw("mut").!.? ~ variable ~ "=" ~ term map L.apply).|(kw("mut").!.? ~ variable map R.apply).rep(sep = ";") ~ "}"
     ).map { fs => Rcd(fs.map{ 
-        case L((mut, v, t)) => v -> Fld(mut.isDefined, false, t)
-        case R(mut -> id) => id -> Fld(mut.isDefined, false, id) }.toList)})
+        case L((mut, v, t)) => v -> t
+        case R(mut -> id) => id -> id }.toList)})
   
   // TODO: change term to list of terms and give the list of terms as to `toParams`
   def fun[p: P]: P[Term] = locate(P( kw("fun") ~/ term ~ "->" ~ term ).map(nb => Lam(toParams(nb._1), nb._2)))
@@ -164,7 +156,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case (withs, ascs, equateTerm, tupleTerm) =>
       val trm1 = ascs.foldLeft(withs)(Asc)
       val trm2 = equateTerm.fold(trm1)(rhs => App(OpApp("eq", toParams(trm1)), toParams(rhs)))
-      tupleTerm.fold(trm2)(trm3 => toParams(trm2 :: trm3))
+      tupleTerm.fold(trm2)(trm3 => Tup(trm2 :: trm3))
   })
   /** Inner call to withsAsc term which parses a list of terms optionally
     * type ascribed
@@ -194,23 +186,23 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     // the tups fields are further substituted in the recursive calls
     case App(App(op@Var("::"), lhs@Tup(_)), rhs@Tup(_)) =>
       val argSub: Tup => Term = {
-        case Tup(N -> Fld(false, false, value) :: Nil) =>
+        case Tup(value :: Nil) =>
           appSubstitution(value)
         case t@Tup(fields) =>
-          val newFields = fields.map { case (v, fld) => (v, fld.copy(value = appSubstitution(fld.value))) }
+          val newFields = fields.map(appSubstitution)
           t.copy(fields = newFields)
       }
       val newLhs = argSub(lhs)
       val newRhs = argSub(rhs)
-      App(op.copy(name = "Cons"), toParams(newLhs :: newRhs :: Nil))
+      App(op.copy(name = "Cons"), Tup(newLhs :: newRhs :: Nil))
     case o@App(i@App(op@Var("="), lhs), rhs) =>
       val newLhs = appSubstitution(lhs)
       val newRhs = appSubstitution(rhs)
       o.copy(lhs = i.copy(lhs = op.copy(name = "eq"), rhs = newLhs), rhs = newRhs)
-    case t@Tup(N -> Fld(false, false, value) :: Nil) =>
-      t.copy(fields = N -> Fld(false, false, appSubstitution(value)) :: Nil)
+    case t@Tup(value :: Nil) =>
+      t.copy(fields = appSubstitution(value) :: Nil)
     case t@Tup(fields) =>
-      val newFields = fields.map { case (v, fld) => (v, fld.copy(value = appSubstitution(fld.value))) }
+      val newFields = fields.map(appSubstitution)
       t.copy(fields = newFields)
     case t => t
   }
@@ -368,7 +360,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       // Class of ('a, 'b)
       case (parts, N) =>
         val tparams = parts.flatMap(_._1).toSet
-        val tupBody = Tuple(parts.map(t => N -> Field(N, t._2)).toList)
+        val tupBody = Tuple(parts.map(_._2).toList)
         (tparams, tupBody)
       // cases where the type is applied to type parameters or no parameters
       // int
@@ -418,7 +410,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case Seq(t) => t
       case parts =>
         val tparams = parts.flatMap(_._1).toSet
-        val tupBody = Tuple(parts.map(t => N -> Field(N, t._2)).toList)
+        val tupBody = Tuple(parts.map(_._2).toList)
         (tparams, tupBody)
     }
   
@@ -440,12 +432,12 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     ocamlTypeExpression.rep(1, "*")
     .map {
       case Seq((tparams, tbody)) =>
-        val rcdBody = Record(Var("_0") -> Field(N, tbody) :: Nil)
+        val rcdBody = Record(Var("_0") -> tbody :: Nil)
         (tparams, rcdBody)
       case parts =>
         val tparams = parts.flatMap(_._1).toSet
         val rcdBody = parts.zipWithIndex.map {
-          case (t, i) => Var(s"_$i") -> Field(N, t._2)
+          case (t, i) => Var(s"_$i") -> t._2
         }.toList
         (tparams, Record(rcdBody))
     }
@@ -535,10 +527,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
             val fun = Def(false, Var(tyDef.nme.name), R(funAppTy), true)
             S(fun)
           case Record(fields) =>
-            // val funArg = if (fields.size > 1) Tuple(fields.map(N -> _._2))  
             val funArg = fields match {
-              case f :: Nil => f._2.out
-              case _ => Tuple(fields.map(N -> _._2))
+              case f :: Nil => f._2
+              case _ => Tuple(fields.map(_._2))
             }
             val funTy = PolyType(alsParams, Function(funArg, alsTy))
             val fun = Def(false, Var(tyDef.nme.name), R(funTy), true)
@@ -583,10 +574,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def tyVar[p: P]: P[TypeVar] = locate(P("'" ~ ident map (id => TypeVar(R("'" + id), N))))
   def tyWild[p: P]: P[Bounds] = locate(P("?".! map (_ => Bounds(Bot, Top))))
   def rcd[p: P]: P[Record] =
-    locate(P( "{" ~/ ( kw("mut").!.? ~ variable ~ ":" ~ ty).rep(sep = ";") ~ "}" )
+    locate(P( "{" ~/ (variable ~ ":" ~ ty).rep(sep = ";") ~ "}" )
       .map(_.toList.map {
-        case (None, v, t) => v -> Field(None, t)
-        case (Some(_), v, t) => v -> Field(Some(t), t)
+        case (v, t) => v -> t
       } pipe Record))
 
   def parTyCell[p: P]: P[Either[Type, (Type, Boolean)]] = (("..." | kw("mut")).!.? ~ ty). map {
@@ -598,8 +588,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def parTy[p: P]: P[Type] = locate(P( "(" ~/ parTyCell.rep(0, ",").map(_.map(N -> _).toList) ~ ",".!.? ~ ")" ).map {
     case (N -> Right(ty -> false) :: Nil, N) => ty
     case (fs, _) => Tuple(fs.map {
-      case (l, Right(t -> false)) => l -> Field(None, t)
-      case (l, Right(t -> true)) => l -> Field(Some(t), t)
+      case (l, Right(t -> false)) => t
+      case (l, Right(t -> true)) => t
       case _ => ??? // unreachable
     })
   })

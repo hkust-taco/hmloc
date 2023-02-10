@@ -19,8 +19,7 @@ sealed abstract class Decl extends DesugaredStatement with DeclImpl
   * @param isByname
   *   If this defintion is call by name or call by value
   */
-final case class Def(rec: Bool, nme: Var, rhs: Term \/ PolyType, isByname: Bool) extends Decl with Terms {
-  val body: Located = rhs.fold(identity, identity)
+final case class Def(rec: Bool, nme: Var, rhs: Term \/ PolyType, isByname: Bool) extends Decl with Terms { val body: Located = rhs.fold(identity, identity)
 }
 
 final case class TypeDef(
@@ -48,11 +47,8 @@ sealed abstract class Lit                                            extends Sim
 final case class Var(name: Str)                                      extends SimpleTerm with VarImpl
 final case class Lam(lhs: Term, rhs: Term)                           extends Term
 final case class App(lhs: Term, rhs: Term)                           extends Term
-case class Tup(fields: Ls[Opt[Var] -> Fld]) extends Term
-// used to mark tuples that have been created implicity
-// by wrapping function arguments as parameter lists
-final class ImplicitTup(fields: Ls[Opt[Var] -> Fld]) extends Tup(fields)
-final case class Rcd(fields: Ls[Var -> Fld])                         extends Term
+case class Tup(fields: Ls[Term]) extends Term
+final case class Rcd(fields: Ls[Var -> Term])                         extends Term
 final case class Sel(receiver: Term, fieldName: Var)                 extends Term
 final case class Let(isRec: Bool, name: Var, rhs: Term, body: Term)  extends Term
 /** A block of statements that are parsed and type checked together */
@@ -77,18 +73,6 @@ final case class TyApp(lhs: Term, targs: Ls[Type])                   extends Ter
 sealed abstract class IfBody extends IfBodyImpl
 final case class IfThen(expr: Term, rhs: Term) extends IfBody
 final case class IfElse(expr: Term) extends IfBody
-
-/** A Fld is used to store values in tuples, records and specialization terms.
-  * class Foo(#x, y) indicates that Foo is specialized for type of `#x`
-  *
-  * @param mut
-  *   if the field is mutable
-  * @param spec
-  *   if the field is specialized for overlying instance
-  * @param value
-  *   term body of the field
-  */
-final case class Fld(mut: Bool, spec: Bool, value: Term)
 
 sealed abstract class CaseBranches extends CaseBranchesImpl
 final case class Case(pat: SimpleTerm, body: Term, rest: CaseBranches) extends CaseBranches
@@ -123,11 +107,8 @@ sealed abstract class Composed(val pol: Bool) extends Type with ComposedImpl
 final case class Union(lhs: Type, rhs: Type)             extends Composed(true)
 final case class Inter(lhs: Type, rhs: Type)             extends Composed(false)
 final case class Function(lhs: Type, rhs: Type)          extends Type
-final case class Record(fields: Ls[Var -> Field])        extends Type
-case class Tuple(fields: Ls[Opt[Var] -> Field])    extends Type
-// used to mark tuple types that have been created implicity
-// by wrapping function arguments as parameter lists
-final class ImplicitTuple(fields: Ls[Opt[Var] -> Field]) extends Tuple(fields)
+final case class Record(fields: Ls[Var -> Type])        extends Type
+case class Tuple(fields: Ls[Type])    extends Type
 final case class Recursive(uv: TypeVar, body: Type)      extends Type
 final case class AppliedType(base: TypeName, targs: List[Type]) extends Type with NamedType
 final case class Neg(base: Type)                         extends Type
@@ -135,8 +116,6 @@ final case class Rem(base: Type, names: Ls[Var])         extends Type
 final case class Bounds(lb: Type, ub: Type)              extends Type
 final case class WithExtension(base: Type, rcd: Record)  extends Type
 final case class Constrained(base: Type, where: Ls[TypeVar -> Bounds]) extends Type
-
-final case class Field(in: Opt[Type], out: Type)         extends FieldImpl
 
 sealed abstract class NullaryType                        extends Type
 
