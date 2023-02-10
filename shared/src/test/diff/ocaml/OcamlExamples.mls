@@ -5,30 +5,30 @@
 :unify
 let rec digitsOfInt n =
   if n < 0 then [] else [[(digitsOfInt n) / 10]];;
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] list[?a] and int cannot be unified but flows into the same location
-//│ ╟── list[α70'] is here
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] list[?a] and int cannot be unified but flows into the same location [[[list[α62']]]] = [[[[Int]]]] because α61' :> [[[list[α62']]]] and α61' = [[[[Int]]]] because α65' = α61' are result type in ([[α57']] -> α65') = (α57' -> α61') and α65' <: [[[[Int]]]]
+//│ ╟── list[?a] is applied type reference
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── list[α70'] is here
+//│ ╟── list[?a] is if-then-else return type
 //│ ║  l.7: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
 //│ ║       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Int is here
+//│ ╟── int is type reference
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	           ^^^
-//│ ╟── Int is here
+//│ ╟── int is application
 //│ ║  l.7: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
 //│ ╙──     	                           ^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] list[?a] and int cannot be unified but flows into the same location
-//│ ╟── list[α71'] is here
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] list[?a] and int cannot be unified but flows into the same location [[[[list[α63']]]]] = [[[[Int]]]] because α61' :> [[[[list[α63']]]]] and α61' = [[[[Int]]]] because α65' = α61' are result type in ([[α57']] -> α65') = (α57' -> α61') and α65' <: [[[[Int]]]]
+//│ ╟── list[?b] is applied type reference
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── list[α71'] is here
+//│ ╟── list[?c] is if-then-else return type
 //│ ║  l.7: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
 //│ ║       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Int is here
+//│ ╟── int is type reference
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	           ^^^
-//│ ╟── Int is here
+//│ ╟── int is application
 //│ ║  l.7: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
 //│ ╙──     	                           ^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
@@ -39,7 +39,7 @@ let rec digitsOfInt n =
 //│ ╟── type `Nil` is not an instance of `int`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                                      ^^^
-//│ ╟── but it flows into if-then-else false condition with expected type `int`
+//│ ╟── but it flows into if-then-else false condition return type with expected type `int`
 //│ ║  l.7: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
 //│ ║       	                        ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
@@ -56,7 +56,7 @@ let rec digitsOfInt n =
 //│ ╟── type `Cons[?a]` is not an instance of `int`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                       ^^
-//│ ╟── but it flows into if-then-else false condition with expected type `int`
+//│ ╟── but it flows into if-then-else false condition return type with expected type `int`
 //│ ║  l.7: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
 //│ ║       	                        ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
@@ -73,7 +73,7 @@ let rec digitsOfInt n =
 //│ ╟── type `Cons[?a]` is not an instance of `int`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                       ^^
-//│ ╟── but it flows into if-then-else true condition with expected type `int`
+//│ ╟── but it flows into if-then-else true condition return type with expected type `int`
 //│ ║  l.7: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
 //│ ║       	                ^^
 //│ ╟── Note: constraint arises from application:
@@ -90,78 +90,68 @@ let rec digitsOfInt n =
   if n < 0 then [] else
       let remainder = n mod 10 in
       if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
-//│ ╔══[WARNING] [UNIFICATION ERROR 2] (int -> int -> int) -> ?a and int cannot be unified but flows into the same location
-//│ ╟── ([[(Int -> (Int -> Int))]] -> α99') is here
+//│ ╔══[WARNING] [UNIFICATION ERROR 2] (int -> int -> int) -> ?a and int cannot be unified but flows into the same location [[([[(Int -> (Int -> Int))]] -> α95')]] = [[[Int]]] because [[[[α98']]]] & [[([[(Int -> (Int -> Int))]] -> α95')]] :> α88' and α98' :> [[[Int]]]
+//│ ╟── (int -> int -> int) -> ?b is used as reference
 //│ ║  l.91: 	      let remainder = n mod 10 in
 //│ ║        	                      ^
-//│ ╟── Int is here
+//│ ╟── int is used as argument
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	             ^
-//│ ╟── The following tvars cannot be resolved [[[[α102']]]], α92'
-//│ ╟── α102' is here
+//│ ╟── The following tvars cannot be resolved: 
+//│ ╟── ?c is used as reference
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──      	         ^
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] list[?a] and int cannot be unified but flows into the same location
-//│ ╟── list[α97'] is here
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] list[?a] and int cannot be unified but flows into the same location [[[list[α93']]]] = [[[[Int]]]] because α92' :> [[[list[α93']]]] and α92' = [[[[Int]]]] because α107' = α92' are result type in ([[α88']] -> α107') = (α88' -> α92') and α107' <: [[[[Int]]]]
+//│ ╟── list[?a] is applied type reference
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── list[α97'] is here
+//│ ╟── list[?a] is if-then-else return type
 //│ ║  l.90: 	  if n < 0 then [] else
 //│ ║        	  ^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.91: 	      let remainder = n mod 10 in
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Int is here
+//│ ╟── int is type reference
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	           ^^^
-//│ ╟── Int is here
+//│ ╟── int is application
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──      	                                       ^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] list[?a] and int cannot be unified but flows into the same location
-//│ ╟── list[α110'] is here
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] list[?a] and int cannot be unified but flows into the same location [[[[[list[α106']]]]]] = [[[[Int]]]] because α92' :> [[[[[list[α106']]]]]] and α92' = [[[[Int]]]] because α107' = α92' are result type in ([[α88']] -> α107') = (α88' -> α92') and α107' <: [[[[Int]]]]
+//│ ╟── list[?a] is applied type reference
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ║        	                               ^^
-//│ ╟── list[α110'] is here
+//│ ╟── list[?a] is if-then-else return type
 //│ ║  l.90: 	  if n < 0 then [] else
 //│ ║        	  ^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.91: 	      let remainder = n mod 10 in
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Int is here
+//│ ╟── int is type reference
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	           ^^^
-//│ ╟── Int is here
+//│ ╟── int is application
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──      	                                       ^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] list[?a] and int cannot be unified but flows into the same location
-//│ ╟── list[α106'] is here
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] list[?a] and int cannot be unified but flows into the same location [[[[[list[α102']]]]]] = [[[[Int]]]] because α92' :> [[[[[list[α102']]]]]] and α92' = [[[[Int]]]] because α107' = α92' are result type in ([[α88']] -> α107') = (α88' -> α92') and α107' <: [[[[Int]]]]
+//│ ╟── list[?a] is applied type reference
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── list[α106'] is here
+//│ ╟── list[?a] is if-then-else return type
 //│ ║  l.90: 	  if n < 0 then [] else
 //│ ║        	  ^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.91: 	      let remainder = n mod 10 in
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── Int is here
+//│ ╟── int is type reference
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	           ^^^
-//│ ╟── Int is here
+//│ ╟── int is application
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──      	                                       ^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] int and list[?a] cannot be unified but flows into the same location
-//│ ╟── Int is here
-//│ ║  l.19: 	let ( / ): int -> int -> int
-//│ ║        	                         ^^^
-//│ ╟── list[α110'] is here
-//│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
-//│ ║        	         ^^
-//│ ╟── list[α110'] is here
-//│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
-//│ ╙──      	                                      ^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in operator application:
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                                     ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -189,7 +179,7 @@ let rec digitsOfInt n =
 //│ ╟── type `Nil` is not an instance of `int`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                                      ^^^
-//│ ╟── but it flows into if-then-else true condition with expected type `int`
+//│ ╟── but it flows into if-then-else true condition return type with expected type `int`
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                    ^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
@@ -210,7 +200,7 @@ let rec digitsOfInt n =
 //│ ╟── type `Cons[?a]` is not an instance of `int`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                       ^^
-//│ ╟── but it flows into if-then-else true condition with expected type `int`
+//│ ╟── but it flows into if-then-else true condition return type with expected type `int`
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                    ^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
@@ -231,7 +221,7 @@ let rec digitsOfInt n =
 //│ ╟── type `Cons[?a]` is not an instance of `int`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                       ^^
-//│ ╟── but it flows into if-then-else false condition with expected type `int`
+//│ ╟── but it flows into if-then-else false condition return type with expected type `int`
 //│ ║  l.92: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
@@ -252,7 +242,7 @@ let rec digitsOfInt n =
 //│ ╟── type `Cons[?a]` is not an instance of `int`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                       ^^
-//│ ╟── but it flows into if-then-else true condition with expected type `int`
+//│ ╟── but it flows into if-then-else true condition return type with expected type `int`
 //│ ║  l.90: 	  if n < 0 then [] else
 //│ ║        	                ^^
 //│ ╟── Note: constraint arises from application:
@@ -268,118 +258,66 @@ let rec digitsOfInt n =
 let rec digitsOfInt n =
   if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ╔══[WARNING] [UNIFICATION ERROR 1] (int -> int -> int) -> ?a and int cannot be unified but flows into the same location
-//│ ╟── ([[(Int -> (Int -> Int))]] -> α155') is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ╟── (int -> int -> int) -> ?b is reference
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	                                                                                      ^
-//│ ╟── Int is here
+//│ ╟── int is type reference
 //│ ║  l.19: 	let ( / ): int -> int -> int
-//│ ║        	           ^^^
-//│ ╟── Int is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	                                                                         ^
-//│ ╙── The following tvars cannot be resolved α137'
+//│ ╙──      	           ^^^
 //│ ╔══[WARNING] [UNIFICATION ERROR 1] int and (int -> int -> int) -> ?a cannot be unified but flows into the same location
-//│ ╟── Int is here
+//│ ╟── int is type reference
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	           ^^^
-//│ ╟── Int is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	                                                                         ^
-//│ ╟── ([[(Int -> (Int -> Int))]] -> α149') is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	                                             ^
-//│ ╙── The following tvars cannot be resolved α137'
-//│ ╔══[WARNING] [UNIFICATION ERROR 2] int and (int -> int -> int) -> ?a cannot be unified but flows into the same location
-//│ ╟── Int is here
-//│ ║  l.19: 	let ( / ): int -> int -> int
-//│ ║        	           ^^^
-//│ ╟── Int is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	                                                                         ^
-//│ ╟── ([[(Int -> (Int -> Int))]] -> α155') is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	                                                                                      ^
-//│ ╟── The following tvars cannot be resolved α137', [[[[α138']]]]
-//│ ╟── α138' is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ╙──       	     ^
+//│ ╟── (int -> int -> int) -> ?b is reference
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ╙──       	                                             ^
 //│ ╔══[WARNING] [UNIFICATION ERROR 1] error and list[?a] cannot be unified but flows into the same location
-//│ ╟── error<> is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ╟── error is if-then-else false condition return type
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── list[α142'] is here
+//│ ╟── list[?a] is applied type reference
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── list[α142'] is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── The following tvars cannot be resolved α141'
-//│ ╟── α141' is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ╟── both flow into if-then-else return type
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ╙──       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] ?a -> ?b and error cannot be unified but flows into the same location
-//│ ╟── ([α156'] -> α157') is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] ?a -> ?b and error cannot be unified but flows into the same location [([α156'] -> α157')] = [[error<>]] because α154' <: [([α156'] -> α157')] and α154' :> [[error<>]]
+//│ ╟── ?c -> ?d is used as operator application
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ╟── error is used as operator application
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ╙──       	                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 3] list[?a] and error cannot be unified but flows into the same location
-//│ ╟── list[α142'] is here
-//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	     ^^
-//│ ╟── list[α142'] is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	                                                                                     ^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	                                                                                      ^^^^^^^^
-//│ ╟── The following tvars cannot be resolved α148', α150', α141'
-//│ ╟── α148' is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── α150' is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ║         	                                             ^^^^^^^^
-//│ ╟── α141' is here
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ╙──       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: ::
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ╙──       	                                                                                  ^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.268: 	let rec digitsOfInt n =
+//│ ║  l.258: 	let rec digitsOfInt n =
 //│ ║         	                    ^^^
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not a function
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	                                                                         ^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ╙──       	                                                                                      ^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.268: 	let rec digitsOfInt n =
+//│ ║  l.258: 	let rec digitsOfInt n =
 //│ ║         	                    ^^^
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not a function
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	                                                                         ^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.269: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.259: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ╙──       	                                             ^
 //│ digitsOfInt: nothing -> (error | list[nothing])
 
@@ -398,132 +336,70 @@ let padZero l1 l2 =
   then (l1, ((clone 0 (len1 - len2)) @ l2))
   else (((clone 0 (len2 - len1)) @ l1), l2);;
 //│ ╔══[WARNING] [UNIFICATION ERROR 1] error and list[?a] cannot be unified but flows into the same location
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╟── error is if-then-else false condition return type
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ║         	                                           ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── list[α220'] is here
+//│ ╟── list[?a] is applied type reference
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── list[α220'] is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── The following tvars cannot be resolved α219'
-//│ ╟── α219' is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╟── both flow into if-then-else return type
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ╙──       	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] ?a -> ?b and error cannot be unified but flows into the same location
-//│ ╟── ([α225'] -> α226') is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] ?a -> ?b and error cannot be unified but flows into the same location [([α235'] -> α236')] = [[error<>]] because α231' <: [([α235'] -> α236')] and α231' :> [[error<>]]
+//│ ╟── ?c -> ?d is used as operator application
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ║         	                                           ^^^^
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╟── error is used as operator application
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ╙──       	                                           ^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] error and int cannot be unified but flows into the same location
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                                           ^
-//│ ╟── Int is here
-//│ ║  l.398: 	  then (l1, ((clone 0 (len1 - len2)) @ l2))
-//│ ╙──       	                    ^
 //│ ╔══[WARNING] [UNIFICATION ERROR 1] error and list[?a] cannot be unified but flows into the same location
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╟── error is if-then-else false condition return type
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ║         	                                           ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── list[α253'] is here
+//│ ╟── list[?b] is applied type reference
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── list[α253'] is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── The following tvars cannot be resolved α252'
-//│ ╟── α252' is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╟── both flow into if-then-else return type
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ╙──       	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 1] list[?a] and error cannot be unified but flows into the same location
-//│ ╟── list[α253'] is here
-//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	     ^^
-//│ ╟── list[α253'] is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] error and list[?a] cannot be unified but flows into the same location [[[error<>]]] = [[[[list[α257']]]]] because [[[α272']]] = [[[error<>]]] because α262' <: [[[α272']]] and α262' :> [[[error<>]]] and α272' <: [[[[list[α257']]]]]
+//│ ╟── error is if-then-else false condition return type
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ║         	                                           ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╟── error is if-then-else return type
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── The following tvars cannot be resolved α252'
-//│ ╟── α252' is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ╙──       	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] error and list[?a] cannot be unified but flows into the same location
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                                           ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── list[α247'] is here
+//│ ╟── list[?a] is applied type reference
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ║        	         ^^
-//│ ╟── list[α247'] is here
-//│ ║  l.398: 	  then (l1, ((clone 0 (len1 - len2)) @ l2))
+//│ ╟── list[?a] is application
+//│ ║  l.336: 	  then (l1, ((clone 0 (len1 - len2)) @ l2))
 //│ ╙──       	              ^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[WARNING] [UNIFICATION ERROR 1] error and list[?a] cannot be unified but flows into the same location
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╟── error is if-then-else false condition return type
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ║         	                                           ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── list[α271'] is here
+//│ ╟── list[?b] is applied type reference
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── list[α271'] is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── The following tvars cannot be resolved α270'
-//│ ╟── α270' is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╟── both flow into if-then-else return type
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ╙──       	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 1] list[?a] and error cannot be unified but flows into the same location
-//│ ╟── list[α271'] is here
-//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	     ^^
-//│ ╟── list[α271'] is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] error and list[?a] cannot be unified but flows into the same location [[[error<>]]] = [[[[list[α275']]]]] because [[[α290']]] = [[[error<>]]] because α280' <: [[[α290']]] and α280' :> [[[error<>]]] and α290' <: [[[[list[α275']]]]]
+//│ ╟── error is if-then-else false condition return type
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ║         	                                           ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ╟── error is if-then-else return type
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── The following tvars cannot be resolved α270'
-//│ ╟── α270' is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ╙──       	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] error and list[?a] cannot be unified but flows into the same location
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                                           ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
-//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── list[α265'] is here
+//│ ╟── list[?a] is applied type reference
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ║        	         ^^
-//│ ╟── list[α265'] is here
-//│ ║  l.399: 	  else (((clone 0 (len2 - len1)) @ l1), l2);;
+//│ ╟── list[?a] is application
+//│ ║  l.337: 	  else (((clone 0 (len2 - len1)) @ l1), l2);;
 //│ ╙──       	          ^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: ::
-//│ ║  l.393: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+//│ ║  l.331: 	let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 //│ ╙──       	                                             ^^
 //│ clone: error -> int -> (error | list[nothing])
 //│ padZero: list[?] -> list[?] -> (list[nothing], list[nothing],)
@@ -534,134 +410,201 @@ let rec removeZero l =
   match l with | [] -> [] | 0::t -> removeZero t | _ -> l;;
 //│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: 0 t) then removeZero t,1)
 //│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$29(Typer.scala:845)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$29(Typer.scala:758)
 //│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:765)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:678)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:656)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:767)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:568)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:420)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:767)
+//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:332)
 
 // infix mod
 :unifyDbg
 let rec digitsOfInt n =
   let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
-//│ [ERROR 1] list[α320'] != error<> unifying because [[[[list[α320']]]]] | [[[error<>]]] <: α312'
-//│ allVarPols: +α320'
-//│ norm[+] [[[[list[α320']]]]]
-//│ | DNF: DNF({}∧list[α320'])
-//│ | norm[+] α320'
-//│ | | DNF: DNF(α320')
-//│ | ~> α320'
-//│ ~> list[α320']
+//│ [ERROR 1] list[α339'] != error<> unifying because [[[[list[α339']]]]] | [[[error<>]]] <: α331'
+//│ allVarPols: +α339'
+//│ norm[+] [[[[list[α339']]]]]
+//│ | DNF: DNF({}∧list[α339'])
+//│ | norm[+] α339'
+//│ | | DNF: DNF(α339')
+//│ | ~> α339'
+//│ ~> list[α339']
+//│ allVarPols: 
+//│ norm[+] [[[error<>]]]
+//│ | DNF: DNF(error<>{})
+//│ ~> error<>
+//│ allVarPols: +α339'
+//│ norm[+] [[[[list[α339']]]]]
+//│ | DNF: DNF({}∧list[α339'])
+//│ | norm[+] α339'
+//│ | | DNF: DNF(α339')
+//│ | ~> α339'
+//│ ~> list[α339']
+//│ allVarPols: +α339'
+//│ norm[+] [[[[list[α339']]]]]
+//│ | DNF: DNF({}∧list[α339'])
+//│ | norm[+] α339'
+//│ | | DNF: DNF(α339')
+//│ | ~> α339'
+//│ ~> list[α339']
+//│ allVarPols: +α339'
+//│ norm[+] [[[[list[α339']]]]]
+//│ | DNF: DNF({}∧list[α339'])
+//│ | norm[+] α339'
+//│ | | DNF: DNF(α339')
+//│ | ~> α339'
+//│ ~> list[α339']
+//│ allVarPols: +α339'
+//│ norm[+] [[[[list[α339']]]]]
+//│ | DNF: DNF({}∧list[α339'])
+//│ | norm[+] α339'
+//│ | | DNF: DNF(α339')
+//│ | ~> α339'
+//│ ~> list[α339']
+//│ allVarPols: +α339'
+//│ norm[+] [[[[list[α339']]]]]
+//│ | DNF: DNF({}∧list[α339'])
+//│ | norm[+] α339'
+//│ | | DNF: DNF(α339')
+//│ | ~> α339'
+//│ ~> list[α339']
+//│ allVarPols: 
+//│ norm[+] [[[error<>]]]
+//│ | DNF: DNF(error<>{})
+//│ ~> error<>
 //│ allVarPols: 
 //│ norm[+] [[[error<>]]]
 //│ | DNF: DNF(error<>{})
 //│ ~> error<>
 //│ ╔══[WARNING] [UNIFICATION ERROR 1] list[?a] and error cannot be unified but flows into the same location
-//│ ╟── list[α320'] is here
+//│ ╟── list[?a] is applied type reference
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── list[α320'] is here
-//│ ║  l.550: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
-//│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.550: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
+//│ ╟── error is if-then-else true condition return type
+//│ ║  l.426: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ║         	                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.550: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
-//│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── The following tvars cannot be resolved α312'
-//│ ╟── α312' is here
-//│ ║  l.550: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
+//│ ╟── both flow into if-then-else return type
+//│ ║  l.426: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ╙──       	                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ [ERROR 0] ([α318'] -> α319') != error<> unifying because [([α318'] -> α319')] = [[error<>]] because α315' <: [([α318'] -> α319')] and α315' :> [[error<>]]
-//│ allVarPols: -α328', +α329'
-//│ norm[+] [([α328'] -> α329')]
-//│ | DNF: DNF(([α328'] -> α329'){})
-//│ | norm[-] [α328']
-//│ | | DNF: DNF(α328')
+//│ [ERROR 0] ([α337'] -> α338') != error<> unifying because [([α337'] -> α338')] = [[error<>]] because α334' <: [([α337'] -> α338')] and α334' :> [[error<>]]
+//│ allVarPols: -α347', +α348'
+//│ norm[+] [([α347'] -> α348')]
+//│ | DNF: DNF(([α347'] -> α348'){})
+//│ | norm[-] [α347']
+//│ | | DNF: DNF(α347')
 //│ | | norm[-] [[[error<>]]]
 //│ | | | DNF: DNF(error<>{})
 //│ | | ~> error<>
-//│ | ~> α328'
-//│ | norm[+] α329'
-//│ | | DNF: DNF(α329')
+//│ | ~> α347'
+//│ | norm[+] α348'
+//│ | | DNF: DNF(α348')
 //│ | | norm[+] [[error<>]]
 //│ | | | DNF: DNF(error<>{})
 //│ | | ~> error<>
-//│ | | norm[-] [[α330']]
-//│ | | | DNF: DNF(α330')
-//│ | | | norm[+] [[[[list[α320']]]]]
-//│ | | | | DNF: DNF({}∧list[α320'])
-//│ | | | | norm[+] α320'
-//│ | | | | | DNF: DNF(α320')
-//│ | | | | ~> α320'
-//│ | | | ~> list[α320']
+//│ | | norm[-] [[α349']]
+//│ | | | DNF: DNF(α349')
+//│ | | | norm[+] [[[[list[α339']]]]]
+//│ | | | | DNF: DNF({}∧list[α339'])
+//│ | | | | norm[+] α339'
+//│ | | | | | DNF: DNF(α339')
+//│ | | | | ~> α339'
+//│ | | | ~> list[α339']
 //│ | | | norm[+] [[[error<>]]]
 //│ | | | | DNF: DNF(error<>{})
 //│ | | | ~> error<>
-//│ | | ~> α330'
-//│ | ~> α329'
-//│ ~> (α328' -> α329')
+//│ | | ~> α349'
+//│ | ~> α348'
+//│ ~> (α347' -> α348')
 //│ allVarPols: 
 //│ norm[+] [[error<>]]
 //│ | DNF: DNF(error<>{})
 //│ ~> error<>
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] ?a -> ?b and error cannot be unified but flows into the same location
-//│ ╟── ([α318'] -> α319') is here
-//│ ║  l.550: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
+//│ allVarPols: -α350', +α351'
+//│ norm[+] ([α350'] -> α351')
+//│ | DNF: DNF(([α350'] -> α351'){})
+//│ | norm[-] [α350']
+//│ | | DNF: DNF(α350')
+//│ | | norm[-] [[[error<>]]]
+//│ | | | DNF: DNF(error<>{})
+//│ | | ~> error<>
+//│ | ~> α350'
+//│ | norm[+] α351'
+//│ | | DNF: DNF(α351')
+//│ | | norm[+] [[error<>]]
+//│ | | | DNF: DNF(error<>{})
+//│ | | ~> error<>
+//│ | | norm[-] [[α352']]
+//│ | | | DNF: DNF(α352')
+//│ | | | norm[+] [[[[list[α339']]]]]
+//│ | | | | DNF: DNF({}∧list[α339'])
+//│ | | | | norm[+] α339'
+//│ | | | | | DNF: DNF(α339')
+//│ | | | | ~> α339'
+//│ | | | ~> list[α339']
+//│ | | | norm[+] [[[error<>]]]
+//│ | | | | DNF: DNF(error<>{})
+//│ | | | ~> error<>
+//│ | | ~> α352'
+//│ | ~> α351'
+//│ ~> (α350' -> α351')
+//│ allVarPols: 
+//│ norm[+] error<>
+//│ | DNF: DNF(error<>{})
+//│ ~> error<>
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] ?a -> ?b and error cannot be unified but flows into the same location [([α337'] -> α338')] = [[error<>]] because α334' <: [([α337'] -> α338')] and α334' :> [[error<>]]
+//│ ╟── ?c -> ?d is used as operator application
+//│ ║  l.426: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ║         	                                 ^^^^^^^^^^^^^
-//│ ╟── error<> is here
-//│ ║  l.550: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
+//│ ╟── error is used as operator application
+//│ ║  l.426: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ╙──       	                                 ^^^^^^^^^^^^^
-//│ unified digitsOfInt306'
-//│  digitsOfInt306' :> [(α307' -> α312')]
-//│ unified α307'
-//│  α307' <: [[[[α309']]]]
-//│  α307' <: [[([[(Int -> (Int -> Int))]] -> α313')]]
-//│ unified α308''
-//│ unified α309'
-//│  [Int] = α309' are arg type in ([Int] -> α311') = (α309' -> Bool)
-//│  α309' :> [[[Int]]]
-//│  [[([[(Int -> (Int -> Int))]] -> α313')]] & [[[[α309']]]] :> α307'
-//│ unified α310'
-//│  α310' :> [[[(α309' -> Bool)]]]
-//│  α310' <: [([Int] -> α311')]
-//│ unified α311'
-//│  α311' = Bool are result type in ([Int] -> α311') = (α309' -> Bool)
-//│ unified α312'
-//│  α312' :> [[[error<>]]]
-//│  α312' :> [[[[list[α320']]]]]
-//│ unified α313'
-//│  α313' <: [([Int] -> α314')]
-//│ unified α314'
-//│  α314' <: [[[error<>]]]
-//│ unified α315'
-//│  α315' :> [[error<>]]
-//│  α315' <: [([α318'] -> α319')]
-//│ unified α316'
-//│ unified α317'
-//│  α317' <: [([[α307']] -> α318')]
-//│ unified α318'
-//│  α318' <: [[[error<>]]]
-//│ unified α319'
-//│  α319' :> [[error<>]]
-//│  α319' <: [[α312']]
-//│ unified α320'
+//│ unified digitsOfInt325'
+//│  digitsOfInt325' :> [(α326' -> α331')]
+//│ unified α326'
+//│  α326' <: [[[[α328']]]]
+//│  α326' <: [[([[(Int -> (Int -> Int))]] -> α332')]]
+//│ unified α327''
+//│ unified α328'
+//│  α328' :> [[[Int]]]
+//│  [[([[(Int -> (Int -> Int))]] -> α332')]] & [[[[α328']]]] :> α326'
+//│ unified α329'
+//│  α329' :> [[[(α328' -> Bool)]]]
+//│  α329' <: [([Int] -> α330')]
+//│ unified α330'
+//│  α330' = Bool are result type in ([Int] -> α330') = (α328' -> Bool)
+//│ unified α331'
+//│  α331' :> [[[error<>]]]
+//│  α331' :> [[[[list[α339']]]]]
+//│ unified α332'
+//│  α332' <: [([Int] -> α333')]
+//│ unified α333'
+//│  α333' <: [[[error<>]]]
+//│ unified α334'
+//│  α334' :> [[error<>]]
+//│  α334' <: [([α337'] -> α338')]
+//│ unified α335'
+//│ unified α336'
+//│  α336' <: [([[α326']] -> α337')]
+//│ unified α337'
+//│  α337' <: [[[error<>]]]
+//│ unified α338'
+//│  α338' :> [[error<>]]
+//│  α338' <: [[α331']]
+//│ unified α339'
 //│ ╔══[ERROR] identifier not found: ::
-//│ ║  l.550: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
+//│ ║  l.426: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ╙──       	                                            ^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.550: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
+//│ ║  l.426: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ║         	                                                ^^^^^^^^^^^^^^^^
 //│ ╟── type `Nil` is not a function
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                                      ^^^
 //│ ╟── but it flows into reference with expected type `?digitsOfInt -> ?a`
-//│ ║  l.550: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
+//│ ║  l.426: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ╙──       	                                                ^^^^
 //│ digitsOfInt: ((int -> int -> int) -> int -> error) -> (error | list[nothing])
 
@@ -670,7 +613,7 @@ let rec digitsOfInt n =
 :unifyDbg
 let sqsum xs =
   let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
-//│ [ERROR 0] Int != Float unifying because [Int] = Float are arg type in ([Int] -> α335'') = (Float -> Float)
+//│ [ERROR 0] Int != Float unifying because [Int] = Float are arg type in ([Int] -> α357'') = (Float -> Float)
 //│ allVarPols: 
 //│ norm[+] [Int]
 //│ | DNF: DNF(int<>{})
@@ -679,145 +622,132 @@ let sqsum xs =
 //│ norm[+] Float
 //│ | DNF: DNF(float<>{})
 //│ ~> float<>
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] int and float cannot be unified but flows into the same location
-//│ ╟── Int is here
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
-//│ ║         	                    ^
-//│ ╟── Float is here
-//│ ║  l.48: 	let ( ** ): float -> float -> float
-//│ ╙──      	                     ^^^^^
-//│ [ERROR 0] Float != Int unifying because Float = [[[[Int]]]] because α335'' = Float are result type in ([Int] -> α335'') = (Float -> Float) and α335'' <: [[[[Int]]]]
+//│ allVarPols: 
+//│ norm[+] Int
+//│ | DNF: DNF(int<>{})
+//│ ~> int<>
 //│ allVarPols: 
 //│ norm[+] Float
 //│ | DNF: DNF(float<>{})
 //│ ~> float<>
-//│ allVarPols: 
-//│ norm[+] [[[[Int]]]]
-//│ | DNF: DNF(int<>{})
-//│ ~> int<>
-//│ ╔══[WARNING] [UNIFICATION ERROR 0] float and int cannot be unified but flows into the same location
-//│ ╟── Float is here
+//│ ╔══[WARNING] [UNIFICATION ERROR 0] int and float cannot be unified but flows into the same location [Int] = Float are arg type in ([Int] -> α357'') = (Float -> Float)
+//│ ╟── int is used as argument
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	                    ^
+//│ ╟── float is used as type reference
 //│ ║  l.48: 	let ( ** ): float -> float -> float
-//│ ║        	                              ^^^^^
-//│ ╟── Int is here
-//│ ║  l.16: 	let (+): int -> int -> int
-//│ ║        	         ^^^
-//│ ╟── Int is here
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
-//│ ╙──       	               ^^^^^^
-//│ unified α331'
-//│  list[α341'] = [[α331']] are arg type in (list[α341'] -> α340') = ([[α331']] -> α347')
-//│  α331' <: [[[[[list[α341']]]]]]
-//│ unified α332''
-//│  α332'' <: [[[[[Float]]]]]
-//│ unified α333''
-//│  α333'' <: [[[[[Float]]]]]
-//│ unified α334''
-//│  α334'' :> [[[(Float -> Float)]]]
-//│  α334'' <: [([Int] -> α335'')]
-//│ unified α335''
-//│  α335'' <: [[[[Int]]]]
-//│  α335'' = Float are result type in ([Int] -> α335'') = (Float -> Float)
-//│ unified α336''
-//│  α336'' :> [[[(Int -> Int)]]]
-//│  α336'' <: [([α338''] -> α339'')]
-//│ unified α337''
-//│  α337'' :> [[[(Float -> Float)]]]
-//│  α337'' <: [([Int] -> α338'')]
-//│ unified α338''
-//│  α338'' = Float are result type in ([Int] -> α338'') = (Float -> Float)
-//│  [α338''] = Int are arg type in ([α338''] -> α339'') = (Int -> Int)
-//│ unified α339''
-//│  α339'' = Int are result type in ([α338''] -> α339'') = (Int -> Int)
-//│ unified α340'
-//│  [[Int]] = α340' are arg type in ([[Int]] -> α346') = (α340' -> (list[α341'] -> α340'))
-//│  α340' :> [[[[Int]]]]
-//│  α340' <: [[α342']]
-//│  α340' <: [[α347']]
-//│ unified α341'
-//│  α341' <: [[α343']]
-//│ unified α342'
-//│  α342' <: [[[[[Float]]]]]
-//│  [[α342']] = [[[[Int]]]] because α340' <: [[α342']] and α340' :> [[[[Int]]]]
-//│ unified α343'
-//│  α343' <: [[[[[Float]]]]]
-//│ unified α344'
-//│  α344' :> [[[Int]]]
-//│  α344' <: [[α340']]
-//│ unified α345'
-//│  α345' :> [[[(α340' -> (list[α341'] -> α340'))]]]
-//│  α345' <: [([[Int]] -> α346')]
-//│ unified α346'
-//│  α346' <: [([[α331']] -> α347')]
-//│  α346' = (list[α341'] -> α340') are result type in ([[Int]] -> α346') = (α340' -> (list[α341'] -> α340'))
-//│ unified α347'
-//│  [[α347']] = [[[[Int]]]] because α340' <: [[α347']] and α340' :> [[[[Int]]]]
-//│  [[α347']] & [[α342']] :> α340'
+//│ ╙──      	                     ^^^^^
+//│ unified α353'
+//│  α353' <: [[[[[list[α363']]]]]]
+//│ unified α354''
+//│  α354'' <: [[[[[Float]]]]]
+//│ unified α355''
+//│  α355'' <: [[[[[Float]]]]]
+//│ unified α356''
+//│  α356'' :> [[[(Float -> Float)]]]
+//│  α356'' <: [([Int] -> α357'')]
+//│ unified α357''
+//│  α357'' <: [[[[Int]]]]
+//│  α357'' = Float are result type in ([Int] -> α357'') = (Float -> Float)
+//│ unified α358''
+//│  α358'' :> [[[(Int -> Int)]]]
+//│  α358'' <: [([α360''] -> α361'')]
+//│ unified α359''
+//│  α359'' :> [[[(Float -> Float)]]]
+//│  α359'' <: [([Int] -> α360'')]
+//│ unified α360''
+//│  α360'' = Float are result type in ([Int] -> α360'') = (Float -> Float)
+//│  [α360''] = Int are arg type in ([α360''] -> α361'') = (Int -> Int)
+//│ unified α361''
+//│  α361'' = Int are result type in ([α360''] -> α361'') = (Int -> Int)
+//│ unified α362'
+//│  α362' :> [[[[Int]]]]
+//│  α362' <: [[α364']]
+//│  α362' <: [[α369']]
+//│ unified α363'
+//│  α363' <: [[α365']]
+//│ unified α364'
+//│  α364' <: [[[[[Float]]]]]
+//│  [[α364']] = [[[[Int]]]] because α362' <: [[α364']] and α362' :> [[[[Int]]]]
+//│ unified α365'
+//│  α365' <: [[[[[Float]]]]]
+//│ unified α366'
+//│  α366' :> [[[Int]]]
+//│  α366' <: [[α362']]
+//│ unified α367'
+//│  α367' :> [[[(α362' -> (list[α363'] -> α362'))]]]
+//│  α367' <: [([[Int]] -> α368')]
+//│ unified α368'
+//│  α368' <: [([[α353']] -> α369')]
+//│  α368' = (list[α363'] -> α362') are result type in ([[Int]] -> α368') = (α362' -> (list[α363'] -> α362'))
+//│ unified α369'
+//│  [[α369']] = [[[[Int]]]] because α362' <: [[α369']] and α362' :> [[[[Int]]]]
+//│  [[α369']] & [[α364']] :> α362'
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	               ^^^^^^
 //│ ╟── integer literal of type `int` is not an instance of `float`
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	                    ^
 //│ ╟── Note: constraint arises from type reference:
 //│ ║  l.48: 	let ( ** ): float -> float -> float
 //│ ╙──      	                     ^^^^^
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	              ^^^^^^^^^^
 //│ ╟── type `float` is not an instance of `int`
 //│ ║  l.48: 	let ( ** ): float -> float -> float
 //│ ║        	                              ^^^^^
 //│ ╟── but it flows into operator application with expected type `int`
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	               ^^^^^^
 //│ ╟── Note: constraint arises from type reference:
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ╙──      	         ^^^
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	                          ^^^^^^
 //│ ╟── integer literal of type `int` is not an instance of `float`
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	                               ^
 //│ ╟── Note: constraint arises from type reference:
 //│ ║  l.48: 	let ( ** ): float -> float -> float
 //│ ╙──      	                     ^^^^^
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	              ^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `float` is not an instance of `int`
 //│ ║  l.48: 	let ( ** ): float -> float -> float
 //│ ║        	                              ^^^^^
 //│ ╟── but it flows into operator application with expected type `int`
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	                          ^^^^^^
 //│ ╟── Note: constraint arises from type reference:
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ╙──      	                ^^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	                                                     ^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not an instance of type `float`
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ║        	                       ^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	               ^
 //│ ╟── from type reference:
 //│ ║  l.48: 	let ( ** ): float -> float -> float
 //│ ╙──      	            ^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	                                                     ^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── integer literal of type `int` is not an instance of type `float`
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	                                                ^
 //│ ╟── but it flows into reference with expected type `float`
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	                                                                      ^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.672: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║  l.615: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
 //│ ║         	               ^
 //│ ╟── from type reference:
 //│ ║  l.48: 	let ( ** ): float -> float -> float

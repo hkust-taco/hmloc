@@ -1,4 +1,3 @@
-
 :OcamlParser
 :AllowTypeErrors
 
@@ -6,7 +5,7 @@
 type 'a list = Cons of 'a * 'a list | Nil
 let (::) a b = Cons (a, b)
 type 'a option = None | Some of 'a
-let raise a = nothing
+let raise: 'a -> nothing
 exception Error
 //│ Defined type alias list[+'a]
 //│ Defined class Cons[+'a]
@@ -77,6 +76,9 @@ let f = f +. f +. 1.0
 //│ f: float
 //│ f: float
 //│ f: float
+
+let (+): int -> int -> int
+//│ +: int -> int -> int
 
 // let without in as definitions
 let a = 1
@@ -185,23 +187,23 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 (("hi", 1) :: ("bye", 2) :: Nil):heap
 //│ res: list[(string, int,)]
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.184: 	(("hi", 1) :: Nil):heap
+//│ ║  l.186: 	(("hi", 1) :: Nil):heap
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── string literal of type `string` is not an instance of type `string`
-//│ ║  l.184: 	(("hi", 1) :: Nil):heap
+//│ ║  l.186: 	(("hi", 1) :: Nil):heap
 //│ ║         	  ^^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.124: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ║  l.126: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
 //│ ╙──       	                                                         ^^^^^^
 //│ res: heap
 //│ ╔══[ERROR] Type mismatch in type ascription:
-//│ ║  l.185: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ ║  l.187: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── string literal of type `string` is not an instance of type `string`
-//│ ║  l.185: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ ║  l.187: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
 //│ ║         	               ^^^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.124: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
+//│ ║  l.126: 	type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
 //│ ╙──       	                                                         ^^^^^^
 //│ res: heap
 
@@ -215,14 +217,14 @@ let interp2 = (fun (env:env) opt ->
   match opt with
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.213: 	fun (env: env) _ -> []
+//│ ║  l.215: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
 //│ res: error -> list[nothing]
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.214: 	let interp2 = (fun (env:env) opt ->
+//│ ║  l.216: 	let interp2 = (fun (env:env) opt ->
 //│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
-//│ ║  l.215: 	  match opt with
+//│ ║  l.217: 	  match opt with
 //│ ╙──       	        ^^^
 //│ interp2: error -> int
 
@@ -231,20 +233,12 @@ let head xs = match xs with
   | _ -> raise Error
 //│ head: list['a] -> 'a
 
+// TODO
+// FIXME
 let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
 //│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:745)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:656)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:423)
-//│ 	at: mlscript.DiffTests.$anonfun$new$45(DiffTests.scala:591)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
 
 type ('a) bigHeap =
   NoHeap of 'a list
@@ -288,28 +282,19 @@ let checkagain (v: (int, int, (int, int))) =
    (a, b, (c, d)) -> a + b + c + d
 //│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
 
+let (<): 'a -> 'a -> bool
+//│ <: anything -> anything -> bool
+
+:dp
+let temp n = 
+  match n < 0 with
+    true  -> 0
+    | false  -> 1
+//│ Parsed: Def(false, temp, Lam(Var(n), If(App(App(Var(<), Var(n)), IntLit(0)), List(IfThen(Var(true), IntLit(0), IfThen(Var(false), IntLit(1)))), true)
+//│ temp: anything -> int
+
 // TODO
 // FIXME
-:dp
-match n < 0 with
-  true  -> 0
-  | false  -> 1
-//│ Parsed: If(App(App(Var(<), Var(n)), IntLit(0)), List(IfThen(Var(true), IntLit(0), IfThen(Var(false), IntLit(1)))
-//│ ╔══[ERROR] identifier not found: n
-//│ ║  l.294: 	match n < 0 with
-//│ ╙──       	      ^
-//│ res: int
-
 let check a b =
   let (sum, sub) = (a + b, a - b) in sum * sub
 //│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:745)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:656)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:656)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:854)

@@ -107,7 +107,6 @@ class DiffTests
       override def println(): Unit = print('\n') // to avoid inserting CRLF on Windows
     }
     var stdout = false
-    // var ocamlMode = false
     def output(str: String) =
       // out.println(outputMarker + str)
       if (stdout) System.out.println(str) else
@@ -116,8 +115,6 @@ class DiffTests
     val allStatements = mutable.Buffer.empty[DesugaredStatement]
     val typer = new Typer(dbg = false, verbose = false, explainErrors = false) {
       override def funkyTuples = file.ext =:= "fun"
-      // override def funkyTuples = file.ext =:= "fun" || ocamlMode
-      // override def emitDbg(str: String): Unit = if (stdout) System.out.println(str) else output(str)
       override def emitDbg(str: String): Unit = output(str)
     }
     var ctx: typer.Ctx = typer.Ctx.init
@@ -328,7 +325,7 @@ class DiffTests
         ))).toIndexedSeq
         block.foreach(out.println)
         // top level line separators are same for both mlscript and ocaml parser
-        val processedBlock = if (file.ext =:= "fun") block.map(_ + "\n") else MLParser.addTopLevelSeparators(block)
+        val processedBlock = OcamlParser.addTopLevelSeparators(block)
         val processedBlockStr = processedBlock.mkString
         val fph = new FastParseHelpers(block)
         val globalStartLineNum = allLines.size - lines.size + 1
@@ -421,12 +418,7 @@ class DiffTests
         
         // try to parse block of text into mlscript ast
         val ans = try {
-          parse(processedBlockStr, p =>
-            if (file.ext =:= "fun") new Parser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
-            else if (ocamlMode) new OcamlParser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
-            else new MLParser(Origin(testName, globalStartLineNum, fph)).pgrm(p),
-            verboseFailures = true
-          )
+          parse(processedBlockStr, p => new OcamlParser(Origin(testName, globalStartLineNum, fph)).pgrm(p) )
         } match {
           case f: Failure =>
             val Failure(lbl, index, extra) = f

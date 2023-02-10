@@ -257,7 +257,7 @@ class TypeDefs extends ConstraintSolver { self: Typer =>
                       )
                   }).toList
                 PolymorphicType(0, FunctionType(
-                  singleTup(RecordType.mk(fieldsRefined.filterNot(_._1.name.isCapitalized))(noProv)),
+                  RecordType.mk(fieldsRefined.filterNot(_._1.name.isCapitalized))(noProv),
                   nomTag & RecordType.mk(
                     fieldsRefined ::: tparamTags
                   )(noProv)
@@ -268,8 +268,7 @@ class TypeDefs extends ConstraintSolver { self: Typer =>
                 val nomTag = trtNameToNomTag(td)(originProv(td.nme.toLoc, "trait", td.nme.name), ctx)
                 val tv = freshVar(noProv)(1)
                 tv.upperBounds ::= td.bodyTy
-                PolymorphicType(0, FunctionType(
-                  singleTup(tv), tv & nomTag & RecordType.mk(tparamTags)(noProv)
+                PolymorphicType(0, FunctionType( tv, tv & nomTag & RecordType.mk(tparamTags)(noProv)
                 )(originProv(td.nme.toLoc, "trait constructor", td.nme.name)))
             }
             ctx += n.name -> VarSymbol(ctor, Var(n.name))

@@ -99,27 +99,11 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   
   val TopType: ExtrType = ExtrType(false)(noTyProv)
   val BotType: ExtrType = ExtrType(true)(noTyProv)
-  // val UnitType: ClassTag = ClassTag(Var("unit"), Set.empty)(noTyProv)
   val UnitType: TypeRef = TypeRef(TypeName("unit"), Nil)(noTyProv)
-  // val BoolType: ClassTag = ClassTag(Var("bool"), Set.empty)(noTyProv)
   val BoolType: TypeRef = TypeRef(TypeName("bool"), Nil)(noTyProv)
-  // val TrueType: ClassTag = ClassTag(Var("true"), Set.single(TypeName("bool")))(noTyProv)
-  // val FalseType: ClassTag = ClassTag(Var("false"), Set.single(TypeName("bool")))(noTyProv)
-  // val IntType: ClassTag = ClassTag(Var("int"), Set.empty)(noTyProv)
   val IntType: TypeRef = TypeRef(TypeName("int"), Nil)(noTyProv)
-  val DecType: ClassTag = ClassTag(Var("number"), Set.empty)(noTyProv)
-  // val StrType: ClassTag = ClassTag(Var("string"), Set.empty)(noTyProv)
-  val StrType: TypeRef = TypeRef(TypeName("string"), Nil)(noTyProv)
-  // Add class tags for list constructors
-  val FloatType: TypeRef = TypeRef(TypeName("float"), Nil)(noTyProv)
-  
   val ErrTypeId: SimpleTerm = Var("error")
-  
-  // TODO rm this obsolete definition (was there for the old frontend)
-  private val primTypes =
-    List("unit" -> UnitType, "bool" -> BoolType, "int" -> IntType, "number" -> DecType, "string" -> StrType,
-      "anything" -> TopType, "nothing" -> BotType, "float" -> FloatType)
-  
+
   val builtinTypes: Ls[TypeDef] =
     TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("int")->Nil)) ::
     TypeDef(Cls, TypeName("number"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("number")->Nil)) ::
@@ -133,97 +117,25 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     TypeDef(Als, TypeName("nothing"), Nil, Nil, BotType, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("error"), Nil, Nil, TopType, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("unit"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-    {
-      val tv = freshVar(noTyProv)(1)
-      val tyDef = TypeDef(Als, TypeName("Array"), List(TypeName("A") -> tv), Nil,
-        ArrayType(FieldType(None, tv)(noTyProv))(noTyProv), Set.empty, N, Nil)
-        // * ^ Note that the `noTyProv` here is kind of a problem
-        // *    since we currently expand primitive types eagerly in DNFs.
-        // *  For instance, see `inn2 v1` in test `Yicong.mls`.
-        // *  We could instead treat these primitives like any other TypeRef,
-        // *    but that currently requires more simplifier work
-        // *    to get rid of things like `1 & int` and `T | nothing`.
-      tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.co))
-      tyDef
-    } ::
-    {
-      val tv = freshVar(noTyProv)(1)
-      val tyDef = TypeDef(Als, TypeName("MutArray"), List(TypeName("A") -> tv), Nil,
-        ArrayType(FieldType(Some(tv), tv)(noTyProv))(noTyProv), Set.empty, N, Nil)
-      tyDef.tvarVariances = S(MutMap(tv -> VarianceInfo.in))
-      tyDef
-    } ::
     TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Set.empty, N, Nil) ::
     Nil
   val primitiveTypes: Set[Str] =
     builtinTypes.iterator.map(_.nme.name).toSet
-  // def singleTup(ty: ST): ST =
-  //   if (funkyTuples) ty else TupleType((N, ty.toUpper(ty.prov) ) :: Nil)(noProv)
-  def singleTup(ty: ST): ST = ty
 
   // built in operators bound to their type schemes
   val builtinBindings: Bindings = {
-    val tv = freshVar(noProv)(1)
     import FunctionType.{ apply => fun }
-    val intBinOpTy = fun(singleTup(IntType), fun(singleTup(IntType), IntType)(noProv))(noProv)
-    val intBinPred = fun(singleTup(IntType), fun(singleTup(IntType), BoolType)(noProv))(noProv)
-    val numberBinOpTy = fun(singleTup(DecType), fun(singleTup(DecType), DecType)(noProv))(noProv)
-    val numberBinPred = fun(singleTup(DecType), fun(singleTup(DecType), BoolType)(noProv))(noProv)
     Map(
       "true" -> BoolType,
       "false" -> BoolType,
-      "document" -> BotType,
-      "window" -> BotType,
-      "toString" -> fun(singleTup(TopType), StrType)(noProv),
-      "not" -> fun(singleTup(BoolType), BoolType)(noProv),
-      "succ" -> fun(singleTup(IntType), IntType)(noProv),
-      "log" -> PolymorphicType(0, fun(singleTup(tv), UnitType)(noProv)),
-      "discard" -> PolymorphicType(0, fun(singleTup(tv), UnitType)(noProv)),
-      "negate" -> fun(singleTup(IntType), IntType)(noProv),
-      "add" -> intBinOpTy,
-      "sub" -> intBinOpTy,
-      "mul" -> intBinOpTy,
-      "div" -> intBinOpTy,
-      "sqrt" -> fun(singleTup(IntType), IntType)(noProv),
-      "lt" -> intBinPred,
-      "le" -> intBinPred,
-      "gt" -> intBinPred,
-      "ge" -> intBinPred,
-      "concat" -> fun(singleTup(StrType), fun(singleTup(StrType), StrType)(noProv))(noProv),
       "eq" -> {
         val v = freshVar(noProv)(1)
-        PolymorphicType(0, fun(singleTup(v), fun(singleTup(v), BoolType)(noProv))(noProv))
-      },
-      "ne" -> {
-        val v = freshVar(noProv)(1)
-        PolymorphicType(0, fun(singleTup(v), fun(singleTup(v), BoolType)(noProv))(noProv))
+        PolymorphicType(0, fun(v, fun(v, BoolType)(noProv))(noProv))
       },
       "error" -> BotType,
-      "+" -> intBinOpTy,
-      "-" -> intBinOpTy,
-      "*" -> intBinOpTy,
-      "%" -> intBinOpTy,
-      "/" -> intBinOpTy,
-      "<" -> intBinPred,
-      ">" -> intBinPred,
-      "<=" -> intBinPred,
-      ">=" -> intBinPred,
-      "==" -> intBinPred,
-      "&&" -> fun(singleTup(BoolType), fun(singleTup(BoolType), BoolType)(noProv))(noProv),
-      "||" -> fun(singleTup(BoolType), fun(singleTup(BoolType), BoolType)(noProv))(noProv),
-      "id" -> {
-        val v = freshVar(noProv)(1)
-        PolymorphicType(0, fun(singleTup(v), v)(noProv))
-      },
-      "if" -> {
-        val v = freshVar(noProv)(1)
-        // PolymorphicType(0, fun(singleTup(BoolType), fun(singleTup(v), fun(singleTup(v), v)(noProv))(noProv))(noProv))
-        PolymorphicType(0, fun(BoolType, fun(v, fun(v, v)(noProv))(noProv))(noProv))
-      },
-    ) ++ primTypes
+    )
   }
-  
-  
+
   /* Parameters `vars` and `newDefsInfo` are used for typing `TypeName`s.
    * If the key is found in `vars`, the type is typed as the associated value. Use case: type arguments.
    * If the key is found in `newDefsInfo`, the type is typed as a `TypeRef`, where the associated value
