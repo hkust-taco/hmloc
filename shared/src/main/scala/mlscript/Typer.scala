@@ -744,10 +744,14 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
                 tail.foreach(v => if (v._1 =/= adtName) lastWords(s"incompatible adt data for ${head} and ${v}"))
                 adtName
             }
+            println(s"ADT name: $adtName")
 
             val adtDef = ctx.tyDefs.getOrElse(adtName.name, lastWords(s"Could not find ${adtName} in context"))
             // TODO should the type variables be cloned here
-            val adt_ty = TypeRef(adtName, adtDef.targs)(TypeProvenance(cond.toLoc, "match-case condition type"))
+            val newTargs = adtDef.targs.map(tv => freshVar(tv.prov, tv.nameHint))
+            val adt_ty = TypeRef(adtName, newTargs)(TypeProvenance(cond.toLoc, "match-case condition type"))
+            println(s"ADT type: $adt_ty")
+            
             val cond_ty = typeTerm(cond)
             val ret_ty = freshVar(prov.copy(desc = "match-case return type"))
             con(cond_ty, adt_ty, adt_ty)
@@ -762,20 +766,50 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
                 con(typeTerm(rhs), ret_ty, ret_ty)
               // case Left x -> expr or Left 2 -> expr the type variable for the adt is constrained
               // with the argument to the constructor Left in this case
-              case (IfThen(App(Var(_), Tup(fields)), rhs), index) =>
+              case (IfThen(App(Var(ctorNme), Tup(fields)), rhs), index) =>
+                println(s"Typing case $index ($ctorNme)")
+                val ctorType = ctx.get(ctorNme) match {
+                  case S(VarSymbol(PolymorphicType(_, res), _)) => res
+                  case _ => die
+                }
+                println(s"ctor type: ${ctorType}")
+                def destructCtor(ctorType: ST, acc: Ls[ST]): Ls[ST] -> Ls[TV] = ctorType.unwrapProxies match {
+                  case FunctionType(fieldTy, rest) =>
+                     destructCtor(rest, fieldTy :: acc)
+                  case TypeRef(defn, targs) =>
+                    assert(defn === adtName)
+                    acc.reverse -> targs.map {
+                      case tv: TV => tv
+                      case _ => die
+                    }
+                  case _ => die
+                }
+                val (originalFieldTypes, ctorTargs) = destructCtor(ctorType, Nil)
+                assert(ctorTargs.sizeCompare(newTargs) === 0)
+                val mapping = ctorTargs.zip(newTargs).toMap[ST, ST]
+                val fieldTypes = originalFieldTypes.map { ft => subst(ft, mapping) }
+                println(s"fieldTypes: $fieldTypes")
                 val adtArgIndex = adtData(index)._2
                 val nestCtx = ctx.nest
-                fields.map(_._2.value).zip(adtArgIndex).foreach {
+                fields.map(_._2.value).zip(adtArgIndex).zipWithIndex.foreach {
                   // in case of Left x also add x to nested scope
-                  case (argTerm: Var, adtArgIndex) =>
-                    val adtTvar = adtDef.targs(adtArgIndex)
-                    nestCtx += argTerm.name -> VarSymbol(adtTvar, argTerm)
-                    con(adtTvar, typeTerm(argTerm), adtTvar)
-                  case (argTerm, adtArgIndex) =>
-                    val adtTvar = adtDef.targs(adtArgIndex)
-                    con(adtTvar, typeTerm(argTerm), adtTvar)
+                  case ((argTerm: Var, adtArgIndex), fieldIdx) =>
+                    println(s"Typing field $argTerm ($adtArgIndex)")
+                    // val adtTvar = newTargs(adtArgIndex)
+                    val fieldType = fieldTypes(fieldIdx)
+                    println(s"Field $argTerm : $fieldType")
+                    nestCtx += argTerm.name -> VarSymbol(fieldType, argTerm)
+                    // con(adtTvar, typeTerm(argTerm), adtTvar)
+                  case ((argTerm, adtArgIndex), fieldIdx) =>
+                    val adtTvar = newTargs(adtArgIndex)
+                    // con(adtTvar, typeTerm(argTerm), adtTvar)
+                    ???
                 }
-                con(typeTerm(rhs), ret_ty, ret_ty)
+                // con(typeTerm(rhs), ret_ty, ret_ty)
+                // implicit val ctx: Ctx = nestCtx
+                nestCtx |> { implicit ctx =>
+                  con(typeTerm(rhs), ret_ty, ret_ty)
+                }
               case (IfElse(expr), _) => con(typeTerm(expr), ret_ty, ret_ty)
               case ifbody => lastWords(s"Cannot handle case expression ${ifbody}")
             }
