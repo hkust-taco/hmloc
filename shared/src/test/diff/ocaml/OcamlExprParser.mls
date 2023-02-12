@@ -11,7 +11,7 @@ let d = e = f = g
 1.0
 2.0 :: 3.223
 //│ Desugared: 1.0
-//│ Desugared: :: 2.0 3.223
+//│ Desugared: Cons (2.0, 3.223,)
 
 // list values
 // substitute :: with Cons
@@ -20,9 +20,9 @@ let d = e = f = g
 [1, 2, 3, 4]
 []
 let a = []
-//│ Desugared: :: 1 2
-//│ Desugared: :: 1 (:: 2 3)
-//│ Desugared: Cons (1, 2, 3, 4,, Nil,)
+//│ Desugared: Cons (1, 2,)
+//│ Desugared: Cons (1, Cons (2, 3,),)
+//│ Desugared: Cons (1, Cons (2, Cons (3, Cons (4, Nil,),),),)
 //│ Desugared: Nil
 //│ Desugared: def a: Nil
 
@@ -32,7 +32,7 @@ let a = []
 [1] <> [1, 2]
 //│ Desugared: <> 1 1
 //│ Desugared: <> 1 2
-//│ Desugared: <> (Cons (1, Nil,)) (Cons (1, 2,, Nil,))
+//│ Desugared: <> (Cons (1, Nil,)) (Cons (1, Cons (2, Nil,),))
 
 // FIXME where the substituted operation is not the top level operation
 a + 1 <> 1 + 1
@@ -63,9 +63,9 @@ let check e =
    a :: b -> []
    | [] -> Nil
 //│ Desugared: def check: e => if e(Something a b c) then here then (Nothing d e f) then nothere
-//│ Desugared: rec def interp_e: '(' h : TypeName(heap) ')' => '(' e : TypeName(exp) ')' => if e(Plus '(' e1, e2, ')') then + '(' interp_e h e1 ')' '(' interp_e h e2 ')' then (Times '(' e1, e2, ')') then * '(' interp_e h e1 ')' '(' interp_e h e2 ')'
+//│ Desugared: rec def interp_e: h : TypeName(heap) => e : TypeName(exp) => if e(Plus (e1, e2,)) then + (interp_e h e1) (interp_e h e2) then (Times (e1, e2,)) then * (interp_e h e1) (interp_e h e2)
 //│ Desugared: def check: e => if e(Something here) then let nothere = here in nothere then (Nothing) then beat it
-//│ Desugared: def check: e => if e(:: a b) then Nil then (Nil) then Nil
+//│ Desugared: def check: e => if e(Cons (a, b,)) then Nil then (Nil) then Nil
 
 match n < 0 with
   | true -> 1
@@ -77,8 +77,8 @@ fun (env: env) _ -> []
 let interp2 = interp (fun (env:env) opt ->
   match opt with
      None -> 0)
-//│ Desugared: '(' env : TypeName(env) ')' _ => Nil
-//│ Desugared: def interp2: interp '(' '(' env : TypeName(env) ')' opt => if opt(None) then 0 ')'
+//│ Desugared: (env : TypeName(env)) _ => Nil
+//│ Desugared: def interp2: interp ((env : TypeName(env)) opt => if opt(None) then 0)
 
 // TODO floats and floating point operators
 2.0
@@ -98,8 +98,8 @@ app 2,3 4 // TODO should this be tupled or not is this correct?
 app (2,3) 4 // TODO is the extra tupling correct?
 //│ Desugared: 1, 2, 3,
 //│ Desugared: def mktup: 1, 2, 3,
-//│ Desugared: def mktup: 1, '(' 2, 3, ')',
-//│ Desugared: def mktup: Cons (1, 2, 3,, Nil,), 4, '(' 5, 6, ')',
+//│ Desugared: def mktup: 1, 2, 3,,
+//│ Desugared: def mktup: Cons (1, Cons (2, Cons (3, Nil,),),), 4, 5, 6,,
 //│ Desugared: app 2 3 4
 //│ Desugared: app 2, 3 4,
 
@@ -111,10 +111,10 @@ let b = 2
 [a, b, [a + b / 2]]
 //│ Desugared: def a: 1
 //│ Desugared: def b: 2
-//│ Desugared: Cons (a, b,, Nil,)
-//│ Desugared: Cons (a, b, Cons (a, b,, Nil,),, Nil,)
-//│ Desugared: Cons (a, b, Cons (a, b,, Nil,), 12,, Nil,)
-//│ Desugared: Cons (a, b, Cons (+ a (/ b 2), Nil,),, Nil,)
+//│ Desugared: Cons (a, Cons (b, Nil,),)
+//│ Desugared: Cons (a, Cons (b, Cons (Cons (a, Cons (b, Nil,),), Nil,),),)
+//│ Desugared: Cons (a, Cons (b, Cons (Cons (a, Cons (b, Nil,),), Cons (12, Nil,),),),)
+//│ Desugared: Cons (a, Cons (b, Cons (Cons (+ a (/ b 2), Nil,), Nil,),),)
 
 // TODO sequential let
 let _ = 
@@ -164,7 +164,7 @@ let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
 //│ Desugared: def ::: a => b => Cons a b
-//│ Desugared: def head: xs => if xs(:: x xs) then x then else raise Error
+//│ Desugared: def head: xs => if xs(Cons (x, xs,)) then x then else raise Error
 
 // FIXME
 let head xs = match xs with
@@ -314,7 +314,7 @@ let raise a = nothing
 //│ Desugared: def raise: a => nothing
 
 fun (env: env) _ -> []
-//│ Desugared: '(' env : TypeName(env) ')' _ => Nil
+//│ Desugared: (env : TypeName(env)) _ => Nil
 
 let List_length: 'a list -> int
 let List_mem: 'a -> 'a list -> bool
@@ -324,7 +324,7 @@ let List_append: 'a list -> 'a list -> 'a list
 //│ Desugared: def List_append: ['a] -> list['a] -> list['a] -> list['a]
 
 Cons(1, Nil) @ Cons(2, Nil)
-//│ Desugared: @ (Cons '(' 1, Nil, ')') (Cons '(' 2, Nil, ')')
+//│ Desugared: @ (Cons (1, Nil,)) (Cons (2, Nil,))
 
 let rev_bind: ('a -> 'b list) -> 'a list -> 'b list
 let big_fun: 'a -> 'b -> 'c -> 'd
@@ -382,5 +382,32 @@ type heapVar = Heap of heap and heap = (string * int) List
 :dp
 let check a b =
   let (sum, sub) = (a + b, a - b) in sum * sub
-//│ Parsed: Def(false, check, Lam(Var(a), Lam(Var(b), If(Bra(rcd = false, Tup(App(App(Var(+), Var(a)), Var(b)), App(App(Var(-), Var(a)), Var(b)))), List(IfThen(Bra(rcd = false, Tup(Var(sum), Var(sub))), App(App(Var(*), Var(sum)), Var(sub)))))), true)
-//│ Desugared: def check: a => b => if '(' + a b, - a b, ')'('(' sum, sub, ')') then * sum sub
+//│ Parsed: Def(false, check, Lam(Var(a), Lam(Var(b), If(Tup(App(App(Var(+), Var(a)), Var(b)), App(App(Var(-), Var(a)), Var(b))), List(IfThen(Tup(Var(sum), Var(sub)), App(App(Var(*), Var(sum)), Var(sub)))))), true)
+//│ Desugared: def check: a => b => if + a b, - a b,(sum, sub,) then * sum sub
+
+:dp
+match l with hd :: tl -> 0
+//│ Parsed: If(Var(l), List(IfThen(App(Var(Cons), Tup(Var(hd), Var(tl))), IntLit(0)))
+//│ Desugared: if l(Cons (hd, tl,)) then 0
+
+:dp
+hd :: tl
+//│ Parsed: App(Var(Cons), Tup(Var(hd), Var(tl)))
+//│ Desugared: Cons (hd, tl,)
+
+:dp
+[1, 2, 3]
+//│ Parsed: App(Var(Cons), Tup(IntLit(1), App(Var(Cons), Tup(IntLit(2), App(Var(Cons), Tup(IntLit(3), Var(Nil)))))))
+//│ Desugared: Cons (1, Cons (2, Cons (3, Nil,),),)
+
+:dp
+let d x =
+  let (hd :: tl) = x in hd
+//│ Parsed: Def(false, d, Lam(Var(x), If(Var(x), List(IfThen(App(Var(Cons), Tup(Var(hd), Var(tl))), Var(hd)))), true)
+//│ Desugared: def d: x => if x(Cons (hd, tl,)) then hd
+
+:dp
+let check a b =
+  let (sum, sub) = (a + b, a - b) in sum * sub
+//│ Parsed: Def(false, check, Lam(Var(a), Lam(Var(b), If(Tup(App(App(Var(+), Var(a)), Var(b)), App(App(Var(-), Var(a)), Var(b))), List(IfThen(Tup(Var(sum), Var(sub)), App(App(Var(*), Var(sum)), Var(sub)))))), true)
+//│ Desugared: def check: a => b => if + a b, - a b,(sum, sub,) then * sum sub

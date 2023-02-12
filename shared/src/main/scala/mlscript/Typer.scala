@@ -583,8 +583,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case iff @ If(cond, body) =>
         println(PrettyPrintHelper.inspect(iff))
         body match {
-          // handle if-then-else separately
-          case Ls(IfThen(Var("True"), trueArm), IfThen(Var("False"), falseArm)) =>
+          // handle this case separately for better error messages
+          case Ls(IfThen(Var("true"), trueArm), IfThen(Var("false"), falseArm)) =>
             val cond_ty = typeTerm(cond, "if-then-else condition type")
             con(cond_ty, BoolType, cond_ty)
             val ret_ty = freshVar(prov.copy(desc = "if-then-else return type"))

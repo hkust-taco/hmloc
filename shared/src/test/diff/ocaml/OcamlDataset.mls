@@ -19,17 +19,17 @@ let bigAdd l1 l2 =
     let args = failwith "to be implemented" in
     let (_,res) = List_fold_left f base args in res in
   removeZero (add (padZero l1 l2));;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: hd tl) then if eq hd 0(True) then removeZero tl then (False) then l,1)
+//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
 //│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:602)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
 //│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:551)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
 //│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:314)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:551)
+//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
 
 // file 67 mod
 type expr =
@@ -84,17 +84,7 @@ let rec eval (e,x,y) =
 let sqsum xs =
   let f a x = match x with | [] -> 0 | h::t -> 1 in
   let base = List_hd xs in List_fold_left f base xs;;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: h t) then 1,1)
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
+//│ sqsum: list[list[?] | 'a] -> (int | 'a)
 
 
 // file 26 mod
@@ -104,18 +94,33 @@ let rec sepConcat sep sl =
   | h::t ->
       let f a x = a ^ (sep ^ x) in
       let base = h in let l = t in List_fold_left f base l;;
-let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: h t) then let f = a => x => ^ a '(' ^ sep x ')' in let base = h in let l = t in List_fold_left f base l,1)
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
+let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
+//│ sepConcat: string -> list[string] -> string
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.97: 	let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
+//│ ║        	                               ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `(?b -> ?c) -> list[?b] -> list[?c]` does not match type `Cons[?a] | Nil`
+//│ ║  l.38: 	let List_map: ('a -> 'b) -> 'a list -> 'b list
+//│ ║        	               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Cons[?a0] | Nil`
+//│ ║  l.97: 	let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
+//│ ║        	                                              ^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.92: 	  match sl with
+//│ ║        	        ^^
+//│ ╟── from union type:
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ╙──     	                       ^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.97: 	let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
+//│ ║        	                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `string` is not a function
+//│ ║  l.13: 	let (^): string -> string -> string
+//│ ║        	                             ^^^^^^
+//│ ╟── but it flows into application with expected type `(?a, ?b,) -> ?c`
+//│ ║  l.97: 	let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
+//│ ╙──      	                               ^^^^^^^^^^^^^^^^^^^^^^^
+//│ stringOfList: anything -> anything -> string
 
 // file 2376
 let getHead h = match h with | [] -> [] | h::t -> h;;
@@ -131,17 +136,20 @@ let palindrome w =
   match explode w with
   | [] -> true
   | h::t -> matchHeads (explode w) (listReverse (explode w));;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: h t) then h,1)
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:317)
+//│ getHead: list['a] -> (list[nothing] | 'a)
+//│ getTail: list['a] -> list['a]
+//│ listReverse: list['a] -> list['a]
+//│ matchHeads: list[?] -> list[?] -> bool
+//│ ╔══[ERROR] identifier not found: explode
+//│ ║  l.136: 	  match explode w with
+//│ ╙──       	        ^^^^^^^
+//│ ╔══[ERROR] identifier not found: explode
+//│ ║  l.138: 	  | h::t -> matchHeads (explode w) (listReverse (explode w));;
+//│ ╙──       	                        ^^^^^^^
+//│ ╔══[ERROR] identifier not found: explode
+//│ ║  l.138: 	  | h::t -> matchHeads (explode w) (listReverse (explode w));;
+//│ ╙──       	                                                 ^^^^^^^
+//│ palindrome: error -> bool
 
 // TODO: parse properly
 // let explode s =
@@ -159,17 +167,53 @@ let rec digitsOfIntHelper n =
 let rec digitsOfInt n = digitsOfIntHelper n;;
 let rec sumList xs = sumListHelper 0 xs;;
 let rec additivePersistence n = sumList digitsOfInt n;;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: hd tail) then sumListHelper '(' + total hd ')' tail,1)
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
+//│ sumListHelper: int -> list[int] -> int
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.163: 	let rec digitsOfIntHelper n =
+//│ ║         	                          ^^^
+//│ ║  l.164: 	  if n < 1
+//│ ║         	^^^^^^^^^^
+//│ ║  l.165: 	  then []
+//│ ║         	^^^^^^^^^
+//│ ║  l.166: 	  else if n >= 10 then (digitsOfIntHelper (n / 10)) @ [n mod 10] else [n];;
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `int` is not a function
+//│ ║  l.19: 	let ( / ): int -> int -> int
+//│ ║        	                         ^^^
+//│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
+//│ ║  l.166: 	  else if n >= 10 then (digitsOfIntHelper (n / 10)) @ [n mod 10] else [n];;
+//│ ║         	                                          ^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.166: 	  else if n >= 10 then (digitsOfIntHelper (n / 10)) @ [n mod 10] else [n];;
+//│ ╙──       	                                                       ^
+//│ digitsOfIntHelper: nothing -> list[int]
+//│ digitsOfInt: nothing -> list[int]
+//│ sumList: list[int] -> int
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.169: 	let rec additivePersistence n = sumList digitsOfInt n;;
+//│ ║         	                                ^^^^^^^^^^^^^^^^^^^
+//│ ╟── function of type `?b -> ?c` does not match type `Cons[?a] | Nil`
+//│ ║  l.167: 	let rec digitsOfInt n = digitsOfIntHelper n;;
+//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `Cons[?a0] | Nil`
+//│ ║  l.169: 	let rec additivePersistence n = sumList digitsOfInt n;;
+//│ ║         	                                        ^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.168: 	let rec sumList xs = sumListHelper 0 xs;;
+//│ ║         	                                     ^^
+//│ ╟── from union type:
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ╙──     	                       ^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.169: 	let rec additivePersistence n = sumList digitsOfInt n;;
+//│ ║         	                                ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` is not a function
+//│ ║  l.168: 	let rec sumList xs = sumListHelper 0 xs;;
+//│ ║         	                                   ^
+//│ ╟── but it flows into application with expected type `?a -> ?b`
+//│ ║  l.169: 	let rec additivePersistence n = sumList digitsOfInt n;;
+//│ ╙──       	                                ^^^^^^^^^^^^^^^^^^^
+//│ additivePersistence: anything -> nothing
 
 // file 8776
 let rec listReverse l =
@@ -182,23 +226,23 @@ let rec matchHeads x =
       if (getHeads (explode x)) = []
       then true
       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: h t) then @ '(' listReverse t ')' (Cons (h, Nil,)),1)
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:314)
+//│ listReverse: list['a] -> list['a]
+//│ getHeads: list['a] -> list['a]
+//│ loseTail: list['a] -> list['a]
+//│ ╔══[ERROR] identifier not found: explode
+//│ ║  l.224: 	  match explode x with
+//│ ╙──       	        ^^^^^^^
+//│ ╔══[ERROR] identifier not found: explode
+//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ╙──       	                    ^^^^^^^
+//│ matchHeads: error -> bool
 
 // TODO: parse correctly
-// let explode s =
-//   let rec go i =
-//     if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
-//   go 0;;
+let explode s =
+  let rec go i =
+    if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
+  go 0;;
+//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):3:47, found "[i]) :: (g" at l.243:47:     if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
 
 // file 89
 // TODO: parse properly
@@ -224,17 +268,36 @@ let rec additivePersistence n =
   match digits n with
   | [] -> 0
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: h t) then + h '(' addNumbs t ')',1)
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:314)
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.263: 	let rec digitsOfInt n =
+//│ ║         	                    ^^^
+//│ ║  l.264: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `int` is not a function
+//│ ║  l.19: 	let ( / ): int -> int -> int
+//│ ║        	                         ^^^
+//│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
+//│ ║  l.264: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
+//│ ║         	                                      ^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.264: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
+//│ ╙──       	                                                   ^
+//│ digitsOfInt: nothing -> list[nothing]
+//│ addNumbs: list[int] -> int
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.266: 	let digits n = digitsOfInt (abs n);;
+//│ ║         	               ^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `int` is not a function
+//│ ║  l.21: 	let abs: int -> int
+//│ ║        	                ^^^
+//│ ╟── but it flows into application with expected type `(int -> int -> int) -> ?a`
+//│ ║  l.266: 	let digits n = digitsOfInt (abs n);;
+//│ ║         	                           ^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.264: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
+//│ ╙──       	                                                   ^
+//│ digits: int -> list[nothing]
+//│ additivePersistence: int -> (bool | int)
 
 
 // file 358 mod
@@ -273,17 +336,49 @@ let rec mulByDigit i l =
   match List_rev l with
   | [] -> []
   | h::t -> [remainder x y] @ (mulByDigit i t);;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: h t) then @ (Cons (remainder x y, Nil,)) '(' mulByDigit i t ')',1)
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.332: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
+//│ ║         	                                         ^^^^^^^^^^^
+//│ ╟── type `int` is not a function
+//│ ║  l.18: 	let ( * ): int -> int -> int
+//│ ║        	                         ^^^
+//│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
+//│ ║  l.332: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
+//│ ╙──       	                                         ^^^^^^^
+//│ remainder: int -> int -> int
+//│ x: anything -> list[int] -> list[string]
+//│ y: list[int]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.338: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ ║         	             ^^^^^^^^^^^
+//│ ╟── function of type `?a -> ?b` is not an instance of `int`
+//│ ║  l.333: 	let x l = List_map string_of_int;;
+//│ ║         	      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `int`
+//│ ║  l.338: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ ║         	                       ^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.332: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
+//│ ║         	                                          ^
+//│ ╟── from type reference:
+//│ ║  l.18: 	let ( * ): int -> int -> int
+//│ ╙──      	           ^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.338: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ ║         	             ^^^^^^^^^^^^^
+//│ ╟── type `Nil` is not an instance of `int`
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	                                      ^^^
+//│ ╟── but it flows into reference with expected type `int`
+//│ ║  l.338: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ ║         	                         ^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.332: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
+//│ ║         	                                              ^
+//│ ╟── from type reference:
+//│ ║  l.18: 	let ( * ): int -> int -> int
+//│ ╙──      	                  ^^^
+//│ mulByDigit: anything -> list[?] -> list[int]
 
 
 // file 344 mod
@@ -293,24 +388,18 @@ let padZero l1 l2 =
   if (List_length l1) < (List_length l2)
   then (clone 0 (padLength l1 l2)) :: l1
   else (clone 0 (padLength l1 l2)) l2;;
-//│ ╔══[ERROR] identifier not found: ::
-//│ ║  l.290: 	let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
-//│ ╙──       	                                    ^^
-//│ clone: error -> int -> (error | list[nothing])
+//│ clone: 'a -> int -> list['a]
 //│ padLength: list[?] -> list[?] -> int
-//│ ╔══[ERROR] identifier not found: ::
-//│ ║  l.294: 	  then (clone 0 (padLength l1 l2)) :: l1
-//│ ╙──       	                                   ^^
 //│ ╔══[ERROR] Type mismatch in if-then-else false condition return type:
-//│ ║  l.295: 	  else (clone 0 (padLength l1 l2)) l2;;
+//│ ║  l.390: 	  else (clone 0 (padLength l1 l2)) l2;;
 //│ ║         	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `Nil` is not a function
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                                      ^^^
 //│ ╟── but it flows into application with expected type `?a -> ?b`
-//│ ║  l.295: 	  else (clone 0 (padLength l1 l2)) l2;;
-//│ ╙──       	        ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ padZero: (list[?] & error) -> (list[?] & error) -> error
+//│ ║  l.390: 	  else (clone 0 (padLength l1 l2)) l2;;
+//│ ╙──       	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ padZero: list[?] -> list[?] -> list[list[int]]
 
 // file 2736
 // TODO parse properly
@@ -337,7 +426,10 @@ let rec tenEx x y =
 //   let base = (0, []) in
 //   let args = l1 (tenEx 0 l2) in
 //   let (carry,res) = List_fold_left f base args in [carry] @ res;;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: h t) then @ '(' tenEx '(' + x 1 ')' t ')' (Cons (* '(' helper x ')' h, Nil,)),1)
+//│ ╔══[ERROR] identifier not found: helper
+//│ ║  l.420: 	  match y with | [] -> [] | h::t -> (tenEx (x + 1) t) @ [(helper x) * h];;
+//│ ╙──       	                                                          ^^^^^^
+//│ tenEx: nothing -> list[int] -> list[int]
 
 // file 335
 // TODO fix type system
@@ -360,17 +452,17 @@ let padZero l1 l2 =
      if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
 let rec removeZero l =
   match l with | [] -> [] | 0::t -> removeZero t | h::t -> l;;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: 0 t) then removeZero t,1)
+//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Unsupported arg: 0
 //│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$35(Typer.scala:681)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$35$adapted(Typer.scala:667)
+//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:667)
 //│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
 //│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
 //│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
 //│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:314)
 
 // TODO: parse let (a, b) = ... correctly
 // let bigAdd l1 l2 =
@@ -402,17 +494,16 @@ let padZero l1 l2 =
     else (l1, l2);;
 let rec removeZero l =
   match l with | [] -> [] | h::t -> if h = 0 then removeZero t else h :: t;;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: h t) then if eq h 0(True) then removeZero t then (False) then :: h t,1)
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:314)
+//│ clone: 'a -> int -> list['a]
+//│ addTuple: (int, int,) -> int
+//│ ╔══[ERROR] identifier not found: List
+//│ ║  l.490: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ ╙──       	                        ^^^^
+//│ ╔══[ERROR] identifier not found: List
+//│ ║  l.490: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ ╙──       	                                           ^^^^
+//│ padZero: (list[?] & error) -> (list[?] & error) -> (list[int], list[int],)
+//│ removeZero: list['a] -> list['a]
 
 // TODO: parse let (a, b) = .. 
 // let bigAdd l1 l2 =
@@ -429,7 +520,7 @@ let intboolf f x = ((f x), ((f x) < 1));;
 let fixpoint (f,b) = wwhile (intboolf, b);;
 //│ intboolf: ('a -> 'b) -> 'a -> ('b, bool,)
 //│ ╔══[ERROR] identifier not found: wwhile
-//│ ║  l.429: 	let fixpoint (f,b) = wwhile (intboolf, b);;
+//│ ║  l.520: 	let fixpoint (f,b) = wwhile (intboolf, b);;
 //│ ╙──       	                     ^^^^^^
 //│ fixpoint: (anything, anything,) -> error
 
@@ -479,17 +570,38 @@ let removeDuplicates l =
         let seen' = h in
         let rest' = h :: (filter (t h)) in helper (seen', rest') in
   List_rev (helper ([], l));;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: h t) then if eq a h(True) then filter t a then (False) then :: h '(' filter t a ')',1)
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
+//│ filter: list['a] -> anything -> list['a]
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.571: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║         	                                 ^^^^^
+//│ ╟── type `Nil` is not a function
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	                                      ^^^
+//│ ╟── but it flows into reference with expected type `?a -> ?b`
+//│ ║  l.571: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ╙──       	                                  ^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.571: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║         	                    ^^^^^^^^^^^^^^^^^^^
+//│ ╟── function of type `?a -> ?b` does not match type `Cons[?c] | Nil`
+//│ ║  l.561: 	let rec filter l a =
+//│ ║         	                 ^^^
+//│ ║  l.562: 	  match l with
+//│ ║         	^^^^^^^^^^^^^^
+//│ ║  l.563: 	  | [] -> []
+//│ ║         	^^^^^^^^^^^^
+//│ ║  l.564: 	  | h::t -> if a = h then filter t a else h :: (filter t a);;
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into application with expected type `Cons[?d] | Nil`
+//│ ║  l.571: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║         	                         ^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from applied type reference:
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	                            ^^
+//│ ╟── from union type:
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ╙──     	                       ^^^^^^^^^^^^^^^^^^
+//│ removeDuplicates: list[list['a]] -> list['a]
 
 
 // file 0221
@@ -506,14 +618,14 @@ let rec assoc (d,k,l) =
   match l with
   | [] -> d
   | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot handle case expression ((:: h t) then if h('(' f, s, ')') then if eq k f(True) then s h then (False) then assoc d k t,1)
+//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
 //│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:689)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:602)
+//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$38(Typer.scala:686)
+//│ 	at: mlscript.utils.package$GenHelper$.$bar$greater$extension(package.scala:103)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$27(Typer.scala:685)
 //│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
 //│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:623)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:314)

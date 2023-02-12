@@ -35,16 +35,14 @@ Left
 
 :d
 Left(1,2)
-//│ 0. Typing term Left '(' 1, 2, ')'
+//│ 0. Typing term Left (1, 2,)
 //│ | 0. Typing term Left
 //│ | 0. : ((α92, α92,) -> either[α92,α93])
-//│ | 0. Typing term '(' 1, 2, ')'
-//│ | | 0. Typing term 1, 2,
-//│ | | | 0. Typing term 1
-//│ | | | 0. : Int
-//│ | | | 0. Typing term 2
-//│ | | | 0. : Int
-//│ | | 0. : (Int, Int,)
+//│ | 0. Typing term 1, 2,
+//│ | | 0. Typing term 1
+//│ | | 0. : Int
+//│ | | 0. Typing term 2
+//│ | | 0. : Int
 //│ | 0. : (Int, Int,)
 //│ | CONSTRAIN ((α92, α92,) -> either[α92,α93]) <! ((Int, Int,) -> α94)
 //│ |   where 
@@ -100,11 +98,11 @@ let text x =
 
 :d
 let f x = let (a, b) = x in a + b
-//│ 1. Typing term x => if x('(' a, b, ')') then + a b
+//│ 1. Typing term x => if x(a, b,) then + a b
 //│ | 1. Typing pattern x
 //│ | 1. : α124'
-//│ | 1. Typing term if x('(' a, b, ')') then + a b
-//│ | | If(Var(x), List(IfThen(Bra(rcd = false, Tup(Var(a), Var(b))), App(App(Var(+), Var(a)), Var(b))))
+//│ | 1. Typing term if x(a, b,) then + a b
+//│ | | If(Var(x), List(IfThen(Tup(Var(a), Var(b)), App(App(Var(+), Var(a)), Var(b))))
 //│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
 //│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
 //│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:602)
@@ -146,10 +144,10 @@ if 1 == 2 then Left true else Right false
 //│  α134 :> [[[either[α133,α132]]]]
 //│  α134 <: [[α128]]
 //│ ╔══[ERROR] Type mismatch in if-then-else true condition return type:
-//│ ║  l.123: 	if 1 == 2 then Left true else Right false
+//│ ║  l.121: 	if 1 == 2 then Left true else Right false
 //│ ║         	               ^^^^^^^^^
 //│ ╟── reference of type `bool` is not a 2-element tuple
-//│ ║  l.123: 	if 1 == 2 then Left true else Right false
+//│ ║  l.121: 	if 1 == 2 then Left true else Right false
 //│ ║         	                    ^^^^
 //│ ╟── Note: constraint arises from tuple type:
 //│ ║  l.18: 	type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
@@ -164,16 +162,14 @@ let f x = x
 
 :d
 f(true, false)
-//│ 0. Typing term f '(' true, false, ')'
+//│ 0. Typing term f (true, false,)
 //│ | 0. Typing term f
 //│ | 0. : (α144 -> [α144])
-//│ | 0. Typing term '(' true, false, ')'
-//│ | | 0. Typing term true, false,
-//│ | | | 0. Typing term true
-//│ | | | 0. : Bool
-//│ | | | 0. Typing term false
-//│ | | | 0. : Bool
-//│ | | 0. : (Bool, Bool,)
+//│ | 0. Typing term true, false,
+//│ | | 0. Typing term true
+//│ | | 0. : Bool
+//│ | | 0. Typing term false
+//│ | | 0. : Bool
 //│ | 0. : (Bool, Bool,)
 //│ | CONSTRAIN (α144 -> [α144]) <! ((Bool, Bool,) -> α145)
 //│ |   where 
@@ -190,18 +186,14 @@ f(true, false)
 
 :d
 f((true, false))
-//│ 0. Typing term f '(' '(' true, false, ')' ')'
+//│ 0. Typing term f (true, false,)
 //│ | 0. Typing term f
 //│ | 0. : (α147 -> [α147])
-//│ | 0. Typing term '(' '(' true, false, ')' ')'
-//│ | | 0. Typing term '(' true, false, ')'
-//│ | | | 0. Typing term true, false,
-//│ | | | | 0. Typing term true
-//│ | | | | 0. : Bool
-//│ | | | | 0. Typing term false
-//│ | | | | 0. : Bool
-//│ | | | 0. : (Bool, Bool,)
-//│ | | 0. : (Bool, Bool,)
+//│ | 0. Typing term true, false,
+//│ | | 0. Typing term true
+//│ | | 0. : Bool
+//│ | | 0. Typing term false
+//│ | | 0. : Bool
 //│ | 0. : (Bool, Bool,)
 //│ | CONSTRAIN (α147 -> [α147]) <! ((Bool, Bool,) -> α148)
 //│ |   where 
@@ -256,16 +248,16 @@ if 1 == 2 then Left((true, false)) else Right false
 :e
 :unify
 let test x =
- match x with True -> 0 | False -> "oops"
+ match x with true -> 0 | false -> "oops"
 //│ ╔══[WARNING] [UNIFICATION ERROR 1] string and int cannot be unified but flows into the same location
 //│ ╟── string is if-then-else false condition return type
-//│ ║  l.259: 	 match x with True -> 0 | False -> "oops"
+//│ ║  l.251: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	                                   ^^^^^^^
 //│ ╟── int is if-then-else true condition return type
-//│ ║  l.259: 	 match x with True -> 0 | False -> "oops"
+//│ ║  l.251: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	                      ^
 //│ ╟── both flow into if-then-else return type
-//│ ║  l.259: 	 match x with True -> 0 | False -> "oops"
+//│ ║  l.251: 	 match x with true -> 0 | false -> "oops"
 //│ ╙──       	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ test: bool -> (int | string)
 
@@ -394,3 +386,4 @@ let clone x n =
 //│  α208' :> [[[[[[[[[[[Int]]]]]]]]]]]
 //│  [[[α208']]] & [[[α199']]] :> α198'
 //│ clone: int -> int -> int
+
