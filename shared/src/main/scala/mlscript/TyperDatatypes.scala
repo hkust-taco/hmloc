@@ -305,133 +305,70 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       lb.fold(s"$ub")(lb => s"mut ${if (lb === BotType) "" else lb}..$ub")
   }
 
-
-  /** Unification meta data records why a unification happened
+  /** Reads as a is unified with b because of the following reason.
+    * Reason is a list of unifications that show how the type travels
+    * from a to b. Indicating that a <: b
     *
-    * It is named from the perspective of the type variable storing the unification.
-    * As in LowerBound(tv, st) stored in a type variable is meant to be read as -
-    * tv has lower bound st
+    * The first reason is closest to b and the last reason is closest to a.
     */
-  sealed abstract class Unification {
-    override def toString: Str = this match {
-      case LowerBound(tv, st) => s"${tv} :> ${st}"
-      case UpperBound(tv, st) => s"${tv} <: ${st}"
-      case CommonLower(common, a, b) => s"${a} & ${b} :> ${common}"
-      case CommonUpper(common, a, b) => s"${a} | ${b} <: ${common}"
-      case TypeRefArg(a, b, name, index, tr1, tr2) => s"${a} = ${b} are ${name}(${index}) arg type"
-      case TupleField(a, b, index, tr1, tr2) => s"${a} = ${b} are Tup(${index}) field type"
-      case FunctionArg(a, b, fr1, fr2) => s"${a} = ${b} are arg type in ${fr1} = ${fr2}"
-      case FunctionResult(a, b, fr1, fr2) => s"${a} = ${b} are result type in ${fr1} = ${fr2}"
-      case Connector(a, b, uforB, uforA) => s"${a} = ${b} because ${uforA} and ${uforB}"
-    }
-    def unifiedWith: ST = this match {
-      case LowerBound(tv, st) => st
-      case UpperBound(tv, st) => st
-      // always prefer to unify with a type variable
-//      case CommonLower(_, a, b) => if (a.isInstanceOf[TypeVariable]) a else b
-//      case CommonUpper(_, a, b) => if (a.isInstanceOf[TypeVariable]) a else b
-//      case TypeRefArg(a, b, _, _, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
-//      case TupleField(a, b, _, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
-//      case FunctionArg(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
-//      case FunctionResult(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
-//      case Connector(a, b, _, _) => if (a.isInstanceOf[TypeVariable]) a else b
-      case CommonLower(_, a, b) => b
-      case CommonUpper(_, a, b) => b
-      case TypeRefArg(a, b, _, _, _, _) => b
-      case TupleField(a, b, _, _, _) => b
-      case FunctionArg(a, b, _, _) => b
-      case FunctionResult(a, b, _, _) => b
-      case Connector(a, b, _, _) => b
+  case class Unification(a: ST, b: ST, reason: Ls[UnificationReason]) {
+    def unificationLevel: Int = {
+      this.reason.sliding(2).count {
+        case Seq(LB(_, tv1), LB(_, tv2)) if tv1 == tv2 => true
+        case Seq(UB(tv1, _), UB(tv2, _)) if tv1 == tv2 => true
+        case Seq(UB(_, tv1), LB(_, tv2)) if tv1 == tv2 => true
+        case Seq(LB(_, tv1), UB(_, tv2)) if tv1 == tv2 => true
+        case _ => false
+      }
     }
 
-    /** Unifying type variables that have unified two lb or ub types
-      *
-      * int | bool <: a = 1 => a is a unifying type
-      * int | b <: a and => a is a unifying type
-      *       b <: bool  => b is a unifying type through a
-      */
-    def unifyingTypeVars: MutMap[ST, (Int, Int)] = {
-      def updateCounter(st: ST, delta: (Int, Int))(implicit counter: MutMap[ST, (Int, Int)]): Unit = {
-        st.unwrapProvs match {
-          case tv: TypeVariable =>
-            // store type variable with all it's provenances
-            counter.updateWith(st) {
-              case Some((l, u)) => S(l + delta._1, u + delta._2)
-              case None => S(delta)
-            }
-          case _ => ()
-        }
+    def unificationSequence: Ls[ST -> Bool] = {
+      val aST = this.a
+      val bST = this.b
+      var flow = this.reason.head match {
+        case _: LB => true  // flow is from left to right
+        case _: UB => false // flow is from right to left
+        case _ => true
       }
 
-      def rec(u: Unification)(implicit counter: MutMap[ST, (Int, Int)]): Unit = u match {
-        case LowerBound(tv, st) =>
-          updateCounter(tv, (1, 0))
-          updateCounter(st, (0, 1))
-        case UpperBound(tv, st) =>
-          updateCounter(tv, (0, 1))
-          updateCounter(st, (1, 0))
-        case CommonLower(common, a, b) =>
-          updateCounter(common, (0, 2))
-          updateCounter(a, (1, 0))
-          updateCounter(b, (1, 0))
-        case CommonUpper(common, a, b) =>
-          updateCounter(common, (2, 0))
-          updateCounter(a, (0, 1))
-          updateCounter(b, (0, 1))
-        case Connector(_, _, uforB, uforA) =>
-          rec(uforA)
-          rec(uforB)
-        case _ => ()
-      }
-
-      val counter: MutMap[ST, (Int, Int)] = MutMap()
-      rec(this)(counter)
-      counter
-    }
-
-    /** The level of a unification is the number of tv's it has zig zagged through
-      *
-      * For e.g.
-      *
-      * int <: a <: bool = 0
-      * int | bool <: a = 1
-      * int | b <: a and
-      *       b <: bool = 2
-      *
-      * This is equal to the number of tvs that have unified two lbs or two ubs
-      * during a single unification
-      */
-    def level: Int = unifyingTypeVars.count{ case (_, (l, r)) => l >= 2 || r >= 2}
-
-    /** Replace the unified types in a unification reason
-      *
-      * Main usage is to update unification reason when unified tuples are paired
-      */
-    def replaceTypes(newA: ST, newB: ST): Unification = {
-      this match {
-        case u: CommonLower => u.copy(a = newA, b = newB)
-        case u: CommonUpper => u.copy(a = newA, b = newB)
-        case u: TypeRefArg => u.copy(a = newA, b = newB)
-        case u: TupleField => u.copy(a = newA, b = newB)
-        case u: FunctionArg => u.copy(a = newA, b = newB)
-        case u: FunctionResult => u.copy(a = newA, b = newB)
-        case u: Connector => u.copy(a = newA, b = newB)
-        // replace should not be called with any other unification
-        case _ => ???
-      }
+      bST -> flow :: this.reason.sliding(2).collect {
+        case Seq(LB(_, tv1), LB(_, tv2)) if tv1 == tv2 =>
+          flow = !flow
+          tv1 -> flow
+        case Seq(UB(tv1, _), UB(tv2, _)) if tv1 == tv2 =>
+          flow = !flow
+          tv1 -> flow
+        case Seq(UB(_, tv1), LB(_, tv2)) if tv1 == tv2 =>
+          flow = !flow
+          tv1 -> flow
+        case Seq(LB(_, tv1), UB(_, tv2)) if tv1 == tv2 =>
+          flow = !flow
+          tv1 -> flow
+      }.toList ::: aST -> flow :: Nil
     }
   }
-  final case class LowerBound(tv: TV, st: ST) extends Unification
-  final case class UpperBound(tv: TV, st: ST) extends Unification
-  final case class CommonLower(common: TV, a: ST, b: ST) extends Unification
-  final case class CommonUpper(common: TV, a: ST, b: ST) extends Unification
-  final case class TypeRefArg(a: ST, b: ST, name: TypeName, index: Int, tr1: TypeRef, tr2: TypeRef) extends Unification
-  final case class TupleField(a: ST, b: ST, index: Int, tr1: TupleType, tr2: TupleType) extends Unification
-  final case class FunctionArg(a: ST, b: ST, fr1: FunctionType, fr2: FunctionType) extends Unification
-  final case class FunctionResult(a: ST, b: ST, fr1: FunctionType, fr2: FunctionType) extends Unification
 
-  /** Unifying a and b with metadata about sequence of unification that led to this unification */
-  final case class Connector(a: ST, b: ST, uforB: Unification, uforA: Unification) extends Unification
+  sealed abstract class UnificationReason {
+    override def toString: Str = this match {
+      case LB(st, tv) => s"${st} <: ${tv}"
+      case UB(tv, st) => s"${tv} <: ${st}"
+      case CONN(a, b, desc) => s"${a} = ${b} because ${desc}"
+    }
+    // indicates which type was unified with which one
+    // that is what the next unification should be
+    def unifiedWith: ST = this match {
+      case LB(st, _) => st
+      case UB(_, st) => st
+      // this is a special case with no ordering
+      // we assume by convention b was unified with a
+      // so the next unification operation should be on b
+      case CONN(_, b, _) => b
+    }
+  }
+
+  final case class LB(st: ST, tv: TV) extends UnificationReason
+  final case class UB(tv: TV, st: ST) extends UnificationReason
+  final case class CONN(a: ST, b: ST, desc: Str = "") extends UnificationReason
 
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
     * Invariant: Types appearing in the bounds never have a level higher than this variable's `level`. */

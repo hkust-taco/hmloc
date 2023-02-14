@@ -69,30 +69,16 @@ Left(((1,2)))
 //  match x with True -> 0 | False -> 1
 
 // TODO should be an error
-:unifyDbg
+:unify
 :dp
 let text x =
   match x with Left l -> l | Right r -> r
 //│ Parsed: Def(false, text, Lam(Var(x), If(Var(x), List(IfThen(App(Var(Left), Var(l)), Var(l), IfThen(App(Var(Right), Var(r)), Var(r)))), true)
-//│ unified α104'
-//│  α104' <: [[[either['a105','b106']]]]
-//│ unified 'a105'
-//│  'a105' <: [[[α107']]]
-//│ unified 'b106'
-//│  'b106' <: [[[α107']]]
-//│ unified α107'
 //│ text: either['a, 'a] -> 'a
 
-:unifyDbg
+:unify
 let text x =
   match x with Left (l1, l2) -> l1 | Right r -> r
-//│ unified α114'
-//│  α114' <: [[[either['a115','b116']]]]
-//│ unified 'a115'
-//│  'a115' <: [[[α117']]]
-//│ unified 'b116'
-//│  'b116' <: [[[α117']]]
-//│ unified α117'
 //│ text: either['a, 'a] -> 'a
 
 
@@ -105,49 +91,24 @@ let f x = let (a, b) = x in a + b
 //│ | | If(Var(x), List(IfThen(Tup(Var(a), Var(b)), App(App(Var(+), Var(a)), Var(b))))
 //│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
 //│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:602)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:604)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:513)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:700)
+//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:515)
 //│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:698)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:317)
+//│ 	at: mlscript.Typer.typeTerm(Typer.scala:700)
+//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:319)
 //│ 	at: mlscript.DiffTests.$anonfun$new$44(DiffTests.scala:583)
 //│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
 
 :e
-// :d
-:unifyDbg
+:unify
 if 1 == 2 then Left true else Right false
-//│ unified α125
-//│  α125 :> [[[Int]]]
-//│ unified α126
-//│  α126 :> [[[(α125 -> Bool)]]]
-//│  α126 <: [([Int] -> α127)]
-//│ unified α127
-//│  α127 = Bool are result type in ([Int] -> α127) = (α125 -> Bool)
-//│ unified α128
-//│  α128 :> [[[[either[α129,α130]]]]]
-//│  α128 :> [[[[either[α133,α132]]]]]
-//│ unified α129
-//│ unified α130
-//│  α130 = [[[[Bool]]]] because α132 = α130 are TypeName(either)(1) arg type and α132 :> [[[[Bool]]]]
-//│ unified α131
-//│  α131 :> [[[either[α129,α130]]]]
-//│  α131 <: [[α128]]
-//│ unified α132
-//│  α132 :> [[[[Bool]]]]
-//│  α132 = α130 are TypeName(either)(1) arg type
-//│ unified α133
-//│  α133 = α129 are TypeName(either)(0) arg type
-//│ unified α134
-//│  α134 :> [[[either[α133,α132]]]]
-//│  α134 <: [[α128]]
-//│ ╔══[ERROR] Type mismatch in if-then-else true condition return type:
-//│ ║  l.121: 	if 1 == 2 then Left true else Right false
+//│ ╔══[ERROR] Type mismatch in then branch has type:
+//│ ║  l.106: 	if 1 == 2 then Left true else Right false
 //│ ║         	               ^^^^^^^^^
 //│ ╟── reference of type `bool` is not a 2-element tuple
-//│ ║  l.121: 	if 1 == 2 then Left true else Right false
+//│ ║  l.106: 	if 1 == 2 then Left true else Right false
 //│ ║         	                    ^^^^
 //│ ╟── Note: constraint arises from tuple type:
 //│ ║  l.18: 	type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
@@ -216,49 +177,36 @@ Left
 Left((true, false))
 //│ res: either[bool, nothing]
 
-:unifyDbg
+:unify
 if 1 == 2 then Left((true, false)) else Right false
-//│ unified α162
-//│  α162 :> [[[Int]]]
-//│ unified α163
-//│  α163 :> [[[(α162 -> Bool)]]]
-//│  α163 <: [([Int] -> α164)]
-//│ unified α164
-//│  α164 = Bool are result type in ([Int] -> α164) = (α162 -> Bool)
-//│ unified α165
-//│  α165 :> [[[[either[α166,α167]]]]]
-//│  α165 :> [[[[either[α170,α169]]]]]
-//│ unified α166
-//│  α166 :> [[[Bool]]]
-//│ unified α167
-//│  α167 = [[[[Bool]]]] because α169 = α167 are TypeName(either)(1) arg type and α169 :> [[[[Bool]]]]
-//│ unified α168
-//│  α168 :> [[[either[α166,α167]]]]
-//│  α168 <: [[α165]]
-//│ unified α169
-//│  α169 :> [[[[Bool]]]]
-//│  α169 = α167 are TypeName(either)(1) arg type
-//│ unified α170
-//│  α170 = α166 are TypeName(either)(0) arg type
-//│ unified α171
-//│  α171 :> [[[either[α170,α169]]]]
-//│  α171 <: [[α165]]
 //│ res: either[bool, bool]
 
-:e
 :unify
 let test x =
  match x with true -> 0 | false -> "oops"
-//│ ╔══[WARNING] [UNIFICATION ERROR 1] string and int cannot be unified but flows into the same location
-//│ ╟── string is if-then-else false condition return type
-//│ ║  l.251: 	 match x with true -> 0 | false -> "oops"
-//│ ║         	                                   ^^^^^^^
-//│ ╟── int is if-then-else true condition return type
-//│ ║  l.251: 	 match x with true -> 0 | false -> "oops"
+//│ ╔══[WARNING] Type `string` does not match `int`
+//│ ╟── int ---> ?a <--- string
+//│ ╟── then branch has type `int`
+//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	                      ^
-//│ ╟── both flow into if-then-else return type
-//│ ║  l.251: 	 match x with true -> 0 | false -> "oops"
-//│ ╙──       	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── then branch has type `int`
+//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║         	                      ^
+//│ ╟── this if-then-else expression has type `int`
+//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `string`
+//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── else branch has type `string`
+//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║         	                                   ^^^^^^^
+//│ ╟── else branch has type `string`
+//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ╙──       	                                   ^^^^^^^
 //│ test: bool -> (int | string)
 
 
@@ -290,100 +238,10 @@ let test x =
 //  | [] -> 0
 
 
-:unifyDbg
+:unify
 let clone x n =
   let rec helper acc n' =
     if acc <= 0 then acc else helper (acc + 1) (n' - 1) in
   helper x (n - 1)
-//│ unified α181'
-//│  [[α181']] = [α202'] are arg type in ([[α181']] -> α205') = ([α202'] -> α203')
-//│  α181' <: [[[[[α197']]]]]
-//│ unified α182'
-//│  α182' <: [[[[[Int]]]]]
-//│ unified helper183''
-//│  helper183'' :> [(α184'' -> (α185'' -> α189''))]
-//│  helper183'' <: [([α191''] -> α192'')]
-//│ unified α184''
-//│  α184'' <: [[[[α186'']]]]
-//│  α184'' <: [[[α189'']]]
-//│  α184'' <: [[[[[Int]]]]]
-//│ unified α185''
-//│  α185'' = [α194''] are arg type in (α185'' -> α189'') = ([α194''] -> α195'')
-//│  α185'' <: [[[[[Int]]]]]
-//│ unified α186''
-//│  [[[[α186'']]]] = [[[α195'']]] because [[[α189'']]] & [[[[α186'']]]] :> α184'' and α189'' <: [[[α195'']]]
-//│  [[[[[Int]]]]] & [[[[α186'']]]] :> α184''
-//│ unified α187''
-//│  α187'' :> [[[(α186'' -> Bool)]]]
-//│  α187'' <: [([Int] -> α188'')]
-//│ unified α188''
-//│  α188'' = Bool are result type in ([Int] -> α188'') = (α186'' -> Bool)
-//│ unified α189''
-//│  α189'' <: [[[α195'']]]
-//│  [[[α189'']]] & [[[[α186'']]]] :> α184''
-//│  [[[[[Int]]]]] & [[[α189'']]] :> α184''
-//│ unified α190''
-//│  α190'' :> [[[(Int -> Int)]]]
-//│  α190'' <: [([Int] -> α191'')]
-//│ unified α191''
-//│  α191'' = Int are result type in ([Int] -> α191'') = (Int -> Int)
-//│  [α191''] = α184'' are arg type in ([α191''] -> α192'') = (α184'' -> (α185'' -> α189''))
-//│ unified α192''
-//│  α192'' <: [([α194''] -> α195'')]
-//│  α192'' = (α185'' -> α189'') are result type in ([α191''] -> α192'') = (α184'' -> (α185'' -> α189''))
-//│ unified α193''
-//│  α193'' :> [[[(Int -> Int)]]]
-//│  α193'' <: [([Int] -> α194'')]
-//│ unified α194''
-//│  [[[[[Int]]]]] = [α194''] because α185'' <: [[[[[Int]]]]] and α185'' = [α194''] are arg type in (α185'' -> α189'') = ([α194''] -> α195'')
-//│ unified α195''
-//│  α195'' :> [[[[[[[[[[[Int]]]]]]]]]]]
-//│ unified helper196'
-//│  helper196' :> [(α197' -> (α201' -> α198'))]
-//│  helper196' <: [([α202'] -> α203')]
-//│  helper196' <: [([[α181']] -> α205')]
-//│ unified α197'
-//│  α197' <: [[[[α200']]]]
-//│  α197' <: [[[α198']]]
-//│  α197' <: [[[[[Int]]]]]
-//│  [[[[[α197']]]]] = [α202'] because α181' <: [[[[[α197']]]]] and [[α181']] = [α202'] are arg type in ([[α181']] -> α205') = ([α202'] -> α203')
-//│ unified α198'
-//│  α198' <: [[[α199']]]
-//│  α198' <: [[[α208']]]
-//│  [[[α198']]] & [[[[α200']]]] :> α197'
-//│  [[[[[Int]]]]] & [[[α198']]] :> α197'
-//│ unified α199'
-//│  α199' :> [[[[[[[[[[[Int]]]]]]]]]]]
-//│ unified α200'
-//│  [[[[α200']]]] = [[[α199']]] because [[[α198']]] & [[[[α200']]]] :> α197' and α198' <: [[[α199']]]
-//│  [[[[α200']]]] = [[[α208']]] because [[[α198']]] & [[[[α200']]]] :> α197' and α198' <: [[[α208']]]
-//│  [[[[[Int]]]]] & [[[[α200']]]] :> α197'
-//│ unified α201'
-//│  α201' = [α207'] are arg type in (α201' -> α198') = ([α207'] -> α208')
-//│  α201' = [α204'] are arg type in (α201' -> α198') = ([α204'] -> α199')
-//│  α201' <: [[[[[Int]]]]]
-//│ unified α202'
-//│  [α202'] = [[[[α200']]]] because [[[[[α197']]]]] = [α202'] because α181' <: [[[[[α197']]]]] and [[α181']] = [α202'] are arg type in ([[α181']] -> α205') = ([α202'] -> α203') and α197' <: [[[[α200']]]]
-//│  [α202'] = [[[α198']]] because [[[[[α197']]]]] = [α202'] because α181' <: [[[[[α197']]]]] and [[α181']] = [α202'] are arg type in ([[α181']] -> α205') = ([α202'] -> α203') and α197' <: [[[α198']]]
-//│  [α202'] = [[[[[Int]]]]] because [[[[[α197']]]]] = [α202'] because α181' <: [[[[[α197']]]]] and [[α181']] = [α202'] are arg type in ([[α181']] -> α205') = ([α202'] -> α203') and α197' <: [[[[[Int]]]]]
-//│ unified α203'
-//│  α203' = [([α207'] -> α208')] because α205' = α203' are result type in ([[α181']] -> α205') = ([α202'] -> α203') and α205' <: [([α207'] -> α208')]
-//│  α203' <: [([α204'] -> α199')]
-//│  α203' = (α201' -> α198') are result type in ([α202'] -> α203') = (α197' -> (α201' -> α198'))
-//│ unified α204'
-//│  [α204'] = [α207'] because α201' = [α204'] are arg type in (α201' -> α198') = ([α204'] -> α199') and α201' = [α207'] are arg type in (α201' -> α198') = ([α207'] -> α208')
-//│  [[[[[Int]]]]] = [α204'] because α201' <: [[[[[Int]]]]] and α201' = [α204'] are arg type in (α201' -> α198') = ([α204'] -> α199')
-//│ unified α205'
-//│  α205' <: [([α207'] -> α208')]
-//│  α205' = (α201' -> α198') are result type in ([[α181']] -> α205') = (α197' -> (α201' -> α198'))
-//│  α205' = α203' are result type in ([[α181']] -> α205') = ([α202'] -> α203')
-//│ unified α206'
-//│  α206' :> [[[(Int -> Int)]]]
-//│  α206' <: [([Int] -> α207')]
-//│ unified α207'
-//│  [[[[[Int]]]]] = [α207'] because α201' <: [[[[[Int]]]]] and α201' = [α207'] are arg type in (α201' -> α198') = ([α207'] -> α208')
-//│ unified α208'
-//│  α208' :> [[[[[[[[[[[Int]]]]]]]]]]]
-//│  [[[α208']]] & [[[α199']]] :> α198'
 //│ clone: int -> int -> int
 

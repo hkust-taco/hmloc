@@ -695,21 +695,29 @@ abstract class TyperHelpers { Typer: Typer =>
 
   /** Show the locations where a type is introduced and consumed
     * Only show one location if they are the same location.
+    *
+    * flow: true indicates introduction to consumption flow
+    * flow: false indicates the opposite
     */
-  def firstAndLastUseLocation(t: ST)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-    val stUseLocation = t.typeUseLocations
+  def firstAndLastUseLocation(t: ST, flow: Bool = true)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+    val stUseLocation = if (flow) t.typeUseLocations.reverse else t.typeUseLocations
     val st = t.unwrapProvs
-    (stUseLocation.headOption, stUseLocation.lastOption) match {
-      // only show one location in case of duplicates
-      case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.expPos} is used as ${prov1.desc}" -> prov1.loco :: Nil
-      case ((S(prov1), S(prov2))) =>
-        msg"${st.expPos} is ${prov2.desc}" -> prov2.loco ::
-          msg"${st.expPos} is ${prov1.desc}" -> prov1.loco ::
-          Nil
-      case ((S(prov), N)) => msg"${st.expPos} is ${prov.desc}" -> prov.loco :: Nil
-      case (N, (S(prov))) => msg"${st.expPos} is ${prov.desc}" -> prov.loco :: Nil
-      case ((N, N)) => Nil
+
+    stUseLocation.map {
+      case TypeProvenance(loc, desc, _, false) => msg"${desc} `${st.expPos}`" -> loc
+      case TypeProvenance(loc, desc, _, true) => msg"`${st.expPos}` is found here" -> loc
     }
+//    (stUseLocation.headOption, stUseLocation.lastOption) match {
+//      // only show one location in case of duplicates
+//      case ((S(prov1), S(prov2))) if prov1.loco === prov2.loco => msg"${st.expPos} is used as ${prov1.desc}" -> prov1.loco :: Nil
+//      case ((S(prov1), S(prov2))) =>
+//        msg"${st.expPos} is ${prov2.desc}" -> prov2.loco ::
+//          msg"${st.expPos} is ${prov1.desc}" -> prov1.loco ::
+//          Nil
+//      case ((S(prov), N)) => msg"${st.expPos} is ${prov.desc}" -> prov.loco :: Nil
+//      case (N, (S(prov))) => msg"${st.expPos} is ${prov.desc}" -> prov.loco :: Nil
+//      case ((N, N)) => Nil
+//    }
   }
 
   def shallowCopy(st: ST)(implicit cache: MutMap[TV, TV] = MutMap.empty): ST = st match {

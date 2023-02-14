@@ -2,11 +2,13 @@ package mlscript
 
 import scala.collection.mutable
 import scala.collection.mutable.{Map => MutMap, Set => MutSet}
-import scala.collection.immutable.{SortedSet, SortedMap}
+import scala.collection.immutable.{SortedMap, SortedSet}
 import scala.util.chaining._
 import scala.annotation.tailrec
-import mlscript.utils._, shorthands._
+import mlscript.utils._
+import shorthands._
 import mlscript.Message._
+
 import scala.collection.immutable
 import mlscript.Diagnostic._
 
@@ -585,38 +587,38 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         body match {
           // handle this case separately for better error messages
           case Ls(IfThen(Var("true"), trueArm), IfThen(Var("false"), falseArm)) =>
-            val cond_ty = typeTerm(cond, "if-then-else condition type")
+            val cond_ty = typeTerm(cond, "this if condition has type")
             con(cond_ty, BoolType, cond_ty)
-            val ret_ty = freshVar(prov.copy(desc = "if-then-else return type"))
-            con(typeTerm(trueArm, "if-then-else true condition return type"), ret_ty, ret_ty)
-            con(typeTerm(falseArm, "if-then-else false condition return type"), ret_ty, ret_ty)
+            val ret_ty = freshVar(prov.copy(desc = "this if-then-else expression has type"))
+            con(typeTerm(trueArm, "then branch has type"), ret_ty, ret_ty)
+            con(typeTerm(falseArm, "else branch has type"), ret_ty, ret_ty)
           // TODO handle let deconstruction differently
           case _ =>
             // find constructor for each arm
-            val adtData = body.flatMap(_.topLevelCtors).map { case Var(name) =>
-              ctx.tyDefs.getOrElse(name, lastWords(s"could not find type defintion ${name}"))
-                .adtData.getOrElse(lastWords(s"could not find adt data for type defintion ${name}"))
+            val adtData = body.flatMap(_.topLevelCtors).map { case v@Var(name) =>
+              ctx.tyDefs.getOrElse(name, lastWords(s"could not find type definition ${name}"))
+                .adtData.getOrElse(lastWords(s"could not find adt data for type definition ${name}")) -> v
             }
             // find and retrieve the common adt for all the constructors
-            val adtName = adtData match {
+            val ((adtName, _), caseAdt) = adtData match {
               case Nil => lastWords("match case without any arms")
-              case adt :: Nil => adt._1
+              case adt :: Nil => adt
               case head :: tail =>
-                val adtName = head._1
-                tail.foreach(v => if (v._1 =/= adtName) lastWords(s"incompatible adt data for ${head} and ${v}"))
-                adtName
+                val adtName = head._1._1
+                tail.foreach(v => if (v._1._1 =/= adtName) lastWords(s"incompatible adt data for ${head} and ${v}"))
+                head
             }
             println(s"ADT name: $adtName")
 
             val adtDef = ctx.tyDefs.getOrElse(adtName.name, lastWords(s"Could not find ${adtName} in context"))
-            // TODO should the type variables be cloned here
             val newTargs = adtDef.targs.map(tv => freshVar(tv.prov, tv.nameHint))
-            // TODO: pass the location of the actual condition from which we got the constructor adt name
-            val adt_ty = TypeRef(adtName, newTargs)(TypeProvenance(cond.toLoc, "match-case condition type"))
+            // provenance for the first case expression from where we find the adt
+            val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "this case expression has type")
+            val adt_ty = TypeRef(adtName, newTargs)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "this match condition has type"))
             println(s"ADT type: $adt_ty")
             
             val cond_ty = typeTerm(cond)
-            val ret_ty = freshVar(prov.copy(desc = "match-case return type"))
+            val ret_ty = freshVar(prov.copy(desc = "this match expression has type"))
             con(cond_ty, adt_ty, adt_ty)
 
             // the assumed shape of an IfBody is a List[IfThen, IfThen, IfElse] with an optional IfElse at the end
@@ -786,140 +788,110 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       } else TupleType(fields.reverseIterator.mapValues(_.toUpper(noProv)))(prov)
   }
   
-  case class UnificationStore() {
-  /** Unification happens because of previous type variable. Dir indicates
-   * if the st is an lb of the prev (true) or an ub of prev (false)
-     */
-    case class UnificationReason(st: ST, prev: ST, dir: Bool) {
-      override def toString: String = dir match {
-        case true => s"${st.unwrapProvs} <: ${prev}"
-        case false => s"${st.unwrapProvs} :> ${prev}"
-      }
-      def toDiagnostic(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-        val stUnder = st.unwrapProvs
-        val prevUnder = prev.unwrapProvs
-        if (dir) {
-          msg"${stUnder.toString} flows into ${prevUnder.toString}" -> N ::
-            firstAndLastUseLocation(prev) ::: firstAndLastUseLocation(st)
-        } else {
-          msg"${prevUnder.toString} flows into ${stUnder.toString}" -> N ::
-            firstAndLastUseLocation(st) ::: firstAndLastUseLocation(prev)
-        }
-      }
+  /** A unification can create an message showing relevant locations */
+  def createUnificationErrorMessage(u: Unification)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+    val level = u.unificationLevel
+    val sequence = u.unificationSequence
+    println(s"UNIFICATION ERROR LEVEL ${level}")
+    def linearSequence(reason: Ls[ST -> Bool]): Message = reason match {
+      case (st, _) :: Nil => msg"${st.expPos}"
+      case (st, true) :: tail => msg"${st.expPos} ---> " + linearSequence(tail)
+      case (st, false) :: tail => msg"${st.expPos} <--- " + linearSequence(tail)
+      case Nil => ""
     }
 
-    /** A unification can create an message showing relevant locations */
-    def createErrorMessage(u: Unification)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-      def helper(a: ST, b: ST): Ls[Message -> Opt[Loc]] = {
-        val tvars = u.unifyingTypeVars.filter{case (_, (l, r)) => l >= 2 || r >= 2}.keys
-        val tvarMessage: Ls[Message -> Opt[Loc]] = if (tvars.nonEmpty) {
-          msg"The following tvars cannot be resolved: " -> N :: tvars.flatMap(firstAndLastUseLocation).toList
-        } else {
-          Nil
-        }
-        msg"[UNIFICATION ERROR ${u.level.toString}] ${a.expPos} and ${b.expPos} cannot be unified but flows into the same location ${u.toString}" -> N ::
-          firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b) ::: tvarMessage
-      }
-      def simplerErrorHelper(common: ST, a: ST, b: ST): Ls[Message -> Opt[Loc]] = {
-       msg"[UNIFICATION ERROR ${u.level.toString}] ${a.expPos} and ${b.expPos} cannot be unified but flows into the same location" -> N ::
-        a.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"${a.expPos} is ${desc}" -> loc :: Nil}.getOrElse(Nil) :::
-        b.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"${b.expPos} is ${desc}" -> loc :: Nil }.getOrElse(Nil) :::
-        common.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"both flow into ${desc}" -> loc :: Nil }.getOrElse(Nil)
-      }
-      u match {
-        case CommonLower(common, a, b) => simplerErrorHelper(common, a, b)
-        case CommonUpper(common, a, b) => simplerErrorHelper(common, a, b)
-        case TypeRefArg(a, b, _, _, _, _) => helper(a, b)
-        case TupleField(a, b, _, _, _) => helper(a, b)
-        case FunctionArg(a, b, _, _) => helper(a, b)
-        case FunctionResult(a, b, _, _) => helper(a, b)
-        case Connector(a, b, uforB, uforA) => helper(a, b)
-        // these unifications cannot produce an error by themselves
-        case LowerBound(tv, st) => firstAndLastUseLocation(st)
-        case UpperBound(tv, st) => firstAndLastUseLocation(st)
-      }
+      msg"Type `${u.a.expPos}` does not match `${u.b.expPos}`" -> N ::
+        linearSequence(sequence) -> N ::
+      sequence.flatMap(st => firstAndLastUseLocation(st._1, st._2))
+//    def helper(a: ST, b: ST): Ls[Message -> Opt[Loc]] = {
+//      val tvars = u.unifyingTypeVars.filter{case (_, (l, r)) => l >= 2 || r >= 2}.keys
+//      val tvarMessage: Ls[Message -> Opt[Loc]] = if (tvars.nonEmpty) {
+//        msg"The following tvars cannot be resolved: " -> N :: tvars.flatMap(firstAndLastUseLocation).toList
+//      } else {
+//        Nil
+//      }
+//      msg"[UNIFICATION ERROR ${u.level.toString}] ${a.expPos} and ${b.expPos} cannot be unified but flows into the same location ${u.toString}" -> N ::
+//        firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b) ::: tvarMessage
+//    }
+//    def simplerErrorHelper(common: ST, a: ST, b: ST): Ls[Message -> Opt[Loc]] = {
+//     msg"[UNIFICATION ERROR ${u.level.toString}] ${a.expPos} and ${b.expPos} cannot be unified but flows into the same location" -> N ::
+//      a.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"${a.expPos} is ${desc}" -> loc :: Nil}.getOrElse(Nil) :::
+//      b.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"${b.expPos} is ${desc}" -> loc :: Nil }.getOrElse(Nil) :::
+//      common.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"both flow into ${desc}" -> loc :: Nil }.getOrElse(Nil)
+//    }
+//    u match {
+//      case CommonLower(common, a, b) => simplerErrorHelper(common, a, b)
+//      case CommonUpper(common, a, b) => simplerErrorHelper(common, a, b)
+//      case TypeRefArg(a, b, _, _, _, _) => helper(a, b)
+//      case TupleField(a, b, _, _, _) => helper(a, b)
+//      case FunctionArg(a, b, _, _) => helper(a, b)
+//      case FunctionResult(a, b, _, _) => helper(a, b)
+//      case Connector(a, b, uforB, uforA) => helper(a, b)
+//      // these unifications cannot produce an error by themselves
+//      case LowerBound(tv, st) => firstAndLastUseLocation(st)
+//      case UpperBound(tv, st) => firstAndLastUseLocation(st)
+//    }
+  }
+
+  def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason])(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
+    val st1 = a.unwrapProvs
+    val st2 = b.unwrapProvs
+    val u = Unification(a, b, reason)
+
+    // unification doesn't have an ordering
+    if (cache((st1, st2)) || cache(st2, st1)) return
+    else {
+      cache += ((st1, st2))
+      cache += ((st2, st1))
     }
 
-    def unifyTypes(a: ST, b: ST, u: Unification)(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
-      val st1 = a.unwrapProvs
-      val st2 = b.unwrapProvs
-
-      // unification doesn't have an ordering
-      if (cache((st1, st2)) || cache(st2, st1)) return
-      else {
-        cache += ((st1, st2))
-        cache += ((st2, st1))
-      }
-
-      (st1, st2) match {
-        case (c1: ClassTag, c2: ClassTag) =>
-          if (c1 =/= c2) {
-            // report error
-            println(s"[ERROR ${u.level}] ${c1} != ${c2} unifying because ${u}")
-            // TODO: type variables are unwrapped so no prov info is available
-            raise(WarningReport(createErrorMessage(u)))
-          }
-        case (tr1: TypeRef, tr2: TypeRef) =>
-          if (tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length) {
-            tr1.targs.zip(tr2.targs).zipWithIndex.foreach {
-              case ((arg1, arg2), i) => unifyTypes(arg1, arg2, TypeRefArg(arg1, arg2, tr1.defn, i, tr1, tr2))
-            }
-          } else {
-            // report error
-            println(s"[ERROR ${u.level}] ${tr1} != ${tr2} unifying because ${u}")
-            raise(WarningReport(createErrorMessage(u)))
-          }
-        case (tup1: TupleType, tup2: TupleType)
-          if ((tup1.implicitTuple && tup2.implicitTuple) ||
-              (tup1.implicitTuple && tup2.fields.length == 1) ||
-              (tup2.implicitTuple && tup1.fields.length == 1)
-             ) =>
-          // implicit tuple can be considered as transparent
-          // replace previous unification reasons types of
-          // the fields of these tuple types
-          val st1 = tup1.fields.head._2.ub
-          val st2 = tup2.fields.head._2.ub
-          val newU = u.replaceTypes(st1, st2)
-          unifyTypes(st1, st2, newU)
-        case (tup1: TupleType, tup2: TupleType) =>
-          if (tup1.fields.length === tup2.fields.length) {
-            tup1.fields.map(_._2.ub).zip(tup2.fields.map(_._2.ub)).zipWithIndex.foreach {
-              case ((t1, t2), i) => unifyTypes(t1, t2, TupleField(t1, t2, i, tup1, tup2))
-            }
-          } else {
-            // report error
-            println(s"[ERROR ${u.level}] ${tup1} != ${tup2} unifying because ${u}")
-            raise(WarningReport(createErrorMessage(u)))
-          }
-        case (f1@FunctionType(arg1, res1), f2@FunctionType(arg2, res2)) =>
-          unifyTypes(arg1, arg2, FunctionArg(arg1, arg2, f1, f2))
-          unifyTypes(res1, res2, FunctionResult(res1, res2, f1, f2))
-        case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
-          () // report error
-        // pass prov wrapped types so that locations get stored in unification
-        case (tv1: TypeVariable, tv2: TypeVariable) => unifyWithTypeVar(tv1, b, u)
-        case (tv1: TypeVariable, _) => unifyWithTypeVar(tv1, b, u)
-        case (_, tv2: TypeVariable) => unifyWithTypeVar(tv2, a, u)
-        case (_, _) =>
+    (st1, st2) match {
+      // TODO: type variables are unwrapped so no prov info is available
+      case (c1: ClassTag, c2: ClassTag) =>
+        if (c1 =/= c2) {
           // report error
-          println(s"[ERROR ${u.level}] ${st1} != ${st2} unifying because ${u}")
-          raise(WarningReport(createErrorMessage(u)))
-      }
-    }
-
-    def unifyWithTypeVar(tv: TV, st: ST, u: Unification)(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise) = {
-      tv.unification.foreach(prevU => (prevU, u) match {
-        case (LowerBound(_, lb), _: LowerBound) => unifyTypes(lb, st, CommonUpper(tv, lb, st))
-        case (UpperBound(_, ub), _: UpperBound) => unifyTypes(ub, st, CommonLower(tv, ub, st))
-        // Information is lost int <: a <: b, b does not know it was unified with int through a
-        case (LowerBound(_, lb), _: UpperBound) => unifyTypes(lb, st, Connector(lb, st, u, prevU))
-        case (UpperBound(_, ub), _: LowerBound) => unifyTypes(ub, st, Connector(ub, st, u, prevU))
-        case _ => unifyTypes(prevU.unifiedWith, st, Connector(prevU.unifiedWith, st, u, prevU))
-      })
-      tv.unification = u :: tv.unification
+          raise(WarningReport(createUnificationErrorMessage(u)))
+        }
+      case (tr1: TypeRef, tr2: TypeRef) =>
+        if (tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length) {
+          tr1.targs.zip(tr2.targs).zipWithIndex.foreach {
+            case ((arg1, arg2), i) => unifyTypes(arg1, arg2, CONN(arg1, arg2, s"${i} index of type ref ${tr1.defn}") :: Nil)
+          }
+        } else {
+          raise(WarningReport(createUnificationErrorMessage(u)))
+        }
+      case (tup1: TupleType, tup2: TupleType) =>
+        if (tup1.fields.length === tup2.fields.length) {
+          tup1.fields.map(_._2.ub).zip(tup2.fields.map(_._2.ub)).zipWithIndex.foreach {
+            case ((t1, t2), i) => unifyTypes(t1, t2, CONN(t1, t2, s"${i} index of tuple") :: Nil)
+          }
+        } else {
+          raise(WarningReport(createUnificationErrorMessage(u)))
+        }
+      case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
+        unifyTypes(arg2, arg1, CONN(arg1, arg2, "function argument type") :: Nil)
+        unifyTypes(res1, res2, CONN(arg1, arg2, "function return type") :: Nil)
+      case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
+        () // TODO report error for recursive type
+      // pass prov wrapped types so that locations get stored in unification
+      case (tv1: TypeVariable, tv2: TypeVariable) => unifyTypes(tv1, tv2, reason)
+      case (tv1: TypeVariable, _) => unifyTypes(tv1, b, reason)
+      case (_, tv2: TypeVariable) => unifyTypes(tv2, a, reason)
+      case (_, _) =>
+        // report error
+        raise(WarningReport(createUnificationErrorMessage(u)))
     }
   }
-  
+
+  def unifyTypes(tv: TV, st: ST, reason: Ls[UnificationReason])(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
+    val u = Unification(tv, st, reason)
+    tv.unification.foreach(prevU => {
+      val utyp = prevU.b
+      unifyTypes(utyp, st, prevU.reason reverse_::: reason)
+    })
+    tv.unification = u :: tv.unification
+  }
+
   /** Unifies type bounds to find unification errors. These errors are not
     * detected by mlscript type system because it has sub-typing.
     *
@@ -927,15 +899,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     * @param ctx
     * @param raise
     */
-  def unifyType()(implicit ctx: Ctx, raise: Raise) = {
-    val unificationStore = UnificationStore()
+  def unifyTypes()(implicit ctx: Ctx, raise: Raise): Unit = {
     val tvars = TypeVariable.createdTypeVars.reverse
     implicit val cache: MutSet[(ST, ST)] = MutSet()
-//    println(s"[UNIFICATION] unifying the following types: ${tvars}")
-//    tvars.foreach(unificationStore.traverseTypeBounds(_, Nil))
     tvars.foreach(tv => {
-      tv.upperBounds.foreach(ub => unificationStore.unifyTypes(tv, ub, UpperBound(tv, ub)))
-      tv.lowerBounds.foreach(lb => unificationStore.unifyTypes(tv, lb, LowerBound(tv, lb)))
+      tv.upperBounds.foreach(ub => unifyTypes(tv, ub, UB(tv, ub) :: Nil))
+      tv.lowerBounds.foreach(lb => unifyTypes(tv, lb, LB(lb, tv) :: Nil))
     })
     tvars.foreach(tv => {
       println(s"unified ${tv}")

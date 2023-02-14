@@ -632,7 +632,7 @@ class DiffTests
             if (mode.unify) {
               val temp = typer.dbg
               typer.dbg = mode.unifyDbg
-              typer.unifyType()(ctx, raise)
+              typer.unifyTypes()(ctx, raise)
               typer.TypeVariable.clearCollectedTypeVars()
               typer.dbg = temp
             }
