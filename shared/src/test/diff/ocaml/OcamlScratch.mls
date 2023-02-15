@@ -89,26 +89,63 @@ let f x = let (a, b) = x in a + b
 //│ | 1. : α124'
 //│ | 1. Typing term if x(a, b,) then + a b
 //│ | | If(Var(x), List(IfThen(Tup(Var(a), Var(b)), App(App(Var(+), Var(a)), Var(b))))
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:604)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:700)
-//│ 	at: mlscript.Typer.$anonfun$typeTerm$2(Typer.scala:515)
-//│ 	at: mlscript.TyperHelpers.trace(TyperHelpers.scala:31)
-//│ 	at: mlscript.Typer.typeTerm(Typer.scala:700)
-//│ 	at: mlscript.Typer.typeLetRhs(Typer.scala:319)
-//│ 	at: mlscript.DiffTests.$anonfun$new$44(DiffTests.scala:583)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
+//│ | | ADT name: TypeName(Tup)
+//│ | | typed condition term x
+//│ | | 1. Typing term x
+//│ | | 1. : α124'
+//│ | | CONSTRAIN α124' <! (α125', α126',)
+//│ | |   where 
+//│ | | C α124' <! (α125', α126',)    (0) where TypeVariable <: TupleType}
+//│ | | fields List(a, b)
+//│ | | Typing a field 0 in tup
+//│ | | Field a : α125'
+//│ | | Typing b field 1 in tup
+//│ | | Field b : α126'
+//│ | | 1. Typing term + a b
+//│ | | | 1. Typing term + a
+//│ | | | | 1. Typing term +
+//│ | | | | 1. : (Int -> (Int -> Int))
+//│ | | | | 1. Typing term a
+//│ | | | | 1. : α125'
+//│ | | | | CONSTRAIN (Int -> (Int -> Int)) <! (α125' -> α128')
+//│ | | | |   where 
+//│ | | | | C (Int -> (Int -> Int)) <! (α125' -> α128')    (0) where FunctionType <: FunctionType}
+//│ | | | | | C α125' <! Int    (1) where TypeVariable <: TypeRef}
+//│ | | | | | C (Int -> Int) <! α128'    (2) where FunctionType <: TypeVariable}
+//│ | | | 1. : α128'
+//│ | | | 1. Typing term b
+//│ | | | 1. : α126'
+//│ | | | CONSTRAIN α128' <! (α126' -> α129')
+//│ | | |   where 
+//│ 		α128' :> (Int -> Int)
+//│ | | | C α128' <! (α126' -> α129')    (0) where TypeVariable <: FunctionType}
+//│ | | | | C (Int -> Int) <! (α126' -> α129')    (1) where FunctionType <: FunctionType}
+//│ | | | | | C α126' <! Int    (2) where TypeVariable <: TypeRef}
+//│ | | | | | C Int <! α129'    (3) where TypeRef <: TypeVariable}
+//│ | | 1. : α129'
+//│ | | CONSTRAIN α129' <! α127'
+//│ | |   where 
+//│ 		α129' :> Int
+//│ | | C α129' <! α127'    (0) where TypeVariable <: TypeVariable}
+//│ | | | C Int <! α127'    (1) where TypeRef <: TypeVariable}
+//│ | 1. : α127'
+//│ 1. : (α124' -> α127')
+//│ ⬤ Typed as: (α124' -> α127')
+//│  where: 
+//│ 		α124' <: (α125', α126',)
+//│ 		α125' <: Int
+//│ 		α126' <: Int
+//│ 		α127' :> Int
+//│ f: (int, int,) -> int
 
 :e
 :unify
 if 1 == 2 then Left true else Right false
 //│ ╔══[ERROR] Type mismatch in then branch has type:
-//│ ║  l.106: 	if 1 == 2 then Left true else Right false
+//│ ║  l.143: 	if 1 == 2 then Left true else Right false
 //│ ║         	               ^^^^^^^^^
 //│ ╟── reference of type `bool` is not a 2-element tuple
-//│ ║  l.106: 	if 1 == 2 then Left true else Right false
+//│ ║  l.143: 	if 1 == 2 then Left true else Right false
 //│ ║         	                    ^^^^
 //│ ╟── Note: constraint arises from tuple type:
 //│ ║  l.18: 	type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
@@ -125,48 +162,48 @@ let f x = x
 f(true, false)
 //│ 0. Typing term f (true, false,)
 //│ | 0. Typing term f
-//│ | 0. : (α144 -> [α144])
+//│ | 0. : (α153 -> [α153])
 //│ | 0. Typing term true, false,
 //│ | | 0. Typing term true
 //│ | | 0. : Bool
 //│ | | 0. Typing term false
 //│ | | 0. : Bool
 //│ | 0. : (Bool, Bool,)
-//│ | CONSTRAIN (α144 -> [α144]) <! ((Bool, Bool,) -> α145)
+//│ | CONSTRAIN (α153 -> [α153]) <! ((Bool, Bool,) -> α154)
 //│ |   where 
-//│ | C (α144 -> [α144]) <! ((Bool, Bool,) -> α145)    (0) where FunctionType <: FunctionType}
-//│ | | C (Bool, Bool,) <! α144    (1) where TupleType <: TypeVariable}
-//│ | | C [α144] <! α145    (2) where ProvType <: TypeVariable}
-//│ | | | C α144 <! α145    (2) where TypeVariable <: TypeVariable}
-//│ | | | | C (Bool, Bool,) <! α145    (3) where TupleType <: TypeVariable}
-//│ 0. : α145
-//│ ⬤ Typed as: α145
+//│ | C (α153 -> [α153]) <! ((Bool, Bool,) -> α154)    (0) where FunctionType <: FunctionType}
+//│ | | C (Bool, Bool,) <! α153    (1) where TupleType <: TypeVariable}
+//│ | | C [α153] <! α154    (2) where ProvType <: TypeVariable}
+//│ | | | C α153 <! α154    (2) where TypeVariable <: TypeVariable}
+//│ | | | | C (Bool, Bool,) <! α154    (3) where TupleType <: TypeVariable}
+//│ 0. : α154
+//│ ⬤ Typed as: α154
 //│  where: 
-//│ 		α145 :> (Bool, Bool,)
+//│ 		α154 :> (Bool, Bool,)
 //│ res: (bool, bool,)
 
 :d
 f((true, false))
 //│ 0. Typing term f (true, false,)
 //│ | 0. Typing term f
-//│ | 0. : (α147 -> [α147])
+//│ | 0. : (α156 -> [α156])
 //│ | 0. Typing term true, false,
 //│ | | 0. Typing term true
 //│ | | 0. : Bool
 //│ | | 0. Typing term false
 //│ | | 0. : Bool
 //│ | 0. : (Bool, Bool,)
-//│ | CONSTRAIN (α147 -> [α147]) <! ((Bool, Bool,) -> α148)
+//│ | CONSTRAIN (α156 -> [α156]) <! ((Bool, Bool,) -> α157)
 //│ |   where 
-//│ | C (α147 -> [α147]) <! ((Bool, Bool,) -> α148)    (0) where FunctionType <: FunctionType}
-//│ | | C (Bool, Bool,) <! α147    (1) where TupleType <: TypeVariable}
-//│ | | C [α147] <! α148    (2) where ProvType <: TypeVariable}
-//│ | | | C α147 <! α148    (2) where TypeVariable <: TypeVariable}
-//│ | | | | C (Bool, Bool,) <! α148    (3) where TupleType <: TypeVariable}
-//│ 0. : α148
-//│ ⬤ Typed as: α148
+//│ | C (α156 -> [α156]) <! ((Bool, Bool,) -> α157)    (0) where FunctionType <: FunctionType}
+//│ | | C (Bool, Bool,) <! α156    (1) where TupleType <: TypeVariable}
+//│ | | C [α156] <! α157    (2) where ProvType <: TypeVariable}
+//│ | | | C α156 <! α157    (2) where TypeVariable <: TypeVariable}
+//│ | | | | C (Bool, Bool,) <! α157    (3) where TupleType <: TypeVariable}
+//│ 0. : α157
+//│ ⬤ Typed as: α157
 //│  where: 
-//│ 		α148 :> (Bool, Bool,)
+//│ 		α157 :> (Bool, Bool,)
 //│ res: (bool, bool,)
 
 :dp
@@ -187,25 +224,25 @@ let test x =
 //│ ╔══[WARNING] Type `string` does not match `int`
 //│ ╟── int ---> ?a <--- string
 //│ ╟── then branch has type `int`
-//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	                      ^
 //│ ╟── then branch has type `int`
-//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	                      ^
 //│ ╟── this if-then-else expression has type `int`
-//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this if-then-else expression has type `?b`
-//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this if-then-else expression has type `string`
-//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── else branch has type `string`
-//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	                                   ^^^^^^^
 //│ ╟── else branch has type `string`
-//│ ║  l.186: 	 match x with true -> 0 | false -> "oops"
+//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
 //│ ╙──       	                                   ^^^^^^^
 //│ test: bool -> (int | string)
 

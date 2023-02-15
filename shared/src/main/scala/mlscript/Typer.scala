@@ -592,15 +592,18 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             val ret_ty = freshVar(prov.copy(desc = "this if-then-else expression has type"))
             con(typeTerm(trueArm, "then branch has type"), ret_ty, ret_ty)
             con(typeTerm(falseArm, "else branch has type"), ret_ty, ret_ty)
-          // TODO handle let deconstruction differently
           case _ =>
             // find constructor for each arm
-            val adtData = body.flatMap(_.topLevelCtors).map { case v@Var(name) =>
-              ctx.tyDefs.getOrElse(name, lastWords(s"could not find type definition ${name}"))
+            // handle tuple arms differently
+            val adtData = body.flatMap(_.topLevelCtors).map {
+              case v@Var("Tup1") => TypeName("Tup") -> Ls(0) -> v
+              case v@Var("Tup2") => TypeName("Tup") -> Ls(0, 1) -> v
+              case v@Var("Tup3") => TypeName("Tup") -> Ls(0, 1, 2) -> v
+              case v@Var(name) => ctx.tyDefs.getOrElse(name, lastWords(s"could not find type definition ${name}"))
                 .adtData.getOrElse(lastWords(s"could not find adt data for type definition ${name}")) -> v
             }
             // find and retrieve the common adt for all the constructors
-            val ((adtName, _), caseAdt) = adtData match {
+            val ((adtName, argsPos), caseAdt) = adtData match {
               case Nil => lastWords("match case without any arms")
               case adt :: Nil => adt
               case head :: tail =>
@@ -610,19 +613,58 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             }
             println(s"ADT name: $adtName")
 
-            val adtDef = ctx.tyDefs.getOrElse(adtName.name, lastWords(s"Could not find ${adtName} in context"))
-            val newTargs = adtDef.targs.map(tv => freshVar(tv.prov, tv.nameHint))
-            // provenance for the first case expression from where we find the adt
-            val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "this case expression has type")
-            val adt_ty = TypeRef(adtName, newTargs)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "this match condition has type"))
-            println(s"ADT type: $adt_ty")
-            
+            val (adt_ty, newTargs) = adtName match {
+              case TypeName("Tup") =>
+                val elem_ty = argsPos.map(pos => {
+                  val typ = TypeProvenance(caseAdt.toLoc, s"${pos} element of this tuple")
+                  freshVar(typ)
+                })
+                val fld_ty = elem_ty.map(elem => {
+                  N -> FieldType(N, elem)(elem.prov)
+                })
+                val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "this case expression has type")
+                val adt_ty = TupleType(fld_ty)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "this match condition has type"))
+                (adt_ty, elem_ty)
+              case _ =>
+                val adtDef = ctx.tyDefs.getOrElse(adtName.name, lastWords(s"Could not find ${adtName} in context"))
+                val newTargs = adtDef.targs.map(tv => freshVar(tv.prov, tv.nameHint))
+                // provenance for the first case expression from where we find the adt
+                val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "this case expression has type")
+                // TODO weird duplication in OcamlPresentation errors
+                val adt_ty = TypeRef(adtName, newTargs)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "this match condition has type"))
+                println(s"ADT type: $adt_ty")
+                (adt_ty, newTargs)
+            }
+
+            println(s"typed condition term ${cond}")
             val cond_ty = typeTerm(cond)
             val ret_ty = freshVar(prov.copy(desc = "this match expression has type"))
             con(cond_ty, adt_ty, adt_ty)
 
             // the assumed shape of an IfBody is a List[IfThen, IfThen, IfElse] with an optional IfElse at the end
             body.zipWithIndex.foreach {
+              case (IfThen(Tup(fs), rhs), _) =>
+                assert(fs.length === newTargs.length)
+                println(s"fields $fs")
+                val nestCtx = ctx.nest
+                // add any vars to nested context pattern
+                fs.zipWithIndex.foreach {
+                  // case (x, y)
+                  case (argTerm: Var, fieldIdx) =>
+                    println(s"Typing $argTerm field $fieldIdx in tup")
+                    val fieldType = newTargs(fieldIdx)
+                    println(s"Field $argTerm : $fieldType")
+                    nestCtx += argTerm.name -> VarSymbol(fieldType, argTerm)
+                  // case (0, 1)
+                  case (argTerm, fieldIdx) =>
+                    val fieldType = newTargs(fieldIdx)
+                    val argTy = typeTerm(argTerm)
+                    con(fieldType, argTy, fieldType)
+                }
+                // constraint match arm type with the return type of match expression
+                nestCtx |> { implicit ctx =>
+                  con(typeTerm(rhs), ret_ty, ret_ty)
+                }
               // case x -> expr catch all with a new variable in the context
               case (IfThen(v@Var(name), rhs), _) =>
                 // update context with variables
@@ -657,33 +699,32 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
                     }
                   case _ => die
                 }
-                // originalFieldTypes:Int
+
                 assert(ctorTargs.sizeCompare(newTargs) === 0)
                 val mapping = ctorTargs.zip(newTargs).toMap[ST, ST]
                 val fieldTypes = originalFieldTypes.map { ft => subst(ft, mapping) }
                 println(s"fieldTypes: $fieldTypes")
                 val adtArgIndex = adtData(index)._2
                 val nestCtx = ctx.nest
-                // assert(fields.size === adtArgIndex.size, fields -> adtArgIndex)
-                // fields.map(_._2.value).zip(adtArgIndex).zipWithIndex.foreach {
+
+                // type each match arm field and constraint with adt type variable
+                // add any vars to nested context pattern
                 fields.zipWithIndex.foreach {
                   // in case of Left x also add x to nested scope
                   // case ((argTerm: Var, adtArgIndex), fieldIdx) =>
-                  case ((argTerm: Var), fieldIdx) =>
+                  case (argTerm: Var, fieldIdx) =>
                     println(s"Typing field $argTerm ($adtArgIndex)")
-                    // val adtTvar = newTargs(adtArgIndex)
                     val fieldType = fieldTypes(fieldIdx)
                     println(s"Field $argTerm : $fieldType")
                     nestCtx += argTerm.name -> VarSymbol(fieldType, argTerm)
-                    // con(adtTvar, typeTerm(argTerm), adtTvar)
-                  // case ((argTerm, adtArgIndex), fieldIdx) =>
-                  case ((argTerm), fieldIdx) =>
-                    // val adtTvar = newTargs(adtArgIndex)
-                    // con(adtTvar, typeTerm(argTerm), adtTvar)
-                    lastWords(s"Unsupported arg: $argTerm")
+                  // in case of 0 :: tl the type of list must be constrained with 0
+                  case (argTerm, fieldIdx) =>
+                    val fieldType = fieldTypes(fieldIdx)
+                    val argTy = typeTerm(argTerm)
+                    // TODO is the direction of constraint correct
+                    con(fieldType, argTy, fieldType)
                 }
-                // con(typeTerm(rhs), ret_ty, ret_ty)
-                // implicit val ctx: Ctx = nestCtx
+                // constraint match arm type with the return type of match expression
                 nestCtx |> { implicit ctx =>
                   con(typeTerm(rhs), ret_ty, ret_ty)
                 }
@@ -692,10 +733,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             }
             ret_ty
         }
-      case New(S((nmedTy, trm)), TypingUnit(Nil)) =>
-        typeTerm(App(Var(nmedTy.base.name).withLocOf(nmedTy), trm))
-      case New(base, args) => ???
-      case TyApp(_, _) => ??? // TODO
+      case _ => lastWords(s"Cannot type term: ${term}")
     }
   }(r => s"$lvl. : ${r}")
   

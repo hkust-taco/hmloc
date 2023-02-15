@@ -703,6 +703,12 @@ trait IfBodyImpl extends Located { self: IfBody =>
   def topLevelCtors: Ls[Var] = this match {
     case IfThen(v: Var, _) => v :: Nil
     case IfThen(App(v: Var, _), _) => v :: Nil
+    case IfThen(tup@Tup(fs), _) => fs.length match {
+      case 1 => Var("Tup1").withLoc(tup.toLoc) :: Nil
+      case 2 => Var("Tup2").withLoc(tup.toLoc) :: Nil
+      case 3 => Var("Tup3").withLoc(tup.toLoc) :: Nil
+      case _ => lastWords(s"Unsupported tuple length in match pattern: ${this}")
+    }
     case IfElse(_) => Nil
     case _ => Nil
   }

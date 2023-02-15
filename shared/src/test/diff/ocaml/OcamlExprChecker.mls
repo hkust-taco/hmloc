@@ -273,14 +273,30 @@ type ('a, 'b) paramlist = (('a * int) list * 'b) list
 let check (v: ((int, int))) =
   match v with
    ((c, d)) -> c + d
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
+//│ check: (int, int,) -> int
 
-// TODO
-// FIXME
 let checkagain (v: (int, int, (int, int))) =
   match v with
    (a, b, (c, d)) -> a + b + c + d
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
+//│ ╔══[ERROR] identifier not found: d
+//│ ║  l.280: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ╙──       	              ^
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.280: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	                     ^^^^^^^^^
+//│ ╟── type `float` is not an instance of `int`
+//│ ║  l.54: 	let (+.): float -> float -> float
+//│ ║        	                            ^^^^^
+//│ ╟── but it flows into reference with expected type `int`
+//│ ║  l.280: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	                             ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.80: 	let (+): int -> int -> int
+//│ ╙──      	                ^^^
+//│ ╔══[ERROR] identifier not found: d
+//│ ║  l.280: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ╙──       	                                 ^
+//│ checkagain: (int, int, (int, int,),) -> int
 
 let (<): 'a -> 'a -> bool
 //│ <: anything -> anything -> bool
@@ -293,8 +309,17 @@ let temp n =
 //│ Parsed: Def(false, temp, Lam(Var(n), If(App(App(Var(<), Var(n)), IntLit(0)), List(IfThen(Var(true), IntLit(0), IfThen(Var(false), IntLit(1)))), true)
 //│ temp: anything -> int
 
-// TODO
-// FIXME
+let (-): int -> int -> int
+let (+): int -> int -> int
+let ( * ): int -> int -> int
+//│ -: int -> int -> int
+//│ +: int -> int -> int
+//│ *: int -> int -> int
+
 let check a b =
   let (sum, sub) = (a + b, a - b) in sum * sub
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: match case without any arms
+//│ check: int -> int -> int
+
+let d x =
+  let (hd :: tl) = x in hd
+//│ d: list['a] -> 'a
