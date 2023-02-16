@@ -323,15 +323,20 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     }
 
     def unificationSequence: Ls[ST -> Bool] = {
-      val aST = this.a
-      val bST = this.b
       var flow = this.reason.head match {
         case _: LB => true  // flow is from left to right
         case _: UB => false // flow is from right to left
-        case _ => true
+        case _: CONN => true
+      }
+      val (start, end) = this.reason match {
+        case UB(tv, st) :: Nil => (tv, st)
+        case LB(st, tv) :: Nil => (tv, st)
+        case CONN(a, b, _) :: Nil => (a, b)
+        case Nil => lastWords("Unexpected no unification reason")
+        case _ => (this.reason.head.unifiedWith, this.reason.last.unifiedWith)
       }
 
-      bST -> flow :: this.reason.sliding(2).collect {
+      start -> flow :: this.reason.sliding(2).collect {
         case Seq(LB(_, tv1), LB(_, tv2)) if tv1 == tv2 =>
           flow = !flow
           tv1 -> flow
@@ -344,7 +349,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         case Seq(LB(_, tv1), UB(_, tv2)) if tv1 == tv2 =>
           flow = !flow
           tv1 -> flow
-      }.toList ::: aST -> flow :: Nil
+      }.toList ::: end -> flow :: Nil
     }
   }
 

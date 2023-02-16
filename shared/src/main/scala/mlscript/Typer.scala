@@ -838,37 +838,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case Nil => ""
     }
 
-      msg"Type `${u.a.expPos}` does not match `${u.b.expPos}`" -> N ::
-        linearSequence(sequence) -> N ::
-      sequence.flatMap(st => firstAndLastUseLocation(st._1, st._2))
-//    def helper(a: ST, b: ST): Ls[Message -> Opt[Loc]] = {
-//      val tvars = u.unifyingTypeVars.filter{case (_, (l, r)) => l >= 2 || r >= 2}.keys
-//      val tvarMessage: Ls[Message -> Opt[Loc]] = if (tvars.nonEmpty) {
-//        msg"The following tvars cannot be resolved: " -> N :: tvars.flatMap(firstAndLastUseLocation).toList
-//      } else {
-//        Nil
-//      }
-//      msg"[UNIFICATION ERROR ${u.level.toString}] ${a.expPos} and ${b.expPos} cannot be unified but flows into the same location ${u.toString}" -> N ::
-//        firstAndLastUseLocation(a) ::: firstAndLastUseLocation(b) ::: tvarMessage
-//    }
-//    def simplerErrorHelper(common: ST, a: ST, b: ST): Ls[Message -> Opt[Loc]] = {
-//     msg"[UNIFICATION ERROR ${u.level.toString}] ${a.expPos} and ${b.expPos} cannot be unified but flows into the same location" -> N ::
-//      a.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"${a.expPos} is ${desc}" -> loc :: Nil}.getOrElse(Nil) :::
-//      b.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"${b.expPos} is ${desc}" -> loc :: Nil }.getOrElse(Nil) :::
-//      common.typeUseLocations.collectLast { case TypeProvenance(loc@S(loco), desc, _, _) => msg"both flow into ${desc}" -> loc :: Nil }.getOrElse(Nil)
-//    }
-//    u match {
-//      case CommonLower(common, a, b) => simplerErrorHelper(common, a, b)
-//      case CommonUpper(common, a, b) => simplerErrorHelper(common, a, b)
-//      case TypeRefArg(a, b, _, _, _, _) => helper(a, b)
-//      case TupleField(a, b, _, _, _) => helper(a, b)
-//      case FunctionArg(a, b, _, _) => helper(a, b)
-//      case FunctionResult(a, b, _, _) => helper(a, b)
-//      case Connector(a, b, uforB, uforA) => helper(a, b)
-//      // these unifications cannot produce an error by themselves
-//      case LowerBound(tv, st) => firstAndLastUseLocation(st)
-//      case UpperBound(tv, st) => firstAndLastUseLocation(st)
-//    }
+    // msg"${u.a.expPos} != ${u.b.expPos}" -> N :: u.reason.map(reason => msg"${reason.toString}" -> N) ::: sequence.map(tup => msg"${tup.toString}" -> N)
+    msg"Type `${u.a.expPos}` does not match `${u.b.expPos}`" -> N ::
+      linearSequence(sequence) -> N ::
+    sequence.flatMap(st => firstAndLastUseLocation(st._1, st._2))
   }
 
   def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason])(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
