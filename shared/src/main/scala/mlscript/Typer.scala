@@ -523,16 +523,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val f_ty = typeTerm(f)
         val a_ty = typeTerm(a)
         val res = freshVar(prov)
-        val arg_ty = mkProxy(a_ty, tp(a.toCoveringLoc, "argument"))
-          // ^ Note: this no longer really makes a difference, due to tupled arguments by default
-        val funProv = tp(f.toCoveringLoc, "applied expression")
-        // val fun_ty = mkProxy(f_ty, funProv)
-        val fun_ty = f_ty
-          // ^ This is mostly not useful, except in test Tuples.fun with `(1, true, "hey").2`
-        val resTy = con(fun_ty, FunctionType(arg_ty, res)(
-          hintProv(prov)
-          // funProv // TODO: better?
-          ), res)
+        val resTy = con(f_ty, FunctionType(a_ty, res)(hintProv(prov)), res)
         resTy
       case Sel(obj, fieldName) =>
         def rcdSel(obj: Term, fieldName: Var) = {
