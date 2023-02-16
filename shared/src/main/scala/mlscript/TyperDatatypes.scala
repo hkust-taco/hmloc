@@ -349,7 +349,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         case Seq(LB(_, tv1), UB(_, tv2)) if tv1 == tv2 =>
           flow = !flow
           tv1 -> flow
-      }.toList ::: end -> flow :: Nil
+      }.toList ::: end -> false :: Nil  // last type locations are always shown from consumption to introduction
     }
   }
 

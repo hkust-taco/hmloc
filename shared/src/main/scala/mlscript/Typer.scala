@@ -841,7 +841,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     // msg"${u.a.expPos} != ${u.b.expPos}" -> N :: u.reason.map(reason => msg"${reason.toString}" -> N) ::: sequence.map(tup => msg"${tup.toString}" -> N)
     msg"Type `${u.a.expPos}` does not match `${u.b.expPos}`" -> N ::
       linearSequence(sequence) -> N ::
-    sequence.flatMap(st => firstAndLastUseLocation(st._1, st._2))
+      firstAndLastUseLocation(sequence.head._1) ::: // first type should always have flow from introduction to consumption
+      sequence.tail.init.flatMap(st => firstAndLastUseLocation(st._1, st._2)) :::
+      firstAndLastUseLocation(sequence.last._1, false) // last type should always have flow from consumption to introduction
   }
 
   def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason])(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
