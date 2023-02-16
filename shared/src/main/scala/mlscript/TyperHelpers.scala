@@ -673,8 +673,8 @@ abstract class TyperHelpers { Typer: Typer =>
         // |> (_.normalize(false))
         // |> (simplifyType(_, pol, removePolarVars = false, inlineBounds = false))
         // |> (shallowCopy)
-        |> (subst(_, Map.empty)) // * Make a copy of the type and its TV graph – although we won't show the TV bounds, we still care about the bounds as they affect class type reconstruction in normalizeTypes_!
-        |> (normalizeTypes_!(_, pol)(ctx))
+        // |> (subst(_, Map.empty)) // * Make a copy of the type and its TV graph – although we won't show the TV bounds, we still care about the bounds as they affect class type reconstruction in normalizeTypes_!
+        // |> (normalizeTypes_!(_, pol)(ctx))
         |> (expandType(_, stopAtTyVars = true))
       )
 

@@ -108,10 +108,10 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.106: 	let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
 //│ ║         	                               ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `(?b -> ?c) -> list[?b] -> list[?c]` does not match type `Cons[?a] | Nil`
+//│ ╟── type `(?b -> ?c) -> list[?b] -> list[?c]` does not match type `Nil | Cons[?a]`
 //│ ║  l.38: 	let List_map: ('a -> 'b) -> 'a list -> 'b list
 //│ ║        	               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `Cons[?a0] | Nil`
+//│ ╟── but it flows into reference with expected type `Nil | Cons[?a]`
 //│ ║  l.106: 	let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
 //│ ║         	                                              ^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -192,10 +192,10 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.169: 	let rec additivePersistence n = sumList digitsOfInt n;;
 //│ ║         	                                ^^^^^^^^^^^^^^^^^^^
-//│ ╟── function of type `?b -> ?c` does not match type `Cons[?a] | Nil`
+//│ ╟── function of type `?b -> ?c` does not match type `Nil | Cons[?a]`
 //│ ║  l.167: 	let rec digitsOfInt n = digitsOfIntHelper n;;
 //│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `Cons[?a0] | Nil`
+//│ ╟── but it flows into reference with expected type `Nil | Cons[?a]`
 //│ ║  l.169: 	let rec additivePersistence n = sumList digitsOfInt n;;
 //│ ║         	                                        ^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -245,7 +245,7 @@ let rec matchHeads x =
 //│ ╟── type `Nil` does not match type `Array[?a]`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                                      ^^^
-//│ ╟── but it flows into application with expected type `Array[?b]`
+//│ ╟── but it flows into application with expected type `Array[?a]`
 //│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -270,7 +270,7 @@ let rec matchHeads x =
 //│ ╟── type `Cons[?a]` does not match type `Array[?b]`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                       ^^
-//│ ╟── but it flows into application with expected type `Array[?c]`
+//│ ╟── but it flows into application with expected type `Array[?b]`
 //│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -345,6 +345,31 @@ let rec matchHeads x =
 //│ ╟── type `Nil` does not match type `Array[?a]`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                                      ^^^
+//│ ╟── but it flows into application with expected type `Array[?a]`
+//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ║         	                                                 ^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from reference:
+//│ ║  l.224: 	  match explode x with
+//│ ║         	                ^
+//│ ╟── from array access:
+//│ ║  l.146: 	    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ ╙──       	                                           ^^^^^^
+//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
+//│ ║  l.223: 	let rec matchHeads x =
+//│ ║         	                   ^^^
+//│ ║  l.224: 	  match explode x with
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.225: 	  | h::t ->
+//│ ║         	^^^^^^^^^^^
+//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.227: 	      then true
+//│ ║         	^^^^^^^^^^^^^^^
+//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `Cons[?a]` does not match type `Array[?b]`
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	                       ^^
 //│ ╟── but it flows into application with expected type `Array[?b]`
 //│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
@@ -370,32 +395,7 @@ let rec matchHeads x =
 //│ ╟── type `Cons[?a]` does not match type `Array[?b]`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                       ^^
-//│ ╟── but it flows into application with expected type `Array[?c]`
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
-//│ ║         	                                                 ^^^^^^^^^^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.224: 	  match explode x with
-//│ ║         	                ^
-//│ ╟── from array access:
-//│ ║  l.146: 	    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
-//│ ╙──       	                                           ^^^^^^
-//│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.223: 	let rec matchHeads x =
-//│ ║         	                   ^^^
-//│ ║  l.224: 	  match explode x with
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.225: 	  | h::t ->
-//│ ║         	^^^^^^^^^^^
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.227: 	      then true
-//│ ║         	^^^^^^^^^^^^^^^
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `Cons[?a]` does not match type `Array[?b]`
-//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	                       ^^
-//│ ╟── but it flows into application with expected type `Array[?c]`
+//│ ╟── but it flows into application with expected type `Array[?b]`
 //│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -445,7 +445,7 @@ let rec matchHeads x =
 //│ ╟── type `Cons[?a]` does not match type `Array[?b]`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                       ^^
-//│ ╟── but it flows into application with expected type `Array[?c]`
+//│ ╟── but it flows into application with expected type `Array[?b]`
 //│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -644,7 +644,7 @@ let bigMul l1 l2 =
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.636: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── tuple literal of type `(?a, ?b,)` does not match type `Cons[?c] | Nil`
+//│ ╟── tuple literal of type `(?a, ?b,)` does not match type `Nil | Cons[?c]`
 //│ ║  l.636: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -875,7 +875,7 @@ let removeDuplicates l =
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.863: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ ║         	                    ^^^^^^^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> ?b` does not match type `Cons[?c] | Nil`
+//│ ╟── function of type `?a -> ?b` does not match type `Nil | Cons[?c]`
 //│ ║  l.853: 	let rec filter l a =
 //│ ║         	                 ^^^
 //│ ║  l.854: 	  match l with
@@ -884,7 +884,7 @@ let removeDuplicates l =
 //│ ║         	^^^^^^^^^^^^
 //│ ║  l.856: 	  | h::t -> if a = h then filter t a else h :: (filter t a);;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into application with expected type `Cons[?d] | Nil`
+//│ ╟── but it flows into application with expected type `Nil | Cons[?c]`
 //│ ║  l.863: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ ║         	                         ^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from applied type reference:

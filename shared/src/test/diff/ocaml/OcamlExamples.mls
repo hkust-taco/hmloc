@@ -33,17 +33,17 @@ let rec digitsOfInt n =
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ╙──      	           ^^^
 //│ ╔══[WARNING] Type `list[?a]` does not match `int`
-//│ ╟── list[?b] ---> int
-//│ ╟── `list[?c]` is found here
+//│ ╟── list[?a] ---> int
+//│ ╟── `list[?a]` is found here
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── `list[?d]` is found here
+//│ ╟── `list[?a]` is found here
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── `else` branch has type `list[?e]`
+//│ ╟── `else` branch has type `list[?a]`
 //│ ║  l.8: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
 //│ ║       	                        ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `list[?f]`
+//│ ╟── this if-then-else expression has type `list[?a]`
 //│ ║  l.8: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
 //│ ║       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── application `int`
@@ -122,10 +122,10 @@ let rec digitsOfInt n =
       if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╔══[WARNING] Type `(int -> int -> int) -> ?a` does not match `int`
 //│ ╟── ?b <--- ?c ---> int
-//│ ╟── argument `?d`
+//│ ╟── argument `?b`
 //│ ║  l.120: 	  if n < 0 then [] else
 //│ ║         	     ^
-//│ ╟── reference `?e`
+//│ ╟── reference `?b`
 //│ ║  l.120: 	  if n < 0 then [] else
 //│ ║         	     ^
 //│ ╟── argument `int`
@@ -236,10 +236,10 @@ let rec digitsOfInt n =
 //│ ╔══[ERROR] Type mismatch in operator application:
 //│ ║  l.122: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	                                     ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `int` does not match type `Cons[?a] | Nil`
+//│ ╟── type `int` does not match type `Nil | Cons[?a]`
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
-//│ ╟── but it flows into operator application with expected type `Cons[?a] | Nil`
+//│ ╟── but it flows into operator application with expected type `Nil | Cons[?a]`
 //│ ║  l.122: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	                                     ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from applied type reference:
@@ -339,8 +339,8 @@ let rec digitsOfInt n =
 let rec digitsOfInt n =
   if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ╔══[WARNING] Type `(int -> int -> int) -> ?a` does not match `int`
-//│ ╟── (int -> int -> int) -> ?b <--- ?c ---> int
-//│ ╟── reference `(int -> int -> int) -> ?d`
+//│ ╟── (int -> int -> int) -> ?a <--- ?b ---> int
+//│ ╟── reference `(int -> int -> int) -> ?a`
 //│ ║  l.340: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	                                                                                      ^
 //│ ╟── reference `int`
@@ -356,7 +356,7 @@ let rec digitsOfInt n =
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ╙──      	           ^^^
 //│ ╔══[WARNING] Type `int` does not match `(int -> int -> int) -> ?a`
-//│ ╟── int <--- ?b ---> (int -> int -> int) -> ?c
+//│ ╟── int <--- ?b ---> (int -> int -> int) -> ?a
 //│ ╟── `int` is found here
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	           ^^^
@@ -369,7 +369,7 @@ let rec digitsOfInt n =
 //│ ╟── reference `int`
 //│ ║  l.340: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	                                                                         ^
-//│ ╟── reference `(int -> int -> int) -> ?d`
+//│ ╟── reference `(int -> int -> int) -> ?a`
 //│ ║  l.340: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ╙──       	                                             ^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
@@ -433,10 +433,10 @@ let rec digitsOfInt n =
   let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ╔══[WARNING] Type `(int -> int -> int) -> ?a` does not match `int`
 //│ ╟── ?b <--- ?c ---> int
-//│ ╟── argument `?d`
+//│ ╟── argument `?b`
 //│ ║  l.433: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ║         	                      ^
-//│ ╟── reference `?e`
+//│ ╟── reference `?b`
 //│ ║  l.433: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ║         	                      ^
 //│ ╟── argument `int`
