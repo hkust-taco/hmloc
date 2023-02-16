@@ -11,7 +11,7 @@ final case class Message(bits: Ls[Message.Bit]) {
   def typeBits: Ls[Type] = bits.collect{ case Message.Code(t) => t }
   def showIn(ctx: ShowCtx): Str = {
     bits.map {
-      case Message.Code(ty) => ty.showIn(ctx, 0)
+      case Message.Code(ty) => ty.showOcaml(ctx, 0)
       case Message.Text(txt) => txt
     }.mkString
   }

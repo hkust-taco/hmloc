@@ -34,6 +34,33 @@ abstract class TypeImpl extends Located { self: Type =>
   
   private def parensIf(str: Str, cnd: Boolean): Str = if (cnd) "(" + str + ")" else str
 
+  def showOcaml(ctx: ShowCtx, outerPrec: Int): Str = this match {
+    case Top => "anything"
+    case Bot => "nothing"
+    case c: Composed =>
+      val prec = if (c.pol) 20 else 25
+      val opStr = if (c.pol) " | " else " & "
+      c.distinctComponents match {
+        case Nil => (if (c.pol) Bot else Top).showIn(ctx, prec)
+        case x :: Nil => x.showIn(ctx, prec)
+        case _ =>
+          parensIf(c.distinctComponents.iterator
+            .map(_.showIn(ctx, prec))
+            .reduce(_ + opStr + _), outerPrec > prec)
+      }
+    case uv: TypeVar => ctx.vs(uv)
+    case Function(l, r) => parensIf(l.showIn(ctx, 31) + " -> " + r.showIn(ctx, 30), outerPrec > 30)
+    case Record(fs) => fs.map { nt =>
+      val nme = nt._1.name
+      s"${nme}: ${nt._2.showIn(ctx, 0)}"
+    }.mkString("{", ", ", "}")
+    case Tuple(fields) => s"${fields.map(_.showIn(ctx, 0)).mkString("(", ", ", ")")}"
+    case AppliedType(n, args) if args.length === 1 => s"${args.map(_.showIn(ctx, 0)).mkString(", ")} ${n.name}"
+    case AppliedType(n, args) => s"(${args.map(_.showIn(ctx, 0)).mkString(", ")}) ${n.name}"
+    case TypeName(name) => name
+    case _ => lastWords(s"Cannot create showOcaml for ${this.show}")
+  }
+
   def showIn(ctx: ShowCtx, outerPrec: Int): Str = this match {
   // TODO remove obsolete pretty-printing hacks
     case Top => "anything"

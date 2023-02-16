@@ -26,10 +26,10 @@ let bigAdd l1 l2 =
 //│ ╔══[ERROR] Type mismatch in if-else block:
 //│ ║  l.20: 	    let (_,res) = List_fold_left f base args in res in
 //│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `list[(?a, ?b,)]` is not a 2-element tuple
+//│ ╟── type `(?a, ?b,) list` is not a 2-element tuple
 //│ ║  l.42: 	let List_combine: 'a list -> 'b list -> ('a * 'b) list
 //│ ║        	                                         ^^^^^^^
-//│ ╟── but it flows into reference with expected type `(?c, ?d,)`
+//│ ╟── but it flows into reference with expected type `(?c, ?d)`
 //│ ║  l.20: 	    let (_,res) = List_fold_left f base args in res in
 //│ ║        	                                   ^^^^
 //│ ╟── Note: constraint arises from this match condition has type:
@@ -108,10 +108,10 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.106: 	let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
 //│ ║         	                               ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `(?b -> ?c) -> list[?b] -> list[?c]` is not an instance of `list[?a]`
+//│ ╟── type `(?b -> ?c) -> list[?b] -> list[?c]` is not an instance of `?a list`
 //│ ║  l.38: 	let List_map: ('a -> 'b) -> 'a list -> 'b list
 //│ ║        	               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `list[?a]`
+//│ ╟── but it flows into reference with expected type `?a list`
 //│ ║  l.106: 	let stringOfList f l = "[" ^ ((sepConcat "; " List_map (f, l)) ^ "]");;
 //│ ║         	                                              ^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -192,10 +192,10 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.169: 	let rec additivePersistence n = sumList digitsOfInt n;;
 //│ ║         	                                ^^^^^^^^^^^^^^^^^^^
-//│ ╟── function of type `?b -> ?c` is not an instance of `list[?a]`
+//│ ╟── function of type `?b -> ?c` is not an instance of `?a list`
 //│ ║  l.167: 	let rec digitsOfInt n = digitsOfIntHelper n;;
 //│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into reference with expected type `list[?a]`
+//│ ╟── but it flows into reference with expected type `?a list`
 //│ ║  l.169: 	let rec additivePersistence n = sumList digitsOfInt n;;
 //│ ║         	                                        ^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
@@ -216,6 +216,7 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│ additivePersistence: anything -> nothing
 
 // file 8776
+// TODO list indexing here. skip this example?
 let rec listReverse l =
   match l with | [] -> [] | h::t -> (listReverse t) @ [h];;
 let getHeads y = match listReverse y with | [] -> [] | h::t -> [h];;
@@ -230,151 +231,151 @@ let rec matchHeads x =
 //│ getHeads: list['a] -> list['a]
 //│ loseTail: list['a] -> list['a]
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.223: 	let rec matchHeads x =
+//│ ║  l.224: 	let rec matchHeads x =
 //│ ║         	                   ^^^
-//│ ║  l.224: 	  match explode x with
+//│ ║  l.225: 	  match explode x with
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.225: 	  | h::t ->
+//│ ║  l.226: 	  | h::t ->
 //│ ║         	^^^^^^^^^^^
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║  l.227: 	      if (getHeads (explode x)) = []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.227: 	      then true
+//│ ║  l.228: 	      then true
 //│ ║         	^^^^^^^^^^^^^^^
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `list[?a]` does not match type `Array[?b]`
+//│ ╟── type `?a list` does not match type `?b Array`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── but it flows into application with expected type `Array[?b]`
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ╟── but it flows into application with expected type `?b Array`
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║  l.227: 	      if (getHeads (explode x)) = []
 //│ ║         	                            ^
 //│ ╟── from array access:
 //│ ║  l.146: 	    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ ╙──       	                                           ^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.223: 	let rec matchHeads x =
+//│ ║  l.224: 	let rec matchHeads x =
 //│ ║         	                   ^^^
-//│ ║  l.224: 	  match explode x with
+//│ ║  l.225: 	  match explode x with
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.225: 	  | h::t ->
+//│ ║  l.226: 	  | h::t ->
 //│ ║         	^^^^^^^^^^^
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║  l.227: 	      if (getHeads (explode x)) = []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.227: 	      then true
+//│ ║  l.228: 	      then true
 //│ ║         	^^^^^^^^^^^^^^^
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `list[?a]` is not an instance of `string`
+//│ ╟── type `?a list` is not an instance of `string`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
 //│ ╟── but it flows into application with expected type `string`
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║  l.227: 	      if (getHeads (explode x)) = []
 //│ ║         	                            ^
 //│ ╟── from type reference:
 //│ ║  l.14: 	let String_length: string -> int
 //│ ╙──      	                   ^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.223: 	let rec matchHeads x =
+//│ ║  l.224: 	let rec matchHeads x =
 //│ ║         	                   ^^^
-//│ ║  l.224: 	  match explode x with
+//│ ║  l.225: 	  match explode x with
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.225: 	  | h::t ->
+//│ ║  l.226: 	  | h::t ->
 //│ ║         	^^^^^^^^^^^
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║  l.227: 	      if (getHeads (explode x)) = []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.227: 	      then true
+//│ ║  l.228: 	      then true
 //│ ║         	^^^^^^^^^^^^^^^
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `list[?a]` does not match type `Array[?b]`
+//│ ╟── type `?a list` does not match type `?b Array`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── but it flows into application with expected type `Array[?b]`
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ╟── but it flows into application with expected type `?b Array`
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.224: 	  match explode x with
+//│ ║  l.225: 	  match explode x with
 //│ ║         	                ^
 //│ ╟── from array access:
 //│ ║  l.146: 	    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ ╙──       	                                           ^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.223: 	let rec matchHeads x =
+//│ ║  l.224: 	let rec matchHeads x =
 //│ ║         	                   ^^^
-//│ ║  l.224: 	  match explode x with
+//│ ║  l.225: 	  match explode x with
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.225: 	  | h::t ->
+//│ ║  l.226: 	  | h::t ->
 //│ ║         	^^^^^^^^^^^
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║  l.227: 	      if (getHeads (explode x)) = []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.227: 	      then true
+//│ ║  l.228: 	      then true
 //│ ║         	^^^^^^^^^^^^^^^
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `list[?a]` does not match type `Array[?b]`
+//│ ╟── type `?a list` does not match type `?b Array`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                            ^^
-//│ ╟── but it flows into application with expected type `Array[?b]`
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ╟── but it flows into application with expected type `?b Array`
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║  l.227: 	      if (getHeads (explode x)) = []
 //│ ║         	                            ^
 //│ ╟── from array access:
 //│ ║  l.146: 	    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ ╙──       	                                           ^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.223: 	let rec matchHeads x =
+//│ ║  l.224: 	let rec matchHeads x =
 //│ ║         	                   ^^^
-//│ ║  l.224: 	  match explode x with
+//│ ║  l.225: 	  match explode x with
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.225: 	  | h::t ->
+//│ ║  l.226: 	  | h::t ->
 //│ ║         	^^^^^^^^^^^
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║  l.227: 	      if (getHeads (explode x)) = []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.227: 	      then true
+//│ ║  l.228: 	      then true
 //│ ║         	^^^^^^^^^^^^^^^
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `list[?a]` is not an instance of `string`
+//│ ╟── type `?a list` is not an instance of `string`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                            ^^
 //│ ╟── but it flows into application with expected type `string`
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║  l.227: 	      if (getHeads (explode x)) = []
 //│ ║         	                            ^
 //│ ╟── from type reference:
 //│ ║  l.14: 	let String_length: string -> int
 //│ ╙──      	                   ^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.223: 	let rec matchHeads x =
+//│ ║  l.224: 	let rec matchHeads x =
 //│ ║         	                   ^^^
-//│ ║  l.224: 	  match explode x with
+//│ ║  l.225: 	  match explode x with
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.225: 	  | h::t ->
+//│ ║  l.226: 	  | h::t ->
 //│ ║         	^^^^^^^^^^^
-//│ ║  l.226: 	      if (getHeads (explode x)) = []
+//│ ║  l.227: 	      if (getHeads (explode x)) = []
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.227: 	      then true
+//│ ║  l.228: 	      then true
 //│ ║         	^^^^^^^^^^^^^^^
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `list[?a]` does not match type `Array[?b]`
+//│ ╟── type `?a list` does not match type `?b Array`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                            ^^
-//│ ╟── but it flows into application with expected type `Array[?b]`
-//│ ║  l.228: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
+//│ ╟── but it flows into application with expected type `?b Array`
+//│ ║  l.229: 	      else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ ║         	                                                 ^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.224: 	  match explode x with
+//│ ║  l.225: 	  match explode x with
 //│ ║         	                ^
 //│ ╟── from array access:
 //│ ║  l.146: 	    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
@@ -386,7 +387,7 @@ let explode s =
   let rec go i =
     if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
   go 0;;
-//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):3:47, found "[i]) :: (g" at l.387:47:     if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
+//│ /!\ Parse error: Expected (Index ~ filter | Index ~ "("):3:47, found "[i]) :: (g" at l.388:47:     if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
 
 // file 89
 // TODO: parse properly
@@ -402,7 +403,7 @@ let rec digitalRoot n =
   if (n / 10) <> 0
   then (print_int n; print_endline " "; digitalRoot)
   else digits;;
-//│ /!\ Parse error: Expected ")":4:29, found "; (digitsO" at l.396:29:   then ((n mod 10) :: return; (digitsOfInt (n / 10)) @ return)
+//│ /!\ Parse error: Expected ")":4:29, found "; (digitsO" at l.397:29:   then ((n mod 10) :: return; (digitsOfInt (n / 10)) @ return)
 
 // file 2361
 let rec digitsOfInt n =
@@ -414,32 +415,32 @@ let rec additivePersistence n =
   | [] -> 0
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.408: 	let rec digitsOfInt n =
+//│ ║  l.409: 	let rec digitsOfInt n =
 //│ ║         	                    ^^^
-//│ ║  l.409: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
+//│ ║  l.410: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not a function
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
-//│ ║  l.409: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
+//│ ║  l.410: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
 //│ ║         	                                      ^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.409: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
+//│ ║  l.410: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
 //│ ╙──       	                                                   ^
 //│ digitsOfInt: nothing -> list[nothing]
 //│ addNumbs: list[int] -> int
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.411: 	let digits n = digitsOfInt (abs n);;
+//│ ║  l.412: 	let digits n = digitsOfInt (abs n);;
 //│ ║         	               ^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not a function
 //│ ║  l.21: 	let abs: int -> int
 //│ ║        	                ^^^
 //│ ╟── but it flows into application with expected type `(int -> int -> int) -> ?a`
-//│ ║  l.411: 	let digits n = digitsOfInt (abs n);;
+//│ ║  l.412: 	let digits n = digitsOfInt (abs n);;
 //│ ║         	                           ^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.409: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
+//│ ║  l.410: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10];;
 //│ ╙──       	                                                   ^
 //│ digits: int -> list[nothing]
 //│ additivePersistence: int -> (bool | int)
@@ -472,43 +473,43 @@ let rec mulByDigit i l =
   | [] -> []
   | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.467: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
+//│ ║  l.468: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
 //│ ║         	                                         ^^^^^^^^^^^
 //│ ╟── type `int` is not a function
 //│ ║  l.18: 	let ( * ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
-//│ ║  l.467: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
+//│ ║  l.468: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
 //│ ╙──       	                                         ^^^^^^^
 //│ remainder: int -> int -> int
 //│ x: anything -> list[int] -> list[string]
 //│ y: list[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.473: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ ║  l.474: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│ ║         	             ^^^^^^^^^^^
 //│ ╟── function of type `?a -> ?b` is not an instance of `int`
-//│ ║  l.468: 	let x l = List_map string_of_int;;
+//│ ║  l.469: 	let x l = List_map string_of_int;;
 //│ ║         	      ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── but it flows into reference with expected type `int`
-//│ ║  l.473: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ ║  l.474: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│ ║         	                       ^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.467: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
+//│ ║  l.468: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
 //│ ║         	                                          ^
 //│ ╟── from type reference:
 //│ ║  l.18: 	let ( * ): int -> int -> int
 //│ ╙──      	           ^^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.473: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ ║  l.474: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│ ║         	             ^^^^^^^^^^^^^
-//│ ╟── type `list[?a]` is not an instance of `int`
+//│ ╟── type `?a list` is not an instance of `int`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
 //│ ╟── but it flows into reference with expected type `int`
-//│ ║  l.473: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ ║  l.474: 	  | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│ ║         	                         ^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.467: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
+//│ ║  l.468: 	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0;;
 //│ ║         	                                              ^
 //│ ╟── from type reference:
 //│ ║  l.18: 	let ( * ): int -> int -> int
@@ -526,13 +527,13 @@ let padZero l1 l2 =
 //│ clone: 'a -> int -> list['a]
 //│ padLength: list[?] -> list[?] -> int
 //│ ╔══[ERROR] Type mismatch in `else` branch has type:
-//│ ║  l.525: 	  else (clone 0 (padLength l1 l2)) l2;;
+//│ ║  l.526: 	  else (clone 0 (padLength l1 l2)) l2;;
 //│ ║         	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `list[?a]` is not a function
+//│ ╟── type `?a list` is not a function
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
 //│ ╟── but it flows into application with expected type `?b -> ?c`
-//│ ║  l.525: 	  else (clone 0 (padLength l1 l2)) l2;;
+//│ ║  l.526: 	  else (clone 0 (padLength l1 l2)) l2;;
 //│ ╙──       	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ padZero: list[?] -> list[?] -> list[list[int]]
 
@@ -548,7 +549,7 @@ let rec addHelper (t,u) =
 //          if (h + h') > 10
 //          then (addHelper (t, t')) @ [(1 + h') + h]
 //          else (addHelper (t, t')) @ [h' + h];;
-//│ /!\ Parse error: Expected (Index ~ let | Index ~ letPatMat | Index ~ fun | Index ~ ite | Index ~ ocamlWithAsc | Index ~ _match):1:26, found ";// match " at l.541:26: let rec addHelper (t,u) =
+//│ /!\ Parse error: Expected (Index ~ let | Index ~ letPatMat | Index ~ fun | Index ~ ite | Index ~ ocamlWithAsc | Index ~ _match):1:26, found ";// match " at l.542:26: let rec addHelper (t,u) =
 
 // file 1948
 // TODO parse properly
@@ -563,14 +564,14 @@ let bigMul l1 l2 =
   let args = l1 (tenEx 0 l2) in
   let (carry,res) = List_fold_left f base args in [carry] @ res;;
 //│ ╔══[ERROR] identifier not found: helper
-//│ ║  l.556: 	  match y with | [] -> [] | h::t -> (tenEx (x + 1) t) @ [(helper x) * h];;
+//│ ║  l.557: 	  match y with | [] -> [] | h::t -> (tenEx (x + 1) t) @ [(helper x) * h];;
 //│ ╙──       	                                                          ^^^^^^
 //│ tenEx: nothing -> list[int] -> list[int]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.561: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.562: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── tuple literal of type `(?a, ?b,)` is not an instance of `list[?c]`
-//│ ║  l.561: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ╟── tuple literal of type `(?a, ?b)` is not an instance of `?c list`
+//│ ║  l.562: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
 //│ ║  l.21: 	  removeZero (add (padZero l1 l2));;
@@ -579,31 +580,31 @@ let bigMul l1 l2 =
 //│ ║  l.42: 	let List_combine: 'a list -> 'b list -> ('a * 'b) list
 //│ ╙──      	                  ^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.564: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.565: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
 //│ ║         	                    ^^^^^^^^^^^^^^^^
-//│ ╟── type `list[?a]` is not a 2-element tuple
+//│ ╟── type `?a list` is not a 2-element tuple
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.560: 	    let (carry,res) = a in
+//│ ║  l.561: 	    let (carry,res) = a in
 //│ ║         	                      ^
 //│ ╟── from this case expression has type:
-//│ ║  l.560: 	    let (carry,res) = a in
+//│ ║  l.561: 	    let (carry,res) = a in
 //│ ╙──       	        ^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in if-else block:
-//│ ║  l.564: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.565: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── type `list[?a]` is not a 2-element tuple
+//│ ╟── type `?a list` is not a 2-element tuple
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
-//│ ╟── but it flows into application with expected type `(?b, ?c,)`
-//│ ║  l.564: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ╟── but it flows into application with expected type `(?b, ?c)`
+//│ ║  l.565: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
 //│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from this match condition has type:
-//│ ║  l.564: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.565: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
 //│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── from this case expression has type:
-//│ ║  l.564: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.565: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
 //│ ╙──       	      ^^^^^^^^^^^
 //│ bigMul: (list[?] & list[int] -> list[(anything, list[?],)]) -> list[int] -> list[int]
 
@@ -617,16 +618,16 @@ let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│ fixpointHelper: ('a, bool,) -> ('a, bool,)
 //│ wwhile: ('a -> ('a & 'b, bool,), 'a,) -> 'b
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.616: 	let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
+//│ ║  l.617: 	let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│ ║         	                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── tuple literal of type `(?a, bool,)` is not a function
-//│ ║  l.613: 	  match f with | (num,expr) -> if expr then (num, true) else (num, false);;
+//│ ╟── tuple literal of type `(?a, bool)` is not a function
+//│ ║  l.614: 	  match f with | (num,expr) -> if expr then (num, true) else (num, false);;
 //│ ║         	                                                             ^^^^^^^^^^^^
 //│ ╟── but it flows into application with expected type `?b -> ?c`
-//│ ║  l.616: 	let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
+//│ ║  l.617: 	let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│ ║         	                             ^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from reference:
-//│ ║  l.615: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ║  l.616: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ ╙──       	        ^
 //│ fixpoint: ((anything, bool,), anything,) -> nothing
 
@@ -662,13 +663,13 @@ let bigAdd l1 l2 =
 //│ padZero: list[?] -> list[?] -> (list[int], list[int],)
 //│ removeZero: (list[int & 'a] & 'b) -> (list['a] | 'b)
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.654: 	         let valueToAddToArray = intermediateValue mod 10 in
+//│ ║  l.655: 	         let valueToAddToArray = intermediateValue mod 10 in
 //│ ║         	                                 ^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not a function
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ║        	                       ^^^
 //│ ╟── but it flows into reference with expected type `(int -> int -> int) -> ?a`
-//│ ║  l.654: 	         let valueToAddToArray = intermediateValue mod 10 in
+//│ ║  l.655: 	         let valueToAddToArray = intermediateValue mod 10 in
 //│ ╙──       	                                 ^^^^^^^^^^^^^^^^^
 //│ bigAdd: list[?] -> list[?] -> list[int]
 
@@ -696,28 +697,28 @@ let bigAdd l1 l2 =
 //│ padZero: list[?] -> list[?] -> (list[int], list[int],)
 //│ removeZero: list['a] -> list['a]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.689: 	    let f a x = (a + x) mod 10 in
+//│ ║  l.690: 	    let f a x = (a + x) mod 10 in
 //│ ║         	                ^^^^^^^^^^^
 //│ ╟── type `int` is not a function
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ║        	                       ^^^
 //│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
-//│ ║  l.689: 	    let f a x = (a + x) mod 10 in
+//│ ║  l.690: 	    let f a x = (a + x) mod 10 in
 //│ ╙──       	                ^^^^^^^
 //│ ╔══[ERROR] Type mismatch in if-else block:
-//│ ║  l.692: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║  l.693: 	    let (_,res) = List_fold_left f base args in res in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── integer literal of type `int` is not a 2-element tuple
-//│ ║  l.690: 	    let base = 0 in
+//│ ║  l.691: 	    let base = 0 in
 //│ ║         	               ^
-//│ ╟── but it flows into reference with expected type `(?a, ?b,)`
-//│ ║  l.692: 	    let (_,res) = List_fold_left f base args in res in
+//│ ╟── but it flows into reference with expected type `(?a, ?b)`
+//│ ║  l.693: 	    let (_,res) = List_fold_left f base args in res in
 //│ ║         	                                   ^^^^
 //│ ╟── Note: constraint arises from this match condition has type:
-//│ ║  l.692: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║  l.693: 	    let (_,res) = List_fold_left f base args in res in
 //│ ║         	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── from this case expression has type:
-//│ ║  l.692: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║  l.693: 	    let (_,res) = List_fold_left f base args in res in
 //│ ╙──       	        ^^^^^^^
 //│ bigAdd: list[?] -> list[?] -> list[nothing]
 
@@ -730,16 +731,16 @@ let rec wwhile (f,b) =
   match f b with | (b',c') -> if c' then wwhile (f, b') else b';;
 //│ intboolf: ('a -> 'b) -> 'a -> ('b, bool,)
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.728: 	let fixpoint (f,b) = wwhile (intboolf, b);;
+//│ ║  l.729: 	let fixpoint (f,b) = wwhile (intboolf, b);;
 //│ ║         	                     ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── function of type `?a -> (?b, ?c,)` is not a 2-element tuple
-//│ ║  l.727: 	let intboolf f x = ((f x), ((f x) < 1));;
+//│ ║  l.728: 	let intboolf f x = ((f x), ((f x) < 1));;
 //│ ║         	               ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.615: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ║  l.616: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ ║         	        ^^^
 //│ ╟── from this case expression has type:
-//│ ║  l.615: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ║  l.616: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ ╙──       	                   ^^^^^^^^^^
 //│ fixpoint: (anything, nothing -> anything,) -> nothing
 //│ wwhile: ('a -> ('a & 'b, bool,), 'a,) -> 'b
@@ -789,28 +790,28 @@ let removeDuplicates l =
   List_rev (helper ([], l));;
 //│ filter: list['a] -> anything -> list['a]
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.788: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║  l.789: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ ║         	                                 ^^^^^
-//│ ╟── type `list[?a]` is not a function
+//│ ╟── type `?a list` is not a function
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	                            ^^
 //│ ╟── but it flows into reference with expected type `?a -> ?b`
-//│ ║  l.788: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║  l.789: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ ╙──       	                                  ^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.788: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ║  l.789: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ ║         	                    ^^^^^^^^^^^^^^^^^^^
-//│ ╟── function of type `?a -> ?b` is not an instance of `list[?c]`
-//│ ║  l.778: 	let rec filter l a =
+//│ ╟── function of type `?a -> ?b` is not an instance of `?c list`
+//│ ║  l.779: 	let rec filter l a =
 //│ ║         	                 ^^^
-//│ ║  l.779: 	  match l with
+//│ ║  l.780: 	  match l with
 //│ ║         	^^^^^^^^^^^^^^
-//│ ║  l.780: 	  | [] -> []
+//│ ║  l.781: 	  | [] -> []
 //│ ║         	^^^^^^^^^^^^
-//│ ║  l.781: 	  | h::t -> if a = h then filter t a else h :: (filter t a);;
+//│ ║  l.782: 	  | h::t -> if a = h then filter t a else h :: (filter t a);;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but it flows into application with expected type `list[?c]`
-//│ ║  l.788: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│ ╟── but it flows into application with expected type `?c list`
+//│ ║  l.789: 	        let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ ║         	                         ^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from applied type reference:
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil

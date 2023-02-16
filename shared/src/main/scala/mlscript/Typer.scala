@@ -429,15 +429,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // ^ TODO maybe use a description passed in param?
         // currently we get things like "flows into variable reference"
         // but we used to get the better "flows into object receiver" or "flows into applied expression"...
-      case intlit: IntLit => TypeRef(TypeName("int"), Nil)(prov)
-      case strlit: StrLit => TypeRef(TypeName("string"), Nil)(prov)
-      case declit: DecLit => TypeRef(TypeName("float"), Nil)(prov)
+      case _: IntLit => TypeRef(TypeName("int"), Nil)(prov)
+      case _: StrLit => TypeRef(TypeName("string"), Nil)(prov)
+      case _: DecLit => TypeRef(TypeName("float"), Nil)(prov)
       case lit: Lit => ClassTag(lit, lit.baseClasses)(prov)
-      case App(Var("neg" | "~"), trm) => typeTerm(trm).neg(prov)
-      case App(App(Var("|"), lhs), rhs) =>
-        typeTerm(lhs) | (typeTerm(rhs), prov)
-      case App(App(Var("&"), lhs), rhs) =>
-        typeTerm(lhs) & (typeTerm(rhs), prov)
       case Rcd(fs) =>
         val prov = tp(term.toLoc, "record literal")
         fs.groupMap(_._1.name)(_._1).foreach { case s -> fieldNames if fieldNames.sizeIs > 1 => err(
@@ -452,14 +447,13 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           val fprov = tp(App(n, t).toLoc, "record field")
           (n, tym.toUpper(fprov))
         })(prov)
-      case tup: Tup if funkyTuples =>
-        typeTerms(tup :: Nil, false, Nil)
       case Tup(fs) =>
         TupleType(fs.map { t =>
           val tym = typeTerm(t)
           val fprov = tp(t.toLoc, "tuple field")
           N -> FieldType(N, tym)(fprov)
         })(tp(term.toLoc, "tuple literal"))
+        // TODO is this supported in ocaml
       case Subs(a, i) =>
         val t_a = typeTerm(a)
         val t_i = typeTerm(i)
@@ -501,11 +495,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case Assign(lhs, rhs) =>
         err(msg"Illegal assignment" -> prov.loco
           :: msg"cannot assign to ${lhs.describe}" -> lhs.toLoc :: Nil)
-      case Bra(false, trm: Blk) => typeTerm(trm)
-      case Bra(rcd, trm @ (_: Tup | _: Blk)) if funkyTuples => typeTerms(trm :: Nil, rcd, Nil)
-      case Bra(_, trm) => typeTerm(trm)
-      case Blk((s: Term) :: Nil) => typeTerm(s)
-      case Blk(Nil) => UnitType.withProv(prov)
       case pat if ctx.inPattern =>
         err(msg"Unsupported pattern shape${
           if (dbg) " ("+pat.getClass.toString+")" else ""}:", pat.toLoc)(raise)
@@ -514,11 +503,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val param_ty = typePattern(pat)(newCtx, raise, vars)
         val body_ty = typeTerm(body)(newCtx, raise, vars)
         FunctionType(param_ty, body_ty)(tp(term.toLoc, "function"))
-      case App(App(Var("and"), lhs), rhs) =>
-        val lhs_ty = typeTerm(lhs)
-        val newCtx = ctx.nest // TODO use
-        val rhs_ty = typeTerm(lhs)
-        ??? // TODO
       case App(f, a) =>
         val f_ty = typeTerm(f)
         val a_ty = typeTerm(a)
@@ -542,9 +526,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val newCtx = ctx.nest
         newCtx += nme.name -> VarSymbol(n_ty, nme)
         typeTerm(bod)(newCtx, raise)
-      // case Blk(s :: stmts) =>
-      //   val (newCtx, ty) = typeStatement(s)
-      //   typeTerm(Blk(stmts))(newCtx, lvl, raise)
       case Blk(stmts) => typeTerms(stmts, false, Nil)(ctx.nest, raise, prov)
       case Bind(l, r) =>
         val l_ty = typeTerm(l)
@@ -552,27 +533,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val r_ty = typePattern(r)(newCtx, raise)
         ctx ++= newCtx.env
         con(l_ty, r_ty, r_ty)
-      case Test(l, r) =>
-        val l_ty = typeTerm(l)
-        val newCtx = ctx.nest
-        val r_ty = typePattern(r)(newCtx, raise) // TODO make these bindings flow
-        con(l_ty, r_ty, TopType)
-        BoolType
-      case With(t, rcd) =>
-        val t_ty = typeTerm(t)
-        val rcd_ty = typeTerm(rcd)
-        (t_ty without rcd.fields.iterator.map(_._1).toSortedSet) & (rcd_ty, prov)
-      case CaseOf(s, cs) =>
-        val s_ty = typeTerm(s)
-        val (tys, cs_ty_ls) = typeArms(s |>? {
-          case v: Var => v
-          case Asc(v: Var, _) => v
-        }, cs)
-        val req = tys.foldRight(BotType: SimpleType) {
-          case ((a_ty, tv), req) => a_ty & tv | req & a_ty.neg()
-        }
-        val cs_ty = freshVar(prov, lbs = cs_ty_ls)
-        con(s_ty, req, cs_ty)
       case iff @ If(cond, body) =>
         println(PrettyPrintHelper.inspect(iff))
         body match {
@@ -724,7 +684,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             }
             ret_ty
         }
-      case _ => lastWords(s"Cannot type term: ${term}")
+      case _ => lastWords(s"Cannot type term: ${PrettyPrintHelper.inspect(term)}")
     }
   }(r => s"$lvl. : ${r}")
   
