@@ -487,7 +487,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
           case (union, tdef) => Union(unionType(tdef), union)
         }
         val helpers = bodyUpdateAdtInfo.flatMap(cls => ocamlTyDeclHelper(cls, alsName, tparams)).toList
-        TypeDef(Als, alsName, tparams, aliasBody, Nil) :: bodyUpdateAdtInfo ::: helpers ::: moreTypes.getOrElse(Nil)
+        TypeDef(Als, alsName, tparams, aliasBody, Nil, S(alsName, Nil)) :: bodyUpdateAdtInfo ::: helpers ::: moreTypes.getOrElse(Nil)
       // a type name, variable or applied type as alias
       case (tparams, tname, R((_, t)), moreTypes) =>
         TypeDef(Als, tname, tparams.toList, t, Nil) :: moreTypes.getOrElse(Nil)
