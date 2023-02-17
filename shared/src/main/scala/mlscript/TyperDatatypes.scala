@@ -322,6 +322,29 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       }
     }
 
+    def unificationChain: Ls[UnificationReason -> Bool] = {
+      var flow = this.reason.headOption.getOrElse(die) match {
+        case _: LB => true  // flow is from left to right
+        case _: UB => false // flow is from right to left
+        case _: CONN => true
+      }
+
+      this.reason.head -> flow :: this.reason.sliding(2).collect {
+        case Seq(LB(_, tv1), u@LB(_, tv2)) if tv1 == tv2 =>
+          flow = !flow
+          u -> flow
+        case Seq(UB(tv1, _), u@UB(tv2, _)) if tv1 == tv2 =>
+          flow = !flow
+          u -> flow
+        case Seq(UB(_, tv1), u@LB(_, tv2)) if tv1 == tv2 =>
+          flow = !flow
+          u -> flow
+        case Seq(LB(_, tv1), u@UB(_, tv2)) if tv1 == tv2 =>
+          flow = !flow
+          u -> flow
+      }.toList
+    }
+
     def unificationSequence: Ls[ST -> Bool] = {
       var flow = this.reason.headOption.getOrElse(die) match {
         case _: LB => true  // flow is from left to right
@@ -376,16 +399,9 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   case class LB(st: ST, tv: TV) extends UnificationReason
   case class UB(tv: TV, st: ST) extends UnificationReason
   case class CONN(a: ST, b: ST, desc: Str = "") extends UnificationReason
-  /*
-  case class DATATYPE(
-    datatypeName: Str,
-    datatypeArgIdx: Int,
-    datatypeParamNum: Int,
-    // lhs: ST,
-    // rhs: ST,
-    datatypeFlow: Unification) extends UnificationReason
-  */
-  
+  case class NESTED_LB(a: ST, b: ST, typeRef: TypeRef, prevLevel: Unification) extends UnificationReason
+  case class NESTED_UB(a: ST, b: ST, typeRef: TypeRef, prevLevel: Unification) extends UnificationReason
+
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
     * Invariant: Types appearing in the bounds never have a level higher than this variable's `level`. */
   final class TypeVariable(

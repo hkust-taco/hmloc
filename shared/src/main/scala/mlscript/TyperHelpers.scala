@@ -691,6 +691,16 @@ abstract class TyperHelpers { Typer: Typer =>
         case Some(_) => st.prov :: Nil
       }
     }
+
+    /** List of valid locations a type has been used. Consecutive duplicate locations are removed.
+      * Lost location is where the type is introduced.
+      */
+    def uniqueTypeUseLocations: Ls[TypeProvenance] = {
+      val stUseLocation = this.typeUseLocations
+      stUseLocation.headOption.map(head => head :: stUseLocation.sliding(2).collect {
+        case Seq(TypeProvenance(loc1, _, _, _), t@TypeProvenance(loc2, _, _, _)) if loc1 =/= loc2 => t
+      }.toList).getOrElse(Nil)
+    }
   }
 
   /** Show the locations where a type is introduced and consumed
@@ -706,6 +716,15 @@ abstract class TyperHelpers { Typer: Typer =>
       case Seq(TypeProvenance(loc1, _, _, _), t@TypeProvenance(loc2, _, _, _)) if loc1 =/= loc2 => t
     }.toList).getOrElse(Nil)
 
+    val st = t.unwrapProvs
+    stUseLocation.map {
+      case TypeProvenance(loc, desc, _, false) => msg"${desc} `${st.expPos}`" -> loc
+      case TypeProvenance(loc, _, _, true) => msg"`${st.expPos}` is found here" -> loc
+    }
+  }
+
+  def lastUseLocation(t: ST)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+    var stUseLocation = t.typeUseLocations
     val st = t.unwrapProvs
     stUseLocation.map {
       case TypeProvenance(loc, desc, _, false) => msg"${desc} `${st.expPos}`" -> loc

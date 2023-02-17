@@ -329,7 +329,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   
   // TODO also prevent rebinding of "not"
   val reservedNames: Set[Str] = Set("|", "&", "~", ",", "neg", "and", "or")
-  
+
   object ValidVar {
     def unapply(v: Var)(implicit raise: Raise): S[Str] = S {
       if (reservedNames(v.name))
@@ -538,11 +538,11 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         body match {
           // handle this case separately for better error messages
           case Ls(IfThen(Var("true"), trueArm), IfThen(Var("false"), falseArm)) =>
-            val cond_ty = typeTerm(cond, "this if condition has type")
+            val cond_ty = typeTerm(cond, "is the type of then if-then-else `condition`")
             con(cond_ty, BoolType, cond_ty)
-            val ret_ty = freshVar(prov.copy(desc = "this if-then-else expression has type"))
-            con(typeTerm(trueArm, "`then` branch has type"), ret_ty, ret_ty)
-            con(typeTerm(falseArm, "`else` branch has type"), ret_ty, ret_ty)
+            val ret_ty = freshVar(prov.copy(desc = "is the type of this `if-then-else` expression"))
+            con(typeTerm(trueArm, "is the type of this `then` branch"), ret_ty, ret_ty)
+            con(typeTerm(falseArm, "is the type of this `else` branch"), ret_ty, ret_ty)
           case _ =>
             // find constructor for each arm
             // handle tuple arms differently
@@ -776,7 +776,57 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         RecordType.mk(fs)(prov)
       } else TupleType(fields.reverseIterator.mapValues(_.toUpper(noProv)))(prov)
   }
-  
+
+  def createUnificationErrorMessage(ur: UnificationReason, flow: Bool, showFirst: Bool = false)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+    val (aty, bty) = ur match {
+      case LB(st, tv) => if (flow) (st, tv) else (tv, st)
+      case UB(tv, st) => if (flow) (st, tv) else (tv, st)
+      case _ => lastWords(s"Cannot create unification error message for ${ur}")
+    }
+
+    val aLocs = aty.uniqueTypeUseLocations  // consumption to intro
+    val bLocs = bty.uniqueTypeUseLocations  // consumption to intro
+    val aConvergeLoc = aLocs.headOption
+    val bConvergeLoc = bLocs.headOption
+
+    val a = aty.unwrapProvs
+    val b = bty.unwrapProvs
+    val message = if (showFirst) {
+      // ignore last converging location and only locations for the first type
+      val locs = (aConvergeLoc, bConvergeLoc) match {
+        case (S(TypeProvenance(S(loc1), _, _, _)), S(TypeProvenance(S(loc2), _, _, _)))
+          if loc1 === loc2 => aLocs.tail
+        // show all locations because there are no common locations
+        case _ => aLocs
+      }
+      (locs.headOption.map(tp => {
+        val dir = if (flow) msg" and it flows into `${b.expPos}`" else msg"; `${b.expPos}` also flows here"
+        msg"`${a.expPos}` ${tp.desc}${dir}" -> tp.loco :: Nil
+      }).getOrElse(Nil) :::
+        locs.tailOption.map(tail => tail.map{
+          case TypeProvenance(loc, desc, _, false) => msg"${desc} `${a.expPos}`" -> loc
+          case TypeProvenance(loc, _, _, true) => msg"`${a.expPos}` is found here" -> loc
+        }).getOrElse(Nil)).reverse
+    } else {
+      (aConvergeLoc, bConvergeLoc) match {
+        // consumption of a and b so make a combined message
+        case (S(TypeProvenance(S(loc1), adescp, _, _)), S(TypeProvenance(S(loc2), _, _, _))) if loc1 === loc2 =>
+          val dir = if (flow) msg" and it flows into `${b.expPos}`" else msg"; `${b.expPos}` also flows here"
+          msg"`${a.expPos}` ${adescp}${dir}" -> S(loc1) ::
+            bLocs.tail.map {
+              case TypeProvenance(loc, desc, _, false) => msg"`${b.expPos}` ${desc}" -> loc
+              case TypeProvenance(loc, _, _, true) => msg"`${b.expPos}` is found here" -> loc
+            }
+        case _ => bLocs.map {
+          case TypeProvenance(loc, desc, _, false) => msg"`${b.expPos}` ${desc}" -> loc
+          case TypeProvenance(loc, _, _, true) => msg"`${b.expPos}` is found here" -> loc
+        }
+      }
+    }
+
+    message
+  }
+
   /** A unification can create an message showing relevant locations */
   def createUnificationErrorMessage(u: Unification)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
     val level = u.unificationLevel
@@ -789,12 +839,17 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case Nil => ""
     }
 
-    // msg"${u.a.expPos} != ${u.b.expPos}" -> N :: u.reason.map(reason => msg"${reason.toString}" -> N) ::: sequence.map(tup => msg"${tup.toString}" -> N)
+//    u.unificationChain.map(uf => msg"${uf.toString}" -> N) :::
     msg"Type `${u.a.expPos}` does not match `${u.b.expPos}`" -> N ::
-      linearSequence(sequence) -> N ::
-      firstAndLastUseLocation(sequence.head._1) ::: // first type should always have flow from introduction to consumption
-      sequence.tail.init.flatMap(st => firstAndLastUseLocation(st._1, st._2)) :::
-      firstAndLastUseLocation(sequence.last._1, false) // last type should always have flow from consumption to introduction
+      msg"         " + linearSequence(sequence) -> N ::
+//      u.unificationChain.map(uf => msg"${uf.toString}" -> N) :::
+      u.unificationChain.headOption.map{ case (u, f) => createUnificationErrorMessage(u, f, true)}.getOrElse(Nil) :::
+      u.unificationChain.tail.flatMap(uf => createUnificationErrorMessage(uf._1, uf._2))
+//    msg"Type `${u.a.expPos}` does not match `${u.b.expPos}`" -> N ::
+//      linearSequence(sequence) -> N ::
+//      firstAndLastUseLocation(sequence.head._1) ::: // first type should always have flow from introduction to consumption
+//      sequence.tail.init.flatMap(st => firstAndLastUseLocation(st._1, st._2)) :::
+//      firstAndLastUseLocation(sequence.last._1, false) // last type should always have flow from consumption to introduction
   }
 
   def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason])(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
@@ -814,7 +869,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case (c1: ClassTag, c2: ClassTag) =>
         if (c1 =/= c2) {
           // report error
-          raise(WarningReport(createUnificationErrorMessage(u)))
+          raise(ErrorReport(createUnificationErrorMessage(u)))
         }
       case (tr1: TypeRef, tr2: TypeRef) =>
         if (tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length) {
@@ -822,7 +877,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             case ((arg1, arg2), i) => unifyTypes(arg1, arg2, CONN(arg1, arg2, s"${i} index of type ref ${tr1.defn}") :: Nil)
           }
         } else {
-          raise(WarningReport(createUnificationErrorMessage(u)))
+          raise(ErrorReport(createUnificationErrorMessage(u)))
         }
       case (tup1: TupleType, tup2: TupleType) =>
         if (tup1.fields.length === tup2.fields.length) {
@@ -830,7 +885,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             case ((t1, t2), i) => unifyTypes(t1, t2, CONN(t1, t2, s"${i} index of tuple") :: Nil)
           }
         } else {
-          raise(WarningReport(createUnificationErrorMessage(u)))
+          raise(ErrorReport(createUnificationErrorMessage(u)))
         }
       case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
         unifyTypes(arg2, arg1, CONN(arg1, arg2, "function argument type") :: Nil)
@@ -843,7 +898,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case (_, tv2: TypeVariable) => unifyTypes(tv2, a, reason)
       case (_, _) =>
         // report error
-        raise(WarningReport(createUnificationErrorMessage(u)))
+        raise(ErrorReport(createUnificationErrorMessage(u)))
     }
   }
 
