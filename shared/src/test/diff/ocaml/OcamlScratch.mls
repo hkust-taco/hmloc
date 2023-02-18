@@ -141,7 +141,7 @@ let f x = let (a, b) = x in a + b
 :e
 :unify
 if 1 == 2 then Left true else Right false
-//│ ╔══[ERROR] Type mismatch in `then` branch has type:
+//│ ╔══[ERROR] Type mismatch in `then` branch:
 //│ ║  l.143: 	if 1 == 2 then Left true else Right false
 //│ ║         	               ^^^^^^^^^
 //│ ╟── reference of type `bool` is not a 2-element tuple
@@ -221,21 +221,15 @@ if 1 == 2 then Left((true, false)) else Right false
 :unify
 let test x =
  match x with true -> 0 | false -> "oops"
-//│ ╔══[WARNING] Type `string` does not match `int`
-//│ ╟── string ---> ?a <--- int
-//│ ╟── `else` branch has type `string`
+//│ ╔══[ERROR] Type `string` does not match `int`
+//│ ╟──          string ---> ?a <--- int
+//│ ╟── `string` is the type of this `else` branch and it flows into `?a`
 //│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	                                   ^^^^^^^
-//│ ╟── this if-then-else expression has type `string`
+//│ ╟── `?a` is the type of this if-then-else `expression`; `int` also flows here
 //│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
-//│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `int`
-//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
-//│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── `then` branch has type `int`
+//│ ╟── `int` is the type of this `then` branch
 //│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
 //│ ╙──       	                      ^
 //│ test: bool -> (int | string)
@@ -281,51 +275,36 @@ let clone x n =
 :unify
 let rec digitsOfInt n =
   ((digitsOfInt n) / 10) @ [remainder];;
-//│ ╔══[WARNING] Type `int` does not match `?a list`
-//│ ╟── int <--- ?a list
-//│ ╟── `int` is found here
-//│ ║  l.19: 	let ( / ): int -> int -> int
-//│ ║        	           ^^^
-//│ ╟── application `int`
-//│ ║  l.283: 	  ((digitsOfInt n) / 10) @ [remainder];;
-//│ ║         	   ^^^^^^^^^^^^^^^
-//│ ╟── application `?a list`
-//│ ║  l.283: 	  ((digitsOfInt n) / 10) @ [remainder];;
-//│ ║         	   ^^^^^^^^^^^^^^^
-//│ ╟── operator application `?a list`
-//│ ║  l.283: 	  ((digitsOfInt n) / 10) @ [remainder];;
-//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── `?a list` is found here
-//│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
-//│ ╙──      	                               ^^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ╙──          int <--- ?a list
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.283: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not an instance of `?a list`
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `?a list`
-//│ ║  l.283: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from applied type reference:
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ╙──      	         ^^
 //│ ╔══[ERROR] identifier not found: remainder
-//│ ║  l.283: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──       	                            ^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.282: 	let rec digitsOfInt n =
+//│ ║  l.276: 	let rec digitsOfInt n =
 //│ ║         	                    ^^^
-//│ ║  l.283: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `?a list` is not an instance of `int`
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ║        	                               ^^
 //│ ╟── but it flows into operator application with expected type `int`
-//│ ║  l.283: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.283: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	   ^^^^^^^^^^^^^^^
 //│ ╟── from type reference:
 //│ ║  l.19: 	let ( / ): int -> int -> int

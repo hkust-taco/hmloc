@@ -538,11 +538,11 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         body match {
           // handle this case separately for better error messages
           case Ls(IfThen(Var("true"), trueArm), IfThen(Var("false"), falseArm)) =>
-            val cond_ty = typeTerm(cond, "is the type of then if-then-else `condition`")
+            val cond_ty = typeTerm(cond, "if-then-else `condition`")
             con(cond_ty, BoolType, cond_ty)
-            val ret_ty = freshVar(prov.copy(desc = "is the type of this `if-then-else` expression"))
-            con(typeTerm(trueArm, "is the type of this `then` branch"), ret_ty, ret_ty)
-            con(typeTerm(falseArm, "is the type of this `else` branch"), ret_ty, ret_ty)
+            val ret_ty = freshVar(prov.copy(desc = "if-then-else `expression`"))
+            con(typeTerm(trueArm, "`then` branch"), ret_ty, ret_ty)
+            con(typeTerm(falseArm, "`else` branch"), ret_ty, ret_ty)
           case _ =>
             // find constructor for each arm
             // handle tuple arms differently
@@ -573,23 +573,23 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
                 val fld_ty = elem_ty.map(elem => {
                   N -> FieldType(N, elem)(elem.prov)
                 })
-                val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "this case expression has type")
-                val adt_ty = TupleType(fld_ty)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "this match condition has type"))
+                val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "case `expression`")
+                val adt_ty = TupleType(fld_ty)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "match `condition`"))
                 (adt_ty, elem_ty)
               case _ =>
                 val adtDef = ctx.tyDefs.getOrElse(adtName.name, lastWords(s"Could not find ${adtName} in context"))
                 val newTargs = adtDef.targs.map(tv => freshVar(tv.prov, tv.nameHint))
                 // provenance for the first case expression from where we find the adt
-                val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "this case expression has type")
+                val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "case `expression`")
                 // TODO weird duplication in OcamlPresentation errors
-                val adt_ty = TypeRef(adtName, newTargs)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "this match condition has type"))
+                val adt_ty = TypeRef(adtName, newTargs)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "match `condition`"))
                 println(s"ADT type: $adt_ty")
                 (adt_ty, newTargs)
             }
 
             println(s"typed condition term ${cond}")
             val cond_ty = typeTerm(cond)
-            val ret_ty = freshVar(prov.copy(desc = "this match expression has type"))
+            val ret_ty = freshVar(prov.copy(desc = "match expression"))
             con(cond_ty, adt_ty, adt_ty)
 
             // the assumed shape of an IfBody is a List[IfThen, IfThen, IfElse] with an optional IfElse at the end
@@ -801,10 +801,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       }
       (locs.headOption.map(tp => {
         val dir = if (flow) msg" and it flows into `${b.expPos}`" else msg"; `${b.expPos}` also flows here"
-        msg"`${a.expPos}` ${tp.desc}${dir}" -> tp.loco :: Nil
+        msg"`${a.expPos}` is the type of this ${tp.desc}${dir}" -> tp.loco :: Nil
       }).getOrElse(Nil) :::
         locs.tailOption.map(tail => tail.map{
-          case TypeProvenance(loc, desc, _, false) => msg"${desc} `${a.expPos}`" -> loc
+          case TypeProvenance(loc, desc, _, false) => msg"${a.expPos}` is the type of this ${desc}" -> loc
           case TypeProvenance(loc, _, _, true) => msg"`${a.expPos}` is found here" -> loc
         }).getOrElse(Nil)).reverse
     } else {
@@ -812,13 +812,13 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // consumption of a and b so make a combined message
         case (S(TypeProvenance(S(loc1), adescp, _, _)), S(TypeProvenance(S(loc2), _, _, _))) if loc1 === loc2 =>
           val dir = if (flow) msg" and it flows into `${b.expPos}`" else msg"; `${b.expPos}` also flows here"
-          msg"`${a.expPos}` ${adescp}${dir}" -> S(loc1) ::
+          msg"`${a.expPos}` is the type of this ${adescp}${dir}" -> S(loc1) ::
             bLocs.tail.map {
-              case TypeProvenance(loc, desc, _, false) => msg"`${b.expPos}` ${desc}" -> loc
+              case TypeProvenance(loc, desc, _, false) => msg"`${b.expPos}` is the type of this ${desc}" -> loc
               case TypeProvenance(loc, _, _, true) => msg"`${b.expPos}` is found here" -> loc
             }
         case _ => bLocs.map {
-          case TypeProvenance(loc, desc, _, false) => msg"`${b.expPos}` ${desc}" -> loc
+          case TypeProvenance(loc, desc, _, false) => msg"`${b.expPos}` is the type of this ${desc}" -> loc
           case TypeProvenance(loc, _, _, true) => msg"`${b.expPos}` is found here" -> loc
         }
       }
