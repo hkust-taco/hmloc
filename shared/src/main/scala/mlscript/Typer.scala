@@ -398,6 +398,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           errorsCount += 1
         case diag => raise(diag)
       }, prov, ctx)
+
+      // also unify types
+      newUnifyTypes(lhs, rhs, Nil)(MutSet(), ctx, raise)
       res
     }
     term match {
@@ -412,7 +415,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           con(ty_ty, trm_ty, ty_ty) // In patterns, we actually _unify_ the pattern and ascribed type 
         else ty_ty
       case (v @ ValidPatVar(nme)) =>
-        val prov = tp(if (verboseConstraintProvenanceHints) v.toLoc else N, "variable")
+//        val prov = tp(if (verboseConstraintProvenanceHints) v.toLoc else N, "variable")
+        val prov = tp(v.toLoc, "variable")
         // Note: only look at ctx.env, and not the outer ones!
         ctx.env.get(nme).collect { case VarSymbol(ts, dv) => assert(v.uid.isDefined); v.uid = dv.uid; ts.instantiate }
           .getOrElse {
@@ -781,7 +785,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     val (aty, bty) = ur match {
       case LB(st, tv) => if (flow) (st, tv) else (tv, st)
       case UB(tv, st) => if (flow) (st, tv) else (tv, st)
-      case _ => lastWords(s"Cannot create unification error message for ${ur}")
+      case _ => println(s"cannot unify ${ur}"); return Nil
+//      case _ => lastWords(s"Cannot create unification error message for ${ur}")
     }
 
     val aLocs = aty.uniqueTypeUseLocations  // consumption to intro
@@ -842,7 +847,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
 //    u.unificationChain.map(uf => msg"${uf.toString}" -> N) :::
     msg"Type `${u.a.expPos}` does not match `${u.b.expPos}`" -> N ::
       msg"         " + linearSequence(sequence) -> N ::
-//      u.unificationChain.map(uf => msg"${uf.toString}" -> N) :::
+      u.unificationChain.map(uf => msg"${uf.toString}" -> N) :::
       u.unificationChain.headOption.map{ case (u, f) => createUnificationErrorMessage(u, f, true)}.getOrElse(Nil) :::
       u.unificationChain.tail.flatMap(uf => createUnificationErrorMessage(uf._1, uf._2))
 //    msg"Type `${u.a.expPos}` does not match `${u.b.expPos}`" -> N ::
@@ -851,7 +856,51 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
 //      sequence.tail.init.flatMap(st => firstAndLastUseLocation(st._1, st._2)) :::
 //      firstAndLastUseLocation(sequence.last._1, false) // last type should always have flow from consumption to introduction
   }
+ def newUnifyTypes(a: ST, b: ST, reason: Ls[UnificationReason])(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
+    val st1 = a.unwrapProvs
+    val st2 = b.unwrapProvs
+    val u = Unification(a, b, reason)
 
+    // unification doesn't have an ordering
+    if (cache((st1, st2)) || cache(st2, st1)) return
+    else {
+      cache += ((st1, st2))
+      cache += ((st2, st1))
+    }
+
+    (st1, st2) match {
+      case (tr1: TypeRef, tr2: TypeRef) =>
+        if (tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length) {
+          tr1.targs.zip(tr2.targs).zipWithIndex.foreach {
+            case ((arg1, arg2), i) =>
+              nestedUnifyTypes(arg1, arg2, u, s"${i} index of type ref ${tr1.defn}")
+          }
+        } else {
+          raise(ErrorReport(createUnificationErrorMessage(u)))
+        }
+      case (tup1: TupleType, tup2: TupleType) =>
+        if (tup1.fields.length === tup2.fields.length) {
+          tup1.fields.map(_._2.ub).zip(tup2.fields.map(_._2.ub)).zipWithIndex.foreach {
+            case ((t1, t2), i) =>
+              nestedUnifyTypes(t1, t2, u, s"${i} index of tuple")
+          }
+        } else {
+          raise(ErrorReport(createUnificationErrorMessage(u)))
+        }
+      case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
+        nestedUnifyTypes(arg2, arg1, u, "function argument")
+        nestedUnifyTypes(res1, res2, u, "function result")
+      case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
+        () // TODO report error for recursive type
+      // pass prov wrapped types so that locations get stored in unification
+      case (tv1: TypeVariable, tv2: TypeVariable) => unifyTypes(tv1, tv2, LB(tv1, tv2) :: reason)
+      case (tv1: TypeVariable, _) => unifyTypes(tv1, b, UB(tv1, b) :: reason)
+      case (_, tv2: TypeVariable) => unifyTypes(tv2, a, LB(a, tv2) :: reason)
+      case (_, _) =>
+        // report error
+        raise(ErrorReport(createUnificationErrorMessage(u)))
+    }
+  }
   def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason])(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
     val st1 = a.unwrapProvs
     val st2 = b.unwrapProvs
@@ -865,16 +914,11 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     }
 
     (st1, st2) match {
-      // TODO: type variables are unwrapped so no prov info is available
-      case (c1: ClassTag, c2: ClassTag) =>
-        if (c1 =/= c2) {
-          // report error
-          raise(ErrorReport(createUnificationErrorMessage(u)))
-        }
       case (tr1: TypeRef, tr2: TypeRef) =>
         if (tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length) {
           tr1.targs.zip(tr2.targs).zipWithIndex.foreach {
-            case ((arg1, arg2), i) => unifyTypes(arg1, arg2, CONN(arg1, arg2, s"${i} index of type ref ${tr1.defn}") :: Nil)
+            case ((arg1, arg2), i) =>
+              nestedUnifyTypes(arg1, arg2, u, s"${i} index of type ref ${tr1.defn}")
           }
         } else {
           raise(ErrorReport(createUnificationErrorMessage(u)))
@@ -882,14 +926,15 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case (tup1: TupleType, tup2: TupleType) =>
         if (tup1.fields.length === tup2.fields.length) {
           tup1.fields.map(_._2.ub).zip(tup2.fields.map(_._2.ub)).zipWithIndex.foreach {
-            case ((t1, t2), i) => unifyTypes(t1, t2, CONN(t1, t2, s"${i} index of tuple") :: Nil)
+            case ((t1, t2), i) =>
+              nestedUnifyTypes(t1, t2, u, s"${i} index of tuple")
           }
         } else {
           raise(ErrorReport(createUnificationErrorMessage(u)))
         }
       case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
-        unifyTypes(arg2, arg1, CONN(arg1, arg2, "function argument type") :: Nil)
-        unifyTypes(res1, res2, CONN(arg1, arg2, "function return type") :: Nil)
+        nestedUnifyTypes(arg2, arg1, u, "function argument")
+        nestedUnifyTypes(res1, res2, u, "function result")
       case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
         () // TODO report error for recursive type
       // pass prov wrapped types so that locations get stored in unification
@@ -899,6 +944,18 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case (_, _) =>
         // report error
         raise(ErrorReport(createUnificationErrorMessage(u)))
+    }
+  }
+
+  def nestedUnifyTypes(a: ST, b: ST, prev: Unification, desc: String)
+    (implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
+    (a.unwrapProvs, b.unwrapProvs) match {
+      case (_: TypeVariable, _) =>
+        unifyTypes(a, b, NESTED_UB(a, b, prev, desc) :: Nil)
+      case (_, _: TypeVariable) =>
+        unifyTypes(a, b, NESTED_LB(a, b, prev, desc) :: Nil)
+      case _ =>
+        unifyTypes(a, b, CONN(a, b, prev, desc) :: Nil)
     }
   }
 
@@ -921,16 +978,38 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   def unifyTypes()(implicit ctx: Ctx, raise: Raise): Unit = {
     val tvars = TypeVariable.createdTypeVars.reverse
     implicit val cache: MutSet[(ST, ST)] = MutSet()
-    tvars.foreach(tv => {
-      tv.upperBounds.foreach(ub => unifyTypes(tv, ub, UB(tv, ub) :: Nil))
-      tv.lowerBounds.foreach(lb => unifyTypes(tv, lb, LB(lb, tv) :: Nil))
-    })
+//    tvars.foreach(tv => {
+//      tv.upperBounds.foreach(ub => unifyTypes(tv, ub, UB(tv, ub) :: Nil))
+//      tv.lowerBounds.foreach(lb => unifyTypes(tv, lb, LB(lb, tv) :: Nil))
+//    })
     tvars.foreach(tv => {
       println(s"unified ${tv}")
-      tv.unification.foreach(u => println(s" ${u}"))
+      tv.unification.foreach(u => println(s"OLD ${u}"))
+      tv.new_unification.foreach(u => println(s"NEW ${u}"))
+    })
+
+    println("SHOW CHAINS")
+    tvars.foreach(tv => {
+      println(s"chain for ${tv}")
+      tv.new_unification.foreach{ case (st, ur) => raise(UnificationReport(
+        msg"${tv.toString} = ${st.toString} because ${ur.toString}" -> N ::
+        ur.flatMap {
+          case NEW_LB(st, tv, stprovs, tvprovs) => msg"${st.toString} <: ${tv.toString}" -> N ::
+            stprovs.reverse.map(tp => {
+              msg"${st.toString} is the type of ${tp.desc}" -> tp.loco
+            }) ::: tvprovs.map(tp => {
+            msg"${tv.toString} is the type of ${tp.desc}" -> tp.loco
+          })
+          case NEW_UB(tv, st, tvprovs, stprovs) => msg"${tv.toString} <: ${st.toString}" -> N ::
+            stprovs.reverse.map(tp => {
+              msg"${st.toString} is the type of ${tp.desc}" -> tp.loco
+            }) ::: tvprovs.map(tp => {
+            msg"${tv.toString} is the type of ${tp.desc}" -> tp.loco
+          })
+      }))}
     })
   }
-  
+
   /** Convert an inferred SimpleType into the immutable Type representation. */
   def expandType(st: SimpleType, stopAtTyVars: Bool = false)(implicit ctx: Ctx): Type = {
     val expandType = ()

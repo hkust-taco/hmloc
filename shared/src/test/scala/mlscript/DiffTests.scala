@@ -356,6 +356,8 @@ class DiffTests
               case WarningReport(msg, loco, src) =>
                 totalWarnings += 1
                 s"╔══[WARNING] "
+              case UnificationReport(msg, loco, src) =>
+                s"╔══[ERROR] "
             }
             val lastMsgNum = diag.allMsgs.size - 1
             var globalLineNum = blockLineNum  // solely used for reporting useful test failure messages
@@ -438,9 +440,9 @@ class DiffTests
             if (mode.stats) typer.resetStats()
             typer.dbg = mode.dbg
 
-            typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors
-            // typer.recordProvenances = !noProvs
-            typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors || mode.simplifyError
+//            typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors
+//            typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors || mode.simplifyError
+            typer.recordProvenances = true
             typer.verbose = mode.verbose
             typer.explainErrors = mode.explainErrors
             typer.setErrorSimplification(mode.simplifyError)
@@ -717,7 +719,7 @@ object DiffTests {
   
   private val TimeLimit =
     if (sys.env.get("CI").isDefined) Span(25, Seconds)
-    else Span(100, Seconds)
+    else Span(10000, Seconds)
   
   private val pwd = os.pwd
   private val dir = pwd/"shared"/"src"/"test"/"diff"

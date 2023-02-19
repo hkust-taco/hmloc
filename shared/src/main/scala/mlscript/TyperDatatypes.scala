@@ -2,17 +2,18 @@ package mlscript
 
 import scala.collection.mutable
 import scala.collection.mutable.{Map => MutMap, Set => MutSet}
-import scala.collection.immutable.{SortedSet, SortedMap}
+import scala.collection.immutable.{HashMap, SortedMap, SortedSet}
 import scala.util.chaining._
 import scala.annotation.tailrec
-import mlscript.utils._, shorthands._
+import mlscript.utils._
+import shorthands._
 import mlscript.Message._
 import sourcecode._
 
 abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
-  
+
   type TN = TypeName
-  
+
   // The data types used for type inference:
   case class TypeProvenance(loco: Opt[Loc], desc: Str, originName: Opt[Str] = N, isType: Bool = false)(implicit val file: FileName, val line: Line) {
     val isOrigin: Bool = originName.isDefined
@@ -25,7 +26,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   }
   class NestedTypeProvenance(var chain: Ls[SimpleType], var nestingInfo: NestingInfo = NestingInfo()) extends TypeProvenance(N, "<nested>") {
     override def toString: Str = "<nested> " + chain.mkString(" -> ") + " <nested>"
-    
+
     def updateInfo(newInfo: Str): NestedTypeProvenance = {
       nestingInfo = nestingInfo.copy(info = newInfo)
       this
@@ -39,18 +40,18 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   }
 
   type TP = TypeProvenance
-  
+
   sealed abstract class TypeInfo
 
   case class VarSymbol(ty: TypeScheme, definingVar: Var) extends TypeInfo
-  
+
   /** A type that potentially contains universally quantified type variables,
     * and which can be isntantiated to a given level. */
   sealed abstract class TypeScheme {
     def uninstantiatedBody: SimpleType
     def instantiate(implicit lvl: Int): SimpleType
   }
-  
+
   /** A type with universally quantified type variables
     * (by convention, those variables of level greater than `level` are considered quantified). */
   case class PolymorphicType(level: Int, body: SimpleType) extends TypeScheme {
@@ -59,7 +60,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def instantiate(implicit lvl: Int): SimpleType = freshenAbove(level, body)
     def rigidify(implicit lvl: Int): SimpleType = freshenAbove(level, body, rigidify = true)
   }
-  
+
   /** A type without universally quantified type variables. */
   sealed abstract class SimpleType extends TypeScheme with SimpleTypeImpl {
     val prov: TypeProvenance
@@ -69,19 +70,19 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     constructedTypes += 1
   }
   type ST = SimpleType
-  
+
   sealed abstract class BaseTypeOrTag extends SimpleType
   sealed abstract class BaseType extends BaseTypeOrTag {
     def toRecord: RecordType = RecordType.empty
   }
   sealed abstract class MiscBaseType extends BaseType
   sealed trait Factorizable extends SimpleType
-  
+
   case class FunctionType(lhs: SimpleType, rhs: SimpleType)(val prov: TypeProvenance) extends MiscBaseType {
     lazy val level: Int = lhs.level max rhs.level
     override def toString = s"(${lhs} -> $rhs)"
   }
-  
+
   case class RecordType(fields: List[(Var, FieldType)])(val prov: TypeProvenance) extends SimpleType {
     // TODO: assert no repeated fields
     lazy val level: Int = fields.iterator.map(_._2.level).maxOption.getOrElse(0)
@@ -107,7 +108,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def mk(fields: List[(Var, FieldType)])(prov: TypeProvenance = noProv): SimpleType =
       if (fields.isEmpty) ExtrType(false)(prov) else RecordType(fields)(prov)
   }
-  
+
   sealed abstract class ArrayBase extends MiscBaseType {
     def inner: FieldType
   }
@@ -149,13 +150,13 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def level: Int = negated.level
     override def toString = s"~(${negated})"
   }
-  
+
   /** Represents a type `base` from which we have removed the fields in `names`. */
   case class Without(base: SimpleType, names: SortedSet[Var])(val prov: TypeProvenance) extends MiscBaseType {
     def level: Int = base.level
     override def toString = s"${base}\\${names.mkString("-")}"
   }
-  
+
   /** A proxy type is a derived type form storing some additional information,
    * but which can always be converted into an underlying simple type. */
   sealed abstract class ProxyType extends SimpleType {
@@ -167,7 +168,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def unapply(proxy: ProxyType): S[ST] =
       S(proxy.underlying)
   }
-  
+
   /** The sole purpose of ProvType is to store additional type provenance info. */
   case class ProvType(underlying: SimpleType)(val prov: TypeProvenance) extends ProxyType {
     override def toString = if (prov is NestedTypeProvenance) s"[$underlying] prov: $prov" else s"[$underlying]"
@@ -175,19 +176,19 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     // override def toString = s"$underlying[${prov.toString.take(5)}]"
     // override def toString = s"$underlying@${prov}"
     // override def toString = showProvOver(true)(""+underlying)
-    
+
     // TOOD override equals/hashCode? — could affect hash consing...
     // override def equals(that: Any): Bool = super.equals(that) || underlying.equals(that)
     // override def equals(that: Any): Bool = unwrapProxies.equals(that)
   }
-  
+
   /** A proxy type, `S with {x: T; ...}` is equivalent to `S\x\... & {x: T; ...}`. */
   case class WithType(base: SimpleType, rcd: RecordType)(val prov: TypeProvenance) extends ProxyType {
     lazy val underlying: ST =
       base.without(rcd.fields.iterator.map(_._1).toSortedSet) & rcd
     override def toString = s"${base} w/ ${rcd}"
   }
-  
+
   type TR = TypeRef
   case class TypeRef(defn: TypeName, targs: Ls[SimpleType])(val prov: TypeProvenance) extends SimpleType {
     def level: Int = targs.iterator.map(_.level).maxOption.getOrElse(0)
@@ -247,12 +248,12 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       if (targs.isEmpty) displayName else s"$displayName[${targs.mkString(",")}]"
     }
   }
-  
+
   sealed trait ObjectTag extends BaseTypeOrTag with Ordered[ObjectTag] {
     val id: SimpleTerm
     def compare(that: ObjectTag): Int = this.id compare that.id
   }
-  
+
   case class ClassTag(id: SimpleTerm, parents: Set[TypeName])(val prov: TypeProvenance) extends BaseType with ObjectTag {
     lazy val parentsST = parents.iterator.map(tn => Var(tn.name)).toSet[SimpleTerm]
     def glb(that: ClassTag): Opt[ClassTag] =
@@ -269,12 +270,12 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def level: Int = 0
     override def toString = showProvOver(false)(id.idStr+s"<${parents.map(_.show).mkString(",")}>")
   }
-  
+
   case class TraitTag(id: SimpleTerm)(val prov: TypeProvenance) extends BaseTypeOrTag with ObjectTag with Factorizable {
     def level: Int = 0
     override def toString = id.idStr
   }
-  
+
   /** `TypeBounds(lb, ub)` represents an unknown type between bounds `lb` and `ub`.
     * The only way to give something such a type is to make the type part of a def or method signature,
     * as it will be replaced by a fresh bounded type variable upon subsumption checking (cf rigidification). */
@@ -290,7 +291,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         case _ => TypeBounds(lb, ub)(prov)
       }
   }
-  
+
   case class FieldType(lb: Option[SimpleType], ub: SimpleType)(val prov: TypeProvenance) {
     def level: Int = lb.map(_.level).getOrElse(ub.level) max ub.level
     def <:< (that: FieldType)(implicit ctx: Ctx, cache: MutMap[ST -> ST, Bool] = MutMap.empty): Bool =
@@ -325,7 +326,9 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def unificationChain: Ls[UnificationReason -> Bool] = {
       var flow = this.reason.headOption.getOrElse(die) match {
         case _: LB => true  // flow is from left to right
+        case _: NEW_LB => true  // flow is from left to right
         case _: UB => false // flow is from right to left
+        case _: NEW_UB => false // flow is from right to left
         case _: CONN => true
       }
 
@@ -348,13 +351,17 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def unificationSequence: Ls[ST -> Bool] = {
       var flow = this.reason.headOption.getOrElse(die) match {
         case _: LB => true  // flow is from left to right
+        case _: NEW_LB => true  // flow is from left to right
+        case _: NESTED_LB => true  // flow is from left to right
         case _: UB => false // flow is from right to left
+        case _: NEW_UB => false // flow is from right to left
+        case _: NESTED_UB => false // flow is from right to left
         case _: CONN => true
       }
       val (start, end) = this.reason match {
         case UB(tv, st) :: Nil => (tv, st)
         case LB(st, tv) :: Nil => (tv, st)
-        case CONN(a, b, _) :: Nil => (a, b)
+        case CONN(a, b, _, _) :: Nil => (a, b)
         case Nil => lastWords("Unexpected no unification reason")
         case _ =>
           (this.reason.headOption.getOrElse(die).unifiedWith,
@@ -382,25 +389,37 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     override def toString: Str = this match {
       case LB(st, tv) => s"${st} <: ${tv}"
       case UB(tv, st) => s"${tv} <: ${st}"
-      case CONN(a, b, desc) => s"${a} = ${b} because ${desc}"
+      case NEW_LB(st, tv, _, _) => s"${st} <: ${tv}"
+      case NEW_UB(tv, st, _, _) => s"${tv} <: ${st}"
+      case CONN(a, b, u, desc) => s"${a} = ${b} because ${desc}. Previous level ${u}"
+      case NESTED_LB(a, b, u, desc) => s"${a} <: ${b} because ${desc}. Previous level ${u}"
+      case NESTED_UB(a, b, u, desc) => s"${a} <: ${b} because ${desc}. Previous level ${u}"
     }
     // indicates which type was unified with which one
     // that is what the next unification should be
     def unifiedWith: ST = this match {
       case LB(st, _) => st
       case UB(_, st) => st
+      case NEW_LB(st, _, _, _) => st
+      case NEW_UB(_, st, _, _) => st
       // this is a special case with no ordering
       // we assume by convention b was unified with a
       // so the next unification operation should be on b
-      case CONN(_, b, _) => b
+      case CONN(_, b, _, _) => b
+      case NESTED_LB(_, b, _, _) => b
+      case NESTED_UB(_, b, _, _) => b
     }
   }
-  
+
+  case class NEW_LB(st: ST, tv: TV, stProvs: Ls[TypeProvenance], tvProvs: Ls[TypeProvenance]) extends UnificationReason
+  case class NEW_UB(tv: TV, st: ST, tvProvs: Ls[TypeProvenance], stProvs: Ls[TypeProvenance]) extends UnificationReason
+  case class NEW_NESTED_LB(a: ST, b: ST, prevLevel: Unification) extends UnificationReason
+  case class NEW_NESTED_UB(a: ST, b: ST, prevLevel: Unification) extends UnificationReason
   case class LB(st: ST, tv: TV) extends UnificationReason
   case class UB(tv: TV, st: ST) extends UnificationReason
-  case class CONN(a: ST, b: ST, desc: Str = "") extends UnificationReason
-  case class NESTED_LB(a: ST, b: ST, typeRef: TypeRef, prevLevel: Unification) extends UnificationReason
-  case class NESTED_UB(a: ST, b: ST, typeRef: TypeRef, prevLevel: Unification) extends UnificationReason
+  case class CONN(a: ST, b: ST, prevLevel: Unification, desc: Str = "") extends UnificationReason
+  case class NESTED_LB(a: ST, b: ST, prevLevel: Unification, desc: Str = "") extends UnificationReason
+  case class NESTED_UB(a: ST, b: ST, prevLevel: Unification, desc: Str = "") extends UnificationReason
 
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
     * Invariant: Types appearing in the bounds never have a level higher than this variable's `level`. */
@@ -413,12 +432,12 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     private[mlscript] val uid: Int = { freshCount += 1; freshCount - 1 }
     lazy val asTypeVar = new TypeVar(L(uid), nameHint)
     var unification: Ls[Unification] = Nil
+    var new_unification: HashMap[ST, List[UnificationReason]] = HashMap()
     def compare(that: TV): Int = this.uid compare that.uid
-    
     def isRecursive_$(implicit ctx: Ctx) : Bool = (lbRecOccs_$, ubRecOccs_$) match {
       case (S(N | S(true)), _) | (_, S(N | S(false))) => true
       case _ => false
-    } 
+    }
     /** None: not recursive in this bound; Some(Some(pol)): polarly-recursive; Some(None): nonpolarly-recursive.
       * Note that if we have something like 'a :> Bot <: 'a -> Top, 'a is not truly recursive
       *   and its bounds can actually be inlined. */
@@ -426,7 +445,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       TupleType(lowerBounds.map(N -> _.toUpper(noProv)))(noProv).getVarsPol(S(true)).get(this)
     private final def ubRecOccs_$(implicit ctx: Ctx): Opt[Opt[Bool]] =
       TupleType(upperBounds.map(N -> _.toUpper(noProv)))(noProv).getVarsPol(S(false)).get(this)
-    
+
     override def toString: String = showProvOver(false)(nameHint.getOrElse("α") + uid + "'" * level)
   }
   type TV = TypeVariable
@@ -450,7 +469,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     var createdTypeVars: Ls[TypeVariable] = Nil
     def clearCollectedTypeVars(): Unit = createdTypeVars = Nil
   }
-  
+
   case class NegVar(tv: TV) extends ProxyType with Factorizable {
     lazy val underlying: SimpleType = tv.neg()
     val prov = noProv
@@ -459,5 +478,5 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     lazy val underlying: SimpleType = tt.neg()
     val prov = noProv
   }
-  
+
 }
