@@ -6,22 +6,6 @@
 :unify
 let rec digitsOfInt n =
   if n < 0 then [] else [[(digitsOfInt n) / 10]];;
-//│ ╔══[ERROR] Type `?a list` does not match `int`
-//│ ╟──          ?a list ---> int
-//│ ╟── `?a list` is found here
-//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	     ^^
-//│ ╟── `?a list` is the type of this `then` branch and it flows into `?b`
-//│ ║  l.8: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
-//│ ╙──     	                ^^
-//│ ╔══[ERROR] Type `?a list` does not match `int`
-//│ ╟──          ?a list ---> int
-//│ ╟── `?a list` is found here
-//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	     ^^
-//│ ╟── `?a list` is the type of this `else` branch and it flows into `?b`
-//│ ║  l.8: 	  if n < 0 then [] else [[(digitsOfInt n) / 10]];;
-//│ ╙──     	                        ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
 //│ ║  l.7: 	let rec digitsOfInt n =
 //│ ║       	                    ^^^
@@ -67,109 +51,90 @@ let rec digitsOfInt n =
   if n < 0 then [] else
       let remainder = n mod 10 in
       if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
-//│ ╔══[ERROR] Type `(int -> int -> int) -> ?a` does not match `int`
-//│ ╙──          ?b <--- ?c ---> int
-//│ ╔══[ERROR] Type `?a list` does not match `int`
-//│ ╟──          ?a list ---> int
-//│ ╟── `?a list` is found here
-//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	     ^^
-//│ ╟── `?a list` is the type of this `then` branch and it flows into `?b`
-//│ ║  l.67: 	  if n < 0 then [] else
-//│ ╙──      	                ^^
-//│ ╔══[ERROR] Type `?a list` does not match `int`
-//│ ╟──          ?a list ---> int
-//│ ╟── `?a list` is found here
-//│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
-//│ ║        	                               ^^
-//│ ╟── ?a list` is the type of this `else` branch
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
-//│ ║        	                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── `?a list` is the type of this if-then-else `expression` and it flows into `?b`
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
-//│ ╙──      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `?a list` does not match `int`
-//│ ╟──          ?a list ---> int
-//│ ╟── `?a list` is found here
-//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	     ^^
-//│ ╟── ?a list` is the type of this `then` branch
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
-//│ ║        	                    ^^^^^^^^^^^
-//│ ╟── `?a list` is the type of this if-then-else `expression` and it flows into `?b`
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
-//│ ╙──      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] [level 2] Cannot unify int and (int -> int -> int) -> ?a because lb(Int <: α81'),ub(α80' <: α81'),ub(α80' <: ([(Int -> (Int -> Int))] -> α86''))
+//│ ╟── (lb(Int <: α81'),true), (ub(α80' <: α81'),false), (ub(α80' <: ([(Int -> (Int -> Int))] -> α86'')),true)   int ---> ?b <--- ?c ---> (int -> int -> int) -> ?a 
+//│ ╟── ?b is the type of integer literal; int flows here
+//│ ║  l.51: 	  if n < 0 then [] else
+//│ ║        	         ^
+//│ ╟── ?b is the type of reference; it flows from ?c
+//│ ║  l.51: 	  if n < 0 then [] else
+//│ ║        	     ^
+//│ ╟── (int -> int -> int) -> ?a is the type of reference; ?c flows into it
+//│ ║  l.52: 	      let remainder = n mod 10 in
+//│ ╙──      	                      ^
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.53: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                                     ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not an instance of `?a list`
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `?a list`
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.53: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                                     ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from applied type reference:
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ╙──      	         ^^
+//│ ╔══[ERROR] [level 0] Cannot unify int and ?a list because lb([[[Int]]] <: list[α98'])
+//│ ╙── (lb([[[Int]]] <: list[α98']),true)   int ---> ?a list 
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.66: 	let rec digitsOfInt n =
+//│ ║  l.50: 	let rec digitsOfInt n =
 //│ ║        	                    ^^^
-//│ ║  l.67: 	  if n < 0 then [] else
+//│ ║  l.51: 	  if n < 0 then [] else
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.68: 	      let remainder = n mod 10 in
+//│ ║  l.52: 	      let remainder = n mod 10 in
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.53: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `?a list` is not an instance of `int`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
 //│ ╟── but it flows into `then` branch with expected type `int`
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.53: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                    ^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.53: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                                      ^^^^^^^^^^^^^^^
 //│ ╟── from type reference:
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ╙──      	           ^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.66: 	let rec digitsOfInt n =
+//│ ║  l.50: 	let rec digitsOfInt n =
 //│ ║        	                    ^^^
-//│ ║  l.67: 	  if n < 0 then [] else
+//│ ║  l.51: 	  if n < 0 then [] else
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.68: 	      let remainder = n mod 10 in
+//│ ║  l.52: 	      let remainder = n mod 10 in
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.53: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `?a list` is not an instance of `int`
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ║        	                               ^^
 //│ ╟── but it flows into `else` branch with expected type `int`
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.53: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.53: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                                      ^^^^^^^^^^^^^^^
 //│ ╟── from type reference:
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ╙──      	           ^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.66: 	let rec digitsOfInt n =
+//│ ║  l.50: 	let rec digitsOfInt n =
 //│ ║        	                    ^^^
-//│ ║  l.67: 	  if n < 0 then [] else
+//│ ║  l.51: 	  if n < 0 then [] else
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.68: 	      let remainder = n mod 10 in
+//│ ║  l.52: 	      let remainder = n mod 10 in
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.53: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `?a list` is not an instance of `int`
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^
 //│ ╟── but it flows into `then` branch with expected type `int`
-//│ ║  l.67: 	  if n < 0 then [] else
+//│ ║  l.51: 	  if n < 0 then [] else
 //│ ║        	                ^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.69: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.53: 	      if n = 0 then [remainder] else ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║        	                                      ^^^^^^^^^^^^^^^
 //│ ╟── from type reference:
 //│ ║  l.19: 	let ( / ): int -> int -> int
@@ -180,37 +145,72 @@ let rec digitsOfInt n =
 :unify
 let rec digitsOfInt n =
   if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
-//│ ╔══[ERROR] Type `(int -> int -> int) -> ?a` does not match `int`
-//│ ╙──          (int -> int -> int) -> ?a <--- ?b ---> int
-//│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
-//│ ╙──          int <--- ?b ---> (int -> int -> int) -> ?a
+//│ ╔══[ERROR] [level 1] Cannot unify (int -> int -> int) -> ?a and int because ub(α122' <: ([(Int -> (Int -> Int))] -> α134')),ub(α122' <: Int)
+//│ ╟── (ub(α122' <: ([(Int -> (Int -> Int))] -> α134')),false), (ub(α122' <: Int),true)   (int -> int -> int) -> ?a <--- ?b ---> int 
+//│ ╟── ?b is the type of reference; (int -> int -> int) -> ?a flows from here
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║         	                                             ^
+//│ ╟── int is the type of reference; ?b flows into it
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║         	                            ^
+//│ ╟── int is here
+//│ ║  l.19: 	let ( / ): int -> int -> int
+//│ ╙──      	           ^^^
+//│ ╔══[ERROR] [level 1] Cannot unify int and (int -> int -> int) -> ?a because ub(α122' <: Int),ub(α122' <: ([(Int -> (Int -> Int))] -> α134'))
+//│ ╟── (ub(α122' <: Int),false), (ub(α122' <: ([(Int -> (Int -> Int))] -> α134')),true)   int <--- ?b ---> (int -> int -> int) -> ?a 
+//│ ╟── int is here
+//│ ║  l.19: 	let ( / ): int -> int -> int
+//│ ║        	           ^^^
+//│ ╟── ?b is the type of reference; int flows from here
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║         	                                                                         ^
+//│ ╟── (int -> int -> int) -> ?a is the type of reference; ?b flows into it
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ╙──       	                                             ^
+//│ ╔══[ERROR] [level 1] Cannot unify (int -> int -> int) -> ?a and int because ub(α122' <: ([(Int -> (Int -> Int))] -> α140')),ub(α122' <: Int)
+//│ ╟── (ub(α122' <: ([(Int -> (Int -> Int))] -> α140')),false), (ub(α122' <: Int),true)   (int -> int -> int) -> ?a <--- ?b ---> int 
+//│ ╟── ?b is the type of reference; (int -> int -> int) -> ?a flows from here
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║         	                                                                                      ^
+//│ ╟── int is the type of reference; ?b flows into it
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║         	                                                                         ^
+//│ ╟── int is here
+//│ ║  l.19: 	let ( / ): int -> int -> int
+//│ ╙──      	           ^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.181: 	let rec digitsOfInt n =
+//│ ║  l.146: 	let rec digitsOfInt n =
 //│ ║         	                    ^^^
-//│ ║  l.182: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not a function
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
-//│ ║  l.182: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	                                                                        ^^^^^^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.182: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ╟── Note: constraint arises from variable:
+//│ ║  l.146: 	let rec digitsOfInt n =
+//│ ║         	                    ^
+//│ ╟── from reference:
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ╙──       	                                                                                      ^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.181: 	let rec digitsOfInt n =
+//│ ║  l.146: 	let rec digitsOfInt n =
 //│ ║         	                    ^^^
-//│ ║  l.182: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not a function
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
-//│ ║  l.182: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ║         	                                                                        ^^^^^^^^
-//│ ╟── Note: constraint arises from reference:
-//│ ║  l.182: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
+//│ ╟── Note: constraint arises from variable:
+//│ ║  l.146: 	let rec digitsOfInt n =
+//│ ║         	                    ^
+//│ ╟── from reference:
+//│ ║  l.147: 	  if n < 0 then [] else if (n / 10) = 0 then n mod 10 else (digitsOfInt (n / 10)) :: (n mod 10);;
 //│ ╙──       	                                             ^
 //│ digitsOfInt: nothing -> 'a
 //│   where
@@ -243,8 +243,17 @@ let rec removeZero l =
 :unify
 let rec digitsOfInt n =
   let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
-//│ ╔══[ERROR] Type `(int -> int -> int) -> ?a` does not match `int`
-//│ ╙──          ?b <--- ?c ---> int
+//│ ╔══[ERROR] [level 2] Cannot unify int and (int -> int -> int) -> ?a because lb(Int <: α287'),ub(α285' <: α287'),ub(α285' <: ([(Int -> (Int -> Int))] -> α292'))
+//│ ╟── (lb(Int <: α287'),true), (ub(α285' <: α287'),false), (ub(α285' <: ([(Int -> (Int -> Int))] -> α292')),true)   int ---> ?b <--- ?c ---> (int -> int -> int) -> ?a 
+//│ ╟── ?b is the type of integer literal; int flows here
+//│ ║  l.245: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
+//│ ║         	                          ^
+//│ ╟── ?b is the type of reference; it flows from ?c
+//│ ║  l.245: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
+//│ ║         	                      ^
+//│ ╟── (int -> int -> int) -> ?a is the type of reference; ?c flows into it
+//│ ║  l.245: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
+//│ ╙──       	                                  ^
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.245: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ║         	                                                ^^^^^^^^^^^^^^^^
@@ -254,6 +263,8 @@ let rec digitsOfInt n =
 //│ ╟── but it flows into reference with expected type `?digitsOfInt -> ?b`
 //│ ║  l.245: 	  let numL = [] in if n > 0 then (n mod 10) :: (numL digitsOfInt n) else numL;;
 //│ ╙──       	                                                ^^^^
+//│ ╔══[ERROR] [level 0] Cannot unify ?a list and ?digitsOfInt -> ?b because lb(list[α294'] <: ([digitsOfInt284'] -> α295'))
+//│ ╙── (lb(list[α294'] <: ([digitsOfInt284'] -> α295')),true)   ?a list ---> ?digitsOfInt -> ?b 
 //│ digitsOfInt: ((int -> int -> int) -> int -> 'a) -> list['a]
 
 
@@ -261,15 +272,82 @@ let rec digitsOfInt n =
 :unify
 let sqsum xs =
   let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot create unification error message for Int = Float because function argument type
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.Typer.createUnificationErrorMessage(Typer.scala:784)
-//│ 	at: mlscript.Typer.$anonfun$createUnificationErrorMessage$9(Typer.scala:846)
-//│ 	at: scala.Option.map(Option.scala:242)
-//│ 	at: mlscript.Typer.createUnificationErrorMessage(Typer.scala:846)
-//│ 	at: mlscript.Typer.unifyTypes(Typer.scala:880)
-//│ 	at: mlscript.Typer.unifyTypes(Typer.scala:891)
-//│ 	at: mlscript.Typer.$anonfun$unifyTypes$5(Typer.scala:909)
-//│ 	at: mlscript.Typer.$anonfun$unifyTypes$5$adapted(Typer.scala:907)
-//│ 	at: scala.collection.immutable.List.foreach(List.scala:333)
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	              ^^^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of `float`
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	                    ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.48: 	let ( ** ): float -> float -> float
+//│ ╙──      	                     ^^^^^
+//│ ╔══[ERROR] [level 0] Cannot unify int and float because lb(Int <: Float)
+//│ ╙── (lb(Int <: Float),true)   int ---> float 
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	              ^^^^^^^^^^
+//│ ╟── type `float` is not an instance of `int`
+//│ ║  l.48: 	let ( ** ): float -> float -> float
+//│ ║        	                              ^^^^^
+//│ ╟── but it flows into operator application with expected type `int`
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	              ^^^^^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.16: 	let (+): int -> int -> int
+//│ ╙──      	         ^^^
+//│ ╔══[ERROR] [level 0] Cannot unify float and int because lb([[[Float]]] <: Int)
+//│ ╙── (lb([[[Float]]] <: Int),true)   float ---> int 
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	                         ^^^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of `float`
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	                               ^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.48: 	let ( ** ): float -> float -> float
+//│ ╙──      	                     ^^^^^
+//│ ╔══[ERROR] [level 0] Cannot unify int and float because lb(Int <: Float)
+//│ ╙── (lb(Int <: Float),true)   int ---> float 
+//│ ╔══[ERROR] Type mismatch in operator application:
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	              ^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `float` is not an instance of `int`
+//│ ║  l.48: 	let ( ** ): float -> float -> float
+//│ ║        	                              ^^^^^
+//│ ╟── but it flows into operator application with expected type `int`
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	                         ^^^^^^^^
+//│ ╟── Note: constraint arises from type reference:
+//│ ║  l.16: 	let (+): int -> int -> int
+//│ ╙──      	                ^^^
+//│ ╔══[ERROR] [level 0] Cannot unify float and int because lb([[[Float]]] <: Int)
+//│ ╙── (lb([[[Float]]] <: Int),true)   float ---> int 
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	                                                     ^^^^^^^^^^^^^^^^
+//│ ╟── type `int` is not an instance of type `float`
+//│ ║  l.16: 	let (+): int -> int -> int
+//│ ║        	                       ^^^
+//│ ╟── Note: constraint arises from variable:
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	        ^
+//│ ╟── from type reference:
+//│ ║  l.48: 	let ( ** ): float -> float -> float
+//│ ╙──      	            ^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	                                                     ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of type `float`
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	                                                ^
+//│ ╟── but it flows into reference with expected type `float`
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	                                                                      ^^^^
+//│ ╟── Note: constraint arises from variable:
+//│ ║  l.274: 	  let f a x = (a ** 2) + (x ** 2) in let base = 0 in List_fold_left f base xs;;
+//│ ║         	        ^
+//│ ╟── from type reference:
+//│ ║  l.48: 	let ( ** ): float -> float -> float
+//│ ╙──      	            ^^^^^
+//│ sqsum: list[float] -> int
 

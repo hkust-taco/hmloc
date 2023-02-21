@@ -186,7 +186,11 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 (("hi", 1) :: Nil):heap
 (("hi", 1) :: ("bye", 2) :: Nil):heap
 //│ res: list[(string, int,)]
+//│ ╔══[ERROR] [level 0] Cannot unify ?a list and heap because lb([[[list[α289]]]] <: heap)
+//│ ╙── (lb([[[list[α289]]]] <: heap),true)   ?a list ---> heap 
 //│ res: heap
+//│ ╔══[ERROR] [level 0] Cannot unify ?a list and heap because lb([[[list[α292]]]] <: heap)
+//│ ╙── (lb([[[list[α292]]]] <: heap),true)   ?a list ---> heap 
 //│ res: heap
 
 let update h str i = (str,i)::h
@@ -199,15 +203,17 @@ let interp2 = (fun (env:env) opt ->
   match opt with
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.197: 	fun (env: env) _ -> []
+//│ ║  l.201: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
 //│ res: error -> list[nothing]
 //│ ╔══[ERROR] Unsupported pattern shape:
-//│ ║  l.198: 	let interp2 = (fun (env:env) opt ->
+//│ ║  l.202: 	let interp2 = (fun (env:env) opt ->
 //│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
-//│ ║  l.199: 	  match opt with
+//│ ║  l.203: 	  match opt with
 //│ ╙──       	        ^^^
+//│ ╔══[ERROR] [level 0] Cannot unify error and ?a option because lb(error<> <: option['a315'])
+//│ ╙── (lb(error<> <: option['a315']),true)   error ---> ?a option 
 //│ interp2: error -> int
 
 let head xs = match xs with
@@ -261,23 +267,27 @@ let checkagain (v: (int, int, (int, int))) =
   match v with
    (a, b, (c, d)) -> a + b + c + d
 //│ ╔══[ERROR] identifier not found: d
-//│ ║  l.262: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.268: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ╙──       	              ^
+//│ ╔══[ERROR] [level 0] Cannot unify int and error because lb(Int <: error<>)
+//│ ╙── (lb(Int <: error<>),true)   int ---> error 
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.262: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.268: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ║         	                     ^^^^^^^^^
 //│ ╟── type `float` is not an instance of `int`
 //│ ║  l.54: 	let (+.): float -> float -> float
 //│ ║        	                            ^^^^^
 //│ ╟── but it flows into reference with expected type `int`
-//│ ║  l.262: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.268: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ║         	                             ^
 //│ ╟── Note: constraint arises from type reference:
 //│ ║  l.80: 	let (+): int -> int -> int
 //│ ╙──      	                ^^^
 //│ ╔══[ERROR] identifier not found: d
-//│ ║  l.262: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.268: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ╙──       	                                 ^
+//│ ╔══[ERROR] [level 0] Cannot unify error and int because lb(error<> <: Int)
+//│ ╙── (lb(error<> <: Int),true)   error ---> int 
 //│ checkagain: (int, int, (int, int,),) -> int
 
 let (<): 'a -> 'a -> bool

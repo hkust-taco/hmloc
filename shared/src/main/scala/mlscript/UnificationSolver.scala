@@ -14,8 +14,8 @@ trait UnificationSolver extends TyperDatatypes {
   def unifyTypes(a: ST, b: ST, u: Opt[Unification] = N)(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit =
   trace(s"U ${a} <: ${b}"){
     val reason = (a.unwrapProvs, b.unwrapProvs) match {
-      case (tv: TypeVariable, st) => UB(tv, st, a.typeUseLocations, b.typeUseLocations)
-      case (st1, st2) => LB(st1, st2, st1.typeUseLocations, b.typeUseLocations)
+      case (tv: TypeVariable, st) => UB(tv, st, a.typeUseLocations reverse_::: b.typeUseLocations)
+      case (st1, st2) => LB(st1, st2, a.typeUseLocations reverse_::: b.typeUseLocations)
     }
     reason.nested = u
     unifyTypes(a, b, reason :: Nil)
@@ -62,16 +62,51 @@ trait UnificationSolver extends TyperDatatypes {
         () // TODO report error for recursive type
       case (tv: TypeVariable, st) =>
         if (tv.new_unification.nonEmpty) println(s"U  ${st} with")
-        tv.new_unification.foreach { case (prevST, prevReason) =>
-          println(s"    ${prevST} for ${prevReason}")
-          unifyTypes(st, prevST, reason reverse_::: prevReason) }
+        // lb <: tv <: st pass through tv and maintain constraining relation
+        tv.lowerBounds.foreach(lb => {
+          tv.new_unification.get(lb).foreach { case (prevReason) =>
+            val (head :: tail) = reason
+            val newHead = LB(lb, b, lb.typeUseLocations reverse_::: head.getProvs)
+            val newReason = newHead :: tail
+            println(s"    ${tv} :> ${lb.unwrapProvs} for ${prevReason}")
+            println(s"    with new reason ${newReason}")
+            unifyTypes(lb.unwrapProvs, st, newReason)
+          }
+        })
+        // tv <: ub
+        // tv <: st
+        // do not pass through
+        tv.upperBounds.foreach(ub => {
+          tv.new_unification.get(ub).foreach { case (prevReason) =>
+            println(s"    ${tv} <: ${ub.unwrapProvs}  for ${prevReason}")
+            unifyTypes(st, ub.unwrapProvs, reason reverse_::: prevReason)
+          }
+        })
         println(s"U ${tv} += ${(st, reason)}")
         tv.new_unification += ((st, reason))
       case (st, tv: TypeVariable) =>
         if (tv.new_unification.nonEmpty) println(s"U  ${st} with")
-        tv.new_unification.foreach { case (prevST, prevReason) =>
-          println(s"    ${prevST} for ${prevReason}")
-          unifyTypes(st, prevST, reason reverse_::: prevReason.reverse) }
+        // st <: tv <: ub pass through tv and maintain constraining relation
+        tv.upperBounds.foreach(ub => {
+          tv.new_unification.get(ub).foreach { case (prevReason) =>
+            val (head :: tail) = reason
+            val newHead = LB(a, ub, head.getProvs ::: ub.typeUseLocations)
+            val newReason = newHead :: tail
+            println(s"    ${tv} <: ${ub.unwrapProvs} for ${prevReason}")
+            println(s"    with new reason ${newReason}")
+            unifyTypes(st, ub.unwrapProvs, newReason)
+          }
+        })
+        // lb <: tv
+        // st <: tv
+        // do not pass through
+        tv.lowerBounds.foreach(lb => {
+          tv.new_unification.get(lb).foreach { case (prevReason) =>
+            println(s"   ${tv} :> ${lb.unwrapProvs} for ${prevReason}")
+            unifyTypes(lb.unwrapProvs, st, prevReason ::: reason.reverse)
+          }
+        })
+
         println(s"U ${tv} += ${(st, reason.reverse)}")  // reason is always from tv to st
         tv.new_unification += ((st, reason))
       case (_, _) =>
@@ -99,40 +134,38 @@ trait UnificationSolver extends TyperDatatypes {
   def toSequenceString(u: Unification)(implicit ctx: Ctx): Message = u.unificationChain match {
     case Nil => msg""
     case head :: tail => val first = head match {
-      case (LB(st, tv, _, _), true) => msg"${st.expPos} ---> ${tv.expPos} "
-      case (LB(st, tv, _, _), false) => msg"${tv.expPos} <--- ${st.expPos} "
-      case (UB(tv, st, _, _), true) => msg"${st.expPos} <--- ${tv.expPos} "
-      case (UB(tv, st, _, _), false) => msg"${tv.expPos} ---> ${st.expPos} "
+      case (LB(st, tv, _), true) => msg"${st.expPos} ---> ${tv.expPos} "
+      case (LB(st, tv, _), false) => msg"${tv.expPos} <--- ${st.expPos} "
+      case (UB(tv, st, _), false) => msg"${st.expPos} <--- ${tv.expPos} "
+      case (UB(tv, st, _), true) => msg"${tv.expPos} ---> ${st.expPos} "
     }
 
-    tail.foldLeft(first) {
-      case (prev, (LB(st, tv, _, _), true)) => prev + msg"---> ${tv.expPos} "
-      case (prev, (LB(st, tv, _, _), false)) => prev + msg"<--- ${st.expPos} "
-      case (prev, (UB(tv, st, _, _), true)) => prev + msg"<--- ${tv.expPos} "
-      case (prev, (UB(tv, st, _, _), false)) => prev + msg"---> ${st.expPos} "
+    msg"${(head :: tail).mkString(", ")}   " + tail.foldLeft(first) {
+      case (prev, (LB(st, tv, _), true)) => prev + msg"---> ${tv.expPos} "
+      case (prev, (LB(st, tv, _), false)) => prev + msg"<--- ${st.expPos} "
+      case (prev, (UB(tv, st, _), false)) => prev + msg"<--- ${tv.expPos} "
+      case (prev, (UB(tv, st, _), true)) => prev + msg"---> ${st.expPos} "
     }
   }
 
   def reportUnificationError(u: Unification)(implicit raise: Raise, ctx: Ctx) = {
     u.unificationChain match {
       case Nil => ()
-      case chain => {
-        val messages = chain.flatMap(ur => {
-          val (prov, _) = ur match {
-            case (LB(st, tv, p1, p2), true) => (p1 reverse_::: p2) -> true
-            case (LB(st, tv, p1, p2), false) => (p1 reverse_::: p2) -> true
-            case (UB(tv, st, p1, p2), true) => (p2 reverse_::: p1) -> false
-            case (UB(tv, st, p1, p2), false) => (p2 reverse_::: p1) -> false
-          }
-          val st = ur._1.unifiedWith
-          prov.map(tp => msg"${st.expPos} is type of ${tp.desc}" -> tp.loco)
-        })
+      case _ :: Nil =>
         val message =
           msg"[level ${u.unificationLevel.toString}] Cannot unify ${u.a.expPos} and ${u.b.expPos} because ${u.reason.mkString(",")}" -> N ::
           toSequenceString(u) -> N :: Nil
+        val report = ErrorReport(message)
+        raise(report)
+      case chain@(head :: next :: _) =>
+        val messages = createErrorMessage(head, next, true) ::: chain.sliding(2).collect {
+          case Seq(fst, snd) => createErrorMessage(fst, snd)
+        }.toList.flatten
+        val message =
+          msg"[level ${u.unificationLevel.toString}] Cannot unify ${u.a.expPos} and ${u.b.expPos} because ${u.reason.mkString(",")}" -> N ::
+            toSequenceString(u) -> N :: Nil
         val report = ErrorReport(message ::: messages)
         raise(report)
-      }
     }
   }
 }

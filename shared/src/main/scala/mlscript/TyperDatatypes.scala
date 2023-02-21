@@ -10,6 +10,8 @@ import shorthands._
 import mlscript.Message._
 import sourcecode._
 
+import scala.::
+
 abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
 
   type TN = TypeName
@@ -319,10 +321,10 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     }
     def unificationLevel: Int = {
       reason.sliding(2).count {
-        case Seq(LB(_, tv1, _, _), LB(_, tv2, _, _)) if tv1 === tv2 => true
-        case Seq(UB(tv1, _, _, _), UB(tv2, _, _, _)) if tv1 === tv2 => true
-        case Seq(UB(_, tv1, _, _), LB(_, tv2, _, _)) if tv1 === tv2 => true
-        case Seq(LB(_, tv1, _, _), UB(_, tv2, _, _)) if (tv1: ST) === tv2 => true
+        case Seq(LB(_, tv1, _), LB(_, tv2, _)) if tv1 === tv2 => true
+        case Seq(UB(tv1, _, _), UB(tv2, _, _)) if tv1 === tv2 => true
+        case Seq(UB(_, tv1, _), LB(_, tv2, _)) if tv1 === tv2 => true
+        case Seq(LB(_, tv1, _), UB(_, tv2, _)) if (tv1: ST) === tv2 => true
         case _ => false
       }
     }
@@ -331,21 +333,21 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       case Nil => Nil
       case head :: _ => {
         var flow = head match {
-          case _: LB => false // flow is from left to right
-          case _: UB => true // flow is from right to left
+          case _: LB => true // flow is from left to right
+          case _: UB => false // flow is from right to left
         }
 
         head -> flow :: reason.sliding(2).collect {
-          case Seq(LB(st1, tv1, _, _), u@LB(st2, tv2, _, _)) if tv1 === tv2 || st1 === st2 =>
+          case Seq(LB(st1, tv1, _), u@LB(st2, tv2, _)) if tv1 === tv2 || st1 === st2 =>
             flow = !flow
             u -> flow
-          case Seq(UB(tv1, st1, _, _), u@UB(tv2, st2, _, _)) if tv1 === tv2 || st1 === st2 =>
+          case Seq(UB(tv1, st1, _), u@UB(tv2, st2, _)) if tv1 === tv2 || st1 === st2 =>
             flow = !flow
             u -> flow
-          case Seq(UB(_, tv1, _, _), u@LB(_, tv2, _, _)) if tv1 == tv2 =>
+          case Seq(UB(tv1, st1, _), u@LB(st2, tv2, _)) if tv1 == st2 || tv2 == st1 =>
             flow = !flow
             u -> flow
-          case Seq(LB(_, tv1, _, _), u@UB(_, tv2, _, _)) if tv1 == tv2 =>
+          case Seq(LB(st1, tv1, _), u@UB(tv2, st2, _)) if tv1 == st2 || tv2 == st1 =>
             flow = !flow
             u -> flow
         }.toList
@@ -361,21 +363,21 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         }
 
         val (start, end) = head match {
-          case UB(tv, st, _, _) => (tv, st)
-          case LB(st, tv, _, _) => (tv, st)
+          case UB(tv, st, _) => (tv, st)
+          case LB(st, tv, _) => (tv, st)
         }
 
         start -> flow :: reason.sliding(2).collect {
-          case Seq(LB(_, tv1, _, _), LB(_, tv2, _, _)) if tv1 == tv2 =>
+          case Seq(LB(_, tv1, _), LB(_, tv2, _)) if tv1 == tv2 =>
             flow = !flow
             tv1 -> flow
-          case Seq(UB(tv1, _, _, _), UB(tv2, _, _, _)) if tv1 == tv2 =>
+          case Seq(UB(tv1, _, _), UB(tv2, _, _)) if tv1 == tv2 =>
             flow = !flow
             tv1 -> flow
-          case Seq(UB(_, tv1, _, _), LB(_, tv2, _, _)) if tv1 == tv2 =>
+          case Seq(UB(_, tv1, _), LB(_, tv2, _)) if tv1 == tv2 =>
             flow = !flow
             tv1 -> flow
-          case Seq(LB(_, tv1, _, _), UB(_, tv2, _, _)) if tv1 == tv2 =>
+          case Seq(LB(_, tv1, _), UB(_, tv2, _)) if tv1 == tv2 =>
             flow = !flow
             tv1 -> flow
         }.toList ::: end -> false :: Nil // last type locations are always shown from consumption to introduction
@@ -385,21 +387,55 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
 
   abstract class UnificationReason {
     var nested: Opt[Unification] = N
+    val a: ST = this match {
+      case LB(st, tv, provs) => st
+      case UB(tv, st, provs) => tv
+    }
+    val b: ST = this match {
+      case LB(st, tv, provs) => tv
+      case UB(tv, st, provs) => st
+    }
     override def toString: Str = this match {
-      case LB(st, tv, _, _) => s"lb(${st.toString} <: ${tv.toString})"
-      case UB(tv, st, _, _) => s"ub(${tv.toString} <: ${st.toString})"
+      case LB(st, tv, _) => s"lb(${st.toString} <: ${tv.toString})"
+      case UB(tv, st, _) => s"ub(${tv.toString} <: ${st.toString})"
     }
 
     // indicates which type was unified with which one
     // that is what the next unification should be
     def unifiedWith: ST = this match {
-      case LB(st, _, _, _) => st
-      case UB(_, st, _, _) => st
+      case LB(st, _, _) => st
+      case UB(_, st, _) => st
+    }
+    // indicates which type was unified with which one
+    // that is what the next unification should be
+    def unifiedAgainst: ST = this match {
+      case LB(_, tv, _) => tv
+      case UB(tv, _, _) => tv
+    }
+
+    def getProvs: Ls[TP] = this match {
+      case LB(_, _, provs) => provs
+      case UB(_, _, provs) => provs
+    }
+
+    def getCleanProvs: Ls[TP] = this match {
+      // first location binds tighter so only use second prov if it's not same as first
+      case LB(_, _, provs) => provs match {
+        case head :: _ => head :: provs.sliding(2).collect {
+          case Seq(TypeProvenance(S(loc1), _, _, _), tp@TypeProvenance(S(loc2), _, _, _)) if loc1 != loc2 => tp
+        }.toList
+        case _ => provs
+      }
+      // second location binds tighter
+      case UB(_, _, provs) => provs.sliding(2).collect {
+        case Seq(TypeProvenance(S(loc1), _, _, _), tp@TypeProvenance(S(loc2), _, _, _)) if loc1 != loc2 => tp
+        case Seq(tp) => tp
+      }.toList
     }
   }
 
-  final case class LB(st: ST, tv: ST, stProvs: Ls[TP], tvProvs: Ls[TP]) extends UnificationReason
-  final case class UB(tv: ST, st: ST, tvProvs: Ls[TP], stProvs: Ls[TP]) extends UnificationReason
+  final case class LB(st: ST, tv: ST, provs: Ls[TP]) extends UnificationReason
+  final case class UB(tv: ST, st: ST, provs: Ls[TP]) extends UnificationReason
 
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
     * Invariant: Types appearing in the bounds never have a level higher than this variable's `level`. */

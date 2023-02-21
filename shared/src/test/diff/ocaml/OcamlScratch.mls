@@ -5,6 +5,8 @@ type a = int
 //│ Defined type alias a
 
 1 : a
+//│ ╔══[ERROR] [level 0] Cannot unify int and a because lb(Int <: a)
+//│ ╙── (lb(Int <: a),true)   int ---> a 
 //│ res: a
 
 true : bool
@@ -37,26 +39,39 @@ Left
 Left(1,2)
 //│ 0. Typing term Left (1, 2,)
 //│ | 0. Typing term Left
-//│ | 0. : ((α92, α92,) -> either[α92,α93])
+//│ | 0. : [((α92, α92,) -> either[α92,α93])]
 //│ | 0. Typing term 1, 2,
 //│ | | 0. Typing term 1
 //│ | | 0. : Int
 //│ | | 0. Typing term 2
 //│ | | 0. : Int
 //│ | 0. : (Int, Int,)
-//│ | CONSTRAIN ((α92, α92,) -> either[α92,α93]) <! ((Int, Int,) -> α94)
+//│ | CONSTRAIN [((α92, α92,) -> either[α92,α93])] <! ((Int, Int,) -> α94)
 //│ |   where 
-//│ | C ((α92, α92,) -> either[α92,α93]) <! ((Int, Int,) -> α94)    (0) where FunctionType <: FunctionType}
-//│ | | C (Int, Int,) <! (α92, α92,)    (1) where TupleType <: TupleType}
-//│ | | | C Int <! α92    (2) where TypeRef <: TypeVariable}
-//│ | | | C Int <! α92    (3) where TypeRef <: TypeVariable}
-//│ | | | | Cached!
-//│ | | C either[α92,α93] <! α94    (3) where TypeRef <: TypeVariable}
+//│ | C [((α92, α92,) -> either[α92,α93])] <! ((Int, Int,) -> α94)    (0) where ProvType <: FunctionType}
+//│ | | C ((α92, α92,) -> either[α92,α93]) <! ((Int, Int,) -> α94)    (0) where FunctionType <: FunctionType}
+//│ | | | C (Int, Int,) <! (α92, α92,)    (1) where TupleType <: TupleType}
+//│ | | | | C Int <! α92    (2) where TypeRef <: TypeVariable}
+//│ | | | | C Int <! α92    (3) where TypeRef <: TypeVariable}
+//│ | | | | | Cached!
+//│ | | | C either[α92,α93] <! α94    (3) where TypeRef <: TypeVariable}
+//│ | U [((α92, α92,) -> either[α92,α93])] <: ((Int, Int,) -> α94)
+//│ | | U [((α92, α92,) -> either[α92,α93])] <: ((Int, Int,) -> α94) because lb(((α92, α92,) -> either[α92,α93]) <: ((Int, Int,) -> α94))
+//│ | | | U (Int, Int,) <: (α92, α92,)
+//│ | | | | U (Int, Int,) <: (α92, α92,) because lb((Int, Int,) <: (α92, α92,))
+//│ | | | | | U Int <: α92
+//│ | | | | | | U Int <: α92 because lb(Int <: α92)
+//│ | | | | | | | U α92 += (Int,List(lb(Int <: α92)))
+//│ | | | | | U Int <: α92
+//│ | | | | | | U Int <: α92 because lb(Int <: α92)
+//│ | | | U either[α92,α93] <: α94
+//│ | | | | U either[α92,α93] <: α94 because lb(either[α92,α93] <: α94)
+//│ | | | | | U α94 += (either[α92,α93],List(lb(either[α92,α93] <: α94)))
 //│ 0. : α94
 //│ ⬤ Typed as: α94
 //│  where: 
-//│ 		α92 :> Int
-//│ 		α94 :> either[α92,α93]
+//│ 		α92 :> [[Int]]
+//│ 		α94 :> [[[either[α92,α93]]]]
 //│ res: either[int, nothing]
 
 Left(((1,2)))
@@ -92,10 +107,15 @@ let f x = let (a, b) = x in a + b
 //│ | | ADT name: TypeName(Tup)
 //│ | | typed condition term x
 //│ | | 1. Typing term x
-//│ | | 1. : α124'
-//│ | | CONSTRAIN α124' <! (α125', α126',)
+//│ | | 1. : [α124']
+//│ | | CONSTRAIN [α124'] <! [(α125', α126',)]
 //│ | |   where 
-//│ | | C α124' <! (α125', α126',)    (0) where TypeVariable <: TupleType}
+//│ | | C [α124'] <! [(α125', α126',)]    (0) where ProvType <: ProvType}
+//│ | | | C α124' <! [(α125', α126',)]    (0) where TypeVariable <: ProvType}
+//│ | | | | C α124' <! (α125', α126',)    (0) where TypeVariable <: TupleType}
+//│ | | U [α124'] <: [(α125', α126',)]
+//│ | | | U [α124'] <: [(α125', α126',)] because ub(α124' <: (α125', α126',))
+//│ | | | | U α124' += ((α125', α126',),List(ub(α124' <: (α125', α126',))))
 //│ | | fields List(a, b)
 //│ | | Typing a field 0 in tup
 //│ | | Field a : α125'
@@ -104,52 +124,92 @@ let f x = let (a, b) = x in a + b
 //│ | | 1. Typing term + a b
 //│ | | | 1. Typing term + a
 //│ | | | | 1. Typing term +
-//│ | | | | 1. : (Int -> (Int -> Int))
+//│ | | | | 1. : [(Int -> (Int -> Int))]
 //│ | | | | 1. Typing term a
-//│ | | | | 1. : α125'
-//│ | | | | CONSTRAIN (Int -> (Int -> Int)) <! (α125' -> α128')
+//│ | | | | 1. : [α125']
+//│ | | | | CONSTRAIN [(Int -> (Int -> Int))] <! ([α125'] -> α128')
 //│ | | | |   where 
-//│ | | | | C (Int -> (Int -> Int)) <! (α125' -> α128')    (0) where FunctionType <: FunctionType}
-//│ | | | | | C α125' <! Int    (1) where TypeVariable <: TypeRef}
-//│ | | | | | C (Int -> Int) <! α128'    (2) where FunctionType <: TypeVariable}
+//│ | | | | C [(Int -> (Int -> Int))] <! ([α125'] -> α128')    (0) where ProvType <: FunctionType}
+//│ | | | | | C (Int -> (Int -> Int)) <! ([α125'] -> α128')    (0) where FunctionType <: FunctionType}
+//│ | | | | | | C [α125'] <! Int    (1) where ProvType <: TypeRef}
+//│ | | | | | | | C α125' <! Int    (1) where TypeVariable <: TypeRef}
+//│ | | | | | | C (Int -> Int) <! α128'    (2) where FunctionType <: TypeVariable}
+//│ | | | | U [(Int -> (Int -> Int))] <: ([α125'] -> α128')
+//│ | | | | | U [(Int -> (Int -> Int))] <: ([α125'] -> α128') because lb((Int -> (Int -> Int)) <: ([α125'] -> α128'))
+//│ | | | | | | U [α125'] <: Int
+//│ | | | | | | | U [α125'] <: Int because ub(α125' <: Int)
+//│ | | | | | | | | U α125' += (Int,List(ub(α125' <: Int)))
+//│ | | | | | | U (Int -> Int) <: α128'
+//│ | | | | | | | U (Int -> Int) <: α128' because lb((Int -> Int) <: α128')
+//│ | | | | | | | | U α128' += ((Int -> Int),List(lb((Int -> Int) <: α128')))
 //│ | | | 1. : α128'
 //│ | | | 1. Typing term b
-//│ | | | 1. : α126'
-//│ | | | CONSTRAIN α128' <! (α126' -> α129')
+//│ | | | 1. : [α126']
+//│ | | | CONSTRAIN α128' <! ([α126'] -> α129')
 //│ | | |   where 
-//│ 		α128' :> (Int -> Int)
-//│ | | | C α128' <! (α126' -> α129')    (0) where TypeVariable <: FunctionType}
-//│ | | | | C (Int -> Int) <! (α126' -> α129')    (1) where FunctionType <: FunctionType}
-//│ | | | | | C α126' <! Int    (2) where TypeVariable <: TypeRef}
-//│ | | | | | C Int <! α129'    (3) where TypeRef <: TypeVariable}
+//│ 		α128' :> [[[(Int -> Int)]]]
+//│ | | | C α128' <! ([α126'] -> α129')    (0) where TypeVariable <: FunctionType}
+//│ | | | | C [[[(Int -> Int)]]] <! ([α126'] -> α129')    (1) where ProvType <: FunctionType}
+//│ | | | | | C [[(Int -> Int)]] <! ([α126'] -> α129')    (1) where ProvType <: FunctionType}
+//│ | | | | | | C [(Int -> Int)] <! ([α126'] -> α129')    (1) where ProvType <: FunctionType}
+//│ | | | | | | | C (Int -> Int) <! ([α126'] -> α129')    (1) where FunctionType <: FunctionType}
+//│ | | | | | | | | C [α126'] <! Int    (2) where ProvType <: TypeRef}
+//│ | | | | | | | | | C α126' <! Int    (2) where TypeVariable <: TypeRef}
+//│ | | | | | | | | C Int <! α129'    (3) where TypeRef <: TypeVariable}
+//│ | | | U α128' <: ([α126'] -> α129')
+//│ | | | | U α128' <: ([α126'] -> α129') because ub(α128' <: ([α126'] -> α129'))
+//│ | | | | | U  ([α126'] -> α129') with
+//│ | | | | |     α128' :> (Int -> Int) for List(lb((Int -> Int) <: α128'))
+//│ | | | | |     with new reason List(lb([[[(Int -> Int)]]] <: ([α126'] -> α129')))
+//│ | | | | | U (Int -> Int) <: ([α126'] -> α129') because lb([[[(Int -> Int)]]] <: ([α126'] -> α129'))
+//│ | | | | | | U [α126'] <: Int
+//│ | | | | | | | U [α126'] <: Int because ub(α126' <: Int)
+//│ | | | | | | | | U α126' += (Int,List(ub(α126' <: Int)))
+//│ | | | | | | U Int <: α129'
+//│ | | | | | | | U Int <: α129' because lb(Int <: α129')
+//│ | | | | | | | | U α129' += (Int,List(lb(Int <: α129')))
+//│ | | | | | U α128' += (([α126'] -> α129'),List(ub(α128' <: ([α126'] -> α129'))))
 //│ | | 1. : α129'
 //│ | | CONSTRAIN α129' <! α127'
 //│ | |   where 
-//│ 		α129' :> Int
+//│ 		α129' :> [[[Int]]]
 //│ | | C α129' <! α127'    (0) where TypeVariable <: TypeVariable}
-//│ | | | C Int <! α127'    (1) where TypeRef <: TypeVariable}
+//│ | | | C [[[Int]]] <! α127'    (1) where ProvType <: TypeVariable}
+//│ | | | | C [[Int]] <! α127'    (1) where ProvType <: TypeVariable}
+//│ | | | | | C [Int] <! α127'    (1) where ProvType <: TypeVariable}
+//│ | | | | | | C Int <! α127'    (1) where TypeRef <: TypeVariable}
+//│ | | U α129' <: α127'
+//│ | | | U α129' <: α127' because ub(α129' <: α127')
+//│ | | | | U  α127' with
+//│ | | | |     α129' :> Int for List(lb(Int <: α129'))
+//│ | | | |     with new reason List(lb([[[Int]]] <: α127'))
+//│ | | | | U Int <: α127' because lb([[[Int]]] <: α127')
+//│ | | | | | U α127' += (Int,List(lb([[[Int]]] <: α127')))
+//│ | | | | U α129' += (α127',List(ub(α129' <: α127')))
 //│ | 1. : α127'
 //│ 1. : (α124' -> α127')
 //│ ⬤ Typed as: (α124' -> α127')
 //│  where: 
-//│ 		α124' <: (α125', α126',)
-//│ 		α125' <: Int
-//│ 		α126' <: Int
-//│ 		α127' :> Int
+//│ 		α124' <: [[[[(α125', α126',)]]]]
+//│ 		α125' <: [[[[Int]]]]
+//│ 		α126' <: [[[[Int]]]]
+//│ 		α127' :> [[[[Int]]]]
 //│ f: (int, int,) -> int
 
 :e
 :unify
 if 1 == 2 then Left true else Right false
 //│ ╔══[ERROR] Type mismatch in `then` branch:
-//│ ║  l.143: 	if 1 == 2 then Left true else Right false
+//│ ║  l.201: 	if 1 == 2 then Left true else Right false
 //│ ║         	               ^^^^^^^^^
 //│ ╟── reference of type `bool` is not a 2-element tuple
-//│ ║  l.143: 	if 1 == 2 then Left true else Right false
+//│ ║  l.201: 	if 1 == 2 then Left true else Right false
 //│ ║         	                    ^^^^
 //│ ╟── Note: constraint arises from tuple type:
-//│ ║  l.18: 	type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
+//│ ║  l.20: 	type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
 //│ ╙──      	                                ^^^^^^^
+//│ ╔══[ERROR] [level 0] Cannot unify bool and (?a, ?a) because lb(Bool <: (α138, α138,))
+//│ ╙── (lb(Bool <: (α138, α138,)),true)   bool ---> (?a, ?a) 
 //│ res: either[nothing, bool]
 
 // :d
@@ -162,48 +222,82 @@ let f x = x
 f(true, false)
 //│ 0. Typing term f (true, false,)
 //│ | 0. Typing term f
-//│ | 0. : (α153 -> [α153])
+//│ | 0. : [(α153 -> [α153])]
 //│ | 0. Typing term true, false,
 //│ | | 0. Typing term true
-//│ | | 0. : Bool
+//│ | | 0. : [Bool]
 //│ | | 0. Typing term false
-//│ | | 0. : Bool
-//│ | 0. : (Bool, Bool,)
-//│ | CONSTRAIN (α153 -> [α153]) <! ((Bool, Bool,) -> α154)
+//│ | | 0. : [Bool]
+//│ | 0. : ([Bool], [Bool],)
+//│ | CONSTRAIN [(α153 -> [α153])] <! (([Bool], [Bool],) -> α154)
 //│ |   where 
-//│ | C (α153 -> [α153]) <! ((Bool, Bool,) -> α154)    (0) where FunctionType <: FunctionType}
-//│ | | C (Bool, Bool,) <! α153    (1) where TupleType <: TypeVariable}
-//│ | | C [α153] <! α154    (2) where ProvType <: TypeVariable}
-//│ | | | C α153 <! α154    (2) where TypeVariable <: TypeVariable}
-//│ | | | | C (Bool, Bool,) <! α154    (3) where TupleType <: TypeVariable}
+//│ | C [(α153 -> [α153])] <! (([Bool], [Bool],) -> α154)    (0) where ProvType <: FunctionType}
+//│ | | C (α153 -> [α153]) <! (([Bool], [Bool],) -> α154)    (0) where FunctionType <: FunctionType}
+//│ | | | C ([Bool], [Bool],) <! α153    (1) where TupleType <: TypeVariable}
+//│ | | | C [α153] <! α154    (2) where ProvType <: TypeVariable}
+//│ | | | | C α153 <! α154    (2) where TypeVariable <: TypeVariable}
+//│ | | | | | C [[[([Bool], [Bool],)]]] <! α154    (3) where ProvType <: TypeVariable}
+//│ | | | | | | C [[([Bool], [Bool],)]] <! α154    (3) where ProvType <: TypeVariable}
+//│ | | | | | | | C [([Bool], [Bool],)] <! α154    (3) where ProvType <: TypeVariable}
+//│ | | | | | | | | C ([Bool], [Bool],) <! α154    (3) where TupleType <: TypeVariable}
+//│ | U [(α153 -> [α153])] <: (([Bool], [Bool],) -> α154)
+//│ | | U [(α153 -> [α153])] <: (([Bool], [Bool],) -> α154) because lb((α153 -> [α153]) <: (([Bool], [Bool],) -> α154))
+//│ | | | U ([Bool], [Bool],) <: α153
+//│ | | | | U ([Bool], [Bool],) <: α153 because lb(([Bool], [Bool],) <: α153)
+//│ | | | | | U α153 += (([Bool], [Bool],),List(lb(([Bool], [Bool],) <: α153)))
+//│ | | | U [α153] <: α154
+//│ | | | | U [α153] <: α154 because ub(α153 <: α154)
+//│ | | | | | U  α154 with
+//│ | | | | |     α153 :> ([Bool], [Bool],) for List(lb(([Bool], [Bool],) <: α153))
+//│ | | | | |     with new reason List(lb([[[([Bool], [Bool],)]]] <: α154))
+//│ | | | | | U ([Bool], [Bool],) <: α154 because lb([[[([Bool], [Bool],)]]] <: α154)
+//│ | | | | | | U α154 += (([Bool], [Bool],),List(lb([[[([Bool], [Bool],)]]] <: α154)))
+//│ | | | | | U α153 += (α154,List(ub(α153 <: α154)))
 //│ 0. : α154
 //│ ⬤ Typed as: α154
 //│  where: 
-//│ 		α154 :> (Bool, Bool,)
+//│ 		α154 :> [[[[[[([Bool], [Bool],)]]]]]]
 //│ res: (bool, bool,)
 
 :d
 f((true, false))
 //│ 0. Typing term f (true, false,)
 //│ | 0. Typing term f
-//│ | 0. : (α156 -> [α156])
+//│ | 0. : [(α156 -> [α156])]
 //│ | 0. Typing term true, false,
 //│ | | 0. Typing term true
-//│ | | 0. : Bool
+//│ | | 0. : [Bool]
 //│ | | 0. Typing term false
-//│ | | 0. : Bool
-//│ | 0. : (Bool, Bool,)
-//│ | CONSTRAIN (α156 -> [α156]) <! ((Bool, Bool,) -> α157)
+//│ | | 0. : [Bool]
+//│ | 0. : ([Bool], [Bool],)
+//│ | CONSTRAIN [(α156 -> [α156])] <! (([Bool], [Bool],) -> α157)
 //│ |   where 
-//│ | C (α156 -> [α156]) <! ((Bool, Bool,) -> α157)    (0) where FunctionType <: FunctionType}
-//│ | | C (Bool, Bool,) <! α156    (1) where TupleType <: TypeVariable}
-//│ | | C [α156] <! α157    (2) where ProvType <: TypeVariable}
-//│ | | | C α156 <! α157    (2) where TypeVariable <: TypeVariable}
-//│ | | | | C (Bool, Bool,) <! α157    (3) where TupleType <: TypeVariable}
+//│ | C [(α156 -> [α156])] <! (([Bool], [Bool],) -> α157)    (0) where ProvType <: FunctionType}
+//│ | | C (α156 -> [α156]) <! (([Bool], [Bool],) -> α157)    (0) where FunctionType <: FunctionType}
+//│ | | | C ([Bool], [Bool],) <! α156    (1) where TupleType <: TypeVariable}
+//│ | | | C [α156] <! α157    (2) where ProvType <: TypeVariable}
+//│ | | | | C α156 <! α157    (2) where TypeVariable <: TypeVariable}
+//│ | | | | | C [[[([Bool], [Bool],)]]] <! α157    (3) where ProvType <: TypeVariable}
+//│ | | | | | | C [[([Bool], [Bool],)]] <! α157    (3) where ProvType <: TypeVariable}
+//│ | | | | | | | C [([Bool], [Bool],)] <! α157    (3) where ProvType <: TypeVariable}
+//│ | | | | | | | | C ([Bool], [Bool],) <! α157    (3) where TupleType <: TypeVariable}
+//│ | U [(α156 -> [α156])] <: (([Bool], [Bool],) -> α157)
+//│ | | U [(α156 -> [α156])] <: (([Bool], [Bool],) -> α157) because lb((α156 -> [α156]) <: (([Bool], [Bool],) -> α157))
+//│ | | | U ([Bool], [Bool],) <: α156
+//│ | | | | U ([Bool], [Bool],) <: α156 because lb(([Bool], [Bool],) <: α156)
+//│ | | | | | U α156 += (([Bool], [Bool],),List(lb(([Bool], [Bool],) <: α156)))
+//│ | | | U [α156] <: α157
+//│ | | | | U [α156] <: α157 because ub(α156 <: α157)
+//│ | | | | | U  α157 with
+//│ | | | | |     α156 :> ([Bool], [Bool],) for List(lb(([Bool], [Bool],) <: α156))
+//│ | | | | |     with new reason List(lb([[[([Bool], [Bool],)]]] <: α157))
+//│ | | | | | U ([Bool], [Bool],) <: α157 because lb([[[([Bool], [Bool],)]]] <: α157)
+//│ | | | | | | U α157 += (([Bool], [Bool],),List(lb([[[([Bool], [Bool],)]]] <: α157)))
+//│ | | | | | U α156 += (α157,List(ub(α156 <: α157)))
 //│ 0. : α157
 //│ ⬤ Typed as: α157
 //│  where: 
-//│ 		α157 :> (Bool, Bool,)
+//│ 		α157 :> [[[[[[([Bool], [Bool],)]]]]]]
 //│ res: (bool, bool,)
 
 :dp
@@ -221,17 +315,17 @@ if 1 == 2 then Left((true, false)) else Right false
 :unify
 let test x =
  match x with true -> 0 | false -> "oops"
-//│ ╔══[ERROR] Type `string` does not match `int`
-//│ ╟──          string ---> ?a <--- int
-//│ ╟── `string` is the type of this `else` branch and it flows into `?a`
-//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
-//│ ║         	                                   ^^^^^^^
-//│ ╟── `?a` is the type of this if-then-else `expression`; `int` also flows here
-//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
+//│ ╔══[ERROR] [level 1] Cannot unify int and string because lb(Int <: α187'),lb(String <: α187')
+//│ ╟── (lb(Int <: α187'),true), (lb(String <: α187'),false)   int ---> ?a <--- string 
+//│ ╟── int is the type of `then` branch
+//│ ║  l.317: 	 match x with true -> 0 | false -> "oops"
+//│ ║         	                      ^
+//│ ╟── ?a is the type of if-then-else `expression`; int flows here
+//│ ║  l.317: 	 match x with true -> 0 | false -> "oops"
 //│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── `int` is the type of this `then` branch
-//│ ║  l.223: 	 match x with true -> 0 | false -> "oops"
-//│ ╙──       	                      ^
+//│ ╟── string is the type of `else` branch; ?a flows here
+//│ ║  l.317: 	 match x with true -> 0 | false -> "oops"
+//│ ╙──       	                                   ^^^^^^^
 //│ test: bool -> (int | string)
 
 
@@ -275,36 +369,36 @@ let clone x n =
 :unify
 let rec digitsOfInt n =
   ((digitsOfInt n) / 10) @ [remainder];;
-//│ ╔══[ERROR] Type `int` does not match `?a list`
-//│ ╙──          int <--- ?a list
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.371: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not an instance of `?a list`
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `?a list`
-//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.371: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from applied type reference:
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ╙──      	         ^^
+//│ ╔══[ERROR] [level 0] Cannot unify int and ?a list because lb([[[Int]]] <: list[α228'])
+//│ ╙── (lb([[[Int]]] <: list[α228']),true)   int ---> ?a list 
 //│ ╔══[ERROR] identifier not found: remainder
-//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.371: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──       	                            ^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.276: 	let rec digitsOfInt n =
+//│ ║  l.370: 	let rec digitsOfInt n =
 //│ ║         	                    ^^^
-//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.371: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `?a list` is not an instance of `int`
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ║        	                               ^^
 //│ ╟── but it flows into operator application with expected type `int`
-//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.371: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.277: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.371: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	   ^^^^^^^^^^^^^^^
 //│ ╟── from type reference:
 //│ ║  l.19: 	let ( / ): int -> int -> int
