@@ -19,7 +19,7 @@ trait UnificationSolver extends TyperDatatypes {
 
   // reason already has reason for a and b to be unified
   // this unification unifies types and create errors if they fail
-  def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason])
+  def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason], skipCache: Bool = false)
                 (implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit =
     trace( s"U ${a} = ${b} because ${reason.mkString(", ")}") {
     val st1 = a.unwrapProvs
@@ -29,7 +29,7 @@ trait UnificationSolver extends TyperDatatypes {
     def createProvs(a: ST, b: ST): Ls[TP] = a.typeUseLocations reverse_::: b.typeUseLocations
 
     // unification doesn't have an ordering
-    if (cache((st1, st2)) || cache(st2, st1)) return
+    if (!skipCache && cache((st1, st2)) || cache(st2, st1)) return
     else {
       cache += ((st1, st2))
       cache += ((st2, st1))
@@ -83,7 +83,7 @@ trait UnificationSolver extends TyperDatatypes {
   // this unification traverses bounds to reach a diverging or converging unification
   def traverseBounds(a: ST, b: ST, provs: Ls[TypeProvenance] = Nil, nested: Opt[Unification] = N)
                 (implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit =
-    trace( s"UT ${a} <: ${b}) len: ${provs.length}") {
+    trace( s"UT ${a} <: ${b} len: ${provs.length} ${nested.mkStringOr("", "nested: ")}") {
     val st1 = a.unwrapProvs
     val st2 = b.unwrapProvs
 
@@ -149,7 +149,9 @@ trait UnificationSolver extends TyperDatatypes {
       case _ =>
         val ur = LB(a, b, provs)
         ur.nested = nested
-        unifyTypes(a, b, ur :: Nil)
+        // skip cache because it hit the traverse bound cache
+        // but will actually unified in the next function call
+        unifyTypes(a, b, ur :: Nil, true)
     }
   }()
 
@@ -187,21 +189,21 @@ trait UnificationSolver extends TyperDatatypes {
   }
 
   def reportUnificationError(u: Unification)(implicit raise: Raise, ctx: Ctx) = {
-    def makeMessagesST(st: ST, ls: Ls[TP]): Ls[Message -> Opt[Loc]] = ls.map {
-      case TypeProvenance(loco, desc, _, false) => msg"${st.expPos} is the type of ${desc}" -> loco
-      case TypeProvenance(loco, desc, _, true) => msg"${st.expPos} is here" -> loco
-    }
     u.unificationChain match {
-      case Nil =>
-        val provs = u.a.typeUseLocations reverse_::: u.b.typeUseLocations
+      case Nil => ()
+      case head :: Nil =>
+        val messages = head._1.getCleanProvs match {
+          case Nil => Nil
+          case (head :: mid) :+ last => {
+            msg"${u.a.expPos} is here" -> head.loco ::
+              mid.map {
+                case TypeProvenance(loco, desc, _, false) => msg"it is the type of ${desc}" -> loco
+                case TypeProvenance(loco, desc, _, true) => msg"it is here" -> loco
+              } ::: msg"${u.b.expPos} is here" -> last.loco :: Nil
+          }
+        }
         val main = msg"Cannot unify ${u.a.expPos} and ${u.b.expPos}" -> N
-        raise(ErrorReport(main :: makeMessagesST(u.a, provs)))
-      case _ :: Nil =>
-        val message =
-          msg"[level ${u.unificationLevel.toString}] Cannot unify ${u.a.expPos} and ${u.b.expPos} because ${u.reason.mkString(",")}" -> N ::
-          toSequenceString(u) -> N :: Nil
-        val report = ErrorReport(message)
-        raise(report)
+        raise(ErrorReport(main :: messages))
       case chain@(head :: next :: _) =>
         val messages = createErrorMessage(head, next, true) ::: chain.sliding(2).collect {
           case Seq(fst, snd) => createErrorMessage(fst, snd)

@@ -316,8 +316,8 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     */
   case class Unification(a: ST, b: ST, reason: Ls[UnificationReason], desc: Str = "") {
     override def toString: Str = reason match {
-      case Nil => s"Unify ${a} and ${b}"
-      case _ => s"Unify ${a} and ${b} because ${reason.mkString(",")}"
+      case Nil => s"${a} = ${b}"
+      case _ => s"${a} = ${b} because ${reason.mkString(",")}"
     }
     def unificationLevel: Int = {
       reason.sliding(2).count {
