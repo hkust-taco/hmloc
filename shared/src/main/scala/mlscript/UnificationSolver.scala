@@ -21,7 +21,7 @@ trait UnificationSolver extends TyperDatatypes {
   // this unification unifies types and create errors if they fail
   def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason], skipCache: Bool = false)
                 (implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit =
-    trace( s"U ${a} = ${b} because ${reason.mkString(", ")}") {
+    trace( s"U ${a} = ${b} because ${reason.mkString(", ")} ${if (skipCache) "skipCache"}") {
     val st1 = a.unwrapProvs
     val st2 = b.unwrapProvs
 
@@ -29,10 +29,12 @@ trait UnificationSolver extends TyperDatatypes {
     def createProvs(a: ST, b: ST): Ls[TP] = a.typeUseLocations reverse_::: b.typeUseLocations
 
     // unification doesn't have an ordering
-    if (!skipCache && cache((st1, st2)) || cache(st2, st1)) return
-    else {
-      cache += ((st1, st2))
-      cache += ((st2, st1))
+    if (!skipCache) {
+      if (cache((st1, st2)) || cache(st2, st1)) return
+      else {
+        cache += ((st1, st2))
+        cache += ((st2, st1))
+      }
     }
 
     (st1, st2) match {
