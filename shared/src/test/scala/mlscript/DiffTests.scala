@@ -437,6 +437,7 @@ class DiffTests
             // if (mode.isDebugging) typer.resetState()
             if (mode.stats) typer.resetStats()
             typer.dbg = mode.dbg
+            typer.unifyMode = mode.unify
 
 //            typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors
 //            typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors || mode.simplifyError

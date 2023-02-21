@@ -10,11 +10,14 @@ trait UnificationSolver extends TyperDatatypes {
   self: Typer =>
 
   implicit val cache: MutSet[(ST, ST)] = MutSet()
+  var unifyMode: Bool = false
 
   // entry point
   def unifyTypes(a: ST, b: ST)(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
-    // start by traversing bounds
-    traverseBounds(a, b, a.typeUseLocations reverse_::: b.typeUseLocations)
+    if (unifyMode) {
+      // start by traversing bounds
+      traverseBounds(a, b, a.typeUseLocations reverse_::: b.typeUseLocations)
+    }
   }
 
   // reason already has reason for a and b to be unified

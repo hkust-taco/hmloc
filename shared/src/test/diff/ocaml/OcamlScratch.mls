@@ -1,312 +1,158 @@
 :OcamlParser
 :OcamlLoadLibrary
 
-type a = int
-//│ Defined type alias a
 
-1 : a
-//│ res: a
+let wrap x = Cons(x, Nil)
+//│ wrap: 'a -> list['a]
 
-true : bool
+
+// *** GOAL ***
+// ╔══[WARNING] Type `int` does not match `bool`
+// ╟── int ---> int list ---> ?a <--- bool list <--- bool
+// ╟── integer literal `int`
+// ║  l.101: 	if true then wrap 1 else wrap true
+// ║         	                  ^
+// ╟── integer literal `int`
+// ║  l.101: 	if true then wrap 1 else wrap true
+// ║         	                  ^
+// ╟── argument `int`
+// ║  l.101: 	if true then wrap 1 else wrap true
+// ║         	                  ^
+// ╟── reference `int`
+// ║  l.97: 	let wrap x = Cons(x, Nil)
+// ║        	                  ^
+// ╟── argument `bool`
+// ║  l.101: 	if true then wrap 1 else wrap true
+// ║         	                              ^^^^
+// ╟── reference `bool`
+// ║  l.101: 	if true then wrap 1 else wrap true
+// ╙──       	                              ^^^^
+
+// * We don't care about in-and-outs
+// ╟── int ---> int list ---> int --> int list ---> ...
+
+:unify
+if true then wrap 1 else wrap true
+//│ ╔══[ERROR] Cannot unify bool and int
+//│ ╟──        bool ---> ?a <--- int 
+//│ ╟── ?a is the type of variable; bool flows here
+//│ ║  l.5: 	let wrap x = Cons(x, Nil)
+//│ ║       	         ^
+//│ ╟── int is the type of integer literal; ?a flows here
+//│ ║  l.35: 	if true then wrap 1 else wrap true
+//│ ╙──      	                  ^
+//│ res: list[bool | int]
+
+
+:unify
+if true then wrap (if true then 1 else false) else wrap true
+//│ ╔══[ERROR] Cannot unify int and bool
+//│ ╟──        int ---> ?a <--- bool 
+//│ ╟── int is the type of `then` branch
+//│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║        	                                ^
+//│ ╟── ?a is the type of if-then-else `expression`; int flows here
+//│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── bool is the type of `else` branch; ?a flows here
+//│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ╙──      	                                       ^^^^^
+//│ ╔══[ERROR] Cannot unify bool and int
+//│ ╟──        bool ---> ?a <--- int 
+//│ ╟── ?a is the type of variable; bool flows here
+//│ ║  l.5: 	let wrap x = Cons(x, Nil)
+//│ ╙──     	         ^
+//│ ╔══[ERROR] Cannot unify bool and int
+//│ ╟──        bool ---> ?a <--- int 
+//│ ╟── ?a is the type of variable; bool flows here
+//│ ║  l.5: 	let wrap x = Cons(x, Nil)
+//│ ║       	         ^
+//│ ╟── int is the type of if-then-else `expression`; ?a flows here
+//│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── int is the type of `then` branch
+//│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ╙──      	                                ^
+//│ res: list[bool | int]
+
+
+:unify
+let test z = if true then wrap z else wrap true
+//│ test: 'a -> list[bool | 'a]
+
+
+:unify
+let rec t = test (if true then 1 else t)
+//│ ╔══[ERROR] Cannot unify int and bool
+//│ ╟──        int ---> ?a <--- bool 
+//│ ╟── ?a is the type of variable; int flows here
+//│ ║  l.5: 	let wrap x = Cons(x, Nil)
+//│ ║       	         ^
+//│ ╟── bool is the type of reference; ?a flows here
+//│ ║  l.80: 	let test z = if true then wrap z else wrap true
+//│ ╙──      	                                           ^^^^
+//│ t: 't
+//│   where
+//│     't :> list[bool | int | 't]
+
+
+
+
+let wrap x = not x
+//│ wrap: bool -> bool
+
+:unify
+let test z = wrap z
+//│ test: bool -> bool
+
+// TODO fix flow
+:ex
+test 1
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.110: 	test 1
+//│ ║         	^^^^^^
+//│ ╟── integer literal of type `int` is not an instance of `bool`
+//│ ║  l.110: 	test 1
+//│ ║         	     ^
+//│ ╟── Note: constraint arises from variable:
+//│ ║  l.105: 	let test z = wrap z
+//│ ║         	         ^
+//│ ╟── from type reference:
+//│ ║  l.56: 	let not: bool -> bool
+//│ ║        	         ^^^^
+//│ ╟── ========= Additional explanations below =========
+//│ ╟── [info] flowing from integer literal of type `int`
+//│ ║  l.110: 	test 1
+//│ ║         	     ^
+//│ ╟── [info] flowing from <nested> of type `int`
+//│ ╟── [info] flowing into type `bool`
+//│ ║  l.56: 	let not: bool -> bool
+//│ ║        	         ^^^^
+//│ ╟── [info] flowing into type `bool`
+//│ ║  l.56: 	let not: bool -> bool
+//│ ║        	         ^^^^
+//│ ╟── [info] flowing into <nested> of type `bool`
+//│ ╟── [info] flowing into reference of type `bool`
+//│ ║  l.101: 	let wrap x = not x
+//│ ║         	                 ^
+//│ ╟── [info] flowing into variable of type `bool`
+//│ ║  l.101: 	let wrap x = not x
+//│ ║         	         ^
+//│ ╟── [info] flowing into variable of type `?a`
+//│ ║  l.101: 	let wrap x = not x
+//│ ║         	         ^
+//│ ╟── [info] flowing into variable of type `?a`
+//│ ║  l.101: 	let wrap x = not x
+//│ ║         	         ^
+//│ ╟── [info] flowing into <nested> of type `?a`
+//│ ╟── [info] flowing into reference of type `?a`
+//│ ║  l.105: 	let test z = wrap z
+//│ ║         	                  ^
+//│ ╟── [info] flowing into variable of type `?b`
+//│ ║  l.105: 	let test z = wrap z
+//│ ╙──       	         ^
 //│ res: bool
 
-match true with true -> 1 | false -> 2
-//│ res: int
-
-// :d
-:dp
-type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
-//│ Parsed: TypeDef(Als, TypeName(either), List(TypeName('a), TypeName('b)), Union(AppliedType(TypeName(Right),List(TypeName('b))),Union(AppliedType(TypeName(Left),List(TypeName('a))),AppliedType(TypeName(Left),List(TypeName('a))))), List())
-//│ TypeDef(Cls, TypeName(Left), List(TypeName('a)), Record(List((_0,Tuple(List(TypeName('a), TypeName('a)))))), List(_0)) of adt: Some((TypeName(either),List(0)))
-//│ TypeDef(Cls, TypeName(Right), List(TypeName('b)), Record(List((_0,TypeName('b)))), List(_0)) of adt: Some((TypeName(either),List(1)))
-//│ Def(false, Left, PolyType(List(TypeName('a), TypeName('b)),Function(Tuple(List(TypeName('a), TypeName('a))),AppliedType(TypeName(either),List(TypeName('a), TypeName('b))))), true)
-//│ Def(false, Right, PolyType(List(TypeName('a), TypeName('b)),Function(TypeName('b),AppliedType(TypeName(either),List(TypeName('a), TypeName('b))))), true)
-//│ Defined type alias either[+'a, +'b]
-//│ Defined class Left[+'a]
-//│ Defined class Right[+'b]
-//│ Left: ('a, 'a,) -> either['a, nothing]
-//│ Right: 'a -> either[nothing, 'a]
-
-Right(1)
-//│ res: either[nothing, int]
-
-Left
-//│ res: ('a, 'a,) -> either['a, nothing]
-
-:d
-Left(1,2)
-//│ 0. Typing term Left (1, 2,)
-//│ | 0. Typing term Left
-//│ | 0. : [((α92, α92,) -> either[α92,α93])]
-//│ | 0. Typing term 1, 2,
-//│ | | 0. Typing term 1
-//│ | | 0. : Int
-//│ | | 0. Typing term 2
-//│ | | 0. : Int
-//│ | 0. : (Int, Int,)
-//│ | CONSTRAIN [((α92, α92,) -> either[α92,α93])] <! ((Int, Int,) -> α94)
-//│ |   where 
-//│ | C [((α92, α92,) -> either[α92,α93])] <! ((Int, Int,) -> α94)    (0) where ProvType <: FunctionType}
-//│ | | C ((α92, α92,) -> either[α92,α93]) <! ((Int, Int,) -> α94)    (0) where FunctionType <: FunctionType}
-//│ | | | C (Int, Int,) <! (α92, α92,)    (1) where TupleType <: TupleType}
-//│ | | | | C Int <! α92    (2) where TypeRef <: TypeVariable}
-//│ | | | | C Int <! α92    (3) where TypeRef <: TypeVariable}
-//│ | | | | | Cached!
-//│ | | | C either[α92,α93] <! α94    (3) where TypeRef <: TypeVariable}
-//│ | UT [((α92, α92,) -> either[α92,α93])] <: ((Int, Int,) -> α94) len: 2 
-//│ | | U [((α92, α92,) -> either[α92,α93])] = ((Int, Int,) -> α94) because lb([((α92, α92,) -> either[α92,α93])] <: ((Int, Int,) -> α94))
-//│ 0. : α94
-//│ ⬤ Typed as: α94
-//│  where: 
-//│ 		α92 :> [[Int]]
-//│ 		α94 :> [[[either[α92,α93]]]]
-//│ res: either[int, nothing]
-
-Left(((1,2)))
-//│ res: either[int, nothing]
-
-// :d
-// :dp
-// :unifyDbg
-// let test x =
-//  match x with True -> 0 | False -> 1
-
-// TODO should be an error
-:unify
-:dp
-let text x =
-  match x with Left l -> l | Right r -> r
-//│ Parsed: Def(false, text, Lam(Var(x), If(Var(x), List(IfThen(App(Var(Left), Var(l)), Var(l), IfThen(App(Var(Right), Var(r)), Var(r)))), true)
-//│ text: either['a, 'a] -> 'a
-
-:unify
-let text x =
-  match x with Left (l1, l2) -> l1 | Right r -> r
-//│ text: either['a, 'a] -> 'a
-
-
-:d
-let f x = let (a, b) = x in a + b
-//│ 1. Typing term x => if x(a, b,) then + a b
-//│ | 1. Typing pattern x
-//│ | 1. : α124'
-//│ | 1. Typing term if x(a, b,) then + a b
-//│ | | If(Var(x), List(IfThen(Tup(Var(a), Var(b)), App(App(Var(+), Var(a)), Var(b))))
-//│ | | ADT name: TypeName(Tup)
-//│ | | typed condition term x
-//│ | | 1. Typing term x
-//│ | | 1. : [α124']
-//│ | | CONSTRAIN [α124'] <! [(α125', α126',)]
-//│ | |   where 
-//│ | | C [α124'] <! [(α125', α126',)]    (0) where ProvType <: ProvType}
-//│ | | | C α124' <! [(α125', α126',)]    (0) where TypeVariable <: ProvType}
-//│ | | | | C α124' <! (α125', α126',)    (0) where TypeVariable <: TupleType}
-//│ | | UT [α124'] <: [(α125', α126',)] len: 4 
-//│ | | | UT  (α125', α126',) with
-//│ | | | UT  α124' += ((α125', α126',),List(ub(α124' <: (α125', α126',))))
-//│ | | fields List(a, b)
-//│ | | Typing a field 0 in tup
-//│ | | Field a : α125'
-//│ | | Typing b field 1 in tup
-//│ | | Field b : α126'
-//│ | | 1. Typing term + a b
-//│ | | | 1. Typing term + a
-//│ | | | | 1. Typing term +
-//│ | | | | 1. : [(Int -> (Int -> Int))]
-//│ | | | | 1. Typing term a
-//│ | | | | 1. : [α125']
-//│ | | | | CONSTRAIN [(Int -> (Int -> Int))] <! ([α125'] -> α128')
-//│ | | | |   where 
-//│ | | | | C [(Int -> (Int -> Int))] <! ([α125'] -> α128')    (0) where ProvType <: FunctionType}
-//│ | | | | | C (Int -> (Int -> Int)) <! ([α125'] -> α128')    (0) where FunctionType <: FunctionType}
-//│ | | | | | | C [α125'] <! Int    (1) where ProvType <: TypeRef}
-//│ | | | | | | | C α125' <! Int    (1) where TypeVariable <: TypeRef}
-//│ | | | | | | C (Int -> Int) <! α128'    (2) where FunctionType <: TypeVariable}
-//│ | | | | UT [(Int -> (Int -> Int))] <: ([α125'] -> α128') len: 2 
-//│ | | | | | U [(Int -> (Int -> Int))] = ([α125'] -> α128') because lb([(Int -> (Int -> Int))] <: ([α125'] -> α128'))
-//│ | | | 1. : α128'
-//│ | | | 1. Typing term b
-//│ | | | 1. : [α126']
-//│ | | | CONSTRAIN α128' <! ([α126'] -> α129')
-//│ | | |   where 
-//│ 		α128' :> [[[(Int -> Int)]]]
-//│ | | | C α128' <! ([α126'] -> α129')    (0) where TypeVariable <: FunctionType}
-//│ | | | | C [[[(Int -> Int)]]] <! ([α126'] -> α129')    (1) where ProvType <: FunctionType}
-//│ | | | | | C [[(Int -> Int)]] <! ([α126'] -> α129')    (1) where ProvType <: FunctionType}
-//│ | | | | | | C [(Int -> Int)] <! ([α126'] -> α129')    (1) where ProvType <: FunctionType}
-//│ | | | | | | | C (Int -> Int) <! ([α126'] -> α129')    (1) where FunctionType <: FunctionType}
-//│ | | | | | | | | C [α126'] <! Int    (2) where ProvType <: TypeRef}
-//│ | | | | | | | | | C α126' <! Int    (2) where TypeVariable <: TypeRef}
-//│ | | | | | | | | C Int <! α129'    (3) where TypeRef <: TypeVariable}
-//│ | | | UT α128' <: ([α126'] -> α129') len: 1 
-//│ | | | | UT  ([α126'] -> α129') with
-//│ | | | | UT  [[[(Int -> Int)]]] <: α128' <: ([α126'] -> α129')
-//│ | | | | UT [[[(Int -> Int)]]] <: ([α126'] -> α129') len: 4 
-//│ | | | | | U [[[(Int -> Int)]]] = ([α126'] -> α129') because lb([[[(Int -> Int)]]] <: ([α126'] -> α129'))
-//│ | | | | UT  ([α126'] -> α129') with
-//│ | | | | UT  α128' += (([α126'] -> α129'),List(ub(α128' <: ([α126'] -> α129'))))
-//│ | | 1. : α129'
-//│ | | CONSTRAIN α129' <! α127'
-//│ | |   where 
-//│ 		α129' :> [[[Int]]]
-//│ | | C α129' <! α127'    (0) where TypeVariable <: TypeVariable}
-//│ | | | C [[[Int]]] <! α127'    (1) where ProvType <: TypeVariable}
-//│ | | | | C [[Int]] <! α127'    (1) where ProvType <: TypeVariable}
-//│ | | | | | C [Int] <! α127'    (1) where ProvType <: TypeVariable}
-//│ | | | | | | C Int <! α127'    (1) where TypeRef <: TypeVariable}
-//│ | | UT α129' <: α127' len: 2 
-//│ | | | UT  α127' with
-//│ | | | UT  [[[Int]]] <: α129' <: α127'
-//│ | | | UT [[[Int]]] <: α127' len: 5 
-//│ | | | | UT  Int with
-//│ | | | | UT  α127' += (Int,List(lb(Int <: α127')))
-//│ | | | UT  α127' with
-//│ | | | UT  α129' += (α127',List(ub(α129' <: α127')))
-//│ | 1. : α127'
-//│ 1. : (α124' -> α127')
-//│ ⬤ Typed as: (α124' -> α127')
-//│  where: 
-//│ 		α124' <: [[[[(α125', α126',)]]]]
-//│ 		α125' <: [[[[Int]]]]
-//│ 		α126' <: [[[[Int]]]]
-//│ 		α127' :> [[[[Int]]]]
-//│ f: (int, int,) -> int
-
-:e
-:unify
-if 1 == 2 then Left true else Right false
-//│ ╔══[ERROR] Type mismatch in `then` branch:
-//│ ║  l.177: 	if 1 == 2 then Left true else Right false
-//│ ║         	               ^^^^^^^^^
-//│ ╟── reference of type `bool` is not a 2-element tuple
-//│ ║  l.177: 	if 1 == 2 then Left true else Right false
-//│ ║         	                    ^^^^
-//│ ╟── Note: constraint arises from tuple type:
-//│ ║  l.18: 	type ('a, 'b) either = Left of ('a * 'a) | Right of 'b
-//│ ╙──      	                                ^^^^^^^
-//│ res: either[nothing, bool]
-
-// :d
-// succ
-
-let f x = x
-//│ f: 'a -> 'a
-
-:d
-f(true, false)
-//│ 0. Typing term f (true, false,)
-//│ | 0. Typing term f
-//│ | 0. : [(α153 -> [α153])]
-//│ | 0. Typing term true, false,
-//│ | | 0. Typing term true
-//│ | | 0. : [Bool]
-//│ | | 0. Typing term false
-//│ | | 0. : [Bool]
-//│ | 0. : ([Bool], [Bool],)
-//│ | CONSTRAIN [(α153 -> [α153])] <! (([Bool], [Bool],) -> α154)
-//│ |   where 
-//│ | C [(α153 -> [α153])] <! (([Bool], [Bool],) -> α154)    (0) where ProvType <: FunctionType}
-//│ | | C (α153 -> [α153]) <! (([Bool], [Bool],) -> α154)    (0) where FunctionType <: FunctionType}
-//│ | | | C ([Bool], [Bool],) <! α153    (1) where TupleType <: TypeVariable}
-//│ | | | C [α153] <! α154    (2) where ProvType <: TypeVariable}
-//│ | | | | C α153 <! α154    (2) where TypeVariable <: TypeVariable}
-//│ | | | | | C [[[([Bool], [Bool],)]]] <! α154    (3) where ProvType <: TypeVariable}
-//│ | | | | | | C [[([Bool], [Bool],)]] <! α154    (3) where ProvType <: TypeVariable}
-//│ | | | | | | | C [([Bool], [Bool],)] <! α154    (3) where ProvType <: TypeVariable}
-//│ | | | | | | | | C ([Bool], [Bool],) <! α154    (3) where TupleType <: TypeVariable}
-//│ | UT [(α153 -> [α153])] <: (([Bool], [Bool],) -> α154) len: 2 
-//│ | | U [(α153 -> [α153])] = (([Bool], [Bool],) -> α154) because lb([(α153 -> [α153])] <: (([Bool], [Bool],) -> α154))
-//│ 0. : α154
-//│ ⬤ Typed as: α154
-//│  where: 
-//│ 		α154 :> [[[[[[([Bool], [Bool],)]]]]]]
-//│ res: (bool, bool,)
-
-:d
-f((true, false))
-//│ 0. Typing term f (true, false,)
-//│ | 0. Typing term f
-//│ | 0. : [(α156 -> [α156])]
-//│ | 0. Typing term true, false,
-//│ | | 0. Typing term true
-//│ | | 0. : [Bool]
-//│ | | 0. Typing term false
-//│ | | 0. : [Bool]
-//│ | 0. : ([Bool], [Bool],)
-//│ | CONSTRAIN [(α156 -> [α156])] <! (([Bool], [Bool],) -> α157)
-//│ |   where 
-//│ | C [(α156 -> [α156])] <! (([Bool], [Bool],) -> α157)    (0) where ProvType <: FunctionType}
-//│ | | C (α156 -> [α156]) <! (([Bool], [Bool],) -> α157)    (0) where FunctionType <: FunctionType}
-//│ | | | C ([Bool], [Bool],) <! α156    (1) where TupleType <: TypeVariable}
-//│ | | | C [α156] <! α157    (2) where ProvType <: TypeVariable}
-//│ | | | | C α156 <! α157    (2) where TypeVariable <: TypeVariable}
-//│ | | | | | C [[[([Bool], [Bool],)]]] <! α157    (3) where ProvType <: TypeVariable}
-//│ | | | | | | C [[([Bool], [Bool],)]] <! α157    (3) where ProvType <: TypeVariable}
-//│ | | | | | | | C [([Bool], [Bool],)] <! α157    (3) where ProvType <: TypeVariable}
-//│ | | | | | | | | C ([Bool], [Bool],) <! α157    (3) where TupleType <: TypeVariable}
-//│ | UT [(α156 -> [α156])] <: (([Bool], [Bool],) -> α157) len: 2 
-//│ | | U [(α156 -> [α156])] = (([Bool], [Bool],) -> α157) because lb([(α156 -> [α156])] <: (([Bool], [Bool],) -> α157))
-//│ 0. : α157
-//│ ⬤ Typed as: α157
-//│  where: 
-//│ 		α157 :> [[[[[[([Bool], [Bool],)]]]]]]
-//│ res: (bool, bool,)
-
-:dp
-Left
-//│ Parsed: Var(Left)
-//│ res: ('a, 'a,) -> either['a, nothing]
-
-Left((true, false))
-//│ res: either[bool, nothing]
-
-:unify
-if 1 == 2 then Left((true, false)) else Right false
-//│ res: either[bool, bool]
-
-:unify
-let test x =
- match x with true -> 0 | false -> "oops"
-//│ ╔══[ERROR] Cannot unify int and string
-//│ ╟──        int ---> ?a <--- string 
-//│ ╟── int is the type of `then` branch
-//│ ║  l.269: 	 match x with true -> 0 | false -> "oops"
-//│ ║         	                      ^
-//│ ╟── ?a is the type of if-then-else `expression`; int flows here
-//│ ║  l.269: 	 match x with true -> 0 | false -> "oops"
-//│ ║         	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── string is the type of `else` branch; ?a flows here
-//│ ║  l.269: 	 match x with true -> 0 | false -> "oops"
-//│ ╙──       	                                   ^^^^^^^
-//│ test: bool -> (int | string)
-
-
-
-:unifyDbg
-//let temp x = if x then 0 else "oops"
-
-
-//let temp x y z = if x then y else z
-
-//temp true 1 2
-
-:unifyDbg
-//temp true 1 "oops"
-
-
-//let temp x y = if x then x else y
-
-:unifyDbg
-//temp true 1
-
-
-
-//let addF x f arg = x + f arg
-
-:unify
-//let rec findOddAndAddThem xs = match xs with
-//  | x :: xs -> if (mod xs 2 == 0) then addF x findOddAndAddThem xs else findOddAndAddThem xs
-//  | [] -> 0
 
 
 :unify
@@ -322,37 +168,54 @@ let clone x n =
 let rec digitsOfInt n =
   ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.323: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not an instance of `?a list`
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `?a list`
-//│ ║  l.323: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from applied type reference:
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
-//│ ╙──      	         ^^
+//│ ╙──      	         ^^^^^^^
+//│ ╔══[ERROR] Cannot unify int and ?a list
+//│ ╟── int is type reference
+//│ ║  l.19: 	let ( / ): int -> int -> int
+//│ ║        	                         ^^^
+//│ ╟── int is type reference
+//│ ║  l.19: 	let ( / ): int -> int -> int
+//│ ║        	                         ^^^
+//│ ╟── int is operator application
+//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── list[?a] -> list[?a] -> list[?a] is reference
+//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║         	                         ^
+//│ ╟── list[?a] -> list[?a] -> list[?a] is function type
+//│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── ?a list is applied type reference
+//│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
+//│ ╙──      	         ^^^^^^^
 //│ ╔══[ERROR] identifier not found: remainder
-//│ ║  l.323: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──       	                            ^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.322: 	let rec digitsOfInt n =
+//│ ║  l.168: 	let rec digitsOfInt n =
 //│ ║         	                    ^^^
-//│ ║  l.323: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `?a list` is not an instance of `int`
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
-//│ ║        	                               ^^
+//│ ║        	                               ^^^^^^^
 //│ ╟── but it flows into operator application with expected type `int`
-//│ ║  l.323: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.323: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	   ^^^^^^^^^^^^^^^
 //│ ╟── from type reference:
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ╙──      	           ^^^
 //│ digitsOfInt: anything -> list[error]
-
-
