@@ -136,7 +136,7 @@ abstract class TypeImpl extends Located { self: Type =>
     case Union(l, r) => l :: r :: Nil.toList
     case Inter(l, r) => l :: r :: Nil
     case Recursive(n, b) => b :: Nil
-    case AppliedType(n, ts) => ts
+    case AppliedType(n, ts) => n :: ts
     case Rem(b, _) => b :: Nil
     case WithExtension(b, r) => b :: r :: Nil
     case Constrained(b, ws) => b :: ws.flatMap(c => c._1 :: c._2 :: Nil)

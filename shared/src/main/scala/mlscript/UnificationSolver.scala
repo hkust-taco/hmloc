@@ -190,22 +190,30 @@ trait UnificationSolver extends TyperDatatypes {
     }
   }
 
-  def reportUnificationError(u: Unification)(implicit raise: Raise, ctx: Ctx) = {
+  def collisionErrorMessage(u: Unification)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+    def makeMessage(st: ST, provs: Ls[TP]): Ls[Message -> Opt[Loc]] = provs.map {
+      case TypeProvenance(loco, desc, _, false) => msg"${st.expPos} is ${desc}" -> loco
+      case TypeProvenance(loco, desc, _, true) => msg"${st.expPos} is ${desc}" -> loco
+    }
+
+    // respect contravariant type flow
+    val (lprov, rprov) = if (u.desc == "function argument") {
+      makeMessage(u.b, u.b.typeUseLocations.reverse) -> makeMessage(u.a, u.a.typeUseLocations)
+    } else {
+      makeMessage(u.a, u.a.typeUseLocations.reverse) -> makeMessage(u.b, u.b.typeUseLocations)
+    }
+
+    u.reason match {
+      case head :: _ => head.nested.fold(lprov ::: rprov)(u => lprov ::: collisionErrorMessage(u) ::: rprov)
+      case _ => lprov ::: rprov
+    }
+  }
+
+  def reportUnificationError(u: Unification)(implicit raise: Raise, ctx: Ctx): Unit = {
     u.unificationChain match {
       case Nil => ()
       case head :: Nil =>
-        val messages = head._1.getCleanProvs match {
-          case Nil => Nil
-          case (head :: mid) :+ last => {
-            msg"${u.a.expPos} is here" -> head.loco ::
-              mid.map {
-                case TypeProvenance(loco, desc, _, false) => msg"it is the type of ${desc}" -> loco
-                case TypeProvenance(loco, desc, _, true) => msg"it is here" -> loco
-              } ::: msg"${u.b.expPos} is here" -> last.loco :: Nil
-          }
-        }
-        val main = msg"Cannot unify ${u.a.expPos} and ${u.b.expPos}" -> N
-        raise(ErrorReport(main :: messages))
+       raise(ErrorReport(msg"Cannot unify ${u.a.expPos} and ${u.b.expPos}" -> N :: collisionErrorMessage(u)))
       case chain@(head :: next :: _) =>
         val messages = createErrorMessage(head, next, true) ::: chain.sliding(2).collect {
           case Seq(fst, snd) => createErrorMessage(fst, snd)

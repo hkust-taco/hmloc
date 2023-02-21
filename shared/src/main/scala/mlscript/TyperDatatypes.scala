@@ -356,7 +356,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
 
     def unificationSequence: Ls[ST -> Bool] = reason match {
       case Nil => Nil
-      case head :: _ => {
+      case head :: _ =>
         var flow: Bool = head match {
           case _: LB => true // flow is from left to right
           case _: UB => false // flow is from right to left
@@ -381,7 +381,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
             flow = !flow
             tv1 -> flow
         }.toList ::: end -> false :: Nil // last type locations are always shown from consumption to introduction
-      }
     }
   }
 
