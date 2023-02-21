@@ -8,8 +8,8 @@ let boolToInt x = if x then "0" else 1
 //│   Int: lb(Int <: α57')
 //│ unified α56' with:
 //│   Bool: ub(α56' <: Bool)
-//│ ╔══[ERROR] [level 1] Cannot unify string and int because lb(String <: α57'),lb(Int <: α57')
-//│ ╟── (lb(String <: α57'),true), (lb(Int <: α57'),false)   string ---> ?a <--- int 
+//│ ╔══[ERROR] Cannot unify string and int
+//│ ╟──        string ---> ?a <--- int 
 //│ ╟── string is the type of `then` branch
 //│ ║  l.5: 	let boolToInt x = if x then "0" else 1
 //│ ║       	                            ^^^
@@ -33,28 +33,22 @@ let destructEither x = match x with
  | Left l -> l + 1
  | Right r -> r && true
 //│ unified α88' with:
-//│   Bool: lb(Bool <: α88')
 //│   α84': ub(α88' <: α84')
 //│ unified α87' with:
-//│   (Bool -> Bool): lb((Bool -> Bool) <: α87')
 //│   ([Bool] -> α88'): ub(α87' <: ([Bool] -> α88'))
 //│ unified α86' with:
 //│   α84': ub(α86' <: α84')
-//│   Int: lb(Int <: α86')
 //│ unified α85' with:
-//│   (Int -> Int): lb((Int -> Int) <: α85')
 //│   (Int -> α86'): ub(α85' <: (Int -> α86'))
 //│ unified α84' with:
-//│   Bool: lb([[[Bool]]] <: α84')
-//│   Int: lb([[[Int]]] <: α84')
+//│   Bool: lb(Bool <: α84')
+//│   Int: lb(Int <: α84')
 //│ unified 'b83' with:
-//│   Bool: ub('b83' <: Bool)
 //│ unified 'a82' with:
-//│   Int: ub('a82' <: Int)
 //│ unified α81' with:
 //│   either['a82','b83']: ub(α81' <: either['a82','b83'])
-//│ ╔══[ERROR] [level 1] Cannot unify int and bool because lb([[[Int]]] <: α84'),lb([[[Bool]]] <: α84')
-//│ ╟── (lb([[[Int]]] <: α84'),true), (lb([[[Bool]]] <: α84'),false)   int ---> ?a <--- bool 
+//│ ╔══[ERROR] Cannot unify int and bool
+//│ ╟──        int ---> ?a <--- bool 
 //│ ╟── int is here
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ║        	                       ^^^
@@ -77,278 +71,538 @@ let destructEither x = match x with
 //│ destructEither: either[int, bool] -> (bool | int)
 
 :unifyDbg
-let text x = if x then x + 1 else 1
+:d
+let test x = if x then x + 1 else 1
+//│ 1. Typing term x => if x(true) then + x 1 then (false) then 1
+//│ | 1. Typing pattern x
+//│ | 1. : α93'
+//│ | 1. Typing term if x(true) then + x 1 then (false) then 1
+//│ | | If(Var(x), List(IfThen(Var(true), App(App(Var(+), Var(x)), IntLit(1)), IfThen(Var(false), IntLit(1)))
+//│ | | 1. Typing term x
+//│ | | 1. : [α93']
+//│ | | CONSTRAIN [α93'] <! Bool
+//│ | |   where 
+//│ | | C [α93'] <! Bool    (0) where ProvType <: TypeRef}
+//│ | | | C α93' <! Bool    (0) where TypeVariable <: TypeRef}
+//│ | | UT [α93'] <: Bool) len: 2
+//│ | | | UT  Bool with
+//│ | | | UT  α93' += (Bool,List(ub(α93' <: Bool)))
+//│ | | 1. Typing term + x 1
+//│ | | | 1. Typing term + x
+//│ | | | | 1. Typing term +
+//│ | | | | 1. : [(Int -> (Int -> Int))]
+//│ | | | | 1. Typing term x
+//│ | | | | 1. : [α93']
+//│ | | | | CONSTRAIN [(Int -> (Int -> Int))] <! ([α93'] -> α95')
+//│ | | | |   where 
+//│ 		α93' <: [[[Bool]]]
+//│ | | | | C [(Int -> (Int -> Int))] <! ([α93'] -> α95')    (0) where ProvType <: FunctionType}
+//│ | | | | | C (Int -> (Int -> Int)) <! ([α93'] -> α95')    (0) where FunctionType <: FunctionType}
+//│ | | | | | | C [α93'] <! Int    (1) where ProvType <: TypeRef}
+//│ | | | | | | | C α93' <! Int    (1) where TypeVariable <: TypeRef}
+//│ | | | | | | C (Int -> Int) <! α95'    (2) where FunctionType <: TypeVariable}
+//│ | | | | UT [(Int -> (Int -> Int))] <: ([α93'] -> α95')) len: 2
+//│ | | | | | U [(Int -> (Int -> Int))] = ([α93'] -> α95') because lb([(Int -> (Int -> Int))] <: ([α93'] -> α95'))
+//│ | | | 1. : α95'
+//│ | | | 1. Typing term 1
+//│ | | | 1. : Int
+//│ | | | CONSTRAIN α95' <! (Int -> α96')
+//│ | | |   where 
+//│ 		α95' :> [[[(Int -> Int)]]]
+//│ | | | C α95' <! (Int -> α96')    (0) where TypeVariable <: FunctionType}
+//│ | | | | C [[[(Int -> Int)]]] <! (Int -> α96')    (1) where ProvType <: FunctionType}
+//│ | | | | | C [[(Int -> Int)]] <! (Int -> α96')    (1) where ProvType <: FunctionType}
+//│ | | | | | | C [(Int -> Int)] <! (Int -> α96')    (1) where ProvType <: FunctionType}
+//│ | | | | | | | C (Int -> Int) <! (Int -> α96')    (1) where FunctionType <: FunctionType}
+//│ | | | | | | | | C Int <! Int    (2) where TypeRef <: TypeRef}
+//│ | | | | | | | | C Int <! α96'    (2) where TypeRef <: TypeVariable}
+//│ | | | UT α95' <: (Int -> α96')) len: 1
+//│ | | | | UT  (Int -> α96') with
+//│ | | | | UT  [[[(Int -> Int)]]] <: α95' <: (Int -> α96')
+//│ | | | | UT [[[(Int -> Int)]]] <: (Int -> α96')) len: 4
+//│ | | | | | U [[[(Int -> Int)]]] = (Int -> α96') because lb([[[(Int -> Int)]]] <: (Int -> α96'))
+//│ | | | | UT  (Int -> α96') with
+//│ | | | | UT  α95' += ((Int -> α96'),List(ub(α95' <: (Int -> α96'))))
+//│ | | 1. : α96'
+//│ | | CONSTRAIN α96' <! α94'
+//│ | |   where 
+//│ 		α96' :> [[[Int]]]
+//│ | | C α96' <! α94'    (0) where TypeVariable <: TypeVariable}
+//│ | | | C [[[Int]]] <! α94'    (1) where ProvType <: TypeVariable}
+//│ | | | | C [[Int]] <! α94'    (1) where ProvType <: TypeVariable}
+//│ | | | | | C [Int] <! α94'    (1) where ProvType <: TypeVariable}
+//│ | | | | | | C Int <! α94'    (1) where TypeRef <: TypeVariable}
+//│ | | UT α96' <: α94') len: 2
+//│ | | | UT  α94' with
+//│ | | | UT  [[[Int]]] <: α96' <: α94'
+//│ | | | UT [[[Int]]] <: α94') len: 5
+//│ | | | | UT  Int with
+//│ | | | | UT  α94' += (Int,List(lb(Int <: α94')))
+//│ | | | UT  α94' with
+//│ | | | UT  α96' += (α94',List(ub(α96' <: α94')))
+//│ | | 1. Typing term 1
+//│ | | 1. : Int
+//│ | | CONSTRAIN Int <! α94'
+//│ | |   where 
+//│ 		α94' :> [[[[Int]]]]
+//│ | | C Int <! α94'    (0) where TypeRef <: TypeVariable}
+//│ | | UT Int <: α94') len: 2
+//│ | | | UT  Int with
+//│ | | | UT  α94' :> Int for lb(Int <: α94')
+//│ | | | U [[Int]] = Int because lb(Int <: α94'), lb(Int <: α94')
+//│ | | | UT  α94' :> Int for lb(Int <: α94')
+//│ | | | U [[[[Int]]]] = Int because lb(Int <: α94'), lb(Int <: α94')
+//│ | | | UT  α94' += (Int,List(lb(Int <: α94')))
+//│ | 1. : α94'
+//│ 1. : (α93' -> α94')
+//│ ⬤ Typed as: (α93' -> α94')
+//│  where: 
+//│ 		α93' <: [[[[Int]]]] & [[[Bool]]]
+//│ 		α94' :> [[Int]] | [[[[Int]]]]
 //│ unified α96' with:
-//│   Int: lb(Int <: α96')
 //│   α94': ub(α96' <: α94')
 //│ unified α95' with:
-//│   (Int -> Int): lb((Int -> Int) <: α95')
 //│   (Int -> α96'): ub(α95' <: (Int -> α96'))
 //│ unified α94' with:
 //│   Int: lb(Int <: α94')
 //│ unified α93' with:
 //│   Bool: ub(α93' <: Bool)
-//│   Int: ub(α93' <: Int)
-//│ ╔══[ERROR] [level 1] Cannot unify int and bool because ub(α93' <: Int),ub(α93' <: Bool)
-//│ ╟── (ub(α93' <: Int),false), (ub(α93' <: Bool),true)   int <--- ?a ---> bool 
-//│ ╟── int is here
-//│ ║  l.16: 	let (+): int -> int -> int
-//│ ║        	         ^^^
-//│ ╟── ?a is the type of reference; int flows from here
-//│ ║  l.80: 	let text x = if x then x + 1 else 1
-//│ ║        	                       ^
-//│ ╟── bool is the type of if-then-else `condition`; ?a flows into it
-//│ ║  l.80: 	let text x = if x then x + 1 else 1
-//│ ╙──      	                ^
-//│ text: nothing -> int
+//│ test: nothing -> int
 
 :unifyDbg
+:d
 let destructEither x = if x then
   match x with
    | Left l -> l + 1
    | Right r -> r && true
   else x
+//│ 1. Typing term x => if x(true) then if x(Left l) then + l 1 then (Right r) then && r true then (false) then x
+//│ | 1. Typing pattern x
+//│ | 1. : α99'
+//│ | 1. Typing term if x(true) then if x(Left l) then + l 1 then (Right r) then && r true then (false) then x
+//│ | | If(Var(x), List(IfThen(Var(true), If(Var(x), List(IfThen(App(Var(Left), Var(l)), App(App(Var(+), Var(l)), IntLit(1)), IfThen(App(Var(Right), Var(r)), App(App(Var(&&), Var(r)), Var(true)))), IfThen(Var(false), Var(x)))
+//│ | | 1. Typing term x
+//│ | | 1. : [α99']
+//│ | | CONSTRAIN [α99'] <! Bool
+//│ | |   where 
+//│ | | C [α99'] <! Bool    (0) where ProvType <: TypeRef}
+//│ | | | C α99' <! Bool    (0) where TypeVariable <: TypeRef}
+//│ | | UT [α99'] <: Bool) len: 2
+//│ | | | UT  Bool with
+//│ | | | UT  α99' += (Bool,List(ub(α99' <: Bool)))
+//│ | | 1. Typing term if x(Left l) then + l 1 then (Right r) then && r true
+//│ | | | If(Var(x), List(IfThen(App(Var(Left), Var(l)), App(App(Var(+), Var(l)), IntLit(1)), IfThen(App(Var(Right), Var(r)), App(App(Var(&&), Var(r)), Var(true))))
+//│ | | | ADT name: TypeName(either)
+//│ | | | ADT type: [either['a101','b102']]
+//│ | | | typed condition term x
+//│ | | | 1. Typing term x
+//│ | | | 1. : [α99']
+//│ | | | CONSTRAIN [α99'] <! [either['a101','b102']]
+//│ | | |   where 
+//│ 		α99' <: [[[Bool]]]
+//│ | | | C [α99'] <! [either['a101','b102']]    (0) where ProvType <: ProvType}
+//│ | | | | C α99' <! [either['a101','b102']]    (0) where TypeVariable <: ProvType}
+//│ | | | | | C α99' <! either['a101','b102']    (0) where TypeVariable <: TypeRef}
+//│ | | | UT [α99'] <: [either['a101','b102']]) len: 4
+//│ | | | | UT  either['a101','b102'] with
+//│ | | | | UT  α99' <: [[[Bool]]]  for ub(α99' <: Bool)
+//│ | | | | U [[[Bool]]] = either['a101','b102'] because ub(α99' <: Bool), ub(α99' <: either['a101','b102'])
+//│ | | | | | (ub(α99' <: Bool),false) -> (ub(α99' <: either['a101','b102']),true) showFirst: true leftSame: true
+//│ | | | | | show 1 locations for (ub(α99' <: Bool),false)
+//│ | | | | | (ub(α99' <: Bool),false) -> (ub(α99' <: either['a101','b102']),true) showFirst: false leftSame: true
+//│ | | | | | show 2 locations for (ub(α99' <: either['a101','b102']),true)
+//│ | | | | UT  α99' += (either['a101','b102'],List(ub(α99' <: either['a101','b102'])))
+//│ | | | fields l ~> List(l)
+//│ | | | Typing case 0 (Left)
+//│ | | | ctor type: (α69' -> either[α69',α70'])
+//│ | | | fieldTypes: List('a101')
+//│ | | | Typing field l (Left)
+//│ | | | Field l : 'a101'
+//│ | | | 1. Typing term + l 1
+//│ | | | | 1. Typing term + l
+//│ | | | | | 1. Typing term +
+//│ | | | | | 1. : [(Int -> (Int -> Int))]
+//│ | | | | | 1. Typing term l
+//│ | | | | | 1. : ['a101']
+//│ | | | | | CONSTRAIN [(Int -> (Int -> Int))] <! (['a101'] -> α104')
+//│ | | | | |   where 
+//│ | | | | | C [(Int -> (Int -> Int))] <! (['a101'] -> α104')    (0) where ProvType <: FunctionType}
+//│ | | | | | | C (Int -> (Int -> Int)) <! (['a101'] -> α104')    (0) where FunctionType <: FunctionType}
+//│ | | | | | | | C ['a101'] <! Int    (1) where ProvType <: TypeRef}
+//│ | | | | | | | | C 'a101' <! Int    (1) where TypeVariable <: TypeRef}
+//│ | | | | | | | C (Int -> Int) <! α104'    (2) where FunctionType <: TypeVariable}
+//│ | | | | | UT [(Int -> (Int -> Int))] <: (['a101'] -> α104')) len: 2
+//│ | | | | | | U [(Int -> (Int -> Int))] = (['a101'] -> α104') because lb([(Int -> (Int -> Int))] <: (['a101'] -> α104'))
+//│ | | | | 1. : α104'
+//│ | | | | 1. Typing term 1
+//│ | | | | 1. : Int
+//│ | | | | CONSTRAIN α104' <! (Int -> α105')
+//│ | | | |   where 
+//│ 		α104' :> [[[(Int -> Int)]]]
+//│ | | | | C α104' <! (Int -> α105')    (0) where TypeVariable <: FunctionType}
+//│ | | | | | C [[[(Int -> Int)]]] <! (Int -> α105')    (1) where ProvType <: FunctionType}
+//│ | | | | | | C [[(Int -> Int)]] <! (Int -> α105')    (1) where ProvType <: FunctionType}
+//│ | | | | | | | C [(Int -> Int)] <! (Int -> α105')    (1) where ProvType <: FunctionType}
+//│ | | | | | | | | C (Int -> Int) <! (Int -> α105')    (1) where FunctionType <: FunctionType}
+//│ | | | | | | | | | C Int <! Int    (2) where TypeRef <: TypeRef}
+//│ | | | | | | | | | C Int <! α105'    (2) where TypeRef <: TypeVariable}
+//│ | | | | UT α104' <: (Int -> α105')) len: 1
+//│ | | | | | UT  (Int -> α105') with
+//│ | | | | | UT  [[[(Int -> Int)]]] <: α104' <: (Int -> α105')
+//│ | | | | | UT [[[(Int -> Int)]]] <: (Int -> α105')) len: 4
+//│ | | | | | | U [[[(Int -> Int)]]] = (Int -> α105') because lb([[[(Int -> Int)]]] <: (Int -> α105'))
+//│ | | | | | UT  (Int -> α105') with
+//│ | | | | | UT  α104' += ((Int -> α105'),List(ub(α104' <: (Int -> α105'))))
+//│ | | | 1. : α105'
+//│ | | | CONSTRAIN α105' <! α103'
+//│ | | |   where 
+//│ 		α105' :> [[[Int]]]
+//│ | | | C α105' <! α103'    (0) where TypeVariable <: TypeVariable}
+//│ | | | | C [[[Int]]] <! α103'    (1) where ProvType <: TypeVariable}
+//│ | | | | | C [[Int]] <! α103'    (1) where ProvType <: TypeVariable}
+//│ | | | | | | C [Int] <! α103'    (1) where ProvType <: TypeVariable}
+//│ | | | | | | | C Int <! α103'    (1) where TypeRef <: TypeVariable}
+//│ | | | UT α105' <: α103') len: 2
+//│ | | | | UT  α103' with
+//│ | | | | UT  [[[Int]]] <: α105' <: α103'
+//│ | | | | UT [[[Int]]] <: α103') len: 5
+//│ | | | | | UT  Int with
+//│ | | | | | UT  α103' += (Int,List(lb(Int <: α103')))
+//│ | | | | UT  α103' with
+//│ | | | | UT  α105' += (α103',List(ub(α105' <: α103')))
+//│ | | | fields r ~> List(r)
+//│ | | | Typing case 1 (Right)
+//│ | | | ctor type: (α76' -> either[α75',α76'])
+//│ | | | fieldTypes: List('b102')
+//│ | | | Typing field r (Right)
+//│ | | | Field r : 'b102'
+//│ | | | 1. Typing term && r true
+//│ | | | | 1. Typing term && r
+//│ | | | | | 1. Typing term &&
+//│ | | | | | 1. : [(Bool -> (Bool -> Bool))]
+//│ | | | | | 1. Typing term r
+//│ | | | | | 1. : ['b102']
+//│ | | | | | CONSTRAIN [(Bool -> (Bool -> Bool))] <! (['b102'] -> α106')
+//│ | | | | |   where 
+//│ | | | | | C [(Bool -> (Bool -> Bool))] <! (['b102'] -> α106')    (0) where ProvType <: FunctionType}
+//│ | | | | | | C (Bool -> (Bool -> Bool)) <! (['b102'] -> α106')    (0) where FunctionType <: FunctionType}
+//│ | | | | | | | C ['b102'] <! Bool    (1) where ProvType <: TypeRef}
+//│ | | | | | | | | C 'b102' <! Bool    (1) where TypeVariable <: TypeRef}
+//│ | | | | | | | C (Bool -> Bool) <! α106'    (2) where FunctionType <: TypeVariable}
+//│ | | | | | UT [(Bool -> (Bool -> Bool))] <: (['b102'] -> α106')) len: 2
+//│ | | | | | | U [(Bool -> (Bool -> Bool))] = (['b102'] -> α106') because lb([(Bool -> (Bool -> Bool))] <: (['b102'] -> α106'))
+//│ | | | | 1. : α106'
+//│ | | | | 1. Typing term true
+//│ | | | | 1. : [Bool]
+//│ | | | | CONSTRAIN α106' <! ([Bool] -> α107')
+//│ | | | |   where 
+//│ 		α106' :> [[[(Bool -> Bool)]]]
+//│ | | | | C α106' <! ([Bool] -> α107')    (0) where TypeVariable <: FunctionType}
+//│ | | | | | C [[[(Bool -> Bool)]]] <! ([Bool] -> α107')    (1) where ProvType <: FunctionType}
+//│ | | | | | | C [[(Bool -> Bool)]] <! ([Bool] -> α107')    (1) where ProvType <: FunctionType}
+//│ | | | | | | | C [(Bool -> Bool)] <! ([Bool] -> α107')    (1) where ProvType <: FunctionType}
+//│ | | | | | | | | C (Bool -> Bool) <! ([Bool] -> α107')    (1) where FunctionType <: FunctionType}
+//│ | | | | | | | | | C [Bool] <! Bool    (2) where ProvType <: TypeRef}
+//│ | | | | | | | | | C Bool <! α107'    (2) where TypeRef <: TypeVariable}
+//│ | | | | UT α106' <: ([Bool] -> α107')) len: 1
+//│ | | | | | UT  ([Bool] -> α107') with
+//│ | | | | | UT  [[[(Bool -> Bool)]]] <: α106' <: ([Bool] -> α107')
+//│ | | | | | UT [[[(Bool -> Bool)]]] <: ([Bool] -> α107')) len: 4
+//│ | | | | | | U [[[(Bool -> Bool)]]] = ([Bool] -> α107') because lb([[[(Bool -> Bool)]]] <: ([Bool] -> α107'))
+//│ | | | | | UT  ([Bool] -> α107') with
+//│ | | | | | UT  α106' += (([Bool] -> α107'),List(ub(α106' <: ([Bool] -> α107'))))
+//│ | | | 1. : α107'
+//│ | | | CONSTRAIN α107' <! α103'
+//│ | | |   where 
+//│ 		α103' :> [[[[Int]]]]
+//│ 		α107' :> [[[Bool]]]
+//│ | | | C α107' <! α103'    (0) where TypeVariable <: TypeVariable}
+//│ | | | | C [[[Bool]]] <! α103'    (1) where ProvType <: TypeVariable}
+//│ | | | | | C [[Bool]] <! α103'    (1) where ProvType <: TypeVariable}
+//│ | | | | | | C [Bool] <! α103'    (1) where ProvType <: TypeVariable}
+//│ | | | | | | | C Bool <! α103'    (1) where TypeRef <: TypeVariable}
+//│ | | | UT α107' <: α103') len: 2
+//│ | | | | UT  α103' with
+//│ | | | | UT  [[[Bool]]] <: α107' <: α103'
+//│ | | | | UT [[[Bool]]] <: α103') len: 5
+//│ | | | | | UT  Bool with
+//│ | | | | | UT  α103' :> Int for lb(Int <: α103')
+//│ | | | | | U [[[[Int]]]] = Bool because lb(Int <: α103'), lb(Bool <: α103')
+//│ | | | | | | (lb(Int <: α103'),true) -> (lb(Bool <: α103'),false) showFirst: true leftSame: false
+//│ | | | | | | show 3 locations for (lb(Int <: α103'),true)
+//│ | | | | | | (lb(Int <: α103'),true) -> (lb(Bool <: α103'),false) showFirst: false leftSame: false
+//│ | | | | | | show 2 locations for (lb(Bool <: α103'),false)
+//│ | | | | | UT  α103' += (Bool,List(lb(Bool <: α103')))
+//│ | | | | UT  α103' with
+//│ | | | | UT  α107' += (α103',List(ub(α107' <: α103')))
+//│ | | 1. : α103'
+//│ | | CONSTRAIN α103' <! α100'
+//│ | |   where 
+//│ 		α103' :> [[[[Bool]]]] | [[[[Int]]]]
+//│ | | C α103' <! α100'    (0) where TypeVariable <: TypeVariable}
+//│ | | | C [[[[Bool]]]] <! α100'    (1) where ProvType <: TypeVariable}
+//│ | | | | C [[[Bool]]] <! α100'    (1) where ProvType <: TypeVariable}
+//│ | | | | | C [[Bool]] <! α100'    (1) where ProvType <: TypeVariable}
+//│ | | | | | | C [Bool] <! α100'    (1) where ProvType <: TypeVariable}
+//│ | | | | | | | C Bool <! α100'    (1) where TypeRef <: TypeVariable}
+//│ | | | C [[[[Int]]]] <! α100'    (2) where ProvType <: TypeVariable}
+//│ | | | | C [[[Int]]] <! α100'    (2) where ProvType <: TypeVariable}
+//│ | | | | | C [[Int]] <! α100'    (2) where ProvType <: TypeVariable}
+//│ | | | | | | C [Int] <! α100'    (2) where ProvType <: TypeVariable}
+//│ | | | | | | | C Int <! α100'    (2) where TypeRef <: TypeVariable}
+//│ | | UT α103' <: α100') len: 2
+//│ | | | UT  α100' with
+//│ | | | UT  [[[[Bool]]]] <: α103' <: α100'
+//│ | | | UT [[[[Bool]]]] <: α100') len: 6
+//│ | | | | UT  Bool with
+//│ | | | | UT  α100' += (Bool,List(lb(Bool <: α100')))
+//│ | | | UT  [[[[Int]]]] <: α103' <: α100'
+//│ | | | UT [[[[Int]]]] <: α100') len: 6
+//│ | | | | UT  Int with
+//│ | | | | UT  α100' :> Bool for lb(Bool <: α100')
+//│ | | | | U [[[[[Bool]]]]] = Int because lb(Bool <: α100'), lb(Int <: α100')
+//│ | | | | | (lb(Bool <: α100'),true) -> (lb(Int <: α100'),false) showFirst: true leftSame: false
+//│ | | | | | show 3 locations for (lb(Bool <: α100'),true)
+//│ | | | | | (lb(Bool <: α100'),true) -> (lb(Int <: α100'),false) showFirst: false leftSame: false
+//│ | | | | | show 2 locations for (lb(Int <: α100'),false)
+//│ | | | | UT  α100' += (Int,List(lb(Int <: α100')))
+//│ | | | UT  α100' with
+//│ | | | UT  α103' += (α100',List(ub(α103' <: α100')))
+//│ | | 1. Typing term x
+//│ | | 1. : [α99']
+//│ | | CONSTRAIN [α99'] <! α100'
+//│ | |   where 
+//│ 		α99' <: [[[[either['a101','b102']]]]] & [[[Bool]]]
+//│ 		α100' :> [[[[[Int]]]]] | [[[[[Bool]]]]]
+//│ 		'a101' <: [[[[Int]]]]
+//│ 		'b102' <: [[[[Bool]]]]
+//│ | | C [α99'] <! α100'    (0) where ProvType <: TypeVariable}
+//│ | | | C α99' <! α100'    (0) where TypeVariable <: TypeVariable}
+//│ | | UT [α99'] <: α100') len: 3
+//│ | | | UT  α100' with
+//│ | | | UT  α99' <: [[[[either['a101','b102']]]]]  for ub(α99' <: either['a101','b102'])
+//│ | | | U [[[[either['a101','b102']]]]] = α100' because ub(α99' <: either['a101','b102']), ub(α99' <: α100')
+//│ | | | | U   either['a101','b102'] with
+//│ | | | |     α100' = Bool for lb(Bool <: α100')
+//│ | | | | U Bool = either['a101','b102'] because lb(Bool <: α100'), ub(α99' <: α100'), ub(α99' <: either['a101','b102'])
+//│ | | | | | (lb(Bool <: α100'),true) -> (ub(α99' <: α100'),false) showFirst: true leftSame: false
+//│ | | | | | show 4 locations for (lb(Bool <: α100'),true)
+//│ | | | | | (lb(Bool <: α100'),true) -> (ub(α99' <: α100'),false) showFirst: false leftSame: false
+//│ | | | | | show 1 locations for (ub(α99' <: α100'),false)
+//│ | | | | | (ub(α99' <: α100'),false) -> (ub(α99' <: either['a101','b102']),true) showFirst: false leftSame: true
+//│ | | | | | show 2 locations for (ub(α99' <: either['a101','b102']),true)
+//│ | | | |     α100' = Int for lb(Int <: α100')
+//│ | | | | U Int = either['a101','b102'] because lb(Int <: α100'), ub(α99' <: α100'), ub(α99' <: either['a101','b102'])
+//│ | | | | | (lb(Int <: α100'),true) -> (ub(α99' <: α100'),false) showFirst: true leftSame: false
+//│ | | | | | show 4 locations for (lb(Int <: α100'),true)
+//│ | | | | | (lb(Int <: α100'),true) -> (ub(α99' <: α100'),false) showFirst: false leftSame: false
+//│ | | | | | show 1 locations for (ub(α99' <: α100'),false)
+//│ | | | | | (ub(α99' <: α100'),false) -> (ub(α99' <: either['a101','b102']),true) showFirst: false leftSame: true
+//│ | | | | | show 2 locations for (ub(α99' <: either['a101','b102']),true)
+//│ | | | UT  α99' <: [[[Bool]]]  for ub(α99' <: Bool)
+//│ | | | U [[[Bool]]] = α100' because ub(α99' <: Bool), ub(α99' <: α100')
+//│ | | | | U   Bool with
+//│ | | | |     α100' = Bool for lb(Bool <: α100')
+//│ | | | | U Bool = Bool because lb(Bool <: α100'), ub(α99' <: α100'), ub(α99' <: Bool)
+//│ | | | |     α100' = Int for lb(Int <: α100')
+//│ | | | | U Int = Bool because lb(Int <: α100'), ub(α99' <: α100'), ub(α99' <: Bool)
+//│ | | | | | (lb(Int <: α100'),true) -> (ub(α99' <: α100'),false) showFirst: true leftSame: false
+//│ | | | | | show 4 locations for (lb(Int <: α100'),true)
+//│ | | | | | (lb(Int <: α100'),true) -> (ub(α99' <: α100'),false) showFirst: false leftSame: false
+//│ | | | | | show 1 locations for (ub(α99' <: α100'),false)
+//│ | | | | | (ub(α99' <: α100'),false) -> (ub(α99' <: Bool),true) showFirst: false leftSame: true
+//│ | | | | | show 1 locations for (ub(α99' <: Bool),true)
+//│ | | | UT  α99' += (α100',List(ub(α99' <: α100')))
+//│ | 1. : α100'
+//│ 1. : (α99' -> α100')
+//│ ⬤ Typed as: (α99' -> α100')
+//│  where: 
+//│ 		α99' <: [[[α100']]] & [[[[either['a101','b102']]]]] & [[[Bool]]]
+//│ 		α100' :> [[[[[Int]]]]] | [[[[[Bool]]]]]
+//│ 		'a101' <: [[[[Int]]]]
+//│ 		'b102' <: [[[[Bool]]]]
 //│ unified α107' with:
-//│   Bool: lb(Bool <: α107')
 //│   α103': ub(α107' <: α103')
 //│ unified α106' with:
 //│   ([Bool] -> α107'): ub(α106' <: ([Bool] -> α107'))
-//│   (Bool -> Bool): lb((Bool -> Bool) <: α106')
 //│ unified α105' with:
-//│   Int: lb(Int <: α105')
 //│   α103': ub(α105' <: α103')
 //│ unified α104' with:
-//│   (Int -> Int): lb((Int -> Int) <: α104')
 //│   (Int -> α105'): ub(α104' <: (Int -> α105'))
 //│ unified α103' with:
-//│   Bool: lb([[[Bool]]] <: α103')
-//│   Int: lb([[[Int]]] <: α103')
+//│   Bool: lb(Bool <: α103')
+//│   Int: lb(Int <: α103')
 //│   α100': ub(α103' <: α100')
 //│ unified 'b102' with:
-//│   Bool: ub('b102' <: Bool)
 //│ unified 'a101' with:
-//│   Int: ub('a101' <: Int)
 //│ unified α100' with:
-//│   Bool: ub(α99' <: α100'),ub(α99' <: Bool)
-//│   Int: lb([[[[Int]]]] <: α100')
-//│   either['a101','b102']: ub(α99' <: α100'),ub(α99' <: either['a101','b102'])
+//│   Bool: lb(Bool <: α100')
+//│   Int: lb(Int <: α100')
 //│ unified α99' with:
 //│   Bool: ub(α99' <: Bool)
 //│   either['a101','b102']: ub(α99' <: either['a101','b102'])
 //│   α100': ub(α99' <: α100')
-//│ ╔══[ERROR] [level 1] Cannot unify (?a, ?b) either and bool because ub(α99' <: either['a101','b102']),ub(α99' <: Bool)
-//│ ╟── (ub(α99' <: either['a101','b102']),false), (ub(α99' <: Bool),true)   (?a, ?b) either <--- ?c ---> bool 
-//│ ╟── (?a, ?b) either is the type of case `expression`
-//│ ║  l.108: 	   | Left l -> l + 1
-//│ ║         	     ^^^^
-//│ ╟── ?c is the type of reference; (?a, ?b) either flows from here
-//│ ║  l.107: 	  match x with
+//│ ╔══[ERROR] Cannot unify bool and (?a, ?b) either
+//│ ╟──        bool <--- ?c ---> (?a, ?b) either 
+//│ ╟── ?c is the type of if-then-else `condition`; bool flows from here
+//│ ║  l.174: 	let destructEither x = if x then
+//│ ║         	                          ^
+//│ ╟── (?a, ?b) either is the type of reference; ?c flows into it
+//│ ║  l.175: 	  match x with
 //│ ║         	        ^
-//│ ╟── bool is the type of if-then-else `condition`; ?c flows into it
-//│ ║  l.106: 	let destructEither x = if x then
-//│ ╙──       	                          ^
-//│ ╔══[ERROR] [level 1] Cannot unify int and bool because lb([[[Int]]] <: α103'),lb([[[Bool]]] <: α103')
-//│ ╟── (lb([[[Int]]] <: α103'),true), (lb([[[Bool]]] <: α103'),false)   int ---> ?a <--- bool 
+//│ ╟── (?a, ?b) either is the type of case `expression`
+//│ ║  l.176: 	   | Left l -> l + 1
+//│ ╙──       	     ^^^^
+//│ ╔══[ERROR] Cannot unify int and bool
+//│ ╟──        int ---> ?a <--- bool 
 //│ ╟── int is here
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ║        	                       ^^^
 //│ ╟── int is the type of operator application
-//│ ║  l.108: 	   | Left l -> l + 1
+//│ ║  l.176: 	   | Left l -> l + 1
 //│ ║         	               ^^^^^
 //│ ╟── ?a is the type of match expression; int flows here
-//│ ║  l.107: 	  match x with
+//│ ║  l.175: 	  match x with
 //│ ║         	  ^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
+//│ ║  l.176: 	   | Left l -> l + 1
 //│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
+//│ ║  l.177: 	   | Right r -> r && true
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── bool is the type of operator application; ?a flows here
-//│ ║  l.109: 	   | Right r -> r && true
+//│ ║  l.177: 	   | Right r -> r && true
 //│ ║         	                ^^^^^^^^^
 //│ ╟── bool is here
 //│ ║  l.54: 	let (&&): bool -> bool -> bool
 //│ ╙──      	                          ^^^^
-//│ ╔══[ERROR] [level 1] Cannot unify bool and int because lb([[[[Bool]]]] <: α100'),lb([[[[Int]]]] <: α100')
-//│ ╟── (lb([[[[Bool]]]] <: α100'),true), (lb([[[[Int]]]] <: α100'),false)   bool ---> ?a <--- int 
+//│ ╔══[ERROR] Cannot unify bool and int
+//│ ╟──        bool ---> ?a <--- int 
 //│ ╟── bool is here
 //│ ║  l.54: 	let (&&): bool -> bool -> bool
 //│ ║        	                          ^^^^
 //│ ╟── bool is the type of operator application
-//│ ║  l.109: 	   | Right r -> r && true
+//│ ║  l.177: 	   | Right r -> r && true
 //│ ║         	                ^^^^^^^^^
 //│ ╟── ?a is the type of match expression; bool flows here
-//│ ║  l.107: 	  match x with
+//│ ║  l.175: 	  match x with
 //│ ║         	  ^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
+//│ ║  l.176: 	   | Left l -> l + 1
 //│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
+//│ ║  l.177: 	   | Right r -> r && true
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── int is the type of operator application; ?a flows here
-//│ ║  l.108: 	   | Left l -> l + 1
+//│ ║  l.176: 	   | Left l -> l + 1
 //│ ║         	               ^^^^^
 //│ ╟── int is here
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ╙──      	                       ^^^
-//│ ╔══[ERROR] [level 1] Cannot unify int and (?a, ?b) either because lb([[[[[Int]]]]] <: either['a101','b102']),ub(α99' <: either['a101','b102'])
-//│ ╟── (lb([[[[[Int]]]]] <: either['a101','b102']),true), (ub(α99' <: either['a101','b102']),false)   int ---> (?a, ?b) either <--- ?c 
-//│ ╟── int is here
-//│ ║  l.16: 	let (+): int -> int -> int
-//│ ║        	                       ^^^
-//│ ╟── int is the type of operator application
-//│ ║  l.108: 	   | Left l -> l + 1
-//│ ║         	               ^^^^^
-//│ ╟── int is the type of match expression
-//│ ║  l.107: 	  match x with
-//│ ║         	  ^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
-//│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── int is the type of if-then-else `expression`
-//│ ║  l.106: 	let destructEither x = if x then
-//│ ║         	                       ^^^^^^^^^
-//│ ║  l.107: 	  match x with
-//│ ║         	^^^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
-//│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.110: 	  else x
-//│ ║         	^^^^^^^^^
-//│ ╟── int is the type of variable
-//│ ║  l.106: 	let destructEither x = if x then
-//│ ║         	                   ^
-//│ ╟── int is the type of `else` branch
-//│ ║  l.110: 	  else x
-//│ ║         	       ^^
-//│ ╟── (?a, ?b) either is the type of if-then-else `expression`; int flows here
-//│ ║  l.106: 	let destructEither x = if x then
-//│ ║         	                       ^^^^^^^^^
-//│ ║  l.107: 	  match x with
-//│ ║         	^^^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
-//│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.110: 	  else x
-//│ ║         	^^^^^^^^^
-//│ ╟── (?a, ?b) either is the type of case `expression`
-//│ ║  l.108: 	   | Left l -> l + 1
-//│ ║         	     ^^^^
-//│ ╟── (?a, ?b) either is the type of reference; it flows from ?c
-//│ ║  l.107: 	  match x with
-//│ ╙──       	        ^
-//│ ╔══[ERROR] [level 1] Cannot unify bool and (?a, ?b) either because lb([[[[[Bool]]]]] <: either['a101','b102']),ub(α99' <: either['a101','b102'])
-//│ ╟── (lb([[[[[Bool]]]]] <: either['a101','b102']),true), (ub(α99' <: either['a101','b102']),false)   bool ---> (?a, ?b) either <--- ?c 
+//│ ╔══[ERROR] Cannot unify bool and (?a, ?b) either
+//│ ╟──        bool ---> ?c <--- ?d ---> (?a, ?b) either 
 //│ ╟── bool is here
 //│ ║  l.54: 	let (&&): bool -> bool -> bool
 //│ ║        	                          ^^^^
 //│ ╟── bool is the type of operator application
-//│ ║  l.109: 	   | Right r -> r && true
+//│ ║  l.177: 	   | Right r -> r && true
 //│ ║         	                ^^^^^^^^^
 //│ ╟── bool is the type of match expression
-//│ ║  l.107: 	  match x with
+//│ ║  l.175: 	  match x with
 //│ ║         	  ^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
+//│ ║  l.176: 	   | Left l -> l + 1
 //│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
+//│ ║  l.177: 	   | Right r -> r && true
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── bool is the type of if-then-else `expression`
-//│ ║  l.106: 	let destructEither x = if x then
+//│ ╟── ?c is the type of if-then-else `expression`; bool flows here
+//│ ║  l.174: 	let destructEither x = if x then
 //│ ║         	                       ^^^^^^^^^
-//│ ║  l.107: 	  match x with
+//│ ║  l.175: 	  match x with
 //│ ║         	^^^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
+//│ ║  l.176: 	   | Left l -> l + 1
 //│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
+//│ ║  l.177: 	   | Right r -> r && true
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.110: 	  else x
+//│ ║  l.178: 	  else x
 //│ ║         	^^^^^^^^^
-//│ ╟── bool is the type of variable
-//│ ║  l.106: 	let destructEither x = if x then
-//│ ║         	                   ^
-//│ ╟── bool is the type of `else` branch
-//│ ║  l.110: 	  else x
+//│ ╟── ?c is the type of `else` branch; it flows from ?d
+//│ ║  l.178: 	  else x
 //│ ║         	       ^^
-//│ ╟── (?a, ?b) either is the type of if-then-else `expression`; bool flows here
-//│ ║  l.106: 	let destructEither x = if x then
-//│ ║         	                       ^^^^^^^^^
-//│ ║  l.107: 	  match x with
-//│ ║         	^^^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
-//│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.110: 	  else x
-//│ ║         	^^^^^^^^^
+//│ ╟── (?a, ?b) either is the type of reference; ?d flows into it
+//│ ║  l.175: 	  match x with
+//│ ║         	        ^
 //│ ╟── (?a, ?b) either is the type of case `expression`
-//│ ║  l.108: 	   | Left l -> l + 1
-//│ ║         	     ^^^^
-//│ ╟── (?a, ?b) either is the type of reference; it flows from ?c
-//│ ║  l.107: 	  match x with
-//│ ╙──       	        ^
-//│ ╔══[ERROR] [level 1] Cannot unify int and bool because lb([[[[[Int]]]]] <: Bool),ub(α99' <: Bool)
-//│ ╟── (lb([[[[[Int]]]]] <: Bool),true), (ub(α99' <: Bool),false)   int ---> bool <--- ?a 
+//│ ║  l.176: 	   | Left l -> l + 1
+//│ ╙──       	     ^^^^
+//│ ╔══[ERROR] Cannot unify int and (?a, ?b) either
+//│ ╟──        int ---> ?c <--- ?d ---> (?a, ?b) either 
 //│ ╟── int is here
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ║        	                       ^^^
 //│ ╟── int is the type of operator application
-//│ ║  l.108: 	   | Left l -> l + 1
+//│ ║  l.176: 	   | Left l -> l + 1
 //│ ║         	               ^^^^^
 //│ ╟── int is the type of match expression
-//│ ║  l.107: 	  match x with
+//│ ║  l.175: 	  match x with
 //│ ║         	  ^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
+//│ ║  l.176: 	   | Left l -> l + 1
 //│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
+//│ ║  l.177: 	   | Right r -> r && true
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── int is the type of if-then-else `expression`
-//│ ║  l.106: 	let destructEither x = if x then
+//│ ╟── ?c is the type of if-then-else `expression`; int flows here
+//│ ║  l.174: 	let destructEither x = if x then
 //│ ║         	                       ^^^^^^^^^
-//│ ║  l.107: 	  match x with
+//│ ║  l.175: 	  match x with
 //│ ║         	^^^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
+//│ ║  l.176: 	   | Left l -> l + 1
 //│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
+//│ ║  l.177: 	   | Right r -> r && true
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.110: 	  else x
+//│ ║  l.178: 	  else x
 //│ ║         	^^^^^^^^^
-//│ ╟── int is the type of variable
-//│ ║  l.106: 	let destructEither x = if x then
-//│ ║         	                   ^
-//│ ╟── int is the type of `else` branch
-//│ ║  l.110: 	  else x
+//│ ╟── ?c is the type of `else` branch; it flows from ?d
+//│ ║  l.178: 	  else x
 //│ ║         	       ^^
-//│ ╟── bool is the type of if-then-else `expression`; int flows here
-//│ ║  l.106: 	let destructEither x = if x then
-//│ ║         	                       ^^^^^^^^^
-//│ ║  l.107: 	  match x with
-//│ ║         	^^^^^^^^^^^^^^
-//│ ║  l.108: 	   | Left l -> l + 1
+//│ ╟── (?a, ?b) either is the type of reference; ?d flows into it
+//│ ║  l.175: 	  match x with
+//│ ║         	        ^
+//│ ╟── (?a, ?b) either is the type of case `expression`
+//│ ║  l.176: 	   | Left l -> l + 1
+//│ ╙──       	     ^^^^
+//│ ╔══[ERROR] Cannot unify int and bool
+//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ╟── int is here
+//│ ║  l.16: 	let (+): int -> int -> int
+//│ ║        	                       ^^^
+//│ ╟── int is the type of operator application
+//│ ║  l.176: 	   | Left l -> l + 1
+//│ ║         	               ^^^^^
+//│ ╟── int is the type of match expression
+//│ ║  l.175: 	  match x with
+//│ ║         	  ^^^^^^^^^^^^
+//│ ║  l.176: 	   | Left l -> l + 1
 //│ ║         	^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.109: 	   | Right r -> r && true
+//│ ║  l.177: 	   | Right r -> r && true
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.110: 	  else x
+//│ ╟── ?a is the type of if-then-else `expression`; int flows here
+//│ ║  l.174: 	let destructEither x = if x then
+//│ ║         	                       ^^^^^^^^^
+//│ ║  l.175: 	  match x with
+//│ ║         	^^^^^^^^^^^^^^
+//│ ║  l.176: 	   | Left l -> l + 1
+//│ ║         	^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.177: 	   | Right r -> r && true
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.178: 	  else x
 //│ ║         	^^^^^^^^^
-//│ ╟── bool is the type of if-then-else `condition`; it flows from ?a
-//│ ║  l.106: 	let destructEither x = if x then
+//│ ╟── ?a is the type of `else` branch; it flows from ?b
+//│ ║  l.178: 	  else x
+//│ ║         	       ^^
+//│ ╟── bool is the type of if-then-else `condition`; ?b flows into it
+//│ ║  l.174: 	let destructEither x = if x then
 //│ ╙──       	                          ^
 //│ destructEither: (either[int, bool] & bool) -> (bool | int)
 
+let succ: int -> int
+//│ succ: int -> int
+
+:unify
 let test2 x = match x with
  | true -> succ x
-//│ ╔══[ERROR] [level 1] Cannot unify int and bool because ub(α112' <: Int),ub(α112' <: Bool)
-//│ ╟── (ub(α112' <: Int),false), (ub(α112' <: Bool),true)   int <--- ?a ---> bool 
-//│ ╟── int is here
-//│ ║  l.23: 	let succ: int -> int
-//│ ║        	          ^^^
-//│ ╟── ?a is the type of reference; int flows from here
-//│ ║  l.339: 	 | true -> succ x
-//│ ║         	                ^
-//│ ╟── bool is the type of reference; ?a flows into it
-//│ ║  l.338: 	let test2 x = match x with
-//│ ║         	                    ^
-//│ ╟── bool is the type of case `expression`
-//│ ║  l.339: 	 | true -> succ x
-//│ ╙──       	   ^^^^
 //│ test2: nothing -> int

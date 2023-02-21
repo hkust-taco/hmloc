@@ -448,7 +448,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     private[mlscript] val uid: Int = { freshCount += 1; freshCount - 1 }
     lazy val asTypeVar = new TypeVar(L(uid), nameHint)
     var unification: Ls[Unification] = Nil
-    var new_unification: HashMap[ST, Ls[UnificationReason]] = HashMap()
+    var new_unification: HashMap[ST, UnificationReason] = HashMap()
     def compare(that: TV): Int = this.uid compare that.uid
     def isRecursive_$(implicit ctx: Ctx) : Bool = (lbRecOccs_$, ubRecOccs_$) match {
       case (S(N | S(true)), _) | (_, S(N | S(false))) => true
