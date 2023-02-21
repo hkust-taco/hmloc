@@ -238,7 +238,7 @@ class ConstraintSolver extends NormalForms { self: Typer =>
             case (LhsRefined(bo, ts, r, _), RhsBases(ots, S(R(RhsField(n, t2))), trs)) =>
               r.fields.find(_._1 === n) match {
                 case S(nt1) =>
-                  recLb(t2, nt1._2)(raise, cctx)
+                  recLb(t2, nt1._2)
                   rec(nt1._2.ub, t2.ub)
                 case N =>
                   bo match {
@@ -276,7 +276,7 @@ class ConstraintSolver extends NormalForms { self: Typer =>
     def recLb(lhs: FieldType, rhs: FieldType, nestedProv: Option[NestedTypeProvenance] = None)
       (implicit raise: Raise, cctx: ConCtx): Unit = {
         (lhs.lb, rhs.lb) match {
-          case (Some(l), Some(r)) => rec(l, r, nestedProv)(raise, cctx, Nil)
+          case (Some(l), Some(r)) => rec(l, r, nestedProv)
           case (Some(l), None) =>
             if (lhs.prov.loco.isEmpty || rhs.prov.loco.isEmpty) reportError()
             else reportError(S(msg"is not mutable"))(
@@ -299,7 +299,7 @@ class ConstraintSolver extends NormalForms { self: Typer =>
       * @param cctx
       */
     def rec(lhs: SimpleType, rhs: SimpleType, nestedProv: Opt[NestedTypeProvenance] = N)
-          (implicit raise: Raise, cctx: ConCtx, unification: Ls[UnificationReason] = Nil): Unit = {
+          (implicit raise: Raise, cctx: ConCtx): Unit = {
       constrainCalls += 1
       var sameLhs = cctx._1.headOption.exists(_.prov is lhs.prov)
       var sameRhs = cctx._2.headOption.exists(_.prov is rhs.prov)
@@ -368,10 +368,10 @@ class ConstraintSolver extends NormalForms { self: Typer =>
       }
       
       // Thread.sleep(10)  // useful for debugging constraint-solving explosions debugged on stdout
-      recImpl(lhs, rhs)(raise, newCctx, unification)
+      recImpl(lhs, rhs)(raise, newCctx)
     }
     def recImpl(lhs: SimpleType, rhs: SimpleType, skipCache: Bool = false)
-          (implicit raise: Raise, cctx: ConCtx, unification: Ls[UnificationReason]): Unit =
+          (implicit raise: Raise, cctx: ConCtx): Unit =
     // trace(s"C $lhs <! $rhs") {
     trace(s"C $lhs <! $rhs    (${cache.size}) where ${lhs.getClass.getSimpleName} <: ${rhs.getClass.getSimpleName}}") {
     // trace(s"C $lhs <! $rhs    (${cache.size}) where ${lhs.getClass.getSimpleName} <: ${rhs.getClass.getSimpleName}} and prov ${lhs.prov} <: ${rhs.prov}") {
@@ -414,6 +414,7 @@ class ConstraintSolver extends NormalForms { self: Typer =>
           case (_, TypeBounds(lb, ub)) => rec(lhs, lb)
           case (p @ ProvType(und), _) => rec(und, rhs)
           case (_, p @ ProvType(und)) => rec(lhs, und)
+          case (NegType(lhs), NegType(rhs)) => rec(rhs, lhs)
           case (lf @ FunctionType(l0, r0), rf @ FunctionType(l1, r1)) =>
             errorSimplifer.updateLevelCount(cctx, N)
             errorSimplifer.reportInfo(S(cctx))
@@ -431,35 +432,15 @@ class ConstraintSolver extends NormalForms { self: Typer =>
           // the `newBound`'s provenance must record the whole flow
           // of the type variable from it's producer to it's consumer
           case (lhs: TypeVariable, rhs) if rhs.level <= lhs.level =>
-            // create new unification
-            val ur = NEW_UB(lhs, rhs,
-              cctx._1.headOption.map(_.typeUseLocations).getOrElse(Nil),
-              cctx._2.headOption.map(_.typeUseLocations).getOrElse(Nil)
-            ) :: unification
-            println(s"UNIFICATION is ${ur}")
             val newBound = (cctx._1 ::: cctx._2.reverse).foldRight(rhs)((c, ty) =>
               if (c.prov is noProv) ty else mkProxy(ty, c.prov))
-            lhs.new_unification += ((rhs, ur)) // update unification
-            println(s"${lhs} unifications are ${lhs.new_unification}")
             lhs.upperBounds ::= newBound // update the bound
-            lhs.lowerBounds.foreach(lb => {
-              rec(lb, rhs)(raise, cctx, lhs.new_unification.getOrElse(lb, Nil) ::: ur)
-            }) // propagate from the bound
+            lhs.lowerBounds.foreach(rec(_, rhs)) // propagate from the bound
           case (lhs, rhs: TypeVariable) if lhs.level <= rhs.level =>
-            // create new unification
-            val ur = NEW_LB(lhs, rhs,
-              cctx._1.headOption.map(_.typeUseLocations).getOrElse(Nil),
-              cctx._2.headOption.map(_.typeUseLocations).getOrElse(Nil)
-            ) :: unification
-            println(s"UNIFICATION is ${ur}")
             val newBound = (cctx._1 ::: cctx._2.reverse).foldLeft(lhs)((ty, c) =>
               if (c.prov is noProv) ty else mkProxy(ty, c.prov))
-            rhs.new_unification += ((lhs, ur)) // update unification
-            println(s"${rhs} unifications are ${rhs.new_unification}")
             rhs.lowerBounds ::= newBound // update the bound
-            rhs.upperBounds.foreach(ub => {
-              rec(lhs, ub)(raise, cctx, rhs.new_unification.getOrElse(ub, Nil) reverse_::: ur)
-            }) // propagate from the bound
+            rhs.upperBounds.foreach(rec(lhs, _)) // propagate from the bound
           case (_: TypeVariable, rhs0) =>
             val rhs = extrude(rhs0, lhs.level, false)
             println(s"EXTR RHS  $rhs0  ~>  $rhs  to ${lhs.level}")
@@ -472,6 +453,11 @@ class ConstraintSolver extends NormalForms { self: Typer =>
             println(s" where ${lhs.showBounds}")
             println(s"   and ${lhs0.showBounds}")
             rec(lhs, rhs)
+          // implicit tuples are function arguments that are wrapped temporarily
+          // do not consider them as constructors call rec on their contained types
+          case (ltup @ TupleType((N -> FieldType(N, lt)) :: Nil), rtup @ TupleType((N -> FieldType(N, rt)) :: Nil))
+            if (ltup.implicitTuple || rtup.implicitTuple) =>
+              rec(lt, rt)
           case (TupleType(fs0), TupleType(fs1)) if fs0.size === fs1.size => // TODO generalize (coerce compatible tuples)
             // TODO: handle error
             errorSimplifer.updateLevelCount(cctx, N)
@@ -486,6 +472,9 @@ class ConstraintSolver extends NormalForms { self: Typer =>
               recLb(r, l, provChain.map(_.updateInfo("tuple lower bound")))
               rec(l.ub, r.ub, provChain.map(_.updateInfo("tuple upper bound")))
             }
+          case (t: ArrayBase, a: ArrayType) =>
+            recLb(a.inner, t.inner, provChain)
+            rec(t.inner.ub, a.inner.ub, provChain)
           case (ComposedType(true, l, r), _) =>
             rec(l, rhs) // Q: really propagate the outerProv here?
             rec(r, rhs)
@@ -514,6 +503,13 @@ class ConstraintSolver extends NormalForms { self: Typer =>
                 rec(t0.ub, t1.ub, provChain.map(_.updateInfo("record field upper bound")))
               }
             }
+          case (tup: TupleType, _: RecordType) =>
+            rec(tup.toRecord, rhs) // Q: really support this? means we'd put names into tuple reprs at runtime
+          case (err @ ClassTag(ErrTypeId, _), RecordType(fs1)) =>
+            fs1.foreach(f => rec(err, f._2.ub, provChain))
+          case (RecordType(fs1), err @ ClassTag(ErrTypeId, _)) =>
+            fs1.foreach(f => rec(f._2.ub, err, provChain))
+            
           case (tr1: TypeRef, tr2: TypeRef) if tr1.defn.name =/= "Array" && tr1.defn === tr2.defn =>
             if (tr1.defn === tr2.defn) {
               assert(tr1.targs.sizeCompare(tr2.targs) === 0)
@@ -532,6 +528,10 @@ class ConstraintSolver extends NormalForms { self: Typer =>
                   rec(tr1.expand, tr2.expand)
               }
             }
+          // case (tr: TypeRef, _) => rec(tr.expand, rhs)
+          // case (_, tr: TypeRef) => rec(lhs, tr.expand)
+          // case (tr: TypeRef, _) if ctx.tyDefs(tr.defn.name).kind is Als => rec(tr.expand, rhs)
+          // case (_, tr: TypeRef) if ctx.tyDefs(tr.defn.name).kind is Als => rec(lhs, tr.expand)
           case (tr: TypeRef, _) if ctx.tyDefs(tr.defn.name).adtData.isEmpty => rec(tr.expand, rhs)
           case (_, tr: TypeRef) if ctx.tyDefs(tr.defn.name).adtData.isEmpty => rec(lhs, tr.expand)
           
@@ -705,7 +705,7 @@ class ConstraintSolver extends NormalForms { self: Typer =>
       raise(ErrorReport(msgs))
     }
     
-    rec(lhs, rhs)(raise, Nil -> Nil, Nil)
+    rec(lhs, rhs)(raise, Nil -> Nil)
   }
   
   

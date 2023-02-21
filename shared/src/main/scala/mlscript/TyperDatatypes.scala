@@ -312,114 +312,94 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     *
     * The first reason is closest to b and the last reason is closest to a.
     */
-  case class Unification(a: ST, b: ST, reason: Ls[UnificationReason]) {
+  case class Unification(a: ST, b: ST, reason: Ls[UnificationReason], desc: Str = "") {
+    override def toString: Str = reason match {
+      case Nil => s"Unify ${a} and ${b}"
+      case _ => s"Unify ${a} and ${b} because ${reason.mkString(",")}"
+    }
     def unificationLevel: Int = {
-      this.reason.sliding(2).count {
-        case Seq(LB(_, tv1), LB(_, tv2)) if tv1 === tv2 => true
-        case Seq(UB(tv1, _), UB(tv2, _)) if tv1 === tv2 => true
-        case Seq(UB(_, tv1), LB(_, tv2)) if tv1 === tv2 => true
-        case Seq(LB(_, tv1), UB(_, tv2)) if (tv1: ST) === tv2 => true
+      reason.sliding(2).count {
+        case Seq(LB(_, tv1, _, _), LB(_, tv2, _, _)) if tv1 === tv2 => true
+        case Seq(UB(tv1, _, _, _), UB(tv2, _, _, _)) if tv1 === tv2 => true
+        case Seq(UB(_, tv1, _, _), LB(_, tv2, _, _)) if tv1 === tv2 => true
+        case Seq(LB(_, tv1, _, _), UB(_, tv2, _, _)) if (tv1: ST) === tv2 => true
         case _ => false
       }
     }
 
-    def unificationChain: Ls[UnificationReason -> Bool] = {
-      var flow = this.reason.headOption.getOrElse(die) match {
-        case _: LB => true  // flow is from left to right
-        case _: NEW_LB => true  // flow is from left to right
-        case _: UB => false // flow is from right to left
-        case _: NEW_UB => false // flow is from right to left
-        case _: CONN => true
-      }
+    def unificationChain: Ls[UnificationReason -> Bool] = reason match {
+      case Nil => Nil
+      case head :: _ => {
+        var flow = head match {
+          case _: LB => false // flow is from left to right
+          case _: UB => true // flow is from right to left
+        }
 
-      this.reason.head -> flow :: this.reason.sliding(2).collect {
-        case Seq(LB(_, tv1), u@LB(_, tv2)) if tv1 == tv2 =>
-          flow = !flow
-          u -> flow
-        case Seq(UB(tv1, _), u@UB(tv2, _)) if tv1 == tv2 =>
-          flow = !flow
-          u -> flow
-        case Seq(UB(_, tv1), u@LB(_, tv2)) if tv1 == tv2 =>
-          flow = !flow
-          u -> flow
-        case Seq(LB(_, tv1), u@UB(_, tv2)) if tv1 == tv2 =>
-          flow = !flow
-          u -> flow
-      }.toList
+        head -> flow :: reason.sliding(2).collect {
+          case Seq(LB(st1, tv1, _, _), u@LB(st2, tv2, _, _)) if tv1 === tv2 || st1 === st2 =>
+            flow = !flow
+            u -> flow
+          case Seq(UB(tv1, st1, _, _), u@UB(tv2, st2, _, _)) if tv1 === tv2 || st1 === st2 =>
+            flow = !flow
+            u -> flow
+          case Seq(UB(_, tv1, _, _), u@LB(_, tv2, _, _)) if tv1 == tv2 =>
+            flow = !flow
+            u -> flow
+          case Seq(LB(_, tv1, _, _), u@UB(_, tv2, _, _)) if tv1 == tv2 =>
+            flow = !flow
+            u -> flow
+        }.toList
+      }
     }
 
-    def unificationSequence: Ls[ST -> Bool] = {
-      var flow = this.reason.headOption.getOrElse(die) match {
-        case _: LB => true  // flow is from left to right
-        case _: NEW_LB => true  // flow is from left to right
-        case _: NESTED_LB => true  // flow is from left to right
-        case _: UB => false // flow is from right to left
-        case _: NEW_UB => false // flow is from right to left
-        case _: NESTED_UB => false // flow is from right to left
-        case _: CONN => true
-      }
-      val (start, end) = this.reason match {
-        case UB(tv, st) :: Nil => (tv, st)
-        case LB(st, tv) :: Nil => (tv, st)
-        case CONN(a, b, _, _) :: Nil => (a, b)
-        case Nil => lastWords("Unexpected no unification reason")
-        case _ =>
-          (this.reason.headOption.getOrElse(die).unifiedWith,
-            this.reason.lastOption.getOrElse(die).unifiedWith)
-      }
+    def unificationSequence: Ls[ST -> Bool] = reason match {
+      case Nil => Nil
+      case head :: _ => {
+        var flow: Bool = head match {
+          case _: LB => true // flow is from left to right
+          case _: UB => false // flow is from right to left
+        }
 
-      start -> flow :: this.reason.sliding(2).collect {
-        case Seq(LB(_, tv1), LB(_, tv2)) if tv1 == tv2 =>
-          flow = !flow
-          tv1 -> flow
-        case Seq(UB(tv1, _), UB(tv2, _)) if tv1 == tv2 =>
-          flow = !flow
-          tv1 -> flow
-        case Seq(UB(_, tv1), LB(_, tv2)) if tv1 == tv2 =>
-          flow = !flow
-          tv1 -> flow
-        case Seq(LB(_, tv1), UB(_, tv2)) if tv1 == tv2 =>
-          flow = !flow
-          tv1 -> flow
-      }.toList ::: end -> false :: Nil  // last type locations are always shown from consumption to introduction
+        val (start, end) = head match {
+          case UB(tv, st, _, _) => (tv, st)
+          case LB(st, tv, _, _) => (tv, st)
+        }
+
+        start -> flow :: reason.sliding(2).collect {
+          case Seq(LB(_, tv1, _, _), LB(_, tv2, _, _)) if tv1 == tv2 =>
+            flow = !flow
+            tv1 -> flow
+          case Seq(UB(tv1, _, _, _), UB(tv2, _, _, _)) if tv1 == tv2 =>
+            flow = !flow
+            tv1 -> flow
+          case Seq(UB(_, tv1, _, _), LB(_, tv2, _, _)) if tv1 == tv2 =>
+            flow = !flow
+            tv1 -> flow
+          case Seq(LB(_, tv1, _, _), UB(_, tv2, _, _)) if tv1 == tv2 =>
+            flow = !flow
+            tv1 -> flow
+        }.toList ::: end -> false :: Nil // last type locations are always shown from consumption to introduction
+      }
     }
   }
 
-  sealed abstract class UnificationReason {
+  abstract class UnificationReason {
+    var nested: Opt[Unification] = N
     override def toString: Str = this match {
-      case LB(st, tv) => s"${st} <: ${tv}"
-      case UB(tv, st) => s"${tv} <: ${st}"
-      case NEW_LB(st, tv, _, _) => s"${st} <: ${tv}"
-      case NEW_UB(tv, st, _, _) => s"${tv} <: ${st}"
-      case CONN(a, b, u, desc) => s"${a} = ${b} because ${desc}. Previous level ${u}"
-      case NESTED_LB(a, b, u, desc) => s"${a} <: ${b} because ${desc}. Previous level ${u}"
-      case NESTED_UB(a, b, u, desc) => s"${a} <: ${b} because ${desc}. Previous level ${u}"
+      case LB(st, tv, _, _) => s"lb(${st.toString} <: ${tv.toString})"
+      case UB(tv, st, _, _) => s"ub(${tv.toString} <: ${st.toString})"
     }
+
     // indicates which type was unified with which one
     // that is what the next unification should be
     def unifiedWith: ST = this match {
-      case LB(st, _) => st
-      case UB(_, st) => st
-      case NEW_LB(st, _, _, _) => st
-      case NEW_UB(_, st, _, _) => st
-      // this is a special case with no ordering
-      // we assume by convention b was unified with a
-      // so the next unification operation should be on b
-      case CONN(_, b, _, _) => b
-      case NESTED_LB(_, b, _, _) => b
-      case NESTED_UB(_, b, _, _) => b
+      case LB(st, _, _, _) => st
+      case UB(_, st, _, _) => st
     }
   }
 
-  case class NEW_LB(st: ST, tv: TV, stProvs: Ls[TypeProvenance], tvProvs: Ls[TypeProvenance]) extends UnificationReason
-  case class NEW_UB(tv: TV, st: ST, tvProvs: Ls[TypeProvenance], stProvs: Ls[TypeProvenance]) extends UnificationReason
-  case class NEW_NESTED_LB(a: ST, b: ST, prevLevel: Unification) extends UnificationReason
-  case class NEW_NESTED_UB(a: ST, b: ST, prevLevel: Unification) extends UnificationReason
-  case class LB(st: ST, tv: TV) extends UnificationReason
-  case class UB(tv: TV, st: ST) extends UnificationReason
-  case class CONN(a: ST, b: ST, prevLevel: Unification, desc: Str = "") extends UnificationReason
-  case class NESTED_LB(a: ST, b: ST, prevLevel: Unification, desc: Str = "") extends UnificationReason
-  case class NESTED_UB(a: ST, b: ST, prevLevel: Unification, desc: Str = "") extends UnificationReason
+  final case class LB(st: ST, tv: ST, stProvs: Ls[TP], tvProvs: Ls[TP]) extends UnificationReason
+  final case class UB(tv: ST, st: ST, tvProvs: Ls[TP], stProvs: Ls[TP]) extends UnificationReason
 
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
     * Invariant: Types appearing in the bounds never have a level higher than this variable's `level`. */
@@ -432,7 +412,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     private[mlscript] val uid: Int = { freshCount += 1; freshCount - 1 }
     lazy val asTypeVar = new TypeVar(L(uid), nameHint)
     var unification: Ls[Unification] = Nil
-    var new_unification: HashMap[ST, List[UnificationReason]] = HashMap()
+    var new_unification: HashMap[ST, Ls[UnificationReason]] = HashMap()
     def compare(that: TV): Int = this.uid compare that.uid
     def isRecursive_$(implicit ctx: Ctx) : Bool = (lbRecOccs_$, ubRecOccs_$) match {
       case (S(N | S(true)), _) | (_, S(N | S(false))) => true

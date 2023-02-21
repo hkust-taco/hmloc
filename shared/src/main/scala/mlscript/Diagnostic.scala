@@ -43,15 +43,6 @@ object WarningReport {
     WarningReport(msgs.head._1.show, msgs, source)
 }
 
-final case class UnificationReport(mainMsg: Str, allMsgs: Ls[Message -> Opt[Loc]], source: Source = Typing) extends Diagnostic(mainMsg) {
-  override val kind: Kind = Error
-}
-
-object UnificationReport {
-  def apply(msgs: Ls[Message -> Opt[Loc]]): UnificationReport =
-    UnificationReport(msgs.head._1.show, msgs)
-}
-
 final case class Loc(spanStart: Int, spanEnd: Int, origin: Origin) {
   assert(spanStart >= 0)
   assert(spanEnd >= spanStart)

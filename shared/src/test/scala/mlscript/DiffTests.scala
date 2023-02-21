@@ -356,8 +356,6 @@ class DiffTests
               case WarningReport(msg, loco, src) =>
                 totalWarnings += 1
                 s"╔══[WARNING] "
-              case UnificationReport(msg, loco, src) =>
-                s"╔══[ERROR] "
             }
             val lastMsgNum = diag.allMsgs.size - 1
             var globalLineNum = blockLineNum  // solely used for reporting useful test failure messages
@@ -634,7 +632,7 @@ class DiffTests
             if (mode.unify) {
               val temp = typer.dbg
               typer.dbg = mode.unifyDbg
-              typer.unifyTypes()(ctx, raise)
+              typer.showUnificationDebugInfo()
               typer.TypeVariable.clearCollectedTypeVars()
               typer.dbg = temp
             }
