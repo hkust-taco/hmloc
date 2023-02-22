@@ -222,6 +222,14 @@ trait UnificationSolver extends TyperDatatypes {
 
   def createErrorMessage(firstUR: UnificationReason -> Bool, secondUR: UnificationReason -> Bool, showFirst: Bool = false)
                         (implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+    val diagistypeof = (st: ST, tp: TP) => msg"${st.expPos} is the type of ${tp.desc}" -> tp.loco
+    val diagishere = (st: ST, tp: TP) => msg"${st.expPos} is here" -> tp.loco
+    val msgistypeof = (st: ST, tp: TP) => msg"${st.expPos} is the type of ${tp.desc}"
+    val msgflowhere = (st: ST) => msg"; ${st.expPos} flows here"
+    val msgflowfromit = (st: ST) => msg"; ${st.expPos} flows from it"
+    val msgflowitfrom = (st: ST) => msg"; it flows from ${st.expPos}"
+    val msgflowitinto = (st: ST) => msg"; it flows into ${st.expPos}"
+    val msgflowintoit = (st: ST) => msg"; ${st.expPos} flows into it"
     // take elements from first list upto and include first common element
     // a: 1, 2, 3, 4
     // b: 5, 6, 3, 4
@@ -234,62 +242,94 @@ trait UnificationSolver extends TyperDatatypes {
       }
     }
     def makeMessagesST(st: ST, ls: Ls[TP]): Ls[Message -> Opt[Loc]] = ls.map{
-      case TypeProvenance(loco, desc, _, false) => msg"${st.expPos} is the type of ${desc}" -> loco
-      case TypeProvenance(loco, desc, _, true) => msg"${st.expPos} is here" -> loco
+      case tp@TypeProvenance(_, _, _, false) => diagistypeof(st, tp)
+      case tp@TypeProvenance(_, _, _, true) => diagishere(st, tp)
     }
     // showFirst indicates if the merged location belongs to the type variable or the st
     // when showing first we show location of type variable
     // otherwise the location of type variable is skipped as it must have been shown in previous
     // unification reason message. So the directly the location of st is shown
     def makeMessagesUR(ur: UnificationReason -> Bool, provs: Ls[TP]): Ls[Message -> Opt[Loc]] = {
-      ur match {
-        // 1 -> 2 -> 3
-        // we want to merge the message for location 3
-        case (LB(st, tv, _), true) =>
-          provs.reverse match {
-            case last :: tail => if (showFirst) { // includes location of tv
-              (msg"${tv.expPos} is the type of ${last.desc}; ${st.expPos} flows here" -> last.loco :: makeMessagesST(st, tail)).reverse
-            } else {
-              (msg"${st.expPos} is the type of ${last.desc}; and it flows into ${tv.expPos}" -> last.loco :: makeMessagesST(st, tail)).reverse
+      // first ur should include the last location which is the common location between the two urs
+      // so the last message should include the type b as the main type
+      if (showFirst) {
+        ur match {
+          // 1 -> 2 -> 3
+          // we want to merge the message for location 3
+          case (LB(st, tv, _), true) =>
+            provs.reverse match {
+              case last :: tail =>
+                (msgistypeof(tv, last) + msgflowhere(st) -> last.loco :: makeMessagesST(st, tail)).reverse
+              case Nil => Nil
             }
-
+          // 1 -> 2 -> 3
+          // we want to merge the message for location 3
+          // and we want messages to be print in opposite order
+          // 3 <- 2 <- 1
+          case (LB(st, tv, _), false) =>
+            provs.reverse match {
+              case last :: tail =>
+                msgistypeof(tv, last) + msgflowhere(st) -> last.loco :: makeMessagesST(st, tail)
+              case Nil => Nil
+            }
+          // 1 -> 2 -> 3
+          // we want to merge the message for location 1
+          case (UB(tv, st, _), true) =>
+            provs match {
+              case first :: tail =>
+                msgistypeof(tv, first) + msgflowhere(st) -> first.loco :: makeMessagesST(st, tail)
+              case Nil => Nil
+            }
+          // 1 -> 2 -> 3
+          // we want to merge the message for location 1
+          // and show locations in the reverse order
+          // 3 <- 2 <- 1
+          case (UB(tv, st, _), false) => provs match {
+            case ::(first, next) =>
+              (msgistypeof(tv, first) + msgflowfromit(st) -> first.loco :: makeMessagesST(st, next)).reverse
             case Nil => Nil
           }
-        // 1 -> 2 -> 3
-        // we want to merge the message for location 3
-        // and we want messages to be print in opposite order
-        // 3 <- 2 <- 1
-        case (LB(st, tv, _), false) =>
-          provs.reverse match {
-            case last :: tail => if (showFirst) {
-              msg"${tv.expPos} is the type of ${last.desc}; ${st.expPos} flows into it" -> last.loco :: makeMessagesST(st, tail)
-            } else {
-              msg"${st.expPos} is the type of ${last.desc}; ${tv.expPos} flows here" -> last.loco :: makeMessagesST(st, tail)
+        }
+      }
+      // show second ur. So the common location for the two urs should be omitted because
+      // the previous ur will already have shown it.
+      else {
+        ur match {
+          // 1 -> 2 -> 3
+          // we want to merge the message for location 3
+          case (LB(st, tv, _), true) =>
+            provs.reverse match {
+              case last :: tail =>
+                (msgistypeof(st, last) + msgflowitinto(tv) -> last.loco :: makeMessagesST(st, tail)).reverse
+              case Nil => Nil
             }
+          // 1 -> 2 -> 3
+          // we want to merge the message for location 3
+          // and we want messages to be print in opposite order
+          // 3 <- 2 <- 1
+          case (LB(st, tv, _), false) =>
+            provs.reverse match {
+              case last :: tail =>
+                msgistypeof(st, last) + msgflowhere(tv) -> last.loco :: makeMessagesST(st, tail)
+              case Nil => Nil
+            }
+          // 1 -> 2 -> 3
+          // we want to merge the message for location 1
+          case (UB(tv, st, _), true) =>
+            provs match {
+              case first :: tail =>
+                msgistypeof(st, first) + msgflowintoit(tv) -> first.loco :: makeMessagesST(st, tail)
+              case Nil => Nil
+            }
+          // 1 -> 2 -> 3
+          // we want to merge the message for location 1
+          // and show locations in the reverse order
+          // 3 <- 2 <- 1
+          case (UB(tv, st, _), false) => provs match {
+            case ::(first, next) =>
+              (msgistypeof(st, first) + msgflowitfrom(tv) -> first.loco :: makeMessagesST(st, next)).reverse
             case Nil => Nil
           }
-        // 1 -> 2 -> 3
-        // we want to merge the message for location 1
-        case (UB(tv, st, _), true) =>
-          provs match {
-            case first :: tail => if (showFirst) {
-              msg"${tv.expPos} is the type of ${first.desc}; ${st.expPos} flows from here" -> first.loco :: makeMessagesST(st, tail)
-            } else {
-              msg"${st.expPos} is the type of ${first.desc}; ${tv.expPos} flows into it" -> first.loco :: makeMessagesST(st, tail)
-            }
-            case Nil => Nil
-          }
-        // 1 -> 2 -> 3
-        // we want to merge the message for location 1
-        // and show locations in the reverse order
-        // 3 <- 2 <- 1
-        case (UB(tv, st, _), false) => provs match {
-          case ::(first, next) => if (showFirst) {
-            (msg"${tv.expPos} is the type of ${first.desc}; ${st.expPos} flows from here" -> first.loco :: makeMessagesST(st, next)).reverse
-          } else {
-            (msg"${st.expPos} is the type of ${first.desc}; it flows from ${tv.expPos}" -> first.loco :: makeMessagesST(st, next)).reverse
-          }
-          case Nil => Nil
         }
       }
     }
