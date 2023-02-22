@@ -49,14 +49,14 @@ abstract class TypeImpl extends Located { self: Type =>
             .reduce(_ + opStr + _), outerPrec > prec)
       }
     case uv: TypeVar => ctx.vs(uv)
-    case Function(l, r) => parensIf(l.showIn(ctx, 31) + " -> " + r.showIn(ctx, 30), outerPrec > 30)
+    case Function(l, r) => parensIf(l.showOcaml(ctx, 31) + " -> " + r.showOcaml(ctx, 30), outerPrec > 30)
     case Record(fs) => fs.map { nt =>
       val nme = nt._1.name
-      s"${nme}: ${nt._2.showIn(ctx, 0)}"
+      s"${nme}: ${nt._2.showOcaml(ctx, 0)}"
     }.mkString("{", ", ", "}")
-    case Tuple(fields) => s"${fields.map(_.showIn(ctx, 0)).mkString("(", ", ", ")")}"
-    case AppliedType(n, args) if args.length === 1 => s"${args.map(_.showIn(ctx, 0)).mkString(", ")} ${n.name}"
-    case AppliedType(n, args) => s"(${args.map(_.showIn(ctx, 0)).mkString(", ")}) ${n.name}"
+    case Tuple(fields) => s"${fields.map(_.showOcaml(ctx, 0)).mkString("(", ", ", ")")}"
+    case AppliedType(n, args) if args.length === 1 => s"${args.map(_.showOcaml(ctx, 0)).mkString(", ")} ${n.name}"
+    case AppliedType(n, args) => s"(${args.map(_.showOcaml(ctx, 0)).mkString(", ")}) ${n.name}"
     case TypeName(name) => name
     case _ => lastWords(s"Cannot create showOcaml for ${this.show}")
   }
