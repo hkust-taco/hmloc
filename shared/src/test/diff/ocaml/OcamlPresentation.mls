@@ -5,13 +5,13 @@
 let boolToInt x = if x then "0" else 1
 //│ ╔══[ERROR] Type `string` does not match `int`
 //│ ╟──        string ---> ?a <--- int 
-//│ ╟── this `then` branch has type `string`
+//│ ╟── this `then` branch has type `string` and it flows into `?a`
 //│ ║  l.5: 	let boolToInt x = if x then "0" else 1
 //│ ║       	                            ^^^
-//│ ╟── this if-then-else expression has type `?a`; `string` also flows into it
+//│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.5: 	let boolToInt x = if x then "0" else 1
 //│ ║       	                  ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `else` branch has type `int`; it flows into `?a`
+//│ ╟── this `else` branch has type `int` and it flows from `?a`
 //│ ║  l.5: 	let boolToInt x = if x then "0" else 1
 //│ ╙──     	                                     ^
 //│ boolToInt: bool -> (int | string)
@@ -32,20 +32,20 @@ let destructEither x = match x with
 //│ ╟── `int` is here
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ║        	                       ^^^
-//│ ╟── this operator application has type `int`
+//│ ╟── this operator application has type `int` and it flows into `?a`
 //│ ║  l.28: 	 | Left l -> l + 1
 //│ ║        	             ^^^^^
-//│ ╟── this match expression has type `?a`; `int` also flows into it
+//│ ╟── this match expression has type `?a`
 //│ ║  l.27: 	let destructEither x = match x with
 //│ ║        	                       ^^^^^^^^^^^^
 //│ ║  l.28: 	 | Left l -> l + 1
 //│ ║        	^^^^^^^^^^^^^^^^^^
 //│ ║  l.29: 	 | Right r -> r && true
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this operator application has type `bool`; it flows into `?a`
+//│ ╟── this operator application has type `?a` and it flows from `bool`
 //│ ║  l.29: 	 | Right r -> r && true
 //│ ║        	              ^^^^^^^^^^
-//│ ╟── `bool` is here
+//│ ╟── this type reference has type `bool`
 //│ ║  l.54: 	let (&&): bool -> bool -> bool
 //│ ╙──      	                          ^^^^
 //│ destructEither: either[int, bool] -> (bool | int)
@@ -58,13 +58,13 @@ let destructEither x = if x then
   else x
 //│ ╔══[ERROR] Type `bool` does not match `(?a, ?b) either`
 //│ ╟──        bool <--- ?c ---> (?a, ?b) either 
-//│ ╟── this if-then-else condition has type `bool`
+//│ ╟── this if-then-else condition has type `bool` and it flows from `?c`
 //│ ║  l.54: 	let destructEither x = if x then
 //│ ║        	                          ^
-//│ ╟── this variable has type `?c`; `bool` flows from it
+//│ ╟── this variable has type `?c`
 //│ ║  l.54: 	let destructEither x = if x then
 //│ ║        	                   ^
-//│ ╟── this reference has type `(?a, ?b) either`; `?c` also flows into it
+//│ ╟── this reference has type `?c` and it flows into `(?a, ?b) either`
 //│ ║  l.55: 	  match x with
 //│ ║        	        ^
 //│ ╟── this case `expression` has type `(?a, ?b) either`
@@ -75,20 +75,20 @@ let destructEither x = if x then
 //│ ╟── `int` is here
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ║        	                       ^^^
-//│ ╟── this operator application has type `int`
+//│ ╟── this operator application has type `int` and it flows into `?a`
 //│ ║  l.56: 	   | Left l -> l + 1
 //│ ║        	               ^^^^^
-//│ ╟── this match expression has type `?a`; `int` also flows into it
+//│ ╟── this match expression has type `?a`
 //│ ║  l.55: 	  match x with
 //│ ║        	  ^^^^^^^^^^^^
 //│ ║  l.56: 	   | Left l -> l + 1
 //│ ║        	^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.57: 	   | Right r -> r && true
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this operator application has type `bool`; it flows into `?a`
+//│ ╟── this operator application has type `?a` and it flows from `bool`
 //│ ║  l.57: 	   | Right r -> r && true
 //│ ║        	                ^^^^^^^^^
-//│ ╟── `bool` is here
+//│ ╟── this type reference has type `bool`
 //│ ║  l.54: 	let (&&): bool -> bool -> bool
 //│ ╙──      	                          ^^^^
 //│ ╔══[ERROR] Type `bool` does not match `int`
@@ -96,20 +96,20 @@ let destructEither x = if x then
 //│ ╟── `bool` is here
 //│ ║  l.54: 	let (&&): bool -> bool -> bool
 //│ ║        	                          ^^^^
-//│ ╟── this operator application has type `bool`
+//│ ╟── this operator application has type `bool` and it flows into `?a`
 //│ ║  l.57: 	   | Right r -> r && true
 //│ ║        	                ^^^^^^^^^
-//│ ╟── this match expression has type `?a`; `bool` also flows into it
+//│ ╟── this match expression has type `?a`
 //│ ║  l.55: 	  match x with
 //│ ║        	  ^^^^^^^^^^^^
 //│ ║  l.56: 	   | Left l -> l + 1
 //│ ║        	^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.57: 	   | Right r -> r && true
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this operator application has type `int`; it flows into `?a`
+//│ ╟── this operator application has type `?a` and it flows from `int`
 //│ ║  l.56: 	   | Left l -> l + 1
 //│ ║        	               ^^^^^
-//│ ╟── `int` is here
+//│ ╟── this type reference has type `int`
 //│ ║  l.16: 	let (+): int -> int -> int
 //│ ╙──      	                       ^^^
 //│ ╔══[ERROR] Type `bool` does not match `(?a, ?b) either`
@@ -120,14 +120,14 @@ let destructEither x = if x then
 //│ ╟── this operator application has type `bool`
 //│ ║  l.57: 	   | Right r -> r && true
 //│ ║        	                ^^^^^^^^^
-//│ ╟── this match expression has type `bool`
+//│ ╟── this match expression has type `bool` and it flows into `?c`
 //│ ║  l.55: 	  match x with
 //│ ║        	  ^^^^^^^^^^^^
 //│ ║  l.56: 	   | Left l -> l + 1
 //│ ║        	^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.57: 	   | Right r -> r && true
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `?c`; `bool` also flows into it
+//│ ╟── this if-then-else expression has type `?c`
 //│ ║  l.54: 	let destructEither x = if x then
 //│ ║        	                       ^^^^^^^^^
 //│ ║  l.55: 	  match x with
@@ -138,13 +138,13 @@ let destructEither x = if x then
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.58: 	  else x
 //│ ║        	^^^^^^^^^
-//│ ╟── this `else` branch has type `?c`
+//│ ╟── this `else` branch has type `?c` and it flows from `?d`
 //│ ║  l.58: 	  else x
 //│ ║        	       ^^
-//│ ╟── this variable has type `?c`; it flows from `?d`
+//│ ╟── this variable has type `?d`
 //│ ║  l.54: 	let destructEither x = if x then
 //│ ║        	                   ^
-//│ ╟── this reference has type `(?a, ?b) either`; `?d` also flows into it
+//│ ╟── this reference has type `?d` and it flows into `(?a, ?b) either`
 //│ ║  l.55: 	  match x with
 //│ ║        	        ^
 //│ ╟── this case `expression` has type `(?a, ?b) either`
@@ -158,14 +158,14 @@ let destructEither x = if x then
 //│ ╟── this operator application has type `int`
 //│ ║  l.56: 	   | Left l -> l + 1
 //│ ║        	               ^^^^^
-//│ ╟── this match expression has type `int`
+//│ ╟── this match expression has type `int` and it flows into `?c`
 //│ ║  l.55: 	  match x with
 //│ ║        	  ^^^^^^^^^^^^
 //│ ║  l.56: 	   | Left l -> l + 1
 //│ ║        	^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.57: 	   | Right r -> r && true
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `?c`; `int` also flows into it
+//│ ╟── this if-then-else expression has type `?c`
 //│ ║  l.54: 	let destructEither x = if x then
 //│ ║        	                       ^^^^^^^^^
 //│ ║  l.55: 	  match x with
@@ -176,13 +176,13 @@ let destructEither x = if x then
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.58: 	  else x
 //│ ║        	^^^^^^^^^
-//│ ╟── this `else` branch has type `?c`
+//│ ╟── this `else` branch has type `?c` and it flows from `?d`
 //│ ║  l.58: 	  else x
 //│ ║        	       ^^
-//│ ╟── this variable has type `?c`; it flows from `?d`
+//│ ╟── this variable has type `?d`
 //│ ║  l.54: 	let destructEither x = if x then
 //│ ║        	                   ^
-//│ ╟── this reference has type `(?a, ?b) either`; `?d` also flows into it
+//│ ╟── this reference has type `?d` and it flows into `(?a, ?b) either`
 //│ ║  l.55: 	  match x with
 //│ ║        	        ^
 //│ ╟── this case `expression` has type `(?a, ?b) either`
@@ -196,14 +196,14 @@ let destructEither x = if x then
 //│ ╟── this operator application has type `int`
 //│ ║  l.56: 	   | Left l -> l + 1
 //│ ║        	               ^^^^^
-//│ ╟── this match expression has type `int`
+//│ ╟── this match expression has type `int` and it flows into `?a`
 //│ ║  l.55: 	  match x with
 //│ ║        	  ^^^^^^^^^^^^
 //│ ║  l.56: 	   | Left l -> l + 1
 //│ ║        	^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.57: 	   | Right r -> r && true
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `?a`; `int` also flows into it
+//│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.54: 	let destructEither x = if x then
 //│ ║        	                       ^^^^^^^^^
 //│ ║  l.55: 	  match x with
@@ -214,38 +214,39 @@ let destructEither x = if x then
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.58: 	  else x
 //│ ║        	^^^^^^^^^
-//│ ╟── this `else` branch has type `?a`
+//│ ╟── this `else` branch has type `?a` and it flows from `?b`
 //│ ║  l.58: 	  else x
 //│ ║        	       ^^
-//│ ╟── this variable has type `?a`; it flows from `?b`
+//│ ╟── this variable has type `?b`
 //│ ║  l.54: 	let destructEither x = if x then
 //│ ║        	                   ^
-//│ ╟── this if-then-else condition has type `bool`; `?b` also flows into it
+//│ ╟── this if-then-else condition has type `?b` and it flows into `bool`
 //│ ║  l.54: 	let destructEither x = if x then
 //│ ╙──      	                          ^
 //│ destructEither: (either[int, bool] & bool) -> (bool | int)
 
-:unify
 let succ: int -> int
+//│ succ: int -> int
+
+:unify
 let test2 x = match x with
  | true -> succ x
-//│ succ: int -> int
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ╟──        bool <--- ?a ---> int 
 //│ ╟── this case `expression` has type `bool`
-//│ ║  l.231: 	 | true -> succ x
+//│ ║  l.233: 	 | true -> succ x
 //│ ║         	   ^^^^
-//│ ╟── this reference has type `bool`
-//│ ║  l.230: 	let test2 x = match x with
+//│ ╟── this reference has type `bool` and it flows from `?a`
+//│ ║  l.232: 	let test2 x = match x with
 //│ ║         	                    ^
-//│ ╟── this variable has type `?a`; `bool` flows from it
-//│ ║  l.230: 	let test2 x = match x with
+//│ ╟── this variable has type `?a`
+//│ ║  l.232: 	let test2 x = match x with
 //│ ║         	          ^
-//│ ╟── this reference has type `int`; `?a` also flows into it
-//│ ║  l.231: 	 | true -> succ x
+//│ ╟── this reference has type `?a` and it flows into `int`
+//│ ║  l.233: 	 | true -> succ x
 //│ ║         	                ^
-//│ ╟── `int` is here
-//│ ║  l.229: 	let succ: int -> int
+//│ ╟── this type reference has type `int`
+//│ ║  l.228: 	let succ: int -> int
 //│ ╙──       	          ^^^
 //│ test2: nothing -> int
 
@@ -259,89 +260,48 @@ let f: string list -> unit
 :unify
 f x
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.260: 	f x
+//│ ║  l.261: 	f x
 //│ ║         	^^^
 //│ ╟── type `int` is not an instance of `string`
-//│ ║  l.252: 	let x: int list
+//│ ║  l.253: 	let x: int list
 //│ ║         	       ^^^
 //│ ╟── Note: constraint arises from type reference:
-//│ ║  l.254: 	let f: string list -> unit
+//│ ║  l.255: 	let f: string list -> unit
 //│ ╙──       	       ^^^^^^
 //│ ╔══[ERROR] Type `int` does not match `string`
 //│ ╟── type `int` is here
-//│ ║  l.252: 	let x: int list
+//│ ║  l.253: 	let x: int list
 //│ ║         	       ^^^
 //│ ╟── type `int list` is here
-//│ ║  l.252: 	let x: int list
+//│ ║  l.253: 	let x: int list
 //│ ║         	       ^^^^^^^^
 //│ ╟── this reference has type `int list`
-//│ ║  l.260: 	f x
+//│ ║  l.261: 	f x
 //│ ║         	  ^
 //│ ╟── this reference has type `string list -> unit`
-//│ ║  l.260: 	f x
+//│ ║  l.261: 	f x
 //│ ║         	^
 //│ ╟── type `string list -> unit` is here
-//│ ║  l.254: 	let f: string list -> unit
+//│ ║  l.255: 	let f: string list -> unit
 //│ ║         	       ^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `string list` is here
-//│ ║  l.254: 	let f: string list -> unit
+//│ ║  l.255: 	let f: string list -> unit
 //│ ║         	       ^^^^^^^^^^^
 //│ ╟── type `string` is here
-//│ ║  l.254: 	let f: string list -> unit
+//│ ║  l.255: 	let f: string list -> unit
 //│ ╙──       	       ^^^^^^
 
-:unifyDbg
-:d
+:unify
 if true then x else y
-//│ 0. Typing term if true(true) then x then (false) then y
-//│ | If(Var(true), List(IfThen(Var(true), Var(x), IfThen(Var(false), Var(y)))
-//│ | 0. Typing term true
-//│ | 0. : [Bool]
-//│ | CONSTRAIN [Bool] <! Bool
-//│ |   where 
-//│ | C [Bool] <! Bool    (0) where ProvType <: TypeRef}
-//│ | UT [Bool] <: Bool len: 1 
-//│ | | U [Bool] = Bool because lb([Bool] <: Bool) skipCache
-//│ | 0. Typing term x
-//│ | 0. : [list[Int]]
-//│ | CONSTRAIN [list[Int]] <! α113
-//│ |   where 
-//│ | C [list[Int]] <! α113    (0) where ProvType <: TypeVariable}
-//│ | | C list[Int] <! α113    (0) where TypeRef <: TypeVariable}
-//│ | UT [list[Int]] <: α113 len: 3 
-//│ | | UT  list[Int] with
-//│ | | UT  α113 += (list[Int],List(lb(list[Int] <: α113)))
-//│ | 0. Typing term y
-//│ | 0. : [list[String]]
-//│ | CONSTRAIN [list[String]] <! α113
-//│ |   where 
-//│ 		α113 :> [[[list[Int]]]]
-//│ | C [list[String]] <! α113    (0) where ProvType <: TypeVariable}
-//│ | | C list[String] <! α113    (0) where TypeRef <: TypeVariable}
-//│ | UT [list[String]] <: α113 len: 3 
-//│ | | UT  list[String] with
-//│ | | UT  α113 :> list[Int] for lb(list[Int] <: α113)
-//│ | | U [[[list[Int]]]] = list[String] because lb(list[Int] <: α113), lb(list[String] <: α113) ()
-//│ | | | UT Int <: String len: 2 nested: [[[list[Int]]]] = list[String] because lb(list[Int] <: α113),lb(list[String] <: α113)
-//│ | | | | U Int = String because lb(Int <: String) skipCache
-//│ | | | | | UERR  Int = String because lb(Int <: String)
-//│ | | UT  α113 += (list[String],List(lb(list[String] <: α113)))
-//│ 0. : α113
-//│ ⬤ Typed as: α113
-//│  where: 
-//│ 		α113 :> [[[list[String]]]] | [[[list[Int]]]]
-//│ unified α113 with:
-//│   list[String]: lb(list[String] <: α113)
-//│   list[Int]: lb(list[Int] <: α113)
 //│ ╔══[ERROR] Type `int` does not match `string`
 //│ ╟── type `int` is here
-//│ ║  l.252: 	let x: int list
+//│ ║  l.253: 	let x: int list
 //│ ║         	       ^^^
 //│ ╟── type `int list` is here
-//│ ║  l.252: 	let x: int list
+//│ ║  l.253: 	let x: int list
 //│ ║         	       ^^^^^^^^
 //│ ╟── type `int list` is here
-//│ ║  l.252: 	let x: int list
+//│ ║  l.253: 	let x: int list
 //│ ║         	       ^^^^^^^^
 //│ ╟── this `then` branch has type `int list`
 //│ ║  l.295: 	if true then x else y
@@ -350,9 +310,9 @@ if true then x else y
 //│ ║  l.295: 	if true then x else y
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `string list` is here
-//│ ║  l.253: 	let y: string list
+//│ ║  l.254: 	let y: string list
 //│ ║         	       ^^^^^^^^^^^
 //│ ╟── type `string` is here
-//│ ║  l.253: 	let y: string list
+//│ ║  l.254: 	let y: string list
 //│ ╙──       	       ^^^^^^
 //│ res: list[int | string]
