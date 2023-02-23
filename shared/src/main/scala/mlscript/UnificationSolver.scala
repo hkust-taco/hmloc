@@ -132,7 +132,7 @@ trait UnificationSolver extends TyperDatatypes {
         // st <: tv <: ub pass through tv and maintain constraining relation
         tv.upperBounds.foreach(ub => {
           println(s"UT  ${st} <: ${tv} <: ${ub}")
-          traverseBounds(st, ub, provs reverse_::: ub.typeUseLocations, nested)
+          traverseBounds(st, ub, provs ::: ub.typeUseLocations, nested)
         })
 
         if (tv.lowerBounds.nonEmpty) println(s"UT  ${st} with")
@@ -204,6 +204,7 @@ trait UnificationSolver extends TyperDatatypes {
   }
 
   def reportUnificationError(u: Unification)(implicit raise: Raise, ctx: Ctx): Unit = {
+    println(s"UERR  ${u.toString}")
     val msgdoesnotmatch = (a: ST, b: ST) => msg"Type `${a.expPos}` does not match `${b.expPos}`"
     u.unificationChain match {
       case Nil => ()
@@ -353,7 +354,7 @@ trait UnificationSolver extends TyperDatatypes {
       println(s"show ${provs.length} locations for ${firstUR}")
       makeMessagesUR(firstUR, provs)
     }
-    // second should check previous to see if terminal location is common and now show it again
+    // second should check previous to see if terminal location is common and not show it again
     else {
       val provs = if (leftSame) {
         takeUpToFirstCommon(bprovs.reverse, aprovs.reverse).reverse

@@ -35,6 +35,9 @@ let wrap x = Cons(x, Nil)
 if true then wrap 1 else wrap true
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ╟──        bool ---> ?a <--- int 
+//│ ╟── this reference has type `bool`
+//│ ║  l.35: 	if true then wrap 1 else wrap true
+//│ ║        	                              ^^^^
 //│ ╟── this variable has type `?a`; `bool` also flows into it
 //│ ║  l.5: 	let wrap x = Cons(x, Nil)
 //│ ║       	         ^
@@ -49,29 +52,38 @@ if true then wrap (if true then 1 else false) else wrap true
 //│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ╟──        int ---> ?a <--- bool 
 //│ ╟── this `then` branch has type `int`
-//│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.51: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                                ^
 //│ ╟── this if-then-else expression has type `?a`; `int` also flows into it
-//│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.51: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `else` branch has type `bool`; it flows into `?a`
-//│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.51: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ╙──      	                                       ^^^^^
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ╟──        bool ---> ?a <--- int 
-//│ ╟── this variable has type `?a`; `bool` also flows into it
-//│ ║  l.5: 	let wrap x = Cons(x, Nil)
-//│ ╙──     	         ^
+//│ ╟── this `else` branch has type `bool`
+//│ ║  l.51: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║        	                                       ^^^^^
+//│ ╟── this if-then-else expression has type `?a`; `bool` also flows into it
+//│ ║  l.51: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `int`; it flows into `?a`
+//│ ║  l.51: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ╙──      	                                ^
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ╟──        bool ---> ?a <--- int 
+//│ ╟── this reference has type `bool`
+//│ ║  l.51: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║        	                                                        ^^^^
 //│ ╟── this variable has type `?a`; `bool` also flows into it
 //│ ║  l.5: 	let wrap x = Cons(x, Nil)
 //│ ║       	         ^
 //│ ╟── this if-then-else expression has type `int`; it flows into `?a`
-//│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.51: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `then` branch has type `int`
-//│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.51: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ╙──      	                                ^
 //│ res: list[bool | int]
 
@@ -85,11 +97,23 @@ let test z = if true then wrap z else wrap true
 let rec t = test (if true then 1 else t)
 //│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ╟──        int ---> ?a <--- bool 
+//│ ╟── this `then` branch has type `int`
+//│ ║  l.97: 	let rec t = test (if true then 1 else t)
+//│ ║        	                               ^
+//│ ╟── this if-then-else expression has type `int`
+//│ ║  l.97: 	let rec t = test (if true then 1 else t)
+//│ ║        	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `int`
+//│ ║  l.92: 	let test z = if true then wrap z else wrap true
+//│ ║        	         ^
+//│ ╟── this reference has type `int`
+//│ ║  l.92: 	let test z = if true then wrap z else wrap true
+//│ ║        	                               ^
 //│ ╟── this variable has type `?a`; `int` also flows into it
 //│ ║  l.5: 	let wrap x = Cons(x, Nil)
 //│ ║       	         ^
 //│ ╟── this reference has type `bool`; it flows into `?a`
-//│ ║  l.80: 	let test z = if true then wrap z else wrap true
+//│ ║  l.92: 	let test z = if true then wrap z else wrap true
 //│ ╙──      	                                           ^^^^
 //│ t: 't
 //│   where
@@ -109,20 +133,20 @@ let test z = wrap z
 :ex
 test 1
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.110: 	test 1
+//│ ║  l.134: 	test 1
 //│ ║         	^^^^^^
 //│ ╟── integer literal of type `int` is not an instance of `bool`
-//│ ║  l.110: 	test 1
+//│ ║  l.134: 	test 1
 //│ ║         	     ^
 //│ ╟── Note: constraint arises from variable:
-//│ ║  l.105: 	let test z = wrap z
+//│ ║  l.129: 	let test z = wrap z
 //│ ║         	         ^
 //│ ╟── from type reference:
 //│ ║  l.56: 	let not: bool -> bool
 //│ ║        	         ^^^^
 //│ ╟── ========= Additional explanations below =========
 //│ ╟── [info] flowing from integer literal of type `int`
-//│ ║  l.110: 	test 1
+//│ ║  l.134: 	test 1
 //│ ║         	     ^
 //│ ╟── [info] flowing from <nested> of type `int`
 //│ ╟── [info] flowing into type `bool`
@@ -133,23 +157,23 @@ test 1
 //│ ║        	         ^^^^
 //│ ╟── [info] flowing into <nested> of type `bool`
 //│ ╟── [info] flowing into reference of type `bool`
-//│ ║  l.101: 	let wrap x = not x
+//│ ║  l.125: 	let wrap x = not x
 //│ ║         	                 ^
 //│ ╟── [info] flowing into variable of type `bool`
-//│ ║  l.101: 	let wrap x = not x
+//│ ║  l.125: 	let wrap x = not x
 //│ ║         	         ^
 //│ ╟── [info] flowing into variable of type `?a`
-//│ ║  l.101: 	let wrap x = not x
+//│ ║  l.125: 	let wrap x = not x
 //│ ║         	         ^
 //│ ╟── [info] flowing into variable of type `?a`
-//│ ║  l.101: 	let wrap x = not x
+//│ ║  l.125: 	let wrap x = not x
 //│ ║         	         ^
 //│ ╟── [info] flowing into <nested> of type `?a`
 //│ ╟── [info] flowing into reference of type `?a`
-//│ ║  l.105: 	let test z = wrap z
+//│ ║  l.129: 	let test z = wrap z
 //│ ║         	                  ^
 //│ ╟── [info] flowing into variable of type `?b`
-//│ ║  l.105: 	let test z = wrap z
+//│ ║  l.129: 	let test z = wrap z
 //│ ╙──       	         ^
 //│ res: bool
 
@@ -168,13 +192,13 @@ let clone x n =
 let rec digitsOfInt n =
   ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╔══[ERROR] Type mismatch in operator application:
-//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.193: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `int` is not an instance of `?a list`
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── but it flows into operator application with expected type `?a list`
-//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.193: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from applied type reference:
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
@@ -187,10 +211,10 @@ let rec digitsOfInt n =
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
 //│ ╟── this operator application has type `int`
-//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.193: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this reference has type `?a list -> ?a list -> ?a list`
-//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.193: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	                         ^
 //│ ╟── type `?a list -> ?a list -> ?a list` is here
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
@@ -199,21 +223,21 @@ let rec digitsOfInt n =
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ╙──      	         ^^^^^^^
 //│ ╔══[ERROR] identifier not found: remainder
-//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.193: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──       	                            ^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in binding of lambda expression:
-//│ ║  l.168: 	let rec digitsOfInt n =
+//│ ║  l.192: 	let rec digitsOfInt n =
 //│ ║         	                    ^^^
-//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.193: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `?a list` is not an instance of `int`
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ║        	                               ^^^^^^^
 //│ ╟── but it flows into operator application with expected type `int`
-//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.193: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from application:
-//│ ║  l.169: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.193: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	   ^^^^^^^^^^^^^^^
 //│ ╟── from type reference:
 //│ ║  l.19: 	let ( / ): int -> int -> int

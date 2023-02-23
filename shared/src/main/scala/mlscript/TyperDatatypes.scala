@@ -426,10 +426,12 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         case _ => provs
       }
       // second location binds tighter
-      case UB(_, _, provs) => provs.sliding(2).collect {
-        case Seq(TypeProvenance(S(loc1), _, _, _), tp@TypeProvenance(S(loc2), _, _, _)) if loc1 != loc2 => tp
-        case Seq(tp) => tp
-      }.toList
+      case UB(_, _, provs) => provs match {
+        case ::(head, _) => head :: provs.sliding(2).collect {
+          case Seq(TypeProvenance(S(loc1), _, _, _), tp@TypeProvenance(S(loc2), _, _, _)) if loc1 != loc2 => tp
+        }.toList
+        case Nil => Nil
+      }
     }
   }
 
