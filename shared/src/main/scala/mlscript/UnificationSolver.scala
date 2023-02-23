@@ -186,8 +186,8 @@ trait UnificationSolver extends TyperDatatypes {
 
   def collisionErrorMessage(u: Unification)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
     def makeMessage(st: ST, provs: Ls[TP]): Ls[Message -> Opt[Loc]] = provs.map {
-      case TypeProvenance(loco, desc, _, false) => msg"${st.expPos} is the type of ${desc}" -> loco
-      case TypeProvenance(loco, desc, _, true) => msg"${st.expPos} is here" -> loco
+      case TypeProvenance(loco, desc, _, false) => msg"this ${desc} has type `${st.expPos}`" -> loco
+      case TypeProvenance(loco, desc, _, true) => msg"type `${st.expPos}` is here" -> loco
     }
 
     // respect contravariant type flow
@@ -223,14 +223,14 @@ trait UnificationSolver extends TyperDatatypes {
 
   def createErrorMessage(firstUR: UnificationReason -> Bool, secondUR: UnificationReason -> Bool, showFirst: Bool = false)
                         (implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-    val diagistypeof = (st: ST, tp: TP) => msg"${tp.desc} has type `${st.expPos}`" -> tp.loco
+    val diagistypeof = (st: ST, tp: TP) => msg"this ${tp.desc} has type `${st.expPos}`" -> tp.loco
     val diagishere = (st: ST, tp: TP) => msg"`${st.expPos}` is here" -> tp.loco
-    val msgistypeof = (st: ST, tp: TP) => msg"${tp.desc} has type `${st.expPos}`"
+    val msgistypeof = (st: ST, tp: TP) => msg"this ${tp.desc} has type `${st.expPos}`"
     val msgflowhere = (st: ST) => msg"; `${st.expPos}` flows here"
     val msgflowfromit = (st: ST) => msg"; `${st.expPos}` flows from it"
     val msgflowitfrom = (st: ST) => msg"; it flows from `${st.expPos}`"
     val msgflowitinto = (st: ST) => msg"; it flows into `${st.expPos}`"
-    val msgflowintoit = (st: ST) => msg"; `${st.expPos}` flows into it"
+    val msgflowintoit = (st: ST) => msg"; `${st.expPos}` also flows into it"
     // take elements from first list upto and include first common element
     // a: 1, 2, 3, 4
     // b: 5, 6, 3, 4
