@@ -225,8 +225,12 @@ trait UnificationSolver extends TyperDatatypes {
   def createErrorMessage(firstUR: UnificationReason -> Bool, secondUR: UnificationReason -> Bool, showFirst: Bool = false)
                         (implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
     val diagistypeof = (st: ST, tp: TP) => msg"this ${tp.desc} has type `${st.expPos}`" -> tp.loco
-    val diagishere = (st: ST, tp: TP) => msg"`${st.expPos}` is here" -> tp.loco
-    val msgistypeof = (st: ST, tp: TP) => msg"this ${tp.desc} has type `${st.expPos}`"
+    val diagishere = (st: ST, tp: TP) => msg"`${st.expPos}` comes from this type expression" -> tp.loco
+    val msgistypeof = (st: ST, tp: TP) => if (tp.isType) {
+      msg"`${st.expPos}` comes from this type expression"
+    } else {
+      msg"this ${tp.desc} has type `${st.expPos}`"
+    }
     val msgflowitfrom = (st: ST) => msg" and it flows from `${st.expPos}`"
     val msgflowitinto = (st: ST) => msg" and it flows into `${st.expPos}`"
     // take elements from first list upto and include first common element
@@ -278,7 +282,7 @@ trait UnificationSolver extends TyperDatatypes {
         val a = ur._1.a
         val b = ur._1.b
         provs match {
-          case fst :: Nil => msgistypeof(a, fst) + msgflowitfrom(b) -> fst.loco :: Nil
+          case fst :: Nil => msgistypeof(a, fst) + msgflowitinto(b) -> fst.loco :: Nil
           case fst :: snd :: tail => diagistypeof(a, fst) :: msgistypeof(b, snd) + msgflowitfrom(a) -> snd.loco :: makeMessagesST(b, tail)
           case _ => ???
         }

@@ -577,14 +577,14 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
                 val fld_ty = elem_ty.map(elem => {
                   N -> FieldType(N, elem)(elem.prov)
                 })
-                val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "case expression")
+                val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "pattern")
                 val adt_ty = TupleType(fld_ty)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "`match` condition"))
                 (adt_ty, elem_ty)
               case _ =>
                 val adtDef = ctx.tyDefs.getOrElse(adtName.name, lastWords(s"Could not find ${adtName} in context"))
                 val newTargs = adtDef.targs.map(tv => freshVar(tv.prov, tv.nameHint))
                 // provenance for the first case expression from where we find the adt
-                val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "case `expression`")
+                val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "pattern")
                 // TODO weird duplication in OcamlPresentation errors
                 val adt_ty = TypeRef(adtName, newTargs)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "`match` condition"))
                 println(s"ADT type: $adt_ty")
@@ -684,7 +684,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
                   con(typeTerm(rhs), ret_ty, ret_ty)
                 }
               case (IfElse(expr), _) => con(typeTerm(expr), ret_ty, ret_ty)
-              case ifbody => lastWords(s"Cannot handle case expression ${ifbody}")
+              case ifbody => lastWords(s"Cannot handle pattern ${ifbody}")
             }
             ret_ty
         }
