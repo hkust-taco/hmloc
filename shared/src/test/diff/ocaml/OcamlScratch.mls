@@ -33,12 +33,12 @@ let wrap x = Cons(x, Nil)
 
 :unify
 if true then wrap 1 else wrap true
-//│ ╔══[ERROR] Cannot unify bool and int
+//│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ╟──        bool ---> ?a <--- int 
-//│ ╟── ?a is the type of variable; bool flows here
+//│ ╟── variable has type `?a`; `bool` flows into it
 //│ ║  l.5: 	let wrap x = Cons(x, Nil)
 //│ ║       	         ^
-//│ ╟── int is the type of integer literal; ?a flows here
+//│ ╟── integer literal has type `int`; it flows into `?a`
 //│ ║  l.35: 	if true then wrap 1 else wrap true
 //│ ╙──      	                  ^
 //│ res: list[bool | int]
@@ -46,31 +46,31 @@ if true then wrap 1 else wrap true
 
 :unify
 if true then wrap (if true then 1 else false) else wrap true
-//│ ╔══[ERROR] Cannot unify int and bool
+//│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ╟──        int ---> ?a <--- bool 
-//│ ╟── int is the type of `then` branch
+//│ ╟── `then` branch has type `int`
 //│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                                ^
-//│ ╟── ?a is the type of if-then-else `expression`; int flows here
+//│ ╟── if-then-else `expression` has type `?a`; `int` flows into it
 //│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── bool is the type of `else` branch; ?a flows here
+//│ ╟── `else` branch has type `bool`; it flows into `?a`
 //│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ╙──      	                                       ^^^^^
-//│ ╔══[ERROR] Cannot unify bool and int
+//│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ╟──        bool ---> ?a <--- int 
-//│ ╟── ?a is the type of variable; bool flows here
+//│ ╟── variable has type `?a`; `bool` flows into it
 //│ ║  l.5: 	let wrap x = Cons(x, Nil)
 //│ ╙──     	         ^
-//│ ╔══[ERROR] Cannot unify bool and int
+//│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ╟──        bool ---> ?a <--- int 
-//│ ╟── ?a is the type of variable; bool flows here
+//│ ╟── variable has type `?a`; `bool` flows into it
 //│ ║  l.5: 	let wrap x = Cons(x, Nil)
 //│ ║       	         ^
-//│ ╟── int is the type of if-then-else `expression`; ?a flows here
+//│ ╟── if-then-else `expression` has type `int`; it flows into `?a`
 //│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── int is the type of `then` branch
+//│ ╟── `then` branch has type `int`
 //│ ║  l.48: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ╙──      	                                ^
 //│ res: list[bool | int]
@@ -83,12 +83,12 @@ let test z = if true then wrap z else wrap true
 
 :unify
 let rec t = test (if true then 1 else t)
-//│ ╔══[ERROR] Cannot unify int and bool
+//│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ╟──        int ---> ?a <--- bool 
-//│ ╟── ?a is the type of variable; int flows here
+//│ ╟── variable has type `?a`; `int` flows into it
 //│ ║  l.5: 	let wrap x = Cons(x, Nil)
 //│ ║       	         ^
-//│ ╟── bool is the type of reference; ?a flows here
+//│ ╟── reference has type `bool`; it flows into `?a`
 //│ ║  l.80: 	let test z = if true then wrap z else wrap true
 //│ ╙──      	                                           ^^^^
 //│ t: 't
@@ -179,7 +179,7 @@ let rec digitsOfInt n =
 //│ ╟── Note: constraint arises from applied type reference:
 //│ ║  l.37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ╙──      	         ^^^^^^^
-//│ ╔══[ERROR] Cannot unify int and ?a list
+//│ ╔══[ERROR] Type `int` does not match `?a list`
 //│ ╟── int is here
 //│ ║  l.19: 	let ( / ): int -> int -> int
 //│ ║        	                         ^^^
