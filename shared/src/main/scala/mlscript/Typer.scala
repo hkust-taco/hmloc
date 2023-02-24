@@ -593,7 +593,11 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
 
             println(s"typed condition term ${cond}")
             val cond_ty = typeTerm(cond)
-            val ret_ty = freshVar(prov.copy(desc = "match expression"))
+            val ret_ty = if (body.length === 1) {
+              freshVar(prov.copy(desc = "let expression"))
+            } else {
+              freshVar(prov.copy(desc = "match expression"))
+            }
             con(cond_ty, adt_ty, adt_ty)
 
             // the assumed shape of an IfBody is a List[IfThen, IfThen, IfElse] with an optional IfElse at the end

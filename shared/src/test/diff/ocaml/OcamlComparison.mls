@@ -1,0 +1,435 @@
+:OcamlLoadLibrary
+:OcamlParser
+
+////////// file 1935
+
+////////// ocamlc error
+//
+// File "1935.ml", line 22, characters 18-44:
+// 22 |     let (_,res) = List.fold_left f base args in res in
+//                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Error: This expression has type int but an expression was expected of type
+//          'a * 'b
+
+let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+let addTuple (l1,l2) = l1 + l2;;
+let padZero l1 l2 =
+  if (List_length l1) > (List_length l2)
+  then (l1, ((clone 0 ((List_length l1) - (List_length l2))) @ l2))
+  else
+    if (List_length l1) < (List_length l2)
+    then (((clone 0 ((List_length l2) - (List_length l1))) @ l1), l2)
+    else (l1, l2);;
+let rec removeZero l =
+  match l with | [] -> [] | h::t -> if h = 0 then removeZero t else h :: t;;
+//│ clone: 'a -> int -> list['a]
+//│ addTuple: (int, int,) -> int
+//│ padZero: list[?] -> list[?] -> (list[int], list[int],)
+//│ removeZero: list['a] -> list['a]
+
+:unify
+let bigAdd l1 l2 =
+  let add (l1,l2) =
+    let f a x = (a + x) mod 10 in
+    let base = 0 in
+    let args = List_map addTuple (List_combine l1 l2) in
+    let (_,res) = List_fold_left f base args in res in
+  removeZero (add (padZero l1 l2));;
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.33: 	    let f a x = (a + x) mod 10 in
+//│ ║        	                ^^^^^^^^^^^
+//│ ╟── type `int` is not a function
+//│ ║  l.16: 	let (+): int -> int -> int
+//│ ║        	                       ^^^
+//│ ╟── but it flows into operator application with expected type `(int -> int -> int) -> ?a`
+//│ ║  l.33: 	    let f a x = (a + x) mod 10 in
+//│ ╙──      	                ^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
+//│ ╟── type `int` is here
+//│ ║  l.16: 	let (+): int -> int -> int
+//│ ║        	                       ^^^
+//│ ╟── this operator application has type `int`
+//│ ║  l.33: 	    let f a x = (a + x) mod 10 in
+//│ ╙──      	                ^^^^^^^
+//│ ╔══[ERROR] Type mismatch in if-else block:
+//│ ║  l.36: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── integer literal of type `int` is not a 2-element tuple
+//│ ║  l.34: 	    let base = 0 in
+//│ ║        	               ^
+//│ ╟── but it flows into reference with expected type `(?a, ?b)`
+//│ ║  l.36: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║        	                                   ^^^^
+//│ ╟── Note: constraint arises from `match` condition:
+//│ ║  l.36: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from pattern:
+//│ ║  l.36: 	    let (_,res) = List_fold_left f base args in res in
+//│ ╙──      	        ^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `(?a, ?b)`
+//│ ╟── this integer literal has type `int`
+//│ ║  l.34: 	    let base = 0 in
+//│ ║        	               ^
+//│ ╟── this reference has type `int`
+//│ ║  l.36: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║        	                                   ^^^^
+//│ ╟── this application has type `int`
+//│ ║  l.36: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this pattern has type `(?a, ?b)`
+//│ ║  l.36: 	    let (_,res) = List_fold_left f base args in res in
+//│ ╙──      	        ^^^^^^^
+//│ bigAdd: list[?] -> list[?] -> list[nothing]
+
+////////// file 0003
+
+////////// ocamlc error
+//
+// File "0003.ml", line 23, characters 31-32:
+// 23 |         (let (toSum1,toSum2) = x in
+//                                     ^
+// Error: This expression has type 'a list
+//        but an expression was expected of type 'b * 'c
+
+let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+let padZero l1 l2 =
+  let numZeros = (List_length l1) - (List_length l2) in
+  let absNumZeros = abs numZeros in
+  if numZeros = 0
+  then (l1, l2)
+  else
+    (let listZeros = clone 0 absNumZeros in
+     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
+let rec removeZero l =
+  match l with | [] -> [] | 0::t -> removeZero t | h::t -> l;;
+//│ clone: 'a -> int -> list['a]
+//│ padZero: list[?] -> list[?] -> (list[int], list[int],)
+//│ removeZero: (list[int & 'a] & 'b) -> (list['a] | 'b)
+
+:unify
+let bigAdd l1 l2 =
+  let add (l1,l2) =
+    let f a x =
+      let (carry,currentSum) = a in
+      if x = []
+      then (0, (carry :: currentSum))
+      else
+        (let (toSum1,toSum2) = x in
+         let intermediateValue = (toSum1 + toSum2) + carry in
+         let valueToAddToArray = intermediateValue mod 10 in
+         let carry = intermediateValue / 10 in
+         (carry, (valueToAddToArray :: currentSum))) in
+    let base = (0, []) in
+    let args = List_rev (List_combine l1 l2) in
+    let (_,res) = List_fold_left f base args in res in
+  removeZero (add (padZero l1 l2));;
+//│ ╔══[ERROR] Type `?a list` does not match `(?b, ?c)`
+//│ ╟──        ?a list ---> ?d <--- ?e ---> (?b, ?c) 
+//│ ╟── `?a list` comes from this type expression and it flows into `?d`
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	     ^^^^^^^
+//│ ╟── this reference has type `?d`
+//│ ║  l.114: 	      if x = []
+//│ ║         	             ^^
+//│ ╟── this reference has type `?d` and it flows from `?e`
+//│ ║  l.114: 	      if x = []
+//│ ║         	         ^
+//│ ╟── this variable has type `?e`
+//│ ║  l.112: 	    let f a x =
+//│ ║         	            ^
+//│ ╟── this reference has type `?e` and it flows into `(?b, ?c)`
+//│ ║  l.117: 	        (let (toSum1,toSum2) = x in
+//│ ║         	                               ^
+//│ ╟── this pattern has type `(?b, ?c)`
+//│ ║  l.117: 	        (let (toSum1,toSum2) = x in
+//│ ╙──       	             ^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.119: 	         let valueToAddToArray = intermediateValue mod 10 in
+//│ ║         	                                 ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `int` is not a function
+//│ ║  l.16: 	let (+): int -> int -> int
+//│ ║        	                       ^^^
+//│ ╟── but it flows into reference with expected type `(int -> int -> int) -> ?a`
+//│ ║  l.119: 	         let valueToAddToArray = intermediateValue mod 10 in
+//│ ╙──       	                                 ^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
+//│ ╟── type `int` is here
+//│ ║  l.16: 	let (+): int -> int -> int
+//│ ║        	                       ^^^
+//│ ╟── this operator application has type `int`
+//│ ║  l.118: 	         let intermediateValue = (toSum1 + toSum2) + carry in
+//│ ╙──       	                                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ bigAdd: list[?] -> list[?] -> list[int]
+
+////////// file 1948
+
+////////// ocamlc error
+//
+// File "1948.ml", line 43, characters 46-70:
+// 43 |     match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//                                                    ^^^^^^^^^^^^^^^^^^^^^^^^
+// Error: This expression has type 'a * 'b
+//        but an expression was expected of type int list
+
+let rec helper x = if x = 0 then 1 else 10 * (helper (x - 1));;
+let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
+let padZero l1 l2 =
+  if (List_length l1) > (List_length l2)
+  then (l1, ((clone 0 ((List_length l1) - (List_length l2))) @ l2))
+  else
+    if (List_length l1) < (List_length l2)
+    then (((clone 0 ((List_length l2) - (List_length l1))) @ l1), l2)
+    else (l1, l2);;
+let rec removeZero l =
+  match l with | [] -> [] | h::t -> if h = 0 then removeZero t else h :: t;;
+let rec tenEx x y =
+  match y with | [] -> [] | h::t -> (tenEx (x + 1) t) @ [(helper x) * h];;
+let bigAdd l1 l2 =
+  let add (l1,l2) =
+    let f a x =
+      let (x1,x2) = x in
+      let (carry,res) = a in
+      ((((x1 + x2) + carry) / 10), ((mod ((x1 + x2) + carry) 10) :: res)) in
+    let base = (0, []) in
+    let args = List_rev (List_combine l1 l2) in
+    let (carry,res) = List_fold_left f base args in [carry] @ res in
+  removeZero (add (padZero l1 l2));;
+let rec mulByDigit i l =
+  let f a x =
+    let carry = i * x in
+    match a with
+    | h::t -> ((h + carry) / 10) :: (mod (h + carry) 10) :: t
+    | _ -> [carry / 10; mod carry 10] in
+  let base = [] in removeZero (List_fold_left f base (List_rev l));;
+//│ helper: int -> int
+//│ clone: 'a -> int -> list['a]
+//│ padZero: list[?] -> list[?] -> (list[int], list[int],)
+//│ removeZero: list['a] -> list['a]
+//│ tenEx: int -> list[int] -> list[int]
+//│ bigAdd: list[?] -> list[?] -> list[int]
+//│ mulByDigit: int -> list[int] -> list[int]
+
+:unify
+let bigMul l1 l2 =
+  let f a x =
+    let (x1,x2) = x in
+    let (carry,res) = a in
+    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+  let base = (0, []) in
+  let args = l1 (tenEx 0 l2) in
+  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── tuple literal of type `(?a, ?b)` is not an instance of `?c list`
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from variable:
+//│ ║  l.187: 	let bigAdd l1 l2 =
+//│ ║         	           ^^
+//│ ╟── from applied type reference:
+//│ ║  l.42: 	let List_combine: 'a list -> 'b list -> ('a * 'b) list
+//│ ╙──      	                  ^^^^^^^
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║         	                    ^^^^^^^^^^^^^^^^
+//│ ╟── type `?a list` is not a 2-element tuple
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	     ^^^^^^^
+//│ ╟── Note: constraint arises from variable:
+//│ ║  l.214: 	  let f a x =
+//│ ║         	        ^
+//│ ╟── from pattern:
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ╙──       	        ^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list` does not match `(?b, ?c)`
+//│ ╟── type `?a list` is here
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	     ^^^^^^^
+//│ ╟── type `?d -> ?e -> ?d` is here
+//│ ║  l.39: 	let List_fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│ ║        	                      ^^^^^^^^^^^^^^
+//│ ╟── this reference has type `(?d -> ?e -> ?d) -> ?d -> ?e list -> ?d`
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║         	                    ^^^^^^^^^^^^^^
+//│ ╟── type `(?d -> ?e -> ?d) -> ?d -> ?e list -> ?d` is here
+//│ ║  l.39: 	let List_fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│ ║        	                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this reference has type `?f -> ?g -> ?h`
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║         	                                   ^
+//│ ╟── this function has type `?f -> ?g -> ?h`
+//│ ║  l.214: 	  let f a x =
+//│ ║         	        ^^^^^
+//│ ║  l.215: 	    let (x1,x2) = x in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `(?b, ?c)`
+//│ ║  l.214: 	  let f a x =
+//│ ║         	        ^
+//│ ╟── this reference has type `(?b, ?c)`
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ║         	                      ^
+//│ ╟── this pattern has type `(?b, ?c)`
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ║         	        ^^^^^^^^^^^
+//│ ╟── this `match` condition has type `(?b, ?c)`
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ║         	                      ^
+//│ ╟── this pattern has type `(?b, ?c)`
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ╙──       	        ^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list` does not match `(int, ?b list)`
+//│ ╟──        ?a list ---> ?c <--- (int, ?b list) 
+//│ ╟── `?a list` comes from this type expression
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	     ^^^^^^^
+//│ ╟── this reference has type `?a list`
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	                          ^^
+//│ ╟── this match expression has type `?a list`
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?a list`
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?a list` and it flows into `?c`
+//│ ║  l.215: 	    let (x1,x2) = x in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `?c`
+//│ ║  l.214: 	  let f a x =
+//│ ║         	        ^
+//│ ╟── this reference has type `?c` and it flows from `(int, ?b list)`
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║         	                                     ^^^^
+//│ ╟── this tuple literal has type `(int, ?b list)`
+//│ ║  l.218: 	  let base = (0, []) in
+//│ ╙──       	             ^^^^^^^
+//│ ╔══[ERROR] Type `(int, ?a list)` does not match `?b list`
+//│ ╟──        (int, ?a list) ---> ?c <--- ?b list 
+//│ ╟── this tuple literal has type `(int, ?a list)`
+//│ ║  l.218: 	  let base = (0, []) in
+//│ ║         	             ^^^^^^^
+//│ ╟── this reference has type `(int, ?a list)` and it flows into `?c`
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║         	                                     ^^^^
+//│ ╟── this application has type `?c`
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?c`
+//│ ║  l.215: 	    let (x1,x2) = x in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?c`
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this match expression has type `?c`
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this reference has type `?c` and it flows from `?b list`
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	                          ^^
+//│ ╟── this applied type reference has type `?b list`
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ╙──     	     ^^^^^^^
+//│ ╔══[ERROR] Type mismatch in if-else block:
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── type `?a list` is not a 2-element tuple
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	     ^^^^^^^
+//│ ╟── but it flows into application with expected type `(?b, ?c)`
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── Note: constraint arises from `match` condition:
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── from pattern:
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ╙──       	      ^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list` does not match `(?b, ?c)`
+//│ ╟── type `?a list` is here
+//│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	     ^^^^^^^
+//│ ╟── this reference has type `?a list`
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	                          ^^
+//│ ╟── this match expression has type `?a list`
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?a list`
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?a list`
+//│ ║  l.215: 	    let (x1,x2) = x in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^
+//│ ║  l.216: 	    let (carry,res) = a in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.217: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this pattern has type `(?b, ?c)`
+//│ ║  l.220: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ╙──       	      ^^^^^^^^^^^
+//│ bigMul: (list[int] & list[int] -> list[(anything, list[int],)]) -> list[int] -> list[int]
+
+////////// file 2361
+
+////////// ocamlc error
+// 
+// File "2361.ml", line 12, characters 46-51:
+// 12 |   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
+//                                                    ^^^^^
+// Error: This expression has type bool but an expression was expected of type
+//          int
+
+let rec digitsOfInt n =
+  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [mod n 10];;
+let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t);;
+let digits n = digitsOfInt (abs n);;
+//│ digitsOfInt: int -> list[int]
+//│ addNumbs: list[int] -> int
+//│ digits: int -> list[int]
+
+:unify
+let rec additivePersistence n =
+  match digits n with
+  | [] -> 0
+  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ╟──        int ---> ?a <--- bool 
+//│ ╟── this integer literal has type `int` and it flows into `?a`
+//│ ║  l.415: 	  | [] -> 0
+//│ ║         	          ^
+//│ ╟── this match expression has type `?a`
+//│ ║  l.414: 	  match digits n with
+//│ ║         	  ^^^^^^^^^^^^^^^^^^^
+//│ ║  l.415: 	  | [] -> 0
+//│ ║         	^^^^^^^^^^^
+//│ ║  l.416: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?a` and it flows from `bool`
+//│ ║  l.416: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
+//│ ║         	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `bool`
+//│ ║  l.416: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
+//│ ╙──       	                                                         ^^^^
+//│ additivePersistence: int -> (bool | int)

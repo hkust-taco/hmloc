@@ -63,7 +63,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     | P(kw("undefined")).map(x => UnitLit(true)) | P(kw("null")).map(x => UnitLit(false)))
 
   // repeat withs because we don't want full terms that get implicitly tupled
-  def ocamlList[p: P]: P[Term] = P("[" ~ withs.rep(0, ",") ~ "]").map(vals => {
+  def ocamlList[p: P]: P[Term] = P("[" ~ withs.rep(0, (";" | ",")) ~ "]").map(vals => {
     // assumes that the standard library defining list
     // also defines a helper function to create lists
     val emptyList: Term = Var("Nil")
