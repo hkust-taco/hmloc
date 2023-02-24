@@ -192,9 +192,9 @@ trait UnificationSolver extends TyperDatatypes {
 
     // respect contravariant type flow
     val (lprov, rprov) = if (u.desc == "function argument") {
-      makeMessage(u.b, u.b.typeUseLocations.reverse) -> makeMessage(u.a, u.a.typeUseLocations)
+      makeMessage(u.b, u.b.uniqueTypeUseLocations.reverse) -> makeMessage(u.a, u.a.uniqueTypeUseLocations)
     } else {
-      makeMessage(u.a, u.a.typeUseLocations.reverse) -> makeMessage(u.b, u.b.typeUseLocations)
+      makeMessage(u.a, u.a.uniqueTypeUseLocations.reverse) -> makeMessage(u.b, u.b.uniqueTypeUseLocations)
     }
 
     u.reason match {
