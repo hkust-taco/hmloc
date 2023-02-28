@@ -30,11 +30,11 @@ object Main {
     val tryRes = Try[Str] {
       import fastparse._
       import fastparse.Parsed.{Success, Failure}
-      import mlscript.{MLParser, ErrorReport, Origin}
+      import mlscript.{OcamlParser, ErrorReport, Origin}
       val lines = str.splitSane('\n').toIndexedSeq
-      val processedBlock = MLParser.addTopLevelSeparators(lines).mkString
+      val processedBlock = OcamlParser.addTopLevelSeparators(lines).mkString
       val fph = new mlscript.FastParseHelpers(str, lines)
-      val parser = new MLParser(Origin("<input>", 1, fph))
+      val parser = new OcamlParser(Origin("<input>", 1, fph))
       parse(processedBlock, parser.pgrm(_), verboseFailures = false) match {
         case f: Failure =>
           val Failure(err, index, extra) = f
@@ -44,24 +44,24 @@ object Main {
         case Success(pgrm, index) =>
           println(s"Parsed: $pgrm")
           val (diags, (typeDefs, stmts)) = pgrm.desugared
-          // report(diags) // TODO... currently the MLParser does not report any in desugaring so this is fine
+          // report(diags) // TODO... currently the OcamlParser does not report any in desugaring so this is fine
           val (typeCheckResult, errorResult) = checkProgramType(pgrm)
           errorResult match {
             case Some(typeCheckResult) => typeCheckResult
-            case None => {
+            case None =>
               val htmlBuilder = new StringBuilder
-              var results = generateRuntimeCode(pgrm) match {
-                case R(code) =>
-                  executeCode(code) match {
-                    case L(errorHtml) =>
-                      htmlBuilder ++= errorHtml
-                      Nil
-                    case R(results) => results
-                  }
-                case L(errorHtml) =>
-                  htmlBuilder ++= errorHtml
-                  Nil
-              }
+              // var results = generateRuntimeCode(pgrm) match {
+              //   case R(code) =>
+              //     executeCode(code) match {
+              //       case L(errorHtml) =>
+              //         htmlBuilder ++= errorHtml
+              //         Nil
+              //       case R(results) => results
+              //     }
+              //   case L(errorHtml) =>
+              //     htmlBuilder ++= errorHtml
+              //     Nil
+              // }
               htmlBuilder ++= """<table>
                   |  <thead>
                   |    <tr>
@@ -78,15 +78,16 @@ object Main {
                   // Do not extract from results if its a type declaration.
                   case Def(_, _, R(_), _) => N
                   // Otherwise, `origin` is either a term or a definition.
-                  case _ => results match {
+                  case _ => /* results match {
                     case head :: next =>
                       results = next
                       S(head)
                     case Nil => N
-                  }
+                  } */
+                  N
                 }
                 val valueHtml = value match {
-                  case S(text) => s"<td>$text</td>"
+                  // case S(text) => s"<td>$text</td>"
                   case N => "<td class=\"no-value\">no value</td>"
                 }
                 htmlBuilder ++= s"""<tr>
@@ -98,7 +99,6 @@ object Main {
               }
               htmlBuilder ++= "</table>"
               htmlBuilder.toString
-            }
           }
       }
     }
@@ -116,25 +116,25 @@ object Main {
     )
   }
   
-  // Returns `Right[Str]` if successful, `Left[Str]` if not.
-  private def generateRuntimeCode(pgrm: Pgrm): Either[Str, Str] = {
-    try {
-      val backend = new JSWebBackend()
-      val lines = backend(pgrm)
-      val code = lines.mkString("\n")
-      println("Running code: " + code)
-      R(code)
-    } catch {
-      case e: Throwable =>
-        val sb = new StringBuilder()
-        sb ++= "<font color=\"red\">Code generation crashed:</font>"
-        sb ++= htmlLineBreak + e.getMessage
-        // sb ++= htmlLineBreak + ((e.getStackTrace) mkString htmlLineBreak)
-        sb ++= htmlLineBreak
-        sb ++= htmlLineBreak
-        L(sb.toString)
-    }
-  }
+  // // Returns `Right[Str]` if successful, `Left[Str]` if not.
+  // private def generateRuntimeCode(pgrm: Pgrm): Either[Str, Str] = {
+  //   try {
+  //     val backend = new JSWebBackend()
+  //     val lines = backend(pgrm)
+  //     val code = lines.mkString("\n")
+  //     println("Running code: " + code)
+  //     R(code)
+  //   } catch {
+  //     case e: Throwable =>
+  //       val sb = new StringBuilder()
+  //       sb ++= "<font color=\"red\">Code generation crashed:</font>"
+  //       sb ++= htmlLineBreak + e.getMessage
+  //       // sb ++= htmlLineBreak + ((e.getStackTrace) mkString htmlLineBreak)
+  //       sb ++= htmlLineBreak
+  //       sb ++= htmlLineBreak
+  //       L(sb.toString)
+  //   }
+  // }
   
   // Execute the generated code.
   // We extract this function because there is some boilerplate code.
@@ -190,8 +190,12 @@ object Main {
     }
     
     implicit val raise: Raise = throw _
+    
+    val (libCtx, libDeclared): (typer.Ctx, Map[Str, typer.PolymorphicType]) = Helpers.loadLibrary(typer)
+    // ctx = libCtx
+    // declared = libDeclared
     implicit var ctx: Ctx =
-      try processTypeDefs(typeDefs)(Ctx.init, raise)
+      try processTypeDefs(typeDefs)(libCtx, raise)
       catch {
         case err: ErrorReport =>
           res ++= formatError("class definitions", err)
@@ -359,9 +363,209 @@ object Main {
       }
     }
     
-    results.toList -> (if (errorOccurred) S(res.toString) else N)
+    // results.toList -> (if (errorOccurred) S(res.toString) else N)
+    results.toList -> S(res.toString)
   }
   
   private def underline(fragment: Str): Str =
     s"<u style=\"text-decoration: #E74C3C dashed underline\">$fragment</u>"
+}
+
+object Helpers {
+  import os.Path
+  import fastparse._
+  import fastparse.Parsed.{Success, Failure}
+  import mlscript.{OcamlParser, ErrorReport, Origin}
+  
+  // val libPath = dir/"ocaml"/"OcamlLibrary.mls"
+  
+    /** Load type definitions and function definitions from a file into ctx
+      * and declared definitions. This is useful for loading ocaml standard
+      * library definitions
+      */
+    def loadLibrary(typer: Typer): (typer.Ctx, Map[Str, typer.PolymorphicType]) = {
+      val fileContents = libStr
+      val allLines = fileContents.splitSane('\n').toIndexedSeq
+      val block = OcamlParser.libraryTopLevelSeparators(allLines).mkString("\n")
+      val fph = new FastParseHelpers(block)
+      val globalStartLineNum = 0
+      parse(block, p => new OcamlParser(Origin("builtin", globalStartLineNum, fph)).pgrm(p)
+        , verboseFailures = true) match {
+        case Failure(lbl, index, extra) =>
+          val (lineNum, lineStr, col) = fph.getLineColAt(index)
+          val globalLineNum = allLines.size + lineNum
+          // output("/!\\ Parse error: " + extra.trace().msg +
+          //   s" at l.$globalLineNum:$col: $lineStr")
+          // output("Failed to parse library")
+          (typer.Ctx.init, Map.empty)
+        case Success(prog, index) => {
+          val (_, (typeDefs, stmts)) = prog.desugared
+          var ctx = typer.Ctx.init
+          val raise: typer.Raise = d => ()
+          var declared: Map[Str, typer.PolymorphicType] = Map.empty
+          
+          ctx = typer.processTypeDefs(typeDefs)(ctx, raise)
+          val curBlockTypeDefs = ctx.tyDefs.iterator.map(_._2).toList
+          typer.computeVariances(curBlockTypeDefs, ctx)
+          
+          stmts.foreach {
+            // statement only declares a new term with its type
+            // but does not give a body/definition to it
+            case Def(isrec, nme, R(PolyType(tps, rhs)), isByname) =>
+              val ty_sch = typer.PolymorphicType(0,
+                typer.typeType(rhs)(ctx.nextLevel, raise,
+                  vars = tps.map(tp => tp.name -> typer.freshVar(typer.noProv/*FIXME*/)(1)).toMap))
+              ctx += nme.name -> typer.VarSymbol(ty_sch, nme)
+              declared += nme.name -> ty_sch
+
+            // statement is defined and has a body/definition
+            case d @ Def(isrec, nme, L(rhs), isByname) =>
+              val ty_sch = typer.typeLetRhs(isrec, nme.name, rhs)(ctx, raise)
+              // statement does not have a declared type for the body
+              // the inferred type must be used and stored for lookup
+              declared.get(nme.name) match {
+                // statement has a body but it's type was not declared
+                // infer it's type and store it for lookup and type gen
+                case N =>
+                  ctx += nme.name -> typer.VarSymbol(ty_sch, nme)
+
+                // statement has a body and a declared type
+                // both are used to compute a subsumption (What is this??)
+                // the inferred type is used to for ts type gen
+                case S(sign) =>
+                  ctx += nme.name -> typer.VarSymbol(sign, nme)
+                  typer.subsume(ty_sch, sign)(ctx, raise, typer.TypeProvenance(d.toLoc, "def definition"))
+              }
+
+            case desug: DesugaredStatement => ()
+          }
+          typer.showUnificationDebugInfo()
+          (ctx, declared)
+        }
+      }
+    }
+    
+  val libStr =
+"""
+// common data types
+type 'a list = Cons of 'a * 'a list | Nil
+type 'a option = None | Some of 'a
+//│ Defined type alias list[+'a]
+//│ Defined class Cons[+'a]
+//│ Defined class Nil
+//│ Defined type alias option[+'a]
+//│ Defined class None
+//│ Defined class Some[+'a]
+//│ Cons: ('a, list['a],) -> list['a]
+//│ Nil: list[nothing]
+//│ None: option[nothing]
+//│ Some: 'a -> option['a]
+
+// helper functions
+let raise: 'a -> nothing
+let fst: ('a * 'b) -> 'a
+let snd: ('a * 'b) -> 'b
+let print_int: int -> unit
+let print_string: string -> unit
+let print_endline: string -> unit
+let string_of_int: int -> string
+let failwith: string -> 'a
+//│ raise: anything -> nothing
+//│ fst: ('a, anything,) -> 'a
+//│ snd: (anything, 'a,) -> 'a
+//│ print_int: int -> unit
+//│ print_string: string -> unit
+//│ print_endline: string -> unit
+//│ string_of_int: int -> string
+//│ failwith: string -> nothing
+
+// string
+let (^): string -> string -> string
+let String_length: string -> int
+//│ ^: string -> string -> string
+//│ String_length: string -> int
+
+// arithmetic
+let (+): int -> int -> int
+let (-): int -> int -> int
+let ( * ): int -> int -> int
+let ( / ): int -> int -> int
+let ( % ): int -> int -> int
+let abs: int -> int
+let mod: int -> int -> int
+let succ: int -> int
+let pred: int -> int
+//│ +: int -> int -> int
+//│ -: int -> int -> int
+//│ *: int -> int -> int
+//│ /: int -> int -> int
+//│ %: int -> int -> int
+//│ abs: int -> int
+//│ mod: int -> int -> int
+//│ succ: int -> int
+//│ pred: int -> int
+
+// comparison operators
+let (<): 'a -> 'a -> bool
+let (<=): 'a -> 'a -> bool
+let (>): 'a -> 'a -> bool
+let (>=): 'a -> 'a -> bool
+let (<>): 'a -> 'a -> bool
+let (==): 'a -> 'a -> bool
+let (!=): 'a -> 'a -> bool
+//│ <: anything -> anything -> bool
+//│ <=: anything -> anything -> bool
+//│ >: anything -> anything -> bool
+//│ >=: anything -> anything -> bool
+//│ <>: anything -> anything -> bool
+//│ ==: anything -> anything -> bool
+//│ !=: anything -> anything -> bool
+
+// list
+let List_length: 'a list -> int
+let List_mem: 'a -> 'a list -> bool
+let List_append: 'a list -> 'a list -> 'a list
+let (@): 'a list -> 'a list -> 'a list
+let List_map: ('a -> 'b) -> 'a list -> 'b list
+let List_fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+let List_hd: 'a list -> 'a
+let List_rev: 'a list -> 'a list
+let List_combine: 'a list -> 'b list -> ('a * 'b) list
+//│ List_length: list[?] -> int
+//│ List_mem: anything -> list[?] -> bool
+//│ List_append: list['a] -> list['a] -> list['a]
+//│ @: list['a] -> list['a] -> list['a]
+//│ List_map: ('a -> 'b) -> list['a] -> list['b]
+//│ List_fold_left: ('a -> 'b -> 'a) -> 'a -> list['b] -> 'a
+//│ List_hd: list['a] -> 'a
+//│ List_rev: list['a] -> list['a]
+//│ List_combine: list['a] -> list['b] -> list[('a, 'b,)]
+
+// float
+let (+.): float -> float -> float
+let (-.): float -> float -> float
+let ( *. ): float -> float -> float
+let ( /. ): float -> float -> float
+let ( ** ): float -> float -> float
+let atan: float -> float
+let sin: float -> float
+let cos: float -> float
+let tan: float -> float
+//│ +.: float -> float -> float
+//│ -.: float -> float -> float
+//│ *.: float -> float -> float
+//│ /.: float -> float -> float
+//│ **: float -> float -> float
+//│ atan: float -> float
+//│ sin: float -> float
+//│ cos: float -> float
+//│ tan: float -> float
+
+let (&&): bool -> bool -> bool
+let (||): bool -> bool -> bool
+let not: bool -> bool
+//│ &&: bool -> bool -> bool
+//│ ||: bool -> bool -> bool
+//│ not: bool -> bool
+"""
 }

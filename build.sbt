@@ -7,7 +7,7 @@ ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "io.lptk"
 ThisBuild / organizationName := "LPTK"
 
-lazy val mlscript = crossProject(JVMPlatform).in(file("."))
+lazy val mlscript = crossProject(JSPlatform, JVMPlatform).in(file("."))
   .settings(
     name := "mlscript",
     scalacOptions ++= Seq(
@@ -42,8 +42,14 @@ lazy val mlscript = crossProject(JVMPlatform).in(file("."))
       sourceDirectory.value.getParentFile.getParentFile/"shared/src/test/diff", "*.mls", NothingFilter),
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oC"),
   )
+  .jsSettings(
+    scalaJSUseMainModuleInitializer := true,
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "2.1.0",
+  )
 
 lazy val mlscriptJVM = mlscript.jvm
+lazy val mlscriptJS = mlscript.js
+
 lazy val root = project.in(file("."))
   .aggregate(mlscriptJVM)
   .settings(
