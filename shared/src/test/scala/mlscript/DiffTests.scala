@@ -152,6 +152,7 @@ class DiffTests
       // noProvs: Bool = false,
       unify: Bool = true,  // unify is on by default
       unifyDbg: Bool = false,
+      tex: Bool = false,
     ) extends ModeType {
       def isDebugging: Bool = dbg || dbgSimplif
     }
@@ -287,6 +288,7 @@ class DiffTests
           // unify type bounds to find errors for HM style type system
           case "unify" => mode.copy(unify = true)
           case "unifyDbg" => mode.copy(unifyDbg = true, unify = true)
+          case "tex" => mode.copy(tex = true, stdout = true) // LP: seems `stdout` doesn't work for the errors (why?)
           case _ =>
             failures += allLines.size - lines.size
             output("/!\\ Unrecognized option " + line)
@@ -366,6 +368,7 @@ class DiffTests
             }
             val lastMsgNum = diag.allMsgs.size - 1
             var globalLineNum = blockLineNum  // solely used for reporting useful test failure messages
+            val tex = mode.tex
             diag.allMsgs.zipWithIndex.foreach { case ((msg, loco), msgNum) =>
               val isLast = msgNum =:= lastMsgNum
               val msgStr = msg.showIn(sctx)
@@ -387,17 +390,39 @@ class DiffTests
                     if (showRelativeLineNums && relativeLineNum > 0) s"l.+$relativeLineNum"
                     else "l." + globalLineNum
                   val prepre = "║  "
-                  val pre = s"$shownLineNum: "
-                  val curLine = loc.origin.fph.lines(l - 1)
-                  output(prepre + pre + "\t" + curLine)
-                  val tickBuilder = new StringBuilder()
-                  tickBuilder ++= (
-                    (if (isLast && l =:= endLineNum) "╙──" else prepre)
-                    + " " * pre.length + "\t" + " " * (c - 1))
-                  val lastCol = if (l =:= endLineNum) endLineCol else curLine.length + 1
-                  while (c < lastCol) { tickBuilder += ('^'); c += 1 }
-                  if (c =:= startLineCol) tickBuilder += ('^')
-                  output(tickBuilder.toString)
+                  if (tex) {
+                    val pre = s"$shownLineNum:"
+                    val curLine = loc.origin.fph.lines(l - 1)
+                    // println(curLine.length.toString)
+                    // println(stdout)
+                    // output(prepre + pre + "\t" + curLine)
+                    val tickBuilder = new StringBuilder()
+                    // tickBuilder ++= (prepre + " " * pre.length + "\t" + " " * (c - 1))
+                    val lastCol = if (l =:= endLineNum) endLineCol else curLine.length + 1
+                    var i = 0
+                    while (i < c - 1) { tickBuilder += curLine(i); i += 1 }
+                    tickBuilder ++= "_B_"
+                    while (c < lastCol) { tickBuilder += curLine(c - 1); c += 1 }
+                    tickBuilder ++= "__"
+                    while (c <= curLine.length) { tickBuilder += curLine(c - 1); c += 1 }
+                    // if (c =:= startLineCol) tickBuilder += ('^')
+                    val lnStr = tickBuilder.toString
+                      .replaceAll("let", "**let**")
+                      .replaceAll("val", "**val**")
+                    output(prepre + pre + "‹ \t" + lnStr + "›")
+                  } else {
+                    val pre = s"$shownLineNum: "
+                    val curLine = loc.origin.fph.lines(l - 1)
+                    output(prepre + pre + "\t" + curLine)
+                    val tickBuilder = new StringBuilder()
+                    tickBuilder ++= (
+                      (if (isLast && l =:= endLineNum) "╙──" else prepre)
+                      + " " * pre.length + "\t" + " " * (c - 1))
+                    val lastCol = if (l =:= endLineNum) endLineCol else curLine.length + 1
+                    while (c < lastCol) { tickBuilder += ('^'); c += 1 }
+                    if (c =:= startLineCol) tickBuilder += ('^')
+                    output(tickBuilder.toString)
+                  }
                   c = 1
                   l += 1
                 }
