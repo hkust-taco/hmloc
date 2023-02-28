@@ -149,7 +149,7 @@ class DiffTests
       // print suspicious location after block
       suspiciousLocation: Bool = false,
       // noProvs: Bool = false,
-      unify: Bool = false,
+      unify: Bool = true,  // unify is on by default
       unifyDbg: Bool = false,
     ) extends ModeType {
       def isDebugging: Bool = dbg || dbgSimplif
@@ -268,6 +268,12 @@ class DiffTests
           case "escape" => mode.copy(allowEscape = true)
           // Parse and check the file with ocaml syntax and semantic rules
           case "OcamlParser" => ocamlMode = true; mode
+          // don't load ocaml library in special cases
+          case "NoLibrary" =>
+            ocamlLoadLibrary = false
+            ctx = typer.Ctx.init
+            declared = Map.empty
+            mode
           // load ocaml library definitions and use the updated context and declarations
           case "OcamlLoadLibrary" =>
             ocamlLoadLibrary = true
@@ -684,6 +690,12 @@ class DiffTests
         rec(lines.drop(block.size), mode)
       case Nil =>
     }
+
+    // load ocaml library by default
+    ocamlLoadLibrary = true
+    val (libCtx, libDeclared): (typer.Ctx, Map[Str, typer.PolymorphicType]) = loadLibrary(DiffTests.libPath, typer)
+    ctx = libCtx
+    declared = libDeclared
 
     try rec(allLines, defaultMode) finally {
       out.close()
