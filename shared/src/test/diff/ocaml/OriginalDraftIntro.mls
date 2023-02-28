@@ -1,0 +1,135 @@
+:OcamlParser
+:OcamlLoadLibrary
+
+
+
+val parse_version: string -> string
+val show_major: string -> string
+//│ parse_version: string -> string
+//│ show_major: string -> string
+
+let appInfo = ("My Application", 1.5)
+//│ appInfo: (string, float,)
+
+
+let process (name, vers) =
+  name ^ show_major (parse_version vers)
+//│ process: (string, string,) -> string
+
+:e
+:unify
+let test = process appInfo
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.21: 	let test = process appInfo
+//│ ║        	           ^^^^^^^^^^^^^^^
+//│ ╟── float literal of type `float` is not an instance of `string`
+//│ ║  l.11: 	let appInfo = ("My Application", 1.5)
+//│ ║        	                                 ^^^
+//│ ╟── Note: constraint arises from variable:
+//│ ║  l.15: 	let process (name, vers) =
+//│ ║        	                   ^^^^
+//│ ╟── from type reference:
+//│ ║  l.6: 	val parse_version: string -> string
+//│ ╙──     	                   ^^^^^^
+//│ ╔══[ERROR] Type `float` does not match `string`
+//│ ╟── this float literal has type `float`
+//│ ║  l.11: 	let appInfo = ("My Application", 1.5)
+//│ ║        	                                 ^^^
+//│ ╟── this tuple literal has type `(string, float)`
+//│ ║  l.11: 	let appInfo = ("My Application", 1.5)
+//│ ║        	              ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this reference has type `(string, float)`
+//│ ║  l.21: 	let test = process appInfo
+//│ ║        	                   ^^^^^^^
+//│ ╟── this reference has type `(?a, ?b) -> ?c`
+//│ ║  l.21: 	let test = process appInfo
+//│ ║        	           ^^^^^^^
+//│ ╟── this function has type `(?a, ?b) -> ?c`
+//│ ║  l.15: 	let process (name, vers) =
+//│ ║        	            ^^^^^^^^^^^^^^
+//│ ║  l.16: 	  name ^ show_major (parse_version vers)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `(?a, ?b)`
+//│ ║  l.15: 	let process (name, vers) =
+//│ ║        	            ^^^^^^^^^^^^
+//│ ╟── this variable has type `string`
+//│ ║  l.15: 	let process (name, vers) =
+//│ ║        	                   ^^^^
+//│ ╟── this reference has type `string`
+//│ ║  l.16: 	  name ^ show_major (parse_version vers)
+//│ ║        	                                   ^^^^
+//│ ╟── `string` comes from this type expression
+//│ ║  l.6: 	val parse_version: string -> string
+//│ ╙──     	                   ^^^^^^
+//│ test: string
+
+// * GOAL for concise error:
+
+// ╔══[ERROR] Type `float` does not match `string`
+// ╟── this float literal has type `float` but it flows into `string`
+// ║  l.20: 	let appInfo = ("My Application", 1.5)
+// ║        	                                 ^^^
+// ╟── this variable has type `string`
+// ║  l.48: 	let process (name, vers) =
+// ║        	                   ^^^^
+// ╟── this reference has type `string`
+// ║  l.49: 	  name ^ show_major (parse_version vers)
+// ║        	                                   ^^^^
+// ╟── `string` comes from this type expression
+// ║  l.15: 	val parse_version: string -> string
+// ╙──      	                   ^^^^^^
+// test: string
+
+
+
+// * Note: another error:
+
+// * FIXME the flow through the function type is confusing; where do ?a ?b ?c come from?
+
+
+let process name vers =
+  name ^ show_major (parse_version vers)
+//│ process: string -> string -> string
+
+:e
+:unify
+let test = process appInfo
+//│ ╔══[ERROR] Type mismatch in application:
+//│ ║  l.96: 	let test = process appInfo
+//│ ║        	           ^^^^^^^^^^^^^^^
+//│ ╟── tuple literal of type `(string, float)` is not an instance of `string`
+//│ ║  l.11: 	let appInfo = ("My Application", 1.5)
+//│ ║        	              ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── but it flows into reference with expected type `string`
+//│ ║  l.96: 	let test = process appInfo
+//│ ║        	                   ^^^^^^^
+//│ ╟── Note: constraint arises from variable:
+//│ ║  l.90: 	let process name vers =
+//│ ║        	            ^^^^
+//│ ╟── from type reference:
+//│ ║  l.13: 	let (^): string -> string -> string
+//│ ╙──      	         ^^^^^^
+//│ ╔══[ERROR] Type `(string, float)` does not match `string`
+//│ ╟── this tuple literal has type `(string, float)`
+//│ ║  l.11: 	let appInfo = ("My Application", 1.5)
+//│ ║        	              ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this reference has type `?a -> ?b -> ?c`
+//│ ║  l.96: 	let test = process appInfo
+//│ ║        	           ^^^^^^^
+//│ ╟── this function has type `?a -> ?b -> ?c`
+//│ ║  l.90: 	let process name vers =
+//│ ║        	            ^^^^^^^^^^^
+//│ ║  l.91: 	  name ^ show_major (parse_version vers)
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `string`
+//│ ║  l.90: 	let process name vers =
+//│ ║        	            ^^^^
+//│ ╟── this reference has type `string`
+//│ ║  l.91: 	  name ^ show_major (parse_version vers)
+//│ ║        	  ^^^^
+//│ ╟── `string` comes from this type expression
+//│ ║  l.13: 	let (^): string -> string -> string
+//│ ╙──      	         ^^^^^^
+//│ test: string -> string
+
+

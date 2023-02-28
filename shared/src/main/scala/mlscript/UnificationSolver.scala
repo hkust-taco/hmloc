@@ -187,7 +187,7 @@ trait UnificationSolver extends TyperDatatypes {
   def collisionErrorMessage(u: Unification)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
     def makeMessage(st: ST, provs: Ls[TP]): Ls[Message -> Opt[Loc]] = provs.map {
       case TypeProvenance(loco, desc, _, false) => msg"this ${desc} has type `${st.expPos}`" -> loco
-      case TypeProvenance(loco, desc, _, true) => msg"type `${st.expPos}` is here" -> loco
+      case TypeProvenance(loco, desc, _, true) => msg"`${st.expPos}` comes from this type expression" -> loco
     }
 
     // respect contravariant type flow

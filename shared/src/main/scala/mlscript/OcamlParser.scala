@@ -16,7 +16,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     "let", "rec", "in", "fun", "with", "undefined", "null",
     "if", "then", "else", "match", "case", "of",
     // ocaml keywords
-    "and"
+    "and", //"val"
     )
   def kw[p: P](s: String) = s ~~ !(letter | digit | "_" | "'")
   
@@ -297,7 +297,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
    *  let :: a b = Cons a b
   */
   def ocamlDefDecl[p: P]: P[Def] =
-    locate(P((kw("let") ~ kw("rec").!.?.map(_.isDefined) ~ ("(" ~ operator.!.map(Var) ~ ")" | ocamlLabelName) ~ ":" ~/ ocamlFnTy map {
+    locate(P(((kw("let") | kw("val")) ~ kw("rec").!.?.map(_.isDefined) ~ ("(" ~ operator.!.map(Var) ~ ")" | ocamlLabelName) ~ ":" ~/ ocamlFnTy map {
       case (rec, id, (tps, t)) => Def(rec, id, R(PolyType(tps.toList, t)), true)
     }) | (kw("let") ~ kw("rec").!.?.map(_.isDefined) ~/ ocamlLabelName ~ subterm.rep ~ "=" ~ term map {
       case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), true)
