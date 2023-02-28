@@ -341,15 +341,25 @@ class DiffTests
         val processedBlockStr = processedBlock.mkString
         val fph = new FastParseHelpers(block)
         val globalStartLineNum = allLines.size - lines.size + 1
-        
+
         var totalTypeErrors = 0
         var totalParseErrors = 0
         var totalWarnings = 0
         var totalRuntimeErrors = 0
         var totalCodeGenErrors = 0
-        
+
+        def report(diags: Ls[mlscript.Diagnostic], output: Str => Unit = reportOutput): Unit =
+          if (mode.tex) reportBase(diags, str => output(fixTex(str))) else reportBase(diags, output)
+
+        def fixTex(output: Str): Str =
+          output
+            .replaceAll("╔══","")
+            .replaceAll("╟── this", "This")
+            .replaceAll("╟──", "")
+            .replaceAll("║  ", "  ")
+
         // report errors and warnings
-        def report(diags: Ls[mlscript.Diagnostic], output: Str => Unit = reportOutput): Unit = {
+        def reportBase(diags: Ls[mlscript.Diagnostic], output: Str => Unit): Unit = {
           diags.foreach { diag =>
             val sctx = Message.mkCtx(diag.allMsgs.iterator.map(_._1), "?")
             val headStr = diag match {
