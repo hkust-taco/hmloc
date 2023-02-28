@@ -383,7 +383,7 @@ class DiffTests
                 while (l <= endLineNum) {
                   val globalLineNum = loc.origin.startLineNum + l - 1
                   val relativeLineNum = globalLineNum - blockLineNum + 1
-                  val linemarker = if (loc.origin.fileName == "builtin") "builtin." else "l."
+                  val linemarker = if (loc.origin.fileName == "builtin") "builtin:" else "l."
                   val shownLineNum =
                     if (showRelativeLineNums && relativeLineNum > 0) s"${linemarker}+$relativeLineNum"
                     else linemarker + globalLineNum
