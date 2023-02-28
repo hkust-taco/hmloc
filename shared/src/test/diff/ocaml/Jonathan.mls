@@ -1,0 +1,80 @@
+
+
+
+// FIXME no error!?
+:unify
+let h y = (not y, (if true then y else 5))
+//│ h: (bool & 'a) -> (bool, int | 'a,)
+
+
+:e
+let rec digitsOfInt n =
+  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
+//│ ╟──        int <--- ?b ---> (int -> int -> int) -> ?a 
+//│ ╟── `int` comes from this type expression
+//│ ║  builtin:19: 	let ( / ): int -> int -> int
+//│ ║              	           ^^^
+//│ ╟── this reference has type `int` and it flows from `?b`
+//│ ║  l.12: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║        	                                       ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.11: 	let rec digitsOfInt n =
+//│ ║        	                    ^
+//│ ╟── this reference has type `?b` and it flows into `(int -> int -> int) -> ?a`
+//│ ║  l.12: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║        	                                                   ^
+//│ ╟── this application has type `(int -> int -> int) -> ?a`
+//│ ║  l.12: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ╙──      	                                                   ^^^^^
+//│ digitsOfInt: nothing -> list[nothing]
+
+let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
+//│ addNumbs: list[int] -> int
+
+:e
+:tex
+let digits n = digitsOfInt (abs n)
+//│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
+//│ ╟── `int` comes from this type expression
+//│ ║  builtin:21:‹ 	**let** abs: int -> _B_int__›
+//│ ╟── this application has type `int -> ?b`
+//│ ║  l.37:‹ 	**let** digits n = _B_digitsOfInt (abs n)__›
+//│ ╟── this function has type `?c -> ?d`
+//│ ║  l.11:‹ 	**let** rec digitsOfInt _B_n =__›
+//│ ║  l.12:‹ 	_B_  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]__›
+//│ ╟── this variable has type `(int -> int -> int) -> ?a`
+//│ ║  l.11:‹ 	**let** rec digitsOfInt _B_n__ =›
+//│ ╟── this reference has type `(int -> int -> int) -> ?a`
+//│ ║  l.12:‹ 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [_B_n__ mod 10]›
+//│ ╟── this application has type `(int -> int -> int) -> ?a`
+//│ ║  l.12:‹ 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [_B_n mod__ 10]›
+//│ digits: int -> list[nothing]
+
+:e
+let rec additivePersistence n =
+  match digits n with
+  | [] -> 0
+  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ╟──        int ---> ?a <--- bool 
+//│ ╟── this integer literal has type `int` and it flows into `?a`
+//│ ║  l.57: 	  | [] -> 0
+//│ ║        	          ^
+//│ ╟── this match expression has type `?a`
+//│ ║  l.56: 	  match digits n with
+//│ ║        	  ^^^^^^^^^^^^^^^^^^^
+//│ ║  l.57: 	  | [] -> 0
+//│ ║        	^^^^^^^^^^^
+//│ ║  l.58: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?a` and it flows from `bool`
+//│ ║  l.58: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ║        	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `bool`
+//│ ║  l.58: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ╙──      	                                                         ^^^^^
+//│ additivePersistence: int -> (bool | int)
+
+
+

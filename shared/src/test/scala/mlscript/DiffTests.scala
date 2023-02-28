@@ -289,7 +289,9 @@ class DiffTests
           // unify type bounds to find errors for HM style type system
           case "unify" => mode.copy(unify = true)
           case "unifyDbg" => mode.copy(unifyDbg = true, unify = true)
-          case "tex" => mode.copy(tex = true, stdout = true) // LP: seems `stdout` doesn't work for the errors (why?)
+          case "tex" => mode.copy(tex = true,
+              // stdout = true // * LP: seems `stdout` doesn't work for the errors (why?)
+            )
           case _ =>
             failures += allLines.size - lines.size
             output("/!\\ Unrecognized option " + line)
@@ -400,7 +402,9 @@ class DiffTests
                     // output(prepre + pre + "\t" + curLine)
                     val tickBuilder = new StringBuilder()
                     // tickBuilder ++= (prepre + " " * pre.length + "\t" + " " * (c - 1))
-                    val lastCol = if (l =:= endLineNum) endLineCol else curLine.length + 1
+                    val lastCol = if (l =:= endLineNum) endLineCol min (curLine.length + 1)
+                      else curLine.length + 1
+                    // println(lastCol,curLine.length)
                     var i = 0
                     while (i < c - 1) { tickBuilder += curLine(i); i += 1 }
                     tickBuilder ++= "_B_"
