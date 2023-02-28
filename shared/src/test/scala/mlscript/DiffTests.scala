@@ -182,7 +182,7 @@ class DiffTests
       val block = OcamlParser.libraryTopLevelSeparators(allLines).mkString("\n")
       val fph = new FastParseHelpers(block)
       val globalStartLineNum = 0
-      parse(block, p => new OcamlParser(Origin(testName, globalStartLineNum, fph)).pgrm(p)
+      parse(block, p => new OcamlParser(Origin("builtin", globalStartLineNum, fph)).pgrm(p)
         , verboseFailures = true) match {
         case Failure(lbl, index, extra) =>
           val (lineNum, lineStr, col) = fph.getLineColAt(index)
@@ -386,9 +386,10 @@ class DiffTests
                 while (l <= endLineNum) {
                   val globalLineNum = loc.origin.startLineNum + l - 1
                   val relativeLineNum = globalLineNum - blockLineNum + 1
+                  val linemarker = if (loc.origin.fileName == "builtin") "builtin:" else "l."
                   val shownLineNum =
-                    if (showRelativeLineNums && relativeLineNum > 0) s"l.+$relativeLineNum"
-                    else "l." + globalLineNum
+                    if (showRelativeLineNums && relativeLineNum > 0) s"${linemarker}+$relativeLineNum"
+                    else linemarker + globalLineNum
                   val prepre = "║  "
                   if (tex) {
                     val pre = s"$shownLineNum:"
