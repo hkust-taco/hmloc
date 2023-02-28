@@ -365,10 +365,18 @@ class DiffTests
                     totalTypeErrors += 1
                     s"╔══[ERROR] "
                 }
+              case _: UnificationReport =>
+                totalTypeErrors += 1
+                s"╔══[ERROR] "
               case WarningReport(msg, loco, src) =>
                 totalWarnings += 1
                 s"╔══[WARNING] "
             }
+            val seqStr = diag match {
+              case UnificationReport(_, _, seqStr, _) => seqStr
+              case _ => false
+            }
+            val prepre = "║  "
             val lastMsgNum = diag.allMsgs.size - 1
             var globalLineNum = blockLineNum  // solely used for reporting useful test failure messages
             val tex = mode.tex
@@ -376,6 +384,12 @@ class DiffTests
               val isLast = msgNum =:= lastMsgNum
               val msgStr = msg.showIn(sctx)
               if (msgNum =:= 0) output(headStr + msgStr)
+              // unification error has seq string
+              else if (msgNum =:= 1 && seqStr) {
+                output(prepre)
+                output(s"╟── ${msgStr}")
+                output(prepre)
+              }
               else output(s"${if (isLast && loco.isEmpty) "╙──" else "╟──"} ${msgStr}")
               if (loco.isEmpty && diag.allMsgs.size =:= 1) output("╙──")
               loco.foreach { loc =>
@@ -393,7 +407,6 @@ class DiffTests
                   val shownLineNum =
                     if (showRelativeLineNums && relativeLineNum > 0) s"${linemarker}+$relativeLineNum"
                     else linemarker + globalLineNum
-                  val prepre = "║  "
                   if (tex) {
                     val pre = s"$shownLineNum:"
                     val curLine = loc.origin.fph.lines(l - 1)

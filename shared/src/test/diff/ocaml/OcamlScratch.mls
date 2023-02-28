@@ -30,7 +30,9 @@ let wrap x = Cons(x, Nil)
 :unify
 if true then wrap 1 else wrap true
 //│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
 //│ ╟──        bool ---> ?a <--- int 
+//│ ║  
 //│ ╟── this reference has type `bool` and it flows into `?a`
 //│ ║  l.31: 	if true then wrap 1 else wrap true
 //│ ║        	                              ^^^^
@@ -46,40 +48,46 @@ if true then wrap 1 else wrap true
 :unify
 if true then wrap (if true then 1 else false) else wrap true
 //│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
 //│ ╟──        int ---> ?a <--- bool 
+//│ ║  
 //│ ╟── this `then` branch has type `int` and it flows into `?a`
-//│ ║  l.47: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                                ^
 //│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.47: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `else` branch has type `bool` and it flows into `?a`
-//│ ║  l.47: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ╙──      	                                       ^^^^^
 //│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
 //│ ╟──        bool ---> ?a <--- int 
+//│ ║  
 //│ ╟── this `else` branch has type `bool` and it flows into `?a`
-//│ ║  l.47: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                                       ^^^^^
 //│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.47: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `then` branch has type `int` and it flows into `?a`
-//│ ║  l.47: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ╙──      	                                ^
 //│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
 //│ ╟──        bool ---> ?a <--- int 
+//│ ║  
 //│ ╟── this reference has type `bool` and it flows into `?a`
-//│ ║  l.47: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                                                        ^^^^
 //│ ╟── this variable has type `?a`
 //│ ║  l.1: 	let wrap x = Cons(x, Nil)
 //│ ║       	         ^
 //│ ╟── this if-then-else expression has type `?a` and it flows from `int`
-//│ ║  l.47: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `then` branch has type `int`
-//│ ║  l.47: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ╙──      	                                ^
 //│ res: list[bool | int]
 
@@ -110,13 +118,13 @@ let test z = wrap z
 test 1
 //│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ╟── this integer literal has type `int`
-//│ ║  l.110: 	test 1
+//│ ║  l.118: 	test 1
 //│ ║         	     ^
 //│ ╟── this variable has type `bool`
-//│ ║  l.101: 	let wrap x = not x
+//│ ║  l.109: 	let wrap x = not x
 //│ ║         	         ^
 //│ ╟── this reference has type `bool`
-//│ ║  l.101: 	let wrap x = not x
+//│ ║  l.109: 	let wrap x = not x
 //│ ║         	                 ^
 //│ ╟── `bool` comes from this type expression
 //│ ║  builtin:56: 	let not: bool -> bool
@@ -142,12 +150,12 @@ let rec digitsOfInt n =
 //│ ║  builtin:19: 	let ( / ): int -> int -> int
 //│ ║              	                         ^^^
 //│ ╟── this operator application has type `int`
-//│ ║  l.139: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.147: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── `?a list` comes from this type expression
 //│ ║  builtin:37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ╙──            	         ^^^^^^^
 //│ ╔══[ERROR] identifier not found: remainder
-//│ ║  l.139: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.147: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──       	                            ^^^^^^^^^
 //│ digitsOfInt: anything -> list[error]
