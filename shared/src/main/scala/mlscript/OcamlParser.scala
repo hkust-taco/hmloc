@@ -44,8 +44,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def number[p: P]: P[Int] = P("-".? ~~ CharIn("0-9").repX(1).!.map(_.toInt) )
   // ocaml operators adapted from https://v2.ocaml.org/manual/lex.html#operator-char
   def ocamlOps[p:P]: P[Var] = P("::").!.map(Var)
+  // also parse strings like "List.map" as identifier
+  // TODO This means record fields access won't work fix that later
   def ident[p: P]: P[String] =
-    P( (letter | "_") ~~ (letter | digit | "_" | "'").repX ).!.filter(!keywords(_))
+    P( (letter | "_") ~~ (letter | digit | "_" | "'" | ".").repX ).!.filter(!keywords(_))
 
   /** all top level statements and .
     * Note: this is will treat 1 = 2 as let 1 = 2 and not 1 == 2
@@ -71,7 +73,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       mkApp(Var("Cons"), Tup(v :: list :: Nil)))
   })
   def variable[p: P]: P[Var] = locate(ident.map(Var))
-  def ocamlLabelName[p: P]: P[Var] = locate((ident).map(Var) | "(" ~ ocamlOps ~ ")")
+  def ocamlLabelName[p: P]: P[Var] = locate(ident.map(Var) | "(" ~ ocamlOps ~ ")")
 
 //  def parenCell[p: P]: P[Either[Term, (Term, Boolean)]] = term).map {
 //    case (Some("..."), t) => Left(t)
