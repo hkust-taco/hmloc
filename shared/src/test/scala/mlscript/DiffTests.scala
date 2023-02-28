@@ -117,6 +117,7 @@ class DiffTests
     val typer = new Typer(dbg = false, verbose = false, explainErrors = false) {
       override def funkyTuples = file.ext =:= "fun"
       override def emitDbg(str: String): Unit = output(str)
+      override def reporCollisionErrors: Bool = false
     }
     var ctx: typer.Ctx = typer.Ctx.init
     var declared: Map[Str, typer.PolymorphicType] = Map.empty
