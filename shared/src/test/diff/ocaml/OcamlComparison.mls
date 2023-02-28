@@ -11,11 +11,11 @@
 let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 let addTuple (l1,l2) = l1 + l2;;
 let padZero l1 l2 =
-  if (List_length l1) > (List_length l2)
-  then (l1, ((clone 0 ((List_length l1) - (List_length l2))) @ l2))
+  if (List.length l1) > (List.length l2)
+  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
   else
-    if (List_length l1) < (List_length l2)
-    then (((clone 0 ((List_length l2) - (List_length l1))) @ l1), l2)
+    if (List.length l1) < (List.length l2)
+    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
     else (l1, l2);;
 let rec removeZero l =
   match l with | [] -> [] | h::t -> if h = 0 then removeZero t else h :: t;;
@@ -29,8 +29,8 @@ let bigAdd l1 l2 =
   let add (l1,l2) =
     let f a x = (a + x) mod 10 in
     let base = 0 in
-    let args = List_map addTuple (List_combine l1 l2) in
-    let (_,res) = List_fold_left f base args in res in
+    let args = List.map addTuple (List.combine l1 l2) in
+    let (_,res) = List.fold_left f base args in res in
   removeZero (add (padZero l1 l2));;
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.30: 	    let f a x = (a + x) mod 10 in
@@ -52,29 +52,29 @@ let bigAdd l1 l2 =
 //│ ║  l.30: 	    let f a x = (a + x) mod 10 in
 //│ ╙──      	                ^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in if-else block:
-//│ ║  l.33: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║  l.33: 	    let (_,res) = List.fold_left f base args in res in
 //│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── integer literal of type `int` is not a 2-element tuple
 //│ ║  l.31: 	    let base = 0 in
 //│ ║        	               ^
 //│ ╟── but it flows into reference with expected type `(?a, ?b)`
-//│ ║  l.33: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║  l.33: 	    let (_,res) = List.fold_left f base args in res in
 //│ ║        	                                   ^^^^
 //│ ╟── Note: constraint arises from `match` condition:
-//│ ║  l.33: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║  l.33: 	    let (_,res) = List.fold_left f base args in res in
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── from pattern:
-//│ ║  l.33: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║  l.33: 	    let (_,res) = List.fold_left f base args in res in
 //│ ╙──      	        ^^^^^^^
 //│ ╔══[ERROR] Type `int` does not match `(?a, ?b)`
 //│ ╟── this integer literal has type `int`
 //│ ║  l.31: 	    let base = 0 in
 //│ ║        	               ^
 //│ ╟── this reference has type `int`
-//│ ║  l.33: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║  l.33: 	    let (_,res) = List.fold_left f base args in res in
 //│ ║        	                                   ^^^^
 //│ ╟── this pattern has type `(?a, ?b)`
-//│ ║  l.33: 	    let (_,res) = List_fold_left f base args in res in
+//│ ║  l.33: 	    let (_,res) = List.fold_left f base args in res in
 //│ ╙──      	        ^^^^^^^
 //│ bigAdd: list[?] -> list[?] -> list[nothing]
 
@@ -90,7 +90,7 @@ let bigAdd l1 l2 =
 
 let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 let padZero l1 l2 =
-  let numZeros = (List_length l1) - (List_length l2) in
+  let numZeros = (List.length l1) - (List.length l2) in
   let absNumZeros = abs numZeros in
   if numZeros = 0
   then (l1, l2)
@@ -117,8 +117,8 @@ let bigAdd l1 l2 =
          let carry = intermediateValue / 10 in
          (carry, (valueToAddToArray :: currentSum))) in
     let base = (0, []) in
-    let args = List_rev (List_combine l1 l2) in
-    let (_,res) = List_fold_left f base args in res in
+    let args = List.rev (List.combine l1 l2) in
+    let (_,res) = List.fold_left f base args in res in
   removeZero (add (padZero l1 l2));;
 //│ ╔══[ERROR] Type `?a list` does not match `(?b, ?c)`
 //│ ╟──        ?a list ---> ?d <--- ?e ---> (?b, ?c) 
@@ -177,11 +177,11 @@ let bigAdd l1 l2 =
 let rec helper x = if x = 0 then 1 else 10 * (helper (x - 1));;
 let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 let padZero l1 l2 =
-  if (List_length l1) > (List_length l2)
-  then (l1, ((clone 0 ((List_length l1) - (List_length l2))) @ l2))
+  if (List.length l1) > (List.length l2)
+  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
   else
-    if (List_length l1) < (List_length l2)
-    then (((clone 0 ((List_length l2) - (List_length l1))) @ l1), l2)
+    if (List.length l1) < (List.length l2)
+    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
     else (l1, l2);;
 let rec removeZero l =
   match l with | [] -> [] | h::t -> if h = 0 then removeZero t else h :: t;;
@@ -194,8 +194,8 @@ let bigAdd l1 l2 =
       let (carry,res) = a in
       ((((x1 + x2) + carry) / 10), ((mod ((x1 + x2) + carry) 10) :: res)) in
     let base = (0, []) in
-    let args = List_rev (List_combine l1 l2) in
-    let (carry,res) = List_fold_left f base args in [carry] @ res in
+    let args = List.rev (List.combine l1 l2) in
+    let (carry,res) = List.fold_left f base args in [carry] @ res in
   removeZero (add (padZero l1 l2));;
 let rec mulByDigit i l =
   let f a x =
@@ -203,7 +203,7 @@ let rec mulByDigit i l =
     match a with
     | h::t -> ((h + carry) / 10) :: (mod (h + carry) 10) :: t
     | _ -> [carry / 10; mod carry 10] in
-  let base = [] in removeZero (List_fold_left f base (List_rev l));;
+  let base = [] in removeZero (List.fold_left f base (List.rev l));;
 //│ helper: int -> int
 //│ clone: 'a -> int -> list['a]
 //│ padZero: list[?] -> list[?] -> (list[int], list[int],)
@@ -220,7 +220,7 @@ let bigMul l1 l2 =
     match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
   let base = (0, []) in
   let args = l1 (tenEx 0 l2) in
-  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ╔══[ERROR] Type mismatch in application:
 //│ ║  l.220: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -231,7 +231,7 @@ let bigMul l1 l2 =
 //│ ║  l.190: 	let bigAdd l1 l2 =
 //│ ║         	           ^^
 //│ ╟── from applied type reference:
-//│ ║  l.42: 	let List_combine: 'a list -> 'b list -> ('a * 'b) list
+//│ ║  l.42: 	let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│ ╙──      	                  ^^^^^^^
 //│ ╔══[ERROR] Type `?a list` does not match `?b -> ?c`
 //│ ╟──        ?a list ---> ?d <--- ?b -> ?c 
@@ -262,9 +262,9 @@ let bigMul l1 l2 =
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.196: 	    let base = (0, []) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.197: 	    let args = List_rev (List_combine l1 l2) in
+//│ ║  l.197: 	    let args = List.rev (List.combine l1 l2) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.198: 	    let (carry,res) = List_fold_left f base args in [carry] @ res in
+//│ ║  l.198: 	    let (carry,res) = List.fold_left f base args in [carry] @ res in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.199: 	  removeZero (add (padZero l1 l2));;
 //│ ╙──       	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -285,9 +285,9 @@ let bigMul l1 l2 =
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.196: 	    let base = (0, []) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.197: 	    let args = List_rev (List_combine l1 l2) in
+//│ ║  l.197: 	    let args = List.rev (List.combine l1 l2) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.198: 	    let (carry,res) = List_fold_left f base args in [carry] @ res in
+//│ ║  l.198: 	    let (carry,res) = List.fold_left f base args in [carry] @ res in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.199: 	  removeZero (add (padZero l1 l2));;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -332,14 +332,14 @@ let bigMul l1 l2 =
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.196: 	    let base = (0, []) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.197: 	    let args = List_rev (List_combine l1 l2) in
+//│ ║  l.197: 	    let args = List.rev (List.combine l1 l2) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.198: 	    let (carry,res) = List_fold_left f base args in [carry] @ res in
+//│ ║  l.198: 	    let (carry,res) = List.fold_left f base args in [carry] @ res in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.199: 	  removeZero (add (padZero l1 l2));;
 //│ ╙──       	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type mismatch in application:
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                    ^^^^^^^^^^^^^^^^
 //│ ╟── function of type `?a -> ?b` is not a 2-element tuple
 //│ ║  l.190: 	let bigAdd l1 l2 =
@@ -356,9 +356,9 @@ let bigMul l1 l2 =
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.196: 	    let base = (0, []) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.197: 	    let args = List_rev (List_combine l1 l2) in
+//│ ║  l.197: 	    let args = List.rev (List.combine l1 l2) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.198: 	    let (carry,res) = List_fold_left f base args in [carry] @ res in
+//│ ║  l.198: 	    let (carry,res) = List.fold_left f base args in [carry] @ res in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.199: 	  removeZero (add (padZero l1 l2));;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -373,10 +373,10 @@ let bigMul l1 l2 =
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^^^^^^
 //│ ╟── `?d -> ?e -> ?d` comes from this type expression
-//│ ║  l.39: 	let List_fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│ ║  l.39: 	let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│ ║        	                      ^^^^^^^^^^^^^^
 //│ ╟── this reference has type `?f -> ?g -> ?h`
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                                   ^
 //│ ╟── this function has type `?f -> ?g -> ?h`
 //│ ║  l.217: 	  let f a x =
@@ -418,17 +418,17 @@ let bigMul l1 l2 =
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.196: 	    let base = (0, []) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.197: 	    let args = List_rev (List_combine l1 l2) in
+//│ ║  l.197: 	    let args = List.rev (List.combine l1 l2) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.198: 	    let (carry,res) = List_fold_left f base args in [carry] @ res in
+//│ ║  l.198: 	    let (carry,res) = List.fold_left f base args in [carry] @ res in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.199: 	  removeZero (add (padZero l1 l2));;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── `?e -> ?f -> ?e` comes from this type expression
-//│ ║  l.39: 	let List_fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│ ║  l.39: 	let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│ ║        	                      ^^^^^^^^^^^^^^
 //│ ╟── this reference has type `?g -> ?h -> ?i`
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                                   ^
 //│ ╟── this function has type `?g -> ?h -> ?i`
 //│ ║  l.217: 	  let f a x =
@@ -483,9 +483,9 @@ let bigMul l1 l2 =
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.196: 	    let base = (0, []) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.197: 	    let args = List_rev (List_combine l1 l2) in
+//│ ║  l.197: 	    let args = List.rev (List.combine l1 l2) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.198: 	    let (carry,res) = List_fold_left f base args in [carry] @ res in
+//│ ║  l.198: 	    let (carry,res) = List.fold_left f base args in [carry] @ res in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.199: 	  removeZero (add (padZero l1 l2));;
 //│ ╙──       	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -516,7 +516,7 @@ let bigMul l1 l2 =
 //│ ║  l.217: 	  let f a x =
 //│ ║         	        ^
 //│ ╟── this reference has type `?c` and it flows from `(int, ?b list)`
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                                     ^^^^
 //│ ╟── this tuple literal has type `(int, ?b list)`
 //│ ║  l.221: 	  let base = (0, []) in
@@ -538,9 +538,9 @@ let bigMul l1 l2 =
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.196: 	    let base = (0, []) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.197: 	    let args = List_rev (List_combine l1 l2) in
+//│ ║  l.197: 	    let args = List.rev (List.combine l1 l2) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.198: 	    let (carry,res) = List_fold_left f base args in [carry] @ res in
+//│ ║  l.198: 	    let (carry,res) = List.fold_left f base args in [carry] @ res in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.199: 	  removeZero (add (padZero l1 l2));;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -566,25 +566,25 @@ let bigMul l1 l2 =
 //│ ║  l.217: 	  let f a x =
 //│ ║         	        ^
 //│ ╟── this reference has type `?d` and it flows from `(int, ?c list)`
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                                     ^^^^
 //│ ╟── this tuple literal has type `(int, ?c list)`
 //│ ║  l.221: 	  let base = (0, []) in
 //│ ╙──       	             ^^^^^^^
 //│ ╔══[ERROR] Type mismatch in if-else block:
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── type `?a list` is not a 2-element tuple
 //│ ║  l.1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║       	     ^^^^^^^
 //│ ╟── but it flows into application with expected type `(?b, ?c)`
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── Note: constraint arises from `match` condition:
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── from pattern:
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ╙──       	      ^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?a list` does not match `(?b, ?c)`
 //│ ╟── `?a list` comes from this type expression
@@ -609,7 +609,7 @@ let bigMul l1 l2 =
 //│ ║  l.220: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this pattern has type `(?b, ?c)`
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ╙──       	      ^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?a -> ?b` does not match `(?c, ?d)`
 //│ ╟── this function has type `?a -> ?b`
@@ -627,9 +627,9 @@ let bigMul l1 l2 =
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.196: 	    let base = (0, []) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.197: 	    let args = List_rev (List_combine l1 l2) in
+//│ ║  l.197: 	    let args = List.rev (List.combine l1 l2) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.198: 	    let (carry,res) = List_fold_left f base args in [carry] @ res in
+//│ ║  l.198: 	    let (carry,res) = List.fold_left f base args in [carry] @ res in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.199: 	  removeZero (add (padZero l1 l2));;
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -652,7 +652,7 @@ let bigMul l1 l2 =
 //│ ║  l.220: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this pattern has type `(?c, ?d)`
-//│ ║  l.223: 	  let (carry,res) = List_fold_left f base args in [carry] @ res;;
+//│ ║  l.223: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ╙──       	      ^^^^^^^^^^^
 //│ bigMul: (list[int] & list[int] -> list[(anything, list[int],)]) -> list[int] -> list[int]
 
