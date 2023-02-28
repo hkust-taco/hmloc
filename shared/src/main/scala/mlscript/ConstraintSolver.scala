@@ -551,7 +551,7 @@ class ConstraintSolver extends NormalForms { self: Typer =>
       }
     }}()
     
-    def reportError(failureOpt: Opt[Message] = N)(implicit cctx: ConCtx): Unit = {
+    def reportError(failureOpt: Opt[Message] = N)(implicit cctx: ConCtx): Unit = if (reporCollisionErrors) {
       errorSimplifer.addErrorChain(cctx)
       // completes counting current level of chain
       // then increments error count for all locations on the chain

@@ -168,7 +168,10 @@ object Main {
       dbg = false,
       verbose = false,
       explainErrors = false
-    )
+    ) {
+      override def reporCollisionErrors: Bool = false
+      unifyMode = true
+    }
     
     import typer._
     

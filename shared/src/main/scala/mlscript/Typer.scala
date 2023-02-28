@@ -25,6 +25,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   def setErrorSimplification(simplifyError: Bool): Unit =
     errorSimplifer.simplifyError = simplifyError
     
+  def reporCollisionErrors: Bool = true
+  
   def showSuspiciousLocations()(implicit raise: Raise): Unit =
     errorSimplifer.reportInfo(N, 8)
   
