@@ -209,16 +209,16 @@ trait UnificationSolver extends TyperDatatypes {
     u.unificationChain match {
       case Nil => ()
       case _ :: Nil =>
-       raise(ErrorReport(msgdoesnotmatch(u.a, u.b) -> N :: collisionErrorMessage(u)))
+       raise(UnificationReport(msgdoesnotmatch(u.a, u.b) -> N :: collisionErrorMessage(u), false))
       case chain@(head :: next :: _) =>
         val messages = createErrorMessage(head, next, true) ::: chain.sliding(2).collect {
           case Seq(fst, snd) => createErrorMessage(fst, snd)
         }.toList.flatten
 
-        raise(ErrorReport(
+        raise(UnificationReport(
           msgdoesnotmatch(u.a, u.b) -> N ::
            msg"       " + toSequenceString(u) -> N :: messages
-        ))
+        , true))
     }
   }
 
