@@ -111,6 +111,7 @@ class DiffTests
       // out.println(outputMarker + str)
       if (stdout) System.out.println(str) else
       str.splitSane('\n').foreach(l => out.println(outputMarker + l))
+    def reportOutput(str: String) = str.splitSane('\n').foreach(l => out.println(outputMarker + l))
     def outputSourceCode(code: SourceCode) = code.lines.foreach{line => out.println(outputMarker + line.toString())}
     val allStatements = mutable.Buffer.empty[DesugaredStatement]
     val typer = new Typer(dbg = false, verbose = false, explainErrors = false) {
@@ -252,7 +253,7 @@ class DiffTests
           case "ex" | "explain" => mode.copy(expectTypeErrors = true, explainErrors = true)
           case "ns" | "no-simpl" => mode.copy(noSimplification = true)
           case "stats" => mode.copy(stats = true)
-          case "stdout" => mode.copy(stdout = true)
+          case "showres" => mode.copy(stdout = false)
           case "ParseOnly" => parseOnly = true; mode
           case "AllowTypeErrors" => allowTypeErrors = true; mode
           case "AllowParseErrors" => allowParseErrors = true; mode
@@ -343,7 +344,7 @@ class DiffTests
         var totalCodeGenErrors = 0
         
         // report errors and warnings
-        def report(diags: Ls[mlscript.Diagnostic], output: Str => Unit = output): Unit = {
+        def report(diags: Ls[mlscript.Diagnostic], output: Str => Unit = reportOutput): Unit = {
           diags.foreach { diag =>
             val sctx = Message.mkCtx(diag.allMsgs.iterator.map(_._1), "?")
             val headStr = diag match {
@@ -451,7 +452,8 @@ class DiffTests
             typer.verbose = mode.verbose
             typer.explainErrors = mode.explainErrors
             typer.setErrorSimplification(mode.simplifyError)
-            stdout = mode.stdout
+            // survey programs should only output diagnostics
+            stdout = mode.stdout || file.baseName.contains("Survey")
 
             // In parseOnly mode file only parse and print desugared blocks for file
             // do not perform type checking or codegen or results
@@ -646,7 +648,7 @@ class DiffTests
 
             // Print type checking results
             typingOutputs.foreach {
-              case L(diagnosticLines) => diagnosticLines.foreach(output)
+              case L(diagnosticLines) => diagnosticLines.foreach(reportOutput)
               case R(_ -> typingResults) => typingResults.foreach(output)
             }
 
