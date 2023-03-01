@@ -1,0 +1,59 @@
+
+
+// FIXME missing provenances:
+//    let f x = [[x]] in
+//    (f 1 + [[f true]])
+
+let test =
+  let f x = x in
+  (f 1 + f true)
+//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
+//│ ╟── this reference has type `bool`
+//│ ║  l.9: 	  (f 1 + f true)
+//│ ║       	           ^^^^
+//│ ╟── this variable has type `bool`
+//│ ║  l.8: 	  let f x = x in
+//│ ║       	        ^
+//│ ╟── `int` comes from this type expression
+//│ ║  builtin:16: 	let (+): int -> int -> int
+//│ ╙──            	                ^^^
+//│ test: int
+
+
+
+// FIXME missing provenances:
+//    let test2 = let (a, [[b]]) = test in b + 1
+//    let test2 = let (a, b) = test in [[b]] + 1
+
+let test =
+  let f x = x in
+  (f 1, f true)
+//│ test: (int, bool,)
+
+let test2 = let (a, b) = test in b + 1
+//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
+//│ ╟── this reference has type `bool`
+//│ ║  l.31: 	  (f 1, f true)
+//│ ║        	          ^^^^
+//│ ╟── this variable has type `bool`
+//│ ║  l.30: 	  let f x = x in
+//│ ║        	        ^
+//│ ╟── this reference has type `bool`
+//│ ║  l.30: 	  let f x = x in
+//│ ║        	            ^
+//│ ╟── this application has type `bool`
+//│ ║  l.31: 	  (f 1, f true)
+//│ ║        	        ^^^^^^
+//│ ╟── this 1 element of this tuple has type `bool`
+//│ ║  l.34: 	let test2 = let (a, b) = test in b + 1
+//│ ║        	                ^^^^^^
+//│ ╟── `int` comes from this type expression
+//│ ║  builtin:16: 	let (+): int -> int -> int
+//│ ╙──            	         ^^^
+//│ test2: int
+
+
+
+
