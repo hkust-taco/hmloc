@@ -414,9 +414,10 @@ class DiffTests
                   val globalLineNum = loc.origin.startLineNum + l - 1
                   val relativeLineNum = globalLineNum - blockLineNum + 1
                   val linemarker = if (loc.origin.fileName == "builtin") "builtin:" else "l."
-                  val shownLineNum =
+                  val shownLineNum = {
                     if (showRelativeLineNums && relativeLineNum > 0) s"${linemarker}+$relativeLineNum"
                     else linemarker + globalLineNum
+                  }
                   if (tex) {
                     val pre = s"$shownLineNum:"
                     val curLine = loc.origin.fph.lines(l - 1)
@@ -434,6 +435,11 @@ class DiffTests
                     while (c < lastCol) { tickBuilder += curLine(c - 1); c += 1 }
                     tickBuilder ++= "__"
                     while (c <= curLine.length) { tickBuilder += curLine(c - 1); c += 1 }
+                    // truncate large output second line onwards
+                    if (l - startLineNum =:= 1 && l != endLineNum) {
+                      tickBuilder ++= " ..."
+                      l = endLineNum + 1
+                    }
                     // if (c =:= startLineCol) tickBuilder += ('^')
                     val lnStr = tickBuilder.toString
                       .replaceAll("let", "**let**")
@@ -442,7 +448,13 @@ class DiffTests
                   } else {
                     val pre = s"$shownLineNum: "
                     val curLine = loc.origin.fph.lines(l - 1)
-                    output(prepre + pre + "\t" + curLine)
+                    // truncate large output second line onwards
+                    if (l - startLineNum =:= 1 && l != endLineNum) {
+                      output(prepre + pre + "\t" + curLine + " ...")
+                      l = endLineNum + 1
+                    } else {
+                      output(prepre + pre + "\t" + curLine)
+                    }
                     val tickBuilder = new StringBuilder()
                     tickBuilder ++= (
                       (if (isLast && l =:= endLineNum) "╙──" else prepre)
