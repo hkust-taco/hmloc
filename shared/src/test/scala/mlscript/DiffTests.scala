@@ -449,7 +449,7 @@ class DiffTests
                     val lnStr = tickBuilder.toString
                       .replaceAll("let", "**let**")
                       .replaceAll("val", "**val**")
-                    output(prepre + pre + "‹ \t" + lnStr + "›")
+                    output(prepre + pre + "‹   " + lnStr + "›")
                   } else {
                     val pre = s"$shownLineNum: "
                     val curLine = loc.origin.fph.lines(l - 1)
