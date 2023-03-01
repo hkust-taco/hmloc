@@ -33,6 +33,7 @@ let bigAdd l1 l2 =
     let (_,res) = List.fold_left f base args in res in
   removeZero (add (padZero l1 l2));;
 //│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
+//│ ║  
 //│ ╟── `int` comes from this type expression
 //│ ║  builtin:16: 	let (+): int -> int -> int
 //│ ║              	                       ^^^
@@ -43,12 +44,16 @@ let bigAdd l1 l2 =
 //│ ║  l.30: 	    let f a x = (a + x) mod 10 in
 //│ ╙──      	                ^^^^^^^^^^^
 //│ ╔══[ERROR] Type `int` does not match `?a * ?b`
+//│ ║  
 //│ ╟── this integer literal has type `int`
 //│ ║  l.31: 	    let base = 0 in
 //│ ║        	               ^
 //│ ╟── this reference has type `int`
 //│ ║  l.33: 	    let (_,res) = List.fold_left f base args in res in
 //│ ║        	                                   ^^^^
+//│ ╟── this `match` condition has type `?a * ?b`
+//│ ║  l.33: 	    let (_,res) = List.fold_left f base args in res in
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this pattern has type `?a * ?b`
 //│ ║  l.33: 	    let (_,res) = List.fold_left f base args in res in
 //│ ╙──      	        ^^^^^^^
@@ -104,32 +109,33 @@ let bigAdd l1 l2 =
 //│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║             	     ^^^^^^^
 //│ ╟── this reference has type `?d`
-//│ ║  l.87: 	      if x = []
+//│ ║  l.92: 	      if x = []
 //│ ║        	             ^^
 //│ ╟── this reference has type `?d` and it flows from `?e`
-//│ ║  l.87: 	      if x = []
+//│ ║  l.92: 	      if x = []
 //│ ║        	         ^
 //│ ╟── this variable has type `?e`
-//│ ║  l.85: 	    let f a x =
+//│ ║  l.90: 	    let f a x =
 //│ ║        	            ^
 //│ ╟── this reference has type `?e` and it flows into `?b * ?c`
-//│ ║  l.90: 	        (let (toSum1,toSum2) = x in
+//│ ║  l.95: 	        (let (toSum1,toSum2) = x in
 //│ ║        	                               ^
 //│ ╟── this pattern has type `?b * ?c`
-//│ ║  l.90: 	        (let (toSum1,toSum2) = x in
+//│ ║  l.95: 	        (let (toSum1,toSum2) = x in
 //│ ╙──      	             ^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
+//│ ║  
 //│ ╟── `int` comes from this type expression
 //│ ║  builtin:16: 	let (+): int -> int -> int
 //│ ║              	                       ^^^
 //│ ╟── this operator application has type `int`
-//│ ║  l.91: 	         let intermediateValue = (toSum1 + toSum2) + carry in
+//│ ║  l.96: 	         let intermediateValue = (toSum1 + toSum2) + carry in
 //│ ║        	                                 ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this reference has type `int`
-//│ ║  l.92: 	         let valueToAddToArray = intermediateValue mod 10 in
+//│ ║  l.97: 	         let valueToAddToArray = intermediateValue mod 10 in
 //│ ║        	                                 ^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `(int -> int -> int) -> ?a`
-//│ ║  l.92: 	         let valueToAddToArray = intermediateValue mod 10 in
+//│ ║  l.97: 	         let valueToAddToArray = intermediateValue mod 10 in
 //│ ╙──      	                                 ^^^^^^^^^^^^^^^^^^^^^
 //│ bigAdd: list[?] -> list[?] -> list[int]
 
@@ -191,79 +197,85 @@ let bigMul l1 l2 =
   let args = l1 (tenEx 0 l2) in
   let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ╔══[ERROR] Type `?a * ?b` does not match `?c list`
+//│ ║  
 //│ ╟── this tuple literal has type `?a * ?b`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this variable has type `?c list`
-//│ ║  l.160: 	  let add (l1,l2) =
+//│ ║  l.166: 	  let add (l1,l2) =
 //│ ║         	           ^^
 //│ ╟── this reference has type `?c list`
-//│ ║  l.166: 	    let args = List.rev (List.combine l1 l2) in
+//│ ║  l.172: 	    let args = List.rev (List.combine l1 l2) in
 //│ ║         	                                      ^^
 //│ ╟── `?c list` comes from this type expression
 //│ ║  builtin:42: 	let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│ ╙──            	                  ^^^^^^^
 //│ ╔══[ERROR] Type `?a * ?b` does not match `?c list`
+//│ ║  
 //│ ╟── this tuple literal has type `?a * ?b`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this variable has type `?c list`
-//│ ║  l.148: 	let padZero l1 l2 =
+//│ ║  l.154: 	let padZero l1 l2 =
 //│ ║         	            ^^
 //│ ╟── this reference has type `?c list`
-//│ ║  l.153: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ ║  l.159: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
 //│ ║         	                                                             ^^
 //│ ╟── `?c list` comes from this type expression
 //│ ║  builtin:37: 	let (@): 'a list -> 'a list -> 'a list
 //│ ╙──            	                    ^^^^^^^
 //│ ╔══[ERROR] Type `?a * ?b` does not match `?c list`
+//│ ║  
 //│ ╟── this tuple literal has type `?a * ?b`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this variable has type `?c list`
-//│ ║  l.148: 	let padZero l1 l2 =
+//│ ║  l.154: 	let padZero l1 l2 =
 //│ ║         	            ^^
 //│ ╟── this reference has type `?c list`
-//│ ║  l.153: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ ║  l.159: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
 //│ ║         	                                                     ^^
 //│ ╟── `?c list` comes from this type expression
 //│ ║  builtin:34: 	let List.length: 'a list -> int
 //│ ╙──            	                 ^^^^^^^
 //│ ╔══[ERROR] Type `?a * ?b` does not match `?c list`
+//│ ║  
 //│ ╟── this tuple literal has type `?a * ?b`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this variable has type `?c list`
-//│ ║  l.148: 	let padZero l1 l2 =
+//│ ║  l.154: 	let padZero l1 l2 =
 //│ ║         	            ^^
 //│ ╟── this reference has type `?c list`
-//│ ║  l.152: 	    if (List.length l1) < (List.length l2)
+//│ ║  l.158: 	    if (List.length l1) < (List.length l2)
 //│ ║         	                    ^^
 //│ ╟── `?c list` comes from this type expression
 //│ ║  builtin:34: 	let List.length: 'a list -> int
 //│ ╙──            	                 ^^^^^^^
 //│ ╔══[ERROR] Type `?a * ?b` does not match `?c list`
+//│ ║  
 //│ ╟── this tuple literal has type `?a * ?b`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this variable has type `?c list`
-//│ ║  l.148: 	let padZero l1 l2 =
+//│ ║  l.154: 	let padZero l1 l2 =
 //│ ║         	            ^^
 //│ ╟── this reference has type `?c list`
-//│ ║  l.150: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ ║  l.156: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
 //│ ║         	                                    ^^
 //│ ╟── `?c list` comes from this type expression
 //│ ║  builtin:34: 	let List.length: 'a list -> int
 //│ ╙──            	                 ^^^^^^^
 //│ ╔══[ERROR] Type `?a * ?b` does not match `?c list`
+//│ ║  
 //│ ╟── this tuple literal has type `?a * ?b`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this variable has type `?c list`
-//│ ║  l.148: 	let padZero l1 l2 =
+//│ ║  l.154: 	let padZero l1 l2 =
 //│ ║         	            ^^
 //│ ╟── this reference has type `?c list`
-//│ ║  l.149: 	  if (List.length l1) > (List.length l2)
+//│ ║  l.155: 	  if (List.length l1) > (List.length l2)
 //│ ║         	                  ^^
 //│ ╟── `?c list` comes from this type expression
 //│ ║  builtin:34: 	let List.length: 'a list -> int
@@ -276,36 +288,36 @@ let bigMul l1 l2 =
 //│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║             	     ^^^^^^^
 //│ ╟── this reference has type `?a list` and it flows into `?d`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                          ^^
 //│ ╟── this match expression has type `?d`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?d` and it flows from `?b -> ?c`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this function has type `?b -> ?c`
-//│ ║  l.159: 	let bigAdd l1 l2 =
+//│ ║  l.165: 	let bigAdd l1 l2 =
 //│ ║         	              ^^^^
-//│ ║  l.160: 	  let add (l1,l2) = ...
+//│ ║  l.166: 	  let add (l1,l2) = ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?a -> ?b` does not match `?c list`
 //│ ║  
 //│ ╟──        ?a -> ?b ---> ?d <--- ?c list 
 //│ ║  
 //│ ╟── this function has type `?a -> ?b`
-//│ ║  l.159: 	let bigAdd l1 l2 =
+//│ ║  l.165: 	let bigAdd l1 l2 =
 //│ ║         	              ^^^^
-//│ ║  l.160: 	  let add (l1,l2) = ...
+//│ ║  l.166: 	  let add (l1,l2) = ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?a -> ?b` and it flows into `?d`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this match expression has type `?d`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this reference has type `?d` and it flows from `?c list`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                          ^^
 //│ ╟── this applied type reference has type `?c list`
 //│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
@@ -318,80 +330,114 @@ let bigMul l1 l2 =
 //│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║             	     ^^^^^^^
 //│ ╟── this reference has type `?a list` and it flows into `?d`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                          ^^
 //│ ╟── this match expression has type `?d`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?d` and it flows from `?b -> ?c`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this function has type `?b -> ?c`
-//│ ║  l.159: 	let bigAdd l1 l2 =
+//│ ║  l.165: 	let bigAdd l1 l2 =
 //│ ║         	              ^^^^
-//│ ║  l.160: 	  let add (l1,l2) = ...
+//│ ║  l.166: 	  let add (l1,l2) = ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?a list` does not match `?b * ?c`
+//│ ║  
 //│ ╟── `?a list` comes from this type expression
 //│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║             	     ^^^^^^^
+//│ ╟── this reference has type `?a list`
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	                          ^^
+//│ ╟── this match expression has type `?a list`
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?a list`
+//│ ║  l.194: 	    let (carry,res) = a in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?a list`
+//│ ║  l.193: 	    let (x1,x2) = x in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^
+//│ ║  l.194: 	    let (carry,res) = a in ...
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── `?d -> ?e -> ?d` comes from this type expression
 //│ ║  builtin:39: 	let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│ ║              	                      ^^^^^^^^^^^^^^
 //│ ╟── this reference has type `?f -> ?g -> ?h`
-//│ ║  l.192: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ ║  l.198: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                                   ^
 //│ ╟── this function has type `?f -> ?g -> ?h`
-//│ ║  l.186: 	  let f a x =
+//│ ║  l.192: 	  let f a x =
 //│ ║         	        ^^^^^
-//│ ║  l.187: 	    let (x1,x2) = x in ...
+//│ ║  l.193: 	    let (x1,x2) = x in ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this variable has type `?b * ?c`
-//│ ║  l.186: 	  let f a x =
+//│ ║  l.192: 	  let f a x =
 //│ ║         	        ^
 //│ ╟── this reference has type `?b * ?c`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ║         	                      ^
 //│ ╟── this pattern has type `?b * ?c`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ║         	        ^^^^^^^^^^^
 //│ ╟── this `match` condition has type `?b * ?c`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ║         	                      ^
 //│ ╟── this pattern has type `?b * ?c`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ╙──       	        ^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?a -> ?b` does not match `?c * ?d`
+//│ ║  
 //│ ╟── this function has type `?a -> ?b`
-//│ ║  l.159: 	let bigAdd l1 l2 =
+//│ ║  l.165: 	let bigAdd l1 l2 =
 //│ ║         	              ^^^^
-//│ ║  l.160: 	  let add (l1,l2) = ...
+//│ ║  l.166: 	  let add (l1,l2) = ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a -> ?b`
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this match expression has type `?a -> ?b`
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?a -> ?b`
+//│ ║  l.194: 	    let (carry,res) = a in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?a -> ?b`
+//│ ║  l.193: 	    let (x1,x2) = x in
+//│ ║         	    ^^^^^^^^^^^^^^^^^^
+//│ ║  l.194: 	    let (carry,res) = a in ...
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── `?e -> ?f -> ?e` comes from this type expression
 //│ ║  builtin:39: 	let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│ ║              	                      ^^^^^^^^^^^^^^
 //│ ╟── this reference has type `?g -> ?h -> ?i`
-//│ ║  l.192: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ ║  l.198: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                                   ^
 //│ ╟── this function has type `?g -> ?h -> ?i`
-//│ ║  l.186: 	  let f a x =
+//│ ║  l.192: 	  let f a x =
 //│ ║         	        ^^^^^
-//│ ║  l.187: 	    let (x1,x2) = x in ...
+//│ ║  l.193: 	    let (x1,x2) = x in ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this variable has type `?c * ?d`
-//│ ║  l.186: 	  let f a x =
+//│ ║  l.192: 	  let f a x =
 //│ ║         	        ^
 //│ ╟── this reference has type `?c * ?d`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ║         	                      ^
 //│ ╟── this pattern has type `?c * ?d`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ║         	        ^^^^^^^^^^^
 //│ ╟── this `match` condition has type `?c * ?d`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ║         	                      ^
 //│ ╟── this pattern has type `?c * ?d`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ╙──       	        ^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?a list` does not match `?b -> ?c`
 //│ ║  
@@ -401,18 +447,18 @@ let bigMul l1 l2 =
 //│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║             	     ^^^^^^^
 //│ ╟── this reference has type `?a list` and it flows into `?d`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                          ^^
 //│ ╟── this match expression has type `?d`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?d` and it flows from `?b -> ?c`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this function has type `?b -> ?c`
-//│ ║  l.159: 	let bigAdd l1 l2 =
+//│ ║  l.165: 	let bigAdd l1 l2 =
 //│ ║         	              ^^^^
-//│ ║  l.160: 	  let add (l1,l2) = ...
+//│ ║  l.166: 	  let add (l1,l2) = ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?a list` does not match `int * ?b list`
 //│ ║  
@@ -422,111 +468,119 @@ let bigMul l1 l2 =
 //│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║             	     ^^^^^^^
 //│ ╟── this reference has type `?a list`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                          ^^
 //│ ╟── this match expression has type `?a list`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this let expression has type `?a list`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this let expression has type `?a list` and it flows into `?c`
-//│ ║  l.187: 	    let (x1,x2) = x in
+//│ ║  l.193: 	    let (x1,x2) = x in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^
-//│ ║  l.188: 	    let (carry,res) = a in ...
+//│ ║  l.194: 	    let (carry,res) = a in ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this variable has type `?c`
-//│ ║  l.186: 	  let f a x =
+//│ ║  l.192: 	  let f a x =
 //│ ║         	        ^
 //│ ╟── this reference has type `?c` and it flows from `int * ?b list`
-//│ ║  l.192: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ ║  l.198: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                                     ^^^^
 //│ ╟── this tuple literal has type `int * ?b list`
-//│ ║  l.190: 	  let base = (0, []) in
+//│ ║  l.196: 	  let base = (0, []) in
 //│ ╙──       	             ^^^^^^^
 //│ ╔══[ERROR] Type `?a -> ?b` does not match `int * ?c list`
 //│ ║  
 //│ ╟──        ?a -> ?b ---> ?d <--- int * ?c list 
 //│ ║  
 //│ ╟── this function has type `?a -> ?b`
-//│ ║  l.159: 	let bigAdd l1 l2 =
+//│ ║  l.165: 	let bigAdd l1 l2 =
 //│ ║         	              ^^^^
-//│ ║  l.160: 	  let add (l1,l2) = ...
+//│ ║  l.166: 	  let add (l1,l2) = ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?a -> ?b`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this match expression has type `?a -> ?b`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this let expression has type `?a -> ?b`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this let expression has type `?a -> ?b` and it flows into `?d`
-//│ ║  l.187: 	    let (x1,x2) = x in
+//│ ║  l.193: 	    let (x1,x2) = x in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^
-//│ ║  l.188: 	    let (carry,res) = a in ...
+//│ ║  l.194: 	    let (carry,res) = a in ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this variable has type `?d`
-//│ ║  l.186: 	  let f a x =
+//│ ║  l.192: 	  let f a x =
 //│ ║         	        ^
 //│ ╟── this reference has type `?d` and it flows from `int * ?c list`
-//│ ║  l.192: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ ║  l.198: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ║         	                                     ^^^^
 //│ ╟── this tuple literal has type `int * ?c list`
-//│ ║  l.190: 	  let base = (0, []) in
+//│ ║  l.196: 	  let base = (0, []) in
 //│ ╙──       	             ^^^^^^^
 //│ ╔══[ERROR] Type `?a list` does not match `?b * ?c`
+//│ ║  
 //│ ╟── `?a list` comes from this type expression
 //│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
 //│ ║             	     ^^^^^^^
 //│ ╟── this reference has type `?a list`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                          ^^
 //│ ╟── this match expression has type `?a list`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this let expression has type `?a list`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this let expression has type `?a list`
-//│ ║  l.187: 	    let (x1,x2) = x in
+//│ ║  l.193: 	    let (x1,x2) = x in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^
-//│ ║  l.188: 	    let (carry,res) = a in ...
+//│ ║  l.194: 	    let (carry,res) = a in ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `match` condition has type `?b * ?c`
+//│ ║  l.198: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this pattern has type `?b * ?c`
-//│ ║  l.192: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ ║  l.198: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ╙──       	      ^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?a -> ?b` does not match `?c * ?d`
+//│ ║  
 //│ ╟── this function has type `?a -> ?b`
-//│ ║  l.159: 	let bigAdd l1 l2 =
+//│ ║  l.165: 	let bigAdd l1 l2 =
 //│ ║         	              ^^^^
-//│ ║  l.160: 	  let add (l1,l2) = ...
+//│ ║  l.166: 	  let add (l1,l2) = ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?a -> ?b`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this match expression has type `?a -> ?b`
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this let expression has type `?a -> ?b`
-//│ ║  l.188: 	    let (carry,res) = a in
+//│ ║  l.194: 	    let (carry,res) = a in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.189: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║  l.195: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this let expression has type `?a -> ?b`
-//│ ║  l.187: 	    let (x1,x2) = x in
+//│ ║  l.193: 	    let (x1,x2) = x in
 //│ ║         	    ^^^^^^^^^^^^^^^^^^
-//│ ║  l.188: 	    let (carry,res) = a in ...
+//│ ║  l.194: 	    let (carry,res) = a in ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `match` condition has type `?c * ?d`
+//│ ║  l.198: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ ║         	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this pattern has type `?c * ?d`
-//│ ║  l.192: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ ║  l.198: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ╙──       	      ^^^^^^^^^^^
 //│ bigMul: (list[int] & list[int] -> list[(anything, list[int],)]) -> list[int] -> list[int]
 
@@ -558,17 +612,17 @@ let rec additivePersistence n =
 //│ ╟──        int ---> ?a <--- bool 
 //│ ║  
 //│ ╟── this integer literal has type `int` and it flows into `?a`
-//│ ║  l.554: 	  | [] -> 0
+//│ ║  l.608: 	  | [] -> 0
 //│ ║         	          ^
 //│ ╟── this match expression has type `?a`
-//│ ║  l.553: 	  match digits n with
+//│ ║  l.607: 	  match digits n with
 //│ ║         	  ^^^^^^^^^^^^^^^^^^^
-//│ ║  l.554: 	  | [] -> 0 ...
+//│ ║  l.608: 	  | [] -> 0 ...
 //│ ║         	^^^^^^^^^^^
 //│ ╟── this if-then-else expression has type `?a` and it flows from `bool`
-//│ ║  l.555: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
+//│ ║  l.609: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
 //│ ║         	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `else` branch has type `bool`
-//│ ║  l.555: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
+//│ ║  l.609: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
 //│ ╙──       	                                                         ^^^^
 //│ additivePersistence: int -> (bool | int)

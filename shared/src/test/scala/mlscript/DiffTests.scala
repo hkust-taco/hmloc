@@ -393,10 +393,15 @@ class DiffTests
             diag.allMsgs.zipWithIndex.foreach { case ((msg, loco), msgNum) =>
               val isLast = msgNum =:= lastMsgNum
               val msgStr = msg.showIn(sctx)
-              if (msgNum =:= 0) output(headStr + msgStr)
+              if (msgNum =:= 0 && !tex) {
+                output(headStr + msgStr)
+                output(prepre)
+              }
+              else if (msgNum =:= 0) {
+                output(headStr + msgStr)
+              }
               // unification error has seq string
               else if (msgNum =:= 1 && seqStr) {
-                output(prepre)
                 output(s"╟── ${msgStr}")
                 output(prepre)
               }

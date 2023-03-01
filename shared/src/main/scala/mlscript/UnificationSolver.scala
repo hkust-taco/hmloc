@@ -109,11 +109,11 @@ trait UnificationSolver extends TyperDatatypes {
         // so now we have provs for lb ---- tv ---- st in this order
         tv.lowerBounds.foreach(lb => {
           println(s"UT  ${lb} <: ${tv} <: ${st}")
-          traverseBounds(lb, st, lb.typeUseLocations reverse_::: provs, nested)
+          traverseBounds(lb, b, lb.typeUseLocations reverse_::: provs, nested)
         })
 
         if (tv.upperBounds.nonEmpty) println(s"UT  ${st} with")
-        val ur = UB(tv, st, provs)
+        val ur = UB(tv, b, provs)
         ur.nested = nested
         val reason = ur :: Nil
         // tv <: ub
@@ -122,21 +122,21 @@ trait UnificationSolver extends TyperDatatypes {
         tv.upperBounds.foreach(ub => {
           tv.new_unification.get(ub).foreach { case (prevReason) =>
             println(s"UT  ${tv} <: ${ub}  for ${prevReason}")
-            unifyTypes(ub, st, prevReason :: reason)
+            unifyTypes(ub, b, prevReason :: reason)
           }
         })
-        println(s"UT  ${tv} += ${(st, reason)}")
-        tv.new_unification += ((st, ur))
+        println(s"UT  ${tv} += ${(b, reason)}")
+        tv.new_unification += ((b, ur))
       case (st, tv: TypeVariable) =>
-        if (tv.upperBounds.nonEmpty) println(s"UT  ${st} with")
+        if (tv.upperBounds.nonEmpty) println(s"UT  ${a} with")
         // st <: tv <: ub pass through tv and maintain constraining relation
         tv.upperBounds.foreach(ub => {
-          println(s"UT  ${st} <: ${tv} <: ${ub}")
-          traverseBounds(st, ub, provs ::: ub.typeUseLocations, nested)
+          println(s"UT  ${a} <: ${tv} <: ${ub}")
+          traverseBounds(a, ub, provs ::: ub.typeUseLocations, nested)
         })
 
-        if (tv.lowerBounds.nonEmpty) println(s"UT  ${st} with")
-        val ur = LB(st, tv, provs)
+        if (tv.lowerBounds.nonEmpty) println(s"UT  ${a} with")
+        val ur = LB(a, tv, provs)
         ur.nested = nested
         val reason = ur :: Nil
         // lb <: tv
@@ -145,12 +145,12 @@ trait UnificationSolver extends TyperDatatypes {
         tv.lowerBounds.foreach(lb => {
           tv.new_unification.get(lb).foreach { case (prevReason) =>
             println(s"UT  ${tv} :> ${lb.unwrapProvs} for ${prevReason}")
-            unifyTypes(lb, st, prevReason :: reason)
+            unifyTypes(lb, a, prevReason :: reason)
           }
         })
 
-        println(s"UT  ${tv} += ${(st, reason.reverse)}")  // reason is always from tv to st
-        tv.new_unification += ((st, ur))
+        println(s"UT  ${tv} += ${(a, reason.reverse)}")  // reason is always from tv to st
+        tv.new_unification += ((a, ur))
       case _ =>
         val ur = LB(a, b, provs)
         ur.nested = nested
