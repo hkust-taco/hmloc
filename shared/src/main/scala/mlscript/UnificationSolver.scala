@@ -12,6 +12,25 @@ trait UnificationSolver extends TyperDatatypes {
   implicit val cache: MutSet[(ST, ST)] = MutSet()
   var unifyMode: Bool = false
 
+  // Unify all type variables crated by accessing them from the hook
+  def unifyTypes()(implicit ctx: Ctx, raise: Raise): Unit = {
+    TypeVariable.createdTypeVars.foreach(tv => {
+      println(s"$tv bounds")
+      tv.lowerBounds.foreach(lb => {
+        val reason = LB(lb, tv, lb.typeUseLocations.reverse)
+        println(s" $tv <: $lb with $reason length: ${reason.provs.length}")
+        unifyTypes(tv, lb)
+        tv.new_unification += ((lb, reason))
+      })
+      tv.lowerBounds.foreach(ub => {
+        val reason = UB(tv, ub, ub.typeUseLocations)
+        println(s" $tv :> $ub with $reason length: ${reason.provs.length}")
+        unifyTypes(tv, ub)
+        tv.new_unification += ((ub, reason))
+      })
+    })
+  }
+
   // entry point
   def unifyTypes(a: ST, b: ST)(implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit = {
     if (unifyMode) {
