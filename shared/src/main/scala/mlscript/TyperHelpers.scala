@@ -680,16 +680,14 @@ abstract class TyperHelpers { Typer: Typer =>
       * Tightest location last
       */
     def typeUseLocations: Ls[TypeProvenance] = this match {
-      case pv: ProvType => pv.prov :: pv.underlying.typeUseLocations
-      case st => st.prov :: Nil
-//      case pv: ProvType => pv.prov.loco match {
-//        case None => pv.underlying.typeUseLocations
-//        case Some(_) => pv.prov :: pv.underlying.typeUseLocations
-//      }
-//      case st => st.prov.loco match {
-//        case None => Nil
-//        case Some(_) => st.prov :: Nil
-//      }
+      case pv: ProvType => pv.prov.loco match {
+        case None => pv.underlying.typeUseLocations
+        case Some(_) => pv.prov :: pv.underlying.typeUseLocations
+      }
+      case st => st.prov.loco match {
+        case None => Nil
+        case Some(_) => st.prov :: Nil
+      }
     }
 
     /** List of valid locations a type has been used. Consecutive duplicate locations are removed.

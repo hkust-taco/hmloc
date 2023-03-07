@@ -1,0 +1,62 @@
+let confluence z = if true then z else 5
+//│ confluence: 'a -> (int | 'a)
+
+let mkpair x y = (x, confluence y)
+//│ mkpair: 'a -> 'b -> ('a, int | 'b,)
+
+:e
+mkpair 1 "2"
+//│ ╔══[ERROR] Type `int` does not match `string`
+//│ ║  
+//│ ╟── this `else` branch has type `int`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                       ^
+//│ ╟── this if-then-else expression has type `int`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `string`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `string`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                ^
+//│ ╟── this variable has type `string`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	               ^
+//│ ╟── this reference has type `string`
+//│ ║  l.4: 	let mkpair x y = (x, confluence y)
+//│ ║       	                                ^
+//│ ╟── this variable has type `string`
+//│ ║  l.4: 	let mkpair x y = (x, confluence y)
+//│ ║       	             ^
+//│ ╟── this string literal has type `string`
+//│ ║  l.8: 	mkpair 1 "2"
+//│ ╙──     	         ^^^
+//│ res: (int, int | string,)
+
+:e
+let conflict x = mkpair (not x) x
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟── this `else` branch has type `int`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                       ^
+//│ ╟── this if-then-else expression has type `int`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `bool`
+//│ ║  l.38: 	let conflict x = mkpair (not x) x
+//│ ║        	             ^
+//│ ╟── this reference has type `bool`
+//│ ║  l.38: 	let conflict x = mkpair (not x) x
+//│ ║        	                             ^
+//│ ╟── `bool` comes from this type expression
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ╙──            	         ^^^^
+//│ conflict: (bool & 'a) -> (bool, int | 'a,)
+
+let g x = (not x, (if true then x else 5))
+//│ g: (bool & 'a) -> (bool, int | 'a,)
+
+let g x = (not x, (if true then x else 5))
+//│ g: (bool & 'a) -> (bool, int | 'a,)
