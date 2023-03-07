@@ -325,7 +325,8 @@ class ConstraintSolver extends NormalForms { self: Typer =>
           // is wrapped with provenances that go from consumer to producer. Since the producer
           // meets the lhs we need to store it in reverse
           // (rhs3, rhs2, rhs1) => (lhs0, lhs1, lhs2) ::: (rhs1, rhs2, rhs3)
-          (if (sameRhs) cctx._2 else cctx._2 ::: (rhs :: Nil)))
+          // (if (sameRhs) cctx._2 else cctx._2 ::: (rhs :: Nil)))
+          (if (sameRhs) cctx._2 else rhs :: cctx._2))
         case S(nested) => 
           // the provenance chain for the constructor from the previous level
           // connects the provenances of lhs and rhs
