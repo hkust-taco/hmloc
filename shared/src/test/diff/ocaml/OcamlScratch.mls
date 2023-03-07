@@ -1,5 +1,5 @@
 let wrap x = Cons(x, Nil)
-//│ wrap: anything -> anything
+//│ wrap: 'a -> list['a]
 
 
 // *** GOAL ***
@@ -52,32 +52,88 @@ if true then wrap 1 else wrap true
 //│ ╟── this integer literal has type `int`
 //│ ║  l.31: 	if true then wrap 1 else wrap true
 //│ ╙──      	                  ^
-//│ res: anything
+//│ res: list[bool | int]
 
 
 :unify
 if true then wrap (if true then 1 else false) else wrap true
-//│ res: anything
+//│ res: list[bool | int]
 
 
 :unify
 let test z = if true then wrap z else wrap true
-//│ test: anything -> anything
+//│ test: 'a -> list[bool | 'a]
 
 
 :unify
 let rec t = test (if true then 1 else t)
-//│ /!!!\ Uncaught error: java.lang.Exception: Internal Error: Cannot create showOcaml for ?
-//│ 	at: mlscript.utils.package$.lastWords(package.scala:185)
-//│ 	at: mlscript.TypeImpl.showOcaml(helpers.scala:61)
-//│ 	at: mlscript.TypeImpl.$anonfun$showOcaml$5(helpers.scala:58)
-//│ 	at: scala.collection.immutable.List.map(List.scala:246)
-//│ 	at: mlscript.TypeImpl.showOcaml(helpers.scala:58)
-//│ 	at: mlscript.Message.$anonfun$showIn$1(Message.scala:14)
-//│ 	at: scala.collection.immutable.List.map(List.scala:250)
-//│ 	at: mlscript.Message.showIn(Message.scala:13)
-//│ 	at: mlscript.Message.show(Message.scala:9)
-//│ 	at: mlscript.UnificationReport$.apply(Diagnostic.scala:52)
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟── this `then` branch has type `int`
+//│ ║  l.69: 	let rec t = test (if true then 1 else t)
+//│ ║        	                               ^
+//│ ╟── this if-then-else expression has type `int`
+//│ ║  l.69: 	let rec t = test (if true then 1 else t)
+//│ ║        	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?a list`
+//│ ║  l.69: 	let rec t = test (if true then 1 else t)
+//│ ║        	                                      ^
+//│ ╟── this if-then-else expression has type `?a list`
+//│ ║  l.69: 	let rec t = test (if true then 1 else t)
+//│ ║        	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.69: 	let rec t = test (if true then 1 else t)
+//│ ║        	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this <nested> has type `?a list`
+//│ ╟── this if-then-else expression has type `?a list`
+//│ ║  l.64: 	let test z = if true then wrap z else wrap true
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?a list`
+//│ ║  l.64: 	let test z = if true then wrap z else wrap true
+//│ ║        	                                      ^^^^^^^^^
+//│ ╟── this <nested> has type `?a list`
+//│ ╟── this application has type `?a list`
+//│ ║  l.1: 	let wrap x = Cons(x, Nil)
+//│ ║       	             ^^^^^^^^^^^^
+//│ ╟── this <nested> has type `?a list`
+//│ ╟── `?a list` comes from this type expression
+//│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ╙──           	     ^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟── this `then` branch has type `int`
+//│ ║  l.69: 	let rec t = test (if true then 1 else t)
+//│ ║        	                               ^
+//│ ╟── this if-then-else expression has type `int`
+//│ ║  l.69: 	let rec t = test (if true then 1 else t)
+//│ ║        	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?a list`
+//│ ║  l.69: 	let rec t = test (if true then 1 else t)
+//│ ║        	                                      ^
+//│ ╟── this if-then-else expression has type `?a list`
+//│ ║  l.69: 	let rec t = test (if true then 1 else t)
+//│ ║        	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.69: 	let rec t = test (if true then 1 else t)
+//│ ║        	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this <nested> has type `?a list`
+//│ ╟── this if-then-else expression has type `?a list`
+//│ ║  l.64: 	let test z = if true then wrap z else wrap true
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?a list`
+//│ ║  l.64: 	let test z = if true then wrap z else wrap true
+//│ ║        	                          ^^^^^^
+//│ ╟── this <nested> has type `?a list`
+//│ ╟── this application has type `?a list`
+//│ ║  l.1: 	let wrap x = Cons(x, Nil)
+//│ ║       	             ^^^^^^^^^^^^
+//│ ╟── this <nested> has type `?a list`
+//│ ╟── `?a list` comes from this type expression
+//│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ╙──           	     ^^^^^^^
+//│ t: 't
+//│   where
+//│     't :> list[bool | int | 't]
 
 
 
@@ -112,16 +168,16 @@ let rec digitsOfInt n =
 //│ ║  
 //│ ╟── this expression has type `error`
 //│ ╟── this reference has type `error`
-//│ ║  l.110: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.166: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	                            ^^^^^^^^^
 //│ ╟── this <nested> has type `error`
 //│ ╟── this <nested> has type `error`
 //│ ╟── this reference has type `error`
-//│ ║  l.110: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.166: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║         	                            ^^^^^^^^^
 //│ ╙── this expression has type `error`
 //│ ╔══[ERROR] identifier not found: remainder
 //│ ║  
-//│ ║  l.110: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.166: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──       	                            ^^^^^^^^^
-//│ digitsOfInt: anything -> anything
+//│ digitsOfInt: anything -> list[error]

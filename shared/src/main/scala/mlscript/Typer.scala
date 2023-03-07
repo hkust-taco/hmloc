@@ -122,8 +122,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     TypeDef(Cls, TypeName("error"), Nil, Nil, TopType, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("unit"), Nil, Nil, TopType, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Set.empty, N, Nil) :: {
-      val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
-      TypeDef(Als, TypeName("list"), Ls((TypeName("'a"), listTyVar)), Ls(listTyVar), TopType, Set.empty, N, Nil, S(TypeName("list"), Nil))
+      val listTyVar: TypeVariable = freshVar(noProv, N)(1)
+      val td = TypeDef(Cls, TypeName("list"), Ls((TypeName("A"), listTyVar)), Ls(listTyVar), TopType, Set.empty, N, Nil, S(TypeName("list"), Nil))
+      td.tvarVariances = S(MutMap(listTyVar -> VarianceInfo.co))
+      td
     } ::
     Nil
   val primitiveTypes: Set[Str] =
@@ -225,7 +227,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         ctx.env.getOrElse("this", err(msg"undeclared this" -> ty.toLoc :: Nil)) match {
           case VarSymbol(t: TypeScheme, _) => t.instantiate
         }
-      case tn @ TypeTag(name) => rec(TypeName(name.decapitalize))
+      case tn @ TypeTag(name) => rec(TypeName(name))
       case tn @ TypeName(name) =>
         val tyLoc = ty.toLoc
         val tpr = tyTp(tyLoc, "type reference")
@@ -237,14 +239,14 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
               } else TypeRef(tn, Nil)(tpr)
             case L(e) =>
               if (name.isEmpty || !name.head.isLower) e()
-              else (typeNamed(tyLoc, name.capitalize), ctx.tyDefs.get(name.capitalize)) match {
+              else (typeNamed(tyLoc, name), ctx.tyDefs.get(name)) match {
                 case (R((kind, _)), S(td)) => kind match {
                   case Cls => clsNameToNomTag(td)(tyTp(tyLoc, "class tag"), ctx)
                   case Trt => trtNameToNomTag(td)(tyTp(tyLoc, "trait tag"), ctx)
                   case Als => err(
-                    msg"Type alias ${name.capitalize} cannot be used as a type tag", tyLoc)(raise)
+                    msg"Type alias ${name} cannot be used as a type tag", tyLoc)(raise)
                   case Nms => err(
-                    msg"Namespaces ${name.capitalize} cannot be used as a type tag", tyLoc)(raise)
+                    msg"Namespaces ${name} cannot be used as a type tag", tyLoc)(raise)
                 }
                 case _ => e()
               }

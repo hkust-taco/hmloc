@@ -246,7 +246,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     }
     override def toString = showProvOver(false) {
       val displayName =
-        if (primitiveTypes.contains(defn.name)) defn.name.capitalize else defn.name
+        if (primitiveTypes.contains(defn.name)) defn.name else defn.name
       if (targs.isEmpty) displayName else s"$displayName[${targs.mkString(",")}]"
     }
   }

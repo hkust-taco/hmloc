@@ -36,7 +36,7 @@ class NormalForms extends TyperDatatypes { self: Typer =>
       case LhsRefined(bo, ts, r, trs) =>
         val sr = if (sort) r.sorted else r
         val bo2 = bo.filter {
-          case ClassTag(id, parents) => !trs.contains(TypeName(id.idStr.capitalize))
+          case ClassTag(id, parents) => !trs.contains(TypeName(id.idStr))
           case _ => true
         }
         val trsBase = trs.valuesIterator.foldRight(bo2.fold[ST](sr)(_ & sr))(_ & _)

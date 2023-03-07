@@ -20,9 +20,9 @@ exception Error
 //│ Defined type alias option[+'a]
 //│ Defined class None
 //│ Defined class Some[+'a]
-//│ Cons: (anything, anything,) -> anything
-//│ Nil: anything
-//│ ::: anything -> anything -> anything
+//│ Cons: ('a, list['a],) -> list['a]
+//│ Nil: list[nothing]
+//│ ::: 'a -> list['a] -> list['a]
 //│ None: option[nothing]
 //│ Some: 'a -> option['a]
 //│ raise: anything -> nothing
@@ -31,14 +31,14 @@ exception Error
 let List.length: 'a list -> int
 let List.mem: 'a -> 'a list -> bool
 let List.append: 'a list -> 'a list -> 'a list
-//│ List.length: anything -> int
-//│ List.mem: anything -> anything -> bool
-//│ List.append: anything -> anything -> anything
+//│ List.length: list[?] -> int
+//│ List.mem: anything -> list[?] -> bool
+//│ List.append: list['a] -> list['a] -> list['a]
 
 let (@): 'a list -> 'a list -> 'a list
 Cons(1, Nil) @ Cons(2, Nil)
-//│ @: anything -> anything -> anything
-//│ res: anything
+//│ @: list['a] -> list['a] -> list['a]
+//│ res: list[int]
 
 // equality check
 // FIXME
@@ -53,10 +53,10 @@ let a b c d = b = c = d
 [1, 2, 3, 4]
 []
 // let a = []
-//│ res: anything
-//│ res: anything
-//│ res: anything
-//│ res: anything
+//│ res: list[int]
+//│ res: list[int]
+//│ res: list[int]
+//│ res: list[nothing]
 
 let (+.): float -> float -> float
 let (-.): float -> float -> float
@@ -74,8 +74,8 @@ let ( ** ): float -> float -> float
 
 1.0 :: Nil
 2.0 :: 3.223 :: Nil
-//│ res: anything
-//│ res: anything
+//│ res: list[float]
+//│ res: list[float]
 
 let f = 3.14
 let f = f +. 1.0
@@ -100,7 +100,7 @@ let b = ("bye", 3)
 let data = Cons (a, Cons (b, Nil))
 //│ a: (string, int,)
 //│ b: (string, int,)
-//│ data: anything
+//│ data: list[(string, int,)]
 
 2.0
 let b = 3.0
@@ -117,7 +117,7 @@ let mktup = [1, 2, 3], 4, (5, 6)
 //│ res: (int, int, int,)
 //│ mktup: (int, int, int,)
 //│ mktup: (int, (int, int,),)
-//│ mktup: (anything, int, (int, int,),)
+//│ mktup: (list[int], int, (int, int,),)
 
 // create classes for exceptions
 exception Unimplemented
@@ -192,58 +192,24 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│ Defined class HeapA[+'a]
 //│ Defined type alias heapB[+'a, +'b]
 //│ Defined class HeapB[+'a, +'b]
-//│ Defined type alias heapC[±'a, ±'b]
-//│ Defined class HeapC[±'a, ±'b]
-//│ Defined type alias heapD[+'a, ±'b]
-//│ Defined class HeapD[+'a, ±'b]
-//│ ╔══[WARNING] Type definition heapC has bivariant type parameters:
-//│ ║  
-//│ ║  l.189: 	type ('a, 'b) heapC = HeapC of ('a * 'b) list
-//│ ║         	              ^^^^^
-//│ ╟── 'a is irrelevant and may be removed
-//│ ║  l.189: 	type ('a, 'b) heapC = HeapC of ('a * 'b) list
-//│ ║         	      ^^
-//│ ╟── 'b is irrelevant and may be removed
-//│ ║  l.189: 	type ('a, 'b) heapC = HeapC of ('a * 'b) list
-//│ ╙──       	          ^^
-//│ ╔══[WARNING] Type definition heapD has bivariant type parameters:
-//│ ║  
-//│ ║  l.190: 	type ('a, 'b) heapD = HeapD of 'a * 'b list
-//│ ║         	              ^^^^^
-//│ ╟── 'b is irrelevant and may be removed
-//│ ║  l.190: 	type ('a, 'b) heapD = HeapD of 'a * 'b list
-//│ ╙──       	          ^^
-//│ ╔══[WARNING] Type definition HeapC has bivariant type parameters:
-//│ ║  
-//│ ║  l.189: 	type ('a, 'b) heapC = HeapC of ('a * 'b) list
-//│ ║         	                      ^^^^^
-//│ ╟── 'a is irrelevant and may be removed
-//│ ║  l.189: 	type ('a, 'b) heapC = HeapC of ('a * 'b) list
-//│ ║         	                                ^^
-//│ ╟── 'b is irrelevant and may be removed
-//│ ║  l.189: 	type ('a, 'b) heapC = HeapC of ('a * 'b) list
-//│ ╙──       	                                     ^^
-//│ ╔══[WARNING] Type definition HeapD has bivariant type parameters:
-//│ ║  
-//│ ║  l.190: 	type ('a, 'b) heapD = HeapD of 'a * 'b list
-//│ ║         	                      ^^^^^
-//│ ╟── 'b is irrelevant and may be removed
-//│ ║  l.190: 	type ('a, 'b) heapD = HeapD of 'a * 'b list
-//│ ╙──       	                                    ^^
+//│ Defined type alias heapC[+'a, +'b]
+//│ Defined class HeapC[+'a, +'b]
+//│ Defined type alias heapD[+'a, +'b]
+//│ Defined class HeapD[+'a, +'b]
 //│ HeapA: 'a -> heapA['a]
 //│ HeapB: ('a, 'b,) -> heapB['a, 'b]
-//│ HeapC: anything -> heapC[?, ?]
-//│ HeapD: ('a, anything,) -> heapD['a, ?]
+//│ HeapC: list[('a, 'b,)] -> heapC['a, 'b]
+//│ HeapD: ('a, list['b],) -> heapD['a, 'b]
 
 (("hi", 1) :: Nil)
 (("hi", 1) :: Nil):heap
 (("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ res: anything
+//│ res: list[(string, int,)]
 //│ res: heap
 //│ res: heap
 
 let update h str i = (str,i)::h
-//│ update: anything -> anything -> anything -> anything
+//│ update: list['a] -> 'b -> 'c -> list[('b, 'c,) | 'a]
 
 /// FIXME
 // define lambdas using fun
@@ -253,65 +219,44 @@ let interp2 = (fun (env:env) opt ->
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.250: 	fun (env: env) _ -> []
+//│ ║  l.216: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
-//│ res: error -> anything
+//│ res: error -> list[nothing]
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.251: 	let interp2 = (fun (env:env) opt ->
+//│ ║  l.217: 	let interp2 = (fun (env:env) opt ->
 //│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
 //│ ║  
-//│ ║  l.252: 	  match opt with
+//│ ║  l.218: 	  match opt with
 //│ ╙──       	        ^^^
 //│ interp2: error -> int
 
 let head xs = match xs with
   Cons(x, xs) -> x
   | _ -> raise Error
-//│ head: anything -> nothing
+//│ head: list['a] -> 'a
 
 // TODO
 // FIXME
 let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
-//│ head: anything -> nothing
+//│ head: list['a] -> 'a
 
 type ('a) bigHeap =
   NoHeap of 'a list
   | NonHeap of otherList
   | NonsHeap of (otherList * 'a) list
   and otherList = int list
-//│ Defined type alias bigHeap[±'a]
-//│ Defined class NoHeap[±'a]
+//│ Defined type alias bigHeap[+'a]
+//│ Defined class NoHeap[+'a]
 //│ Defined class NonHeap
-//│ Defined class NonsHeap[±'a]
+//│ Defined class NonsHeap[+'a]
 //│ Defined type alias otherList
-//│ ╔══[WARNING] Type definition NonsHeap has bivariant type parameters:
-//│ ║  
-//│ ║  l.284: 	  | NonsHeap of (otherList * 'a) list
-//│ ║         	    ^^^^^^^^
-//│ ╟── 'a is irrelevant and may be removed
-//│ ║  l.284: 	  | NonsHeap of (otherList * 'a) list
-//│ ╙──       	                             ^^
-//│ ╔══[WARNING] Type definition bigHeap has bivariant type parameters:
-//│ ║  
-//│ ║  l.281: 	type ('a) bigHeap =
-//│ ║         	          ^^^^^^^
-//│ ╟── 'a is irrelevant and may be removed
-//│ ║  l.281: 	type ('a) bigHeap =
-//│ ╙──       	      ^^
-//│ ╔══[WARNING] Type definition NoHeap has bivariant type parameters:
-//│ ║  
-//│ ║  l.282: 	  NoHeap of 'a list
-//│ ║         	  ^^^^^^
-//│ ╟── 'a is irrelevant and may be removed
-//│ ║  l.282: 	  NoHeap of 'a list
-//│ ╙──       	            ^^
-//│ NoHeap: anything -> bigHeap[?]
-//│ NonHeap: otherList -> bigHeap[?]
-//│ NonsHeap: anything -> bigHeap[?]
+//│ NoHeap: list['a] -> bigHeap['a]
+//│ NonHeap: otherList -> bigHeap[nothing]
+//│ NonsHeap: list[(otherList, 'a,)] -> bigHeap['a]
 
 :dp
 type biglist = int option list
@@ -325,17 +270,7 @@ type ('a, 'b) paramlist = (('a * int) list * 'b) list
 //│ Defined type alias biglist
 //│ Defined type alias listoflists
 //│ Defined type alias stringintlist
-//│ Defined type alias paramlist[±'a, ±'b]
-//│ ╔══[WARNING] Type definition paramlist has bivariant type parameters:
-//│ ║  
-//│ ║  l.320: 	type ('a, 'b) paramlist = (('a * int) list * 'b) list
-//│ ║         	              ^^^^^^^^^
-//│ ╟── 'a is irrelevant and may be removed
-//│ ║  l.320: 	type ('a, 'b) paramlist = (('a * int) list * 'b) list
-//│ ║         	      ^^
-//│ ╟── 'b is irrelevant and may be removed
-//│ ║  l.320: 	type ('a, 'b) paramlist = (('a * int) list * 'b) list
-//│ ╙──       	          ^^
+//│ Defined type alias paramlist[+'a, +'b]
 
 // TODO
 // FIXME
@@ -357,22 +292,22 @@ let checkagain (v: (int, int, (int, int))) =
 //│ ║  l.107: 	let c = 3.0 +. 4.0 *. 6.0
 //│ ║         	        ^^^^^^^^^^^^^^^^^
 //│ ╟── this reference has type `int`
-//│ ║  l.349: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.284: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ║         	           ^
 //│ ╟── this operator application has type `int`
 //│ ║  l.107: 	let c = 3.0 +. 4.0 *. 6.0
 //│ ║         	        ^^^^^^^^^^^^^^^^^
 //│ ╟── this <nested> has type `int`
 //│ ╟── `int` comes from this type expression
-//│ ║  l.347: 	let checkagain (v: (int, int, (int, int))) =
+//│ ║  l.282: 	let checkagain (v: (int, int, (int, int))) =
 //│ ╙──       	                               ^^^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.349: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.284: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ╙──       	              ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.349: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.284: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ╙──       	                                 ^
 //│ checkagain: (int, int, (int, int,),) -> int
 
@@ -400,4 +335,4 @@ let check a b =
 
 let d x =
   let (hd :: tl) = x in hd
-//│ d: anything -> nothing
+//│ d: list['a] -> 'a
