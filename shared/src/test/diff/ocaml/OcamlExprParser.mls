@@ -22,7 +22,7 @@ let d = e = f = g
 let a = []
 //│ Desugared: Cons (1, 2,)
 //│ Desugared: Cons (1, Cons (2, 3,),)
-//│ Desugared: Cons (1, Cons (2, Cons (3, Cons (4, Nil,),),),)
+//│ Desugared: Cons (1, 2, 3, 4,, Nil,)
 //│ Desugared: Nil
 //│ Desugared: def a: Nil
 
@@ -32,7 +32,7 @@ let a = []
 [1] <> [1, 2]
 //│ Desugared: <> 1 1
 //│ Desugared: <> 1 2
-//│ Desugared: <> (Cons (1, Nil,)) (Cons (1, Cons (2, Nil,),))
+//│ Desugared: <> (Cons (1, Nil,)) (Cons (1, 2,, Nil,))
 
 // FIXME where the substituted operation is not the top level operation
 a + 1 <> 1 + 1
@@ -99,7 +99,7 @@ app (2,3) 4 // TODO is the extra tupling correct?
 //│ Desugared: 1, 2, 3,
 //│ Desugared: def mktup: 1, 2, 3,
 //│ Desugared: def mktup: 1, 2, 3,,
-//│ Desugared: def mktup: Cons (1, Cons (2, Cons (3, Nil,),),), 4, 5, 6,,
+//│ Desugared: def mktup: Cons (1, 2, 3,, Nil,), 4, 5, 6,,
 //│ Desugared: app 2 3 4
 //│ Desugared: app 2, 3 4,
 
@@ -111,10 +111,10 @@ let b = 2
 [a, b, [a + b / 2]]
 //│ Desugared: def a: 1
 //│ Desugared: def b: 2
-//│ Desugared: Cons (a, Cons (b, Nil,),)
-//│ Desugared: Cons (a, Cons (b, Cons (Cons (a, Cons (b, Nil,),), Nil,),),)
-//│ Desugared: Cons (a, Cons (b, Cons (Cons (a, Cons (b, Nil,),), Cons (12, Nil,),),),)
-//│ Desugared: Cons (a, Cons (b, Cons (Cons (+ a (/ b 2), Nil,), Nil,),),)
+//│ Desugared: Cons (a, b,, Nil,)
+//│ Desugared: Cons (a, b, Cons (a, b,, Nil,),, Nil,)
+//│ Desugared: Cons (a, b, Cons (a, b,, Nil,), 12,, Nil,)
+//│ Desugared: Cons (a, b, Cons (+ a (/ b 2), Nil,),, Nil,)
 
 // TODO sequential let
 let _ = 
@@ -397,8 +397,8 @@ hd :: tl
 
 :dp
 [1, 2, 3]
-//│ Parsed: App(Var(Cons), Tup(IntLit(1), App(Var(Cons), Tup(IntLit(2), App(Var(Cons), Tup(IntLit(3), Var(Nil)))))))
-//│ Desugared: Cons (1, Cons (2, Cons (3, Nil,),),)
+//│ Parsed: App(Var(Cons), Tup(Tup(IntLit(1), IntLit(2), IntLit(3)), Var(Nil)))
+//│ Desugared: Cons (1, 2, 3,, Nil,)
 
 :dp
 let d x =
