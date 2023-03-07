@@ -1,3 +1,5 @@
+
+// * FIXME we should say "if-then-else expression has type `?a` but `int` flows into it"
 :e
 :unify
 let h y = (not y, (if true then y else 5))
@@ -9,25 +11,25 @@ let h y = (not y, (if true then y else 5))
 //│ ║  builtin:56: 	let not: bool -> bool
 //│ ║              	         ^^^^
 //│ ╟── this reference has type `bool` and it flows from `?a`
-//│ ║  l.3: 	let h y = (not y, (if true then y else 5))
+//│ ║  l.5: 	let h y = (not y, (if true then y else 5))
 //│ ║       	               ^
 //│ ╟── this variable has type `?a`
-//│ ║  l.3: 	let h y = (not y, (if true then y else 5))
+//│ ║  l.5: 	let h y = (not y, (if true then y else 5))
 //│ ║       	      ^
 //│ ╟── this `then` branch has type `?a`
-//│ ║  l.3: 	let h y = (not y, (if true then y else 5))
+//│ ║  l.5: 	let h y = (not y, (if true then y else 5))
 //│ ║       	                                ^
 //│ ╟── this if-then-else expression has type `?a` and it flows into `int`
-//│ ║  l.3: 	let h y = (not y, (if true then y else 5))
+//│ ║  l.5: 	let h y = (not y, (if true then y else 5))
 //│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `else` branch has type `int`
-//│ ║  l.3: 	let h y = (not y, (if true then y else 5))
+//│ ║  l.5: 	let h y = (not y, (if true then y else 5))
 //│ ╙──     	                                       ^
 //│ h: (bool & 'a) -> (bool, int | 'a,)
 
 
 // FIXME no error!?
-// :e
+:e
 :unify
 let confluence z = if true then z else 5
 let mkpair x y = (x, confluence y)
@@ -47,16 +49,16 @@ let rec digitsOfInt n =
 //│ ╟──        (int -> int -> int) -> ?a <--- ?b ---> int 
 //│ ║  
 //│ ╟── this application has type `(int -> int -> int) -> ?a`
-//│ ║  l.44: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║  l.46: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
 //│ ║        	                                                   ^^^^^
 //│ ╟── this reference has type `(int -> int -> int) -> ?a` and it flows from `?b`
-//│ ║  l.44: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║  l.46: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
 //│ ║        	                                                   ^
 //│ ╟── this variable has type `?b`
-//│ ║  l.43: 	let rec digitsOfInt n =
+//│ ║  l.45: 	let rec digitsOfInt n =
 //│ ║        	                    ^
 //│ ╟── this operator application has type `?b` and it flows into `int`
-//│ ║  l.44: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║  l.46: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
 //│ ║        	                                      ^^^^^^^^
 //│ ╟── this type reference has type `int`
 //│ ║  builtin:19: 	let ( / ): int -> int -> int
@@ -69,16 +71,16 @@ let rec digitsOfInt n =
 //│ ║  builtin:19: 	let ( / ): int -> int -> int
 //│ ║              	           ^^^
 //│ ╟── this reference has type `int` and it flows from `?b`
-//│ ║  l.44: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║  l.46: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
 //│ ║        	                                       ^
 //│ ╟── this variable has type `?b`
-//│ ║  l.43: 	let rec digitsOfInt n =
+//│ ║  l.45: 	let rec digitsOfInt n =
 //│ ║        	                    ^
 //│ ╟── this reference has type `?b` and it flows into `(int -> int -> int) -> ?a`
-//│ ║  l.44: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║  l.46: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
 //│ ║        	                                                   ^
 //│ ╟── this application has type `(int -> int -> int) -> ?a`
-//│ ║  l.44: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║  l.46: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
 //│ ╙──      	                                                   ^^^^^
 //│ digitsOfInt: nothing -> list[nothing]
 
@@ -101,19 +103,19 @@ let rec additivePersistence n =
 //│ ╟──        int ---> ?a <--- bool 
 //│ ║  
 //│ ╟── this integer literal has type `int` and it flows into `?a`
-//│ ║  l.97: 	  | [] -> 0
+//│ ║  l.99: 	  | [] -> 0
 //│ ║        	          ^
 //│ ╟── this match expression has type `?a`
-//│ ║  l.96: 	  match digits n with
+//│ ║  l.98: 	  match digits n with
 //│ ║        	  ^^^^^^^^^^^^^^^^^^^
-//│ ║  l.97: 	  | [] -> 0 ...
+//│ ║  l.99: 	  | [] -> 0 ...
 //│ ║        	^^^^^^^^^^^
 //│ ╟── this if-then-else expression has type `?a` and it flows from `bool`
-//│ ║  l.98: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.100: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ║         	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `else` branch has type `bool`
-//│ ║  l.98: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
-//│ ╙──      	                                                         ^^^^^
+//│ ║  l.100: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ╙──       	                                                         ^^^^^
 //│ additivePersistence: int -> (bool | int)
 
 
