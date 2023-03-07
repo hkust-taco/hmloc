@@ -98,6 +98,7 @@ class DiffTests
     
     val diffBegMarker = "<<<<<<<"
     val diffMidMarker = "======="
+    val diff3MidMarker = "|||||||" // * Appears under `git config merge.conflictstyle diff3` (https://stackoverflow.com/a/18131595/1518588)
     val diffEndMarker = ">>>>>>>"
     
     val fileContents = os.read(file)
@@ -317,7 +318,7 @@ class DiffTests
         assert(hdo.exists(_.startsWith(diffEndMarker)), hdo)
         val blankLines = diff.count(_.isEmpty)
         val hasBlankLines = diff.exists(_.isEmpty)
-        if (diff.forall(l => l.startsWith(outputMarker) || l.startsWith(diffMidMarker) || l.isEmpty)) {
+        if (diff.forall(l => l.startsWith(outputMarker) || l.startsWith(diffMidMarker) || l.startsWith(diff3MidMarker) || l.isEmpty)) {
           for (_ <- 1 to blankLines) out.println()
         } else {
           unmergedChanges += allLines.size - lines.size + 1
