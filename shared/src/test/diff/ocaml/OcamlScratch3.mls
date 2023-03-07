@@ -5,24 +5,16 @@ let b = a
 let f x = if x then true else false
 let g = f
 g b
-//│ unified α67 with:
 //│ unified α66 with:
 //│ unified α65 with:
 //│ unified α64 with:
+//│   [[Int]]: lb([[Int]] <: α64)
 //│ unified α61' with:
 //│ unified α60' with:
 //│ unified α57' with:
+//│   [Bool]: lb([Bool] <: α57')
 //│ unified α56' with:
-//│ α67 bounds
-//│  α67 <: [[[[[Bool]]]]] with lb([[[[[Bool]]]]] <: α67) length: 6
-//│ UT α67 <: [[[[[Bool]]]]] len: 7 
-//│ | UT  Bool with
-//│ | UT  [[[[[Bool]]]]] <: α67 <: Bool
-//│ | UT [[[[[Bool]]]]] <: [[[[[Bool]]]]] len: 13 
-//│ | | U [[[[[Bool]]]]] = [[[[[Bool]]]]] because lb([[[[[Bool]]]]] <: [[[[[Bool]]]]]) skipCache
-//│ | UT  α67 += ([[[[[Bool]]]]],List(ub(α67 <: [[[[[Bool]]]]])))
-//│  α67 :> [[[[[Bool]]]]] with ub(α67 <: [[[[[Bool]]]]]) length: 6
-//│ UT α67 <: [[[[[Bool]]]]] len: 7 
+//│   Bool: ub(α56' <: Bool)
 //│ α66 bounds
 //│ α65 bounds
 //│  α65 <: [[[Bool]]] with lb([[[Bool]]] <: α65) length: 4
@@ -30,9 +22,9 @@ g b
 //│ | UT  Bool with
 //│ | UT  [[[Bool]]] <: α65 <: Bool
 //│ | UT [[[Bool]]] <: [[[Bool]]] len: 9 
+//│ | | U [[[Bool]]] = [[[Bool]]] because lb([[[Bool]]] <: [[[Bool]]]) skipCache
 //│ | UT  [[[Bool]]] <: α65 <: Bool
 //│ | UT [[[Bool]]] <: [[[Bool]]] len: 9 
-//│ | UT  Bool with
 //│ | UT  α65 += ([[[Bool]]],List(ub(α65 <: [[[Bool]]])))
 //│  α65 <: [[[Bool]]] with lb([[[Bool]]] <: α65) length: 4
 //│ UT α65 <: [[[Bool]]] len: 5 
@@ -41,16 +33,16 @@ g b
 //│  α65 :> [[[Bool]]] with ub(α65 <: [[[Bool]]]) length: 4
 //│ UT α65 <: [[[Bool]]] len: 5 
 //│ α64 bounds
-//│  α64 <: [[[[[Int]]]]] with lb([[[[[Int]]]]] <: α64) length: 6
-//│ UT α64 <: [[[[[Int]]]]] len: 7 
+//│  α64 <: [[[[Int]]]] with lb([[[[Int]]]] <: α64) length: 5
+//│ UT α64 <: [[[[Int]]]] len: 6 
 //│ | UT  Int with
-//│ | UT  [[[[[Int]]]]] <: α64 <: Int
-//│ | UT [[[[[Int]]]]] <: [[[[[Int]]]]] len: 13 
-//│ | | U [[[[[Int]]]]] = [[[[[Int]]]]] because lb([[[[[Int]]]]] <: [[[[[Int]]]]]) skipCache
+//│ | UT  [[[[Int]]]] <: α64 <: Int
+//│ | UT [[[[Int]]]] <: [[[[Int]]]] len: 11 
+//│ | | U [[[[Int]]]] = [[[[Int]]]] because lb([[[[Int]]]] <: [[[[Int]]]]) skipCache
 //│ | UT  Int with
-//│ | UT  α64 += ([[[[[Int]]]]],List(ub(α64 <: [[[[[Int]]]]])))
-//│  α64 :> [[[[[Int]]]]] with ub(α64 <: [[[[[Int]]]]]) length: 6
-//│ UT α64 <: [[[[[Int]]]]] len: 7 
+//│ | UT  α64 += ([[[[Int]]]],List(ub(α64 <: [[[[Int]]]])))
+//│  α64 :> [[[[Int]]]] with ub(α64 <: [[[[Int]]]]) length: 5
+//│ UT α64 <: [[[[Int]]]] len: 6 
 //│ α61' bounds
 //│  α61' <: [[[Bool]]] with lb([[[Bool]]] <: α61') length: 4
 //│ UT α61' <: [[[Bool]]] len: 5 
@@ -83,20 +75,6 @@ g b
 //│  α57' :> [[[Bool]]] with ub(α57' <: [[[Bool]]]) length: 4
 //│ UT α57' <: [[[Bool]]] len: 5 
 //│ α56' bounds
-//│ ╔══[WARNING] ?a is unified with bool because ub(α67 <: [[[[[Bool]]]]]))
-//│ ║  
-//│ ╟── application
-//│ ║  l.7: 	g b
-//│ ║       	^^^
-//│ ╟── <nested> function rhs len: 4
-//│ ╟── if-then-else expression
-//│ ║  l.5: 	let f x = if x then true else false
-//│ ║       	          ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── `else` branch
-//│ ║  l.5: 	let f x = if x then true else false
-//│ ║       	                              ^^^^^
-//│ ╟── type
-//│ ╙── type
 //│ ╔══[WARNING] ?a is unified with bool because ub(α65 <: [[[Bool]]]))
 //│ ║  
 //│ ╟── if-then-else expression
@@ -107,12 +85,11 @@ g b
 //│ ║       	                    ^^^^
 //│ ╟── type
 //│ ╙── type
-//│ ╔══[WARNING] ?a is unified with int because ub(α64 <: [[[[[Int]]]]]))
+//│ ╔══[WARNING] ?a is unified with int because ub(α64 <: [[[[Int]]]]))
 //│ ║  
 //│ ╟── variable
 //│ ║  l.5: 	let f x = if x then true else false
 //│ ║       	      ^
-//│ ╟── <nested> function lhs len: 4
 //│ ╟── reference
 //│ ║  l.7: 	g b
 //│ ║       	  ^
@@ -145,10 +122,37 @@ g b
 //│ ║       	                    ^^^^
 //│ ╟── type
 //│ ╙── type
+//│ ╔══[WARNING] ?a is unified with bool because ub(α56' <: Bool))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.5: 	let f x = if x then true else false
+//│ ║       	      ^
+//│ ╟── if-then-else condition
+//│ ║  l.5: 	let f x = if x then true else false
+//│ ║       	             ^
+//│ ╙── type
 //│ a: int
 //│ b: int
 //│ f: bool -> bool
 //│ g: bool -> bool
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟── this integer literal has type `int`
+//│ ║  l.3: 	let a = 1
+//│ ║       	        ^
+//│ ╟── this reference has type `int`
+//│ ║  l.4: 	let b = a
+//│ ║       	        ^
+//│ ╟── this reference has type `int`
+//│ ║  l.7: 	g b
+//│ ║       	  ^
+//│ ╟── this variable has type `bool`
+//│ ║  l.5: 	let f x = if x then true else false
+//│ ║       	      ^
+//│ ╟── this if-then-else condition has type `bool`
+//│ ║  l.5: 	let f x = if x then true else false
+//│ ║       	             ^
+//│ ╙── `bool` comes from this type expression
 //│ res: bool
 
 :d
@@ -168,403 +172,317 @@ g b true
 //│  where: 
 //│ 1. Typing term x => y => if y(true) then x then (false) then "x"
 //│ | 1. Typing pattern x
-//│ | 1. : α69'
+//│ | 1. : α68'
 //│ | 1. Typing term y => if y(true) then x then (false) then "x"
 //│ | | 1. Typing pattern y
-//│ | | 1. : α70'
+//│ | | 1. : α69'
 //│ | | 1. Typing term if y(true) then x then (false) then "x"
 //│ | | | If(Var(y), List(IfThen(Var(true), Var(x), IfThen(Var(false), StrLit(x)))
 //│ | | | 1. Typing term y
-//│ | | | 1. : [α70']
-//│ | | | CONSTRAIN [α70'] <! Bool
-//│ | | |   where 
-//│ | | | C [α70'] <! Bool    (0) where ProvType <: TypeRef}
-//│ | | | | C α70' <! Bool    (0) where TypeVariable <: TypeRef}
-//│ | | | 1. Typing term x
 //│ | | | 1. : [α69']
-//│ | | | CONSTRAIN [α69'] <! α71'
+//│ | | | CONSTRAIN [α69'] <! Bool
 //│ | | |   where 
-//│ | | | C [α69'] <! α71'    (0) where ProvType <: TypeVariable}
-//│ | | | | C α69' <! α71'    (0) where TypeVariable <: TypeVariable}
+//│ | | | C [α69'] <! Bool    (0) where ProvType <: TypeRef}
+//│ | | | | C α69' <! Bool    (0) where TypeVariable <: TypeRef}
+//│ | | | UT [α69'] <: Bool len: 3 
+//│ | | | | UT  Bool with
+//│ | | | | UT  α69' += (Bool,List(ub(α69' <: Bool)))
+//│ | | | 1. Typing term x
+//│ | | | 1. : [α68']
+//│ | | | CONSTRAIN [α68'] <! α70'
+//│ | | |   where 
+//│ | | | C [α68'] <! α70'    (0) where ProvType <: TypeVariable}
+//│ | | | | C α68' <! α70'    (0) where TypeVariable <: TypeVariable}
+//│ | | | UT [α68'] <: α70' len: 3 
+//│ | | | | UT  α70' with
+//│ | | | | UT  α68' += (α70',List(ub(α68' <: α70')))
 //│ | | | 1. Typing term "x"
 //│ | | | 1. : String
-//│ | | | CONSTRAIN String <! α71'
+//│ | | | CONSTRAIN String <! α70'
 //│ | | |   where 
-//│ | | | C String <! α71'    (0) where TypeRef <: TypeVariable}
-//│ | | 1. : α71'
-//│ | 1. : (α70' -> α71')
-//│ 1. : (α69' -> (α70' -> α71'))
-//│ ⬤ Typed as: (α69' -> (α70' -> α71'))
+//│ | | | C String <! α70'    (0) where TypeRef <: TypeVariable}
+//│ | | | UT String <: α70' len: 2 
+//│ | | | | UT  String with
+//│ | | | | UT  α70' += (String,List(lb(String <: α70')))
+//│ | | 1. : α70'
+//│ | 1. : (α69' -> α70')
+//│ 1. : (α68' -> (α69' -> α70'))
+//│ ⬤ Typed as: (α68' -> (α69' -> α70'))
 //│  where: 
-//│ 		α69' <: [[[α71']]]
-//│ 		α70' <: [[[Bool]]]
-//│ 		α71' :> [[String]]
+//│ 		α68' <: [[[α70']]]
+//│ 		α69' <: [[[Bool]]]
+//│ 		α70' :> [[String]]
 //│ 1. Typing term f
-//│ 1. : [(α77' -> (α79' -> α78'))]
-//│ ⬤ Typed as: [(α77' -> (α79' -> α78'))]
+//│ 1. : [(α76' -> (α78' -> α77'))]
+//│ ⬤ Typed as: [(α76' -> (α78' -> α77'))]
 //│  where: 
-//│ 		α77' <: [[[α78']]]
-//│ 		α78' :> [[String]]
-//│ 		α79' <: [[[Bool]]]
+//│ 		α76' <: [[[α77']]]
+//│ 		α77' :> [[String]]
+//│ 		α78' <: [[[Bool]]]
 //│ 0. Typing term g b true
 //│ | 0. Typing term g b
 //│ | | 0. Typing term g
-//│ | | 0. : [[(α85 -> (α87 -> α86))]]
+//│ | | 0. : [[(α84 -> (α86 -> α85))]]
 //│ | | 0. Typing term b
 //│ | | 0. : [[Int]]
-//│ | | CONSTRAIN [[(α85 -> (α87 -> α86))]] <! ([[Int]] -> α89)
+//│ | | CONSTRAIN [[Int]] <! α84
 //│ | |   where 
-//│ 		α85 <: [[[α86]]]
-//│ 		α86 :> [[String]]
-//│ 		α87 <: [[[Bool]]]
-//│ | | C [[(α85 -> (α87 -> α86))]] <! ([[Int]] -> α89)    (0) where ProvType <: FunctionType}
-//│ | | | C [(α85 -> (α87 -> α86))] <! ([[Int]] -> α89)    (0) where ProvType <: FunctionType}
-//│ | | | | C (α85 -> (α87 -> α86)) <! ([[Int]] -> α89)    (0) where FunctionType <: FunctionType}
-//│ | | | | | [nested] [[[Int]]]
-//│ | | | | | C [[Int]] <! α85    (1) where ProvType <: TypeVariable}
-//│ | | | | | | C [Int] <! α85    (1) where ProvType <: TypeVariable}
-//│ | | | | | | | C Int <! α85    (1) where TypeRef <: TypeVariable}
-//│ | | | | | | | | C Int <! [[[α86]]]    (2) where TypeRef <: ProvType}
-//│ | | | | | | | | | C Int <! [[α86]]    (2) where TypeRef <: ProvType}
-//│ | | | | | | | | | | C Int <! [α86]    (2) where TypeRef <: ProvType}
-//│ | | | | | | | | | | | C Int <! α86    (2) where TypeRef <: TypeVariable}
-//│ | | | | | [nested] [(α87 -> α86)]
-//│ | | | | | C (α87 -> α86) <! α89    (3) where FunctionType <: TypeVariable}
-//│ | 0. : α89
+//│ 		α84 <: [[[α85]]]
+//│ 		α85 :> [[String]]
+//│ | | C [[Int]] <! α84    (0) where ProvType <: TypeVariable}
+//│ | | | C [Int] <! α84    (0) where ProvType <: TypeVariable}
+//│ | | | | C Int <! α84    (0) where TypeRef <: TypeVariable}
+//│ | | | | | C Int <! [[[α85]]]    (1) where TypeRef <: ProvType}
+//│ | | | | | | C Int <! [[α85]]    (1) where TypeRef <: ProvType}
+//│ | | | | | | | C Int <! [α85]    (1) where TypeRef <: ProvType}
+//│ | | | | | | | | C Int <! α85    (1) where TypeRef <: TypeVariable}
+//│ | | UT [[Int]] <: α84 len: 4 
+//│ | | | UT  [[Int]] with
+//│ | | | UT  [[Int]] <: α84 <: [[[α85]]]
+//│ | | | UT [[Int]] <: [[[α85]]] len: 8 
+//│ | | | | UT  [[Int]] with
+//│ | | | | UT  α85 += ([[Int]],List(lb([[Int]] <: α85)))
+//│ | | | UT  [[Int]] with
+//│ | | | UT  α84 += ([[Int]],List(lb([[Int]] <: α84)))
+//│ | 0. : [(α86 -> α85)]
 //│ | 0. Typing term true
 //│ | 0. : [Bool]
-//│ | CONSTRAIN α89 <! ([Bool] -> α91)
+//│ | CONSTRAIN [Bool] <! α86
 //│ |   where 
-//│ 		α86 :> [[[[[[[[Int]]]]]]]] | [[String]]
-//│ 		α87 <: [[[Bool]]]
-//│ 		α89 :> [[[(α87 -> α86)]]]
-//│ | C α89 <! ([Bool] -> α91)    (0) where TypeVariable <: FunctionType}
-//│ | | C [[[(α87 -> α86)]]] <! ([Bool] -> α91)    (1) where ProvType <: FunctionType}
-//│ | | | C [[(α87 -> α86)]] <! ([Bool] -> α91)    (1) where ProvType <: FunctionType}
-//│ | | | | C [(α87 -> α86)] <! ([Bool] -> α91)    (1) where ProvType <: FunctionType}
-//│ | | | | | C (α87 -> α86) <! ([Bool] -> α91)    (1) where FunctionType <: FunctionType}
-//│ | | | | | | [nested] [[Bool]]
-//│ | | | | | | C [Bool] <! α87    (2) where ProvType <: TypeVariable}
-//│ | | | | | | | C Bool <! α87    (2) where TypeRef <: TypeVariable}
-//│ | | | | | | | | C Bool <! [[[Bool]]]    (3) where TypeRef <: ProvType}
-//│ | | | | | | [nested] [α86]
-//│ | | | | | | C α86 <! α91    (3) where TypeVariable <: TypeVariable}
-//│ | | | | | | | C [[[[[[[[Int]]]]]]]] <! α91    (4) where ProvType <: TypeVariable}
-//│ | | | | | | | | C [[[[[[[Int]]]]]]] <! α91    (4) where ProvType <: TypeVariable}
-//│ | | | | | | | | | C [[[[[[Int]]]]]] <! α91    (4) where ProvType <: TypeVariable}
-//│ | | | | | | | | | | C [[[[[Int]]]]] <! α91    (4) where ProvType <: TypeVariable}
-//│ | | | | | | | | | | | C [[[[Int]]]] <! α91    (4) where ProvType <: TypeVariable}
-//│ | | | | | | | | | | | | C [[[Int]]] <! α91    (4) where ProvType <: TypeVariable}
-//│ | | | | | | | | | | | | | C [[Int]] <! α91    (4) where ProvType <: TypeVariable}
-//│ | | | | | | | | | | | | | | C [Int] <! α91    (4) where ProvType <: TypeVariable}
-//│ | | | | | | | | | | | | | | | C Int <! α91    (4) where TypeRef <: TypeVariable}
-//│ | | | | | | | C [[String]] <! α91    (5) where ProvType <: TypeVariable}
-//│ | | | | | | | | C [String] <! α91    (5) where ProvType <: TypeVariable}
-//│ | | | | | | | | | C String <! α91    (5) where TypeRef <: TypeVariable}
-//│ 0. : α91
-//│ ⬤ Typed as: α91
+//│ 		α86 <: [[[Bool]]]
+//│ | C [Bool] <! α86    (0) where ProvType <: TypeVariable}
+//│ | | C Bool <! α86    (0) where TypeRef <: TypeVariable}
+//│ | | | C Bool <! [[[Bool]]]    (1) where TypeRef <: ProvType}
+//│ | UT [Bool] <: α86 len: 3 
+//│ | | UT  [Bool] with
+//│ | | UT  [Bool] <: α86 <: [[[Bool]]]
+//│ | | UT [Bool] <: [[[Bool]]] len: 7 
+//│ | | | U [Bool] = [[[Bool]]] because lb([Bool] <: [[[Bool]]]) skipCache
+//│ | | UT  [Bool] with
+//│ | | UT  α86 += ([Bool],List(lb([Bool] <: α86)))
+//│ 0. : [α85]
+//│ ⬤ Typed as: [α85]
 //│  where: 
-//│ 		α91 :> [[[[String]]]] | [[[[[[[[[[Int]]]]]]]]]]
-//│ unified α91 with:
-//│ unified α90 with:
-//│ unified α89 with:
+//│ 		α85 :> [[[[[[[Int]]]]]]] | [[String]]
 //│ unified α88 with:
 //│ unified α87 with:
 //│ unified α86 with:
+//│   [Bool]: lb([Bool] <: α86)
 //│ unified α85 with:
-//│ unified α79' with:
+//│   [[Int]]: lb([[Int]] <: α85)
+//│ unified α84 with:
+//│   [[Int]]: lb([[Int]] <: α84)
 //│ unified α78' with:
 //│ unified α77' with:
-//│ unified α71' with:
+//│ unified α76' with:
 //│ unified α70' with:
+//│   String: lb(String <: α70')
 //│ unified α69' with:
-//│ α91 bounds
-//│  α91 <: [[[[String]]]] with lb([[[[String]]]] <: α91) length: 5
-//│ UT α91 <: [[[[String]]]] len: 6 
-//│ | UT  String with
-//│ | UT  [[[[String]]]] <: α91 <: String
-//│ | UT [[[[String]]]] <: [[[[String]]]] len: 11 
-//│ | | U [[[[String]]]] = [[[[String]]]] because lb([[[[String]]]] <: [[[[String]]]]) skipCache
-//│ | UT  [[[[[[[[[[Int]]]]]]]]]] <: α91 <: String
-//│ | UT [[[[[[[[[[Int]]]]]]]]]] <: [[[[String]]]] len: 17 
-//│ | | U [[[[[[[[[[Int]]]]]]]]]] = [[[[String]]]] because lb([[[[[[[[[[Int]]]]]]]]]] <: [[[[String]]]]) skipCache
-//│ | | | UERR  [[[[[[[[[[Int]]]]]]]]]] = [[[[String]]]] because lb([[[[[[[[[[Int]]]]]]]]]] <: [[[[String]]]])
-//│ ╔══[ERROR] Type `int` does not match `string`
-//│ ║  
-//│ ╟── this integer literal has type `int`
-//│ ║  l.11: 	let a = 1
-//│ ║        	        ^
-//│ ╟── this reference has type `int`
-//│ ║  l.12: 	let b = a
-//│ ║        	        ^
-//│ ╟── this reference has type `int`
-//│ ║  l.15: 	g b true
-//│ ║        	  ^
-//│ ╟── this <nested> has type `int`
-//│ ╟── this if-then-else expression has type `int`
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `int`
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	                      ^
-//│ ╟── this variable has type `int`
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	      ^
-//│ ╟── this if-then-else expression has type `int`
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this <nested> has type `int`
-//│ ╟── this application has type `int`
-//│ ║  l.15: 	g b true
-//│ ║        	^^^^^^^^
-//│ ╟── this application has type `string`
-//│ ║  l.15: 	g b true
-//│ ║        	^^^^^^^^
-//│ ╟── this <nested> has type `string`
-//│ ╟── this if-then-else expression has type `string`
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `else` branch has type `string`
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ╙──      	                             ^^^
-//│ | UT  α91 += ([[[[String]]]],List(ub(α91 <: [[[[String]]]])))
-//│  α91 <: [[[[[[[[[[Int]]]]]]]]]] with lb([[[[[[[[[[Int]]]]]]]]]] <: α91) length: 11
-//│ UT α91 <: [[[[[[[[[[Int]]]]]]]]]] len: 12 
-//│ | UT  Int with
-//│ | UT  [[[[String]]]] <: α91 <: Int
-//│ | UT [[[[String]]]] <: [[[[[[[[[[Int]]]]]]]]]] len: 17 
-//│ | UT  [[[[[[[[[[Int]]]]]]]]]] <: α91 <: Int
-//│ | UT [[[[[[[[[[Int]]]]]]]]]] <: [[[[[[[[[[Int]]]]]]]]]] len: 23 
-//│ | UT  α91 += ([[[[[[[[[[Int]]]]]]]]]],List(ub(α91 <: [[[[[[[[[[Int]]]]]]]]]])))
-//│  α91 :> [[[[String]]]] with ub(α91 <: [[[[String]]]]) length: 5
-//│ UT α91 <: [[[[String]]]] len: 6 
-//│  α91 :> [[[[[[[[[[Int]]]]]]]]]] with ub(α91 <: [[[[[[[[[[Int]]]]]]]]]]) length: 11
-//│ UT α91 <: [[[[[[[[[[Int]]]]]]]]]] len: 12 
-//│ α90 bounds
-//│ α89 bounds
-//│  α89 <: [[[(α87 -> α86)]]] with lb([[[(α87 -> α86)]]] <: α89) length: 4
-//│ UT α89 <: [[[(α87 -> α86)]]] len: 5 
-//│ | UT  (α87 -> α86) with
-//│ | UT  [[[(α87 -> α86)]]] <: α89 <: (α87 -> α86)
-//│ | UT [[[(α87 -> α86)]]] <: [[[(α87 -> α86)]]] len: 9 
-//│ | | U [[[(α87 -> α86)]]] = [[[(α87 -> α86)]]] because lb([[[(α87 -> α86)]]] <: [[[(α87 -> α86)]]]) skipCache
-//│ | UT  (α87 -> α86) with
-//│ | UT  α89 += ([[[(α87 -> α86)]]],List(ub(α89 <: [[[(α87 -> α86)]]])))
-//│  α89 :> [[[(α87 -> α86)]]] with ub(α89 <: [[[(α87 -> α86)]]]) length: 4
-//│ UT α89 <: [[[(α87 -> α86)]]] len: 5 
+//│   Bool: ub(α69' <: Bool)
+//│ unified α68' with:
+//│   α70': ub(α68' <: α70')
 //│ α88 bounds
 //│ α87 bounds
-//│  α87 <: [[[[Bool]]]] with lb([[[[Bool]]]] <: α87) length: 5
-//│ UT α87 <: [[[[Bool]]]] len: 6 
-//│ | UT  Bool with
-//│ | UT  [[[[Bool]]]] <: α87 <: Bool
-//│ | UT [[[[Bool]]]] <: [[[[Bool]]]] len: 11 
-//│ | UT  Bool with
-//│ | UT  α87 += ([[[[Bool]]]],List(ub(α87 <: [[[[Bool]]]])))
-//│  α87 :> [[[[Bool]]]] with ub(α87 <: [[[[Bool]]]]) length: 5
-//│ UT α87 <: [[[[Bool]]]] len: 6 
 //│ α86 bounds
-//│  α86 <: [[[[[[[[Int]]]]]]]] with lb([[[[[[[[Int]]]]]]]] <: α86) length: 9
-//│ UT α86 <: [[[[[[[[Int]]]]]]]] len: 10 
-//│ | UT  Int with
-//│ | UT  [[[[[[[[Int]]]]]]]] <: α86 <: Int
-//│ | UT [[[[[[[[Int]]]]]]]] <: [[[[[[[[Int]]]]]]]] len: 19 
-//│ | UT  [[String]] <: α86 <: Int
-//│ | UT [[String]] <: [[[[[[[[Int]]]]]]]] len: 13 
-//│ | UT  Int with
-//│ | UT  α86 += ([[[[[[[[Int]]]]]]]],List(ub(α86 <: [[[[[[[[Int]]]]]]]])))
-//│  α86 <: [[String]] with lb([[String]] <: α86) length: 3
-//│ UT α86 <: [[String]] len: 4 
-//│ | UT  String with
-//│ | UT  [[[[[[[[Int]]]]]]]] <: α86 <: String
-//│ | UT [[[[[[[[Int]]]]]]]] <: [[String]] len: 13 
-//│ | UT  [[String]] <: α86 <: String
-//│ | UT [[String]] <: [[String]] len: 7 
-//│ | UT  String with
-//│ | UT  α86 += ([[String]],List(ub(α86 <: [[String]])))
-//│  α86 :> [[[[[[[[Int]]]]]]]] with ub(α86 <: [[[[[[[[Int]]]]]]]]) length: 9
-//│ UT α86 <: [[[[[[[[Int]]]]]]]] len: 10 
-//│  α86 :> [[String]] with ub(α86 <: [[String]]) length: 3
-//│ UT α86 <: [[String]] len: 4 
+//│  α86 <: [[[Bool]]] with lb([[[Bool]]] <: α86) length: 4
+//│ UT α86 <: [[[Bool]]] len: 5 
+//│ | UT  Bool with
+//│ | UT  [[[Bool]]] <: α86 <: Bool
+//│ | UT [[[Bool]]] <: [[[Bool]]] len: 9 
+//│ | UT  Bool with
+//│ | UT  α86 <: [[[Bool]]]  for lb([Bool] <: α86)
+//│ | U [[[Bool]]] = [[[Bool]]] because lb([Bool] <: α86), ub(α86 <: [[[Bool]]]) ()
+//│ | UT  α86 += ([[[Bool]]],List(ub(α86 <: [[[Bool]]])))
+//│  α86 :> [[[Bool]]] with ub(α86 <: [[[Bool]]]) length: 4
+//│ UT α86 <: [[[Bool]]] len: 5 
 //│ α85 bounds
-//│  α85 <: [[[[[Int]]]]] with lb([[[[[Int]]]]] <: α85) length: 6
-//│ UT α85 <: [[[[[Int]]]]] len: 7 
+//│  α85 <: [[[[[[[Int]]]]]]] with lb([[[[[[[Int]]]]]]] <: α85) length: 8
+//│ UT α85 <: [[[[[[[Int]]]]]]] len: 9 
 //│ | UT  Int with
-//│ | UT  [[[[[Int]]]]] <: α85 <: Int
-//│ | UT [[[[[Int]]]]] <: [[[[[Int]]]]] len: 13 
+//│ | UT  [[[[[[[Int]]]]]]] <: α85 <: Int
+//│ | UT [[[[[[[Int]]]]]]] <: [[[[[[[Int]]]]]]] len: 17 
+//│ | UT  [[String]] <: α85 <: Int
+//│ | UT [[String]] <: [[[[[[[Int]]]]]]] len: 12 
+//│ | | U [[String]] = [[[[[[[Int]]]]]]] because lb([[String]] <: [[[[[[[Int]]]]]]]) skipCache
+//│ | | | UERR  [[String]] = [[[[[[[Int]]]]]]] because lb([[String]] <: [[[[[[[Int]]]]]]])
+//│ ╔══[ERROR] Type `string` does not match `int`
+//│ ║  
+//│ ╟── this `else` branch has type `string`
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	                             ^^^
+//│ ╟── this if-then-else expression has type `string`
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	            ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `int`
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	      ^
+//│ ╟── this `then` branch has type `int`
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	                      ^
+//│ ╟── this if-then-else expression has type `int`
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	            ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this reference has type `int`
+//│ ║  l.164: 	g b true
+//│ ║         	  ^
+//│ ╟── this reference has type `int`
+//│ ║  l.161: 	let b = a
+//│ ║         	        ^
+//│ ╟── this integer literal has type `int`
+//│ ║  l.160: 	let a = 1
+//│ ╙──       	        ^
+//│ | UT  α85 += ([[[[[[[Int]]]]]]],List(ub(α85 <: [[[[[[[Int]]]]]]])))
+//│  α85 <: [[String]] with lb([[String]] <: α85) length: 3
+//│ UT α85 <: [[String]] len: 4 
+//│ | UT  String with
+//│ | UT  [[[[[[[Int]]]]]]] <: α85 <: String
+//│ | UT [[[[[[[Int]]]]]]] <: [[String]] len: 12 
+//│ | UT  [[String]] <: α85 <: String
+//│ | UT [[String]] <: [[String]] len: 7 
+//│ | | U [[String]] = [[String]] because lb([[String]] <: [[String]]) skipCache
+//│ | UT  α85 += ([[String]],List(ub(α85 <: [[String]])))
+//│  α85 :> [[[[[[[Int]]]]]]] with ub(α85 <: [[[[[[[Int]]]]]]]) length: 8
+//│ UT α85 <: [[[[[[[Int]]]]]]] len: 9 
+//│  α85 :> [[String]] with ub(α85 <: [[String]]) length: 3
+//│ UT α85 <: [[String]] len: 4 
+//│ α84 bounds
+//│  α84 <: [[[[Int]]]] with lb([[[[Int]]]] <: α84) length: 5
+//│ UT α84 <: [[[[Int]]]] len: 6 
 //│ | UT  Int with
-//│ | UT  α85 += ([[[[[Int]]]]],List(ub(α85 <: [[[[[Int]]]]])))
-//│  α85 :> [[[[[Int]]]]] with ub(α85 <: [[[[[Int]]]]]) length: 6
-//│ UT α85 <: [[[[[Int]]]]] len: 7 
-//│ α79' bounds
+//│ | UT  [[[[Int]]]] <: α84 <: Int
+//│ | UT [[[[Int]]]] <: [[[[Int]]]] len: 11 
+//│ | UT  Int with
+//│ | UT  α84 += ([[[[Int]]]],List(ub(α84 <: [[[[Int]]]])))
+//│  α84 :> [[[[Int]]]] with ub(α84 <: [[[[Int]]]]) length: 5
+//│ UT α84 <: [[[[Int]]]] len: 6 
 //│ α78' bounds
-//│  α78' <: [[String]] with lb([[String]] <: α78') length: 3
-//│ UT α78' <: [[String]] len: 4 
-//│ | UT  String with
-//│ | UT  [[String]] <: α78' <: String
-//│ | UT [[String]] <: [[String]] len: 7 
-//│ | UT  α78' += ([[String]],List(ub(α78' <: [[String]])))
-//│  α78' :> [[String]] with ub(α78' <: [[String]]) length: 3
-//│ UT α78' <: [[String]] len: 4 
 //│ α77' bounds
-//│ α71' bounds
-//│  α71' <: [[String]] with lb([[String]] <: α71') length: 3
-//│ UT α71' <: [[String]] len: 4 
+//│  α77' <: [[String]] with lb([[String]] <: α77') length: 3
+//│ UT α77' <: [[String]] len: 4 
 //│ | UT  String with
-//│ | UT  [[String]] <: α71' <: String
+//│ | UT  [[String]] <: α77' <: String
 //│ | UT [[String]] <: [[String]] len: 7 
-//│ | UT  α71' += ([[String]],List(ub(α71' <: [[String]])))
-//│  α71' :> [[String]] with ub(α71' <: [[String]]) length: 3
-//│ UT α71' <: [[String]] len: 4 
+//│ | UT  α77' += ([[String]],List(ub(α77' <: [[String]])))
+//│  α77' :> [[String]] with ub(α77' <: [[String]]) length: 3
+//│ UT α77' <: [[String]] len: 4 
+//│ α76' bounds
 //│ α70' bounds
+//│  α70' <: [[String]] with lb([[String]] <: α70') length: 3
+//│ UT α70' <: [[String]] len: 4 
+//│ | UT  String with
+//│ | UT  [[String]] <: α70' <: String
+//│ | UT [[String]] <: [[String]] len: 7 
+//│ | UT  α70' += ([[String]],List(ub(α70' <: [[String]])))
+//│  α70' :> [[String]] with ub(α70' <: [[String]]) length: 3
+//│ UT α70' <: [[String]] len: 4 
 //│ α69' bounds
-//│ ╔══[WARNING] ?a is unified with string because ub(α91 <: [[[[String]]]]))
-//│ ║  
-//│ ╟── application
-//│ ║  l.15: 	g b true
-//│ ║        	^^^^^^^^
-//│ ╟── <nested> function rhs len: 4
-//│ ╟── if-then-else expression
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── `else` branch
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	                             ^^^
-//│ ╟── `else` branch
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ╙──      	                             ^^^
-//│ ╔══[WARNING] ?a is unified with int because ub(α91 <: [[[[[[[[[[Int]]]]]]]]]]))
-//│ ║  
-//│ ╟── application
-//│ ║  l.15: 	g b true
-//│ ║        	^^^^^^^^
-//│ ╟── <nested> function rhs len: 4
-//│ ╟── if-then-else expression
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── variable
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	      ^
-//│ ╟── `then` branch
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	                      ^
-//│ ╟── if-then-else expression
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── <nested> function lhs len: 4
-//│ ╟── reference
-//│ ║  l.15: 	g b true
-//│ ║        	  ^
-//│ ╟── reference
-//│ ║  l.12: 	let b = a
-//│ ║        	        ^
-//│ ╟── integer literal
-//│ ║  l.11: 	let a = 1
-//│ ║        	        ^
-//│ ╟── integer literal
-//│ ║  l.11: 	let a = 1
-//│ ╙──      	        ^
-//│ ╔══[WARNING] ?a is unified with ?b -> ?c because ub(α89 <: [[[(α87 -> α86)]]]))
-//│ ║  
-//│ ╟── application
-//│ ║  l.15: 	g b true
-//│ ║        	^^^
-//│ ╟── <nested> function rhs len: 4
-//│ ╟── function
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── function
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ╙──      	        ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[WARNING] ?a is unified with bool because ub(α87 <: [[[[Bool]]]]))
+//│ α68' bounds
+//│ ╔══[WARNING] ?a is unified with bool because ub(α86 <: [[[Bool]]]))
 //│ ║  
 //│ ╟── variable
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	        ^
-//│ ╟── <nested> function lhs len: 4
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	        ^
 //│ ╟── reference
-//│ ║  l.15: 	g b true
-//│ ║        	    ^^^^
+//│ ║  l.164: 	g b true
+//│ ║         	    ^^^^
 //│ ╟── type
 //│ ╙── type
-//│ ╔══[WARNING] ?a is unified with string because ub(α86 <: [[String]]))
+//│ ╔══[WARNING] ?a is unified with string because ub(α85 <: [[String]]))
 //│ ║  
 //│ ╟── if-then-else expression
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	            ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── `else` branch
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	                             ^^^
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	                             ^^^
 //│ ╟── `else` branch
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ╙──      	                             ^^^
-//│ ╔══[WARNING] ?a is unified with int because ub(α86 <: [[[[[[[[Int]]]]]]]]))
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ╙──       	                             ^^^
+//│ ╔══[WARNING] ?a is unified with int because ub(α85 <: [[[[[[[Int]]]]]]]))
 //│ ║  
 //│ ╟── variable
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	      ^
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	      ^
 //│ ╟── `then` branch
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	                      ^
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	                      ^
 //│ ╟── if-then-else expression
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	            ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── if-then-else expression
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── <nested> function lhs len: 4
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	            ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── reference
-//│ ║  l.15: 	g b true
-//│ ║        	  ^
+//│ ║  l.164: 	g b true
+//│ ║         	  ^
 //│ ╟── reference
-//│ ║  l.12: 	let b = a
-//│ ║        	        ^
+//│ ║  l.161: 	let b = a
+//│ ║         	        ^
 //│ ╟── integer literal
-//│ ║  l.11: 	let a = 1
-//│ ║        	        ^
+//│ ║  l.160: 	let a = 1
+//│ ║         	        ^
 //│ ╟── integer literal
-//│ ║  l.11: 	let a = 1
-//│ ╙──      	        ^
-//│ ╔══[WARNING] ?a is unified with int because ub(α85 <: [[[[[Int]]]]]))
+//│ ║  l.160: 	let a = 1
+//│ ╙──       	        ^
+//│ ╔══[WARNING] ?a is unified with int because ub(α84 <: [[[[Int]]]]))
 //│ ║  
 //│ ╟── variable
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	      ^
-//│ ╟── <nested> function lhs len: 4
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	      ^
 //│ ╟── reference
-//│ ║  l.15: 	g b true
-//│ ║        	  ^
+//│ ║  l.164: 	g b true
+//│ ║         	  ^
 //│ ╟── reference
-//│ ║  l.12: 	let b = a
-//│ ║        	        ^
+//│ ║  l.161: 	let b = a
+//│ ║         	        ^
 //│ ╟── integer literal
-//│ ║  l.11: 	let a = 1
-//│ ║        	        ^
+//│ ║  l.160: 	let a = 1
+//│ ║         	        ^
 //│ ╟── integer literal
-//│ ║  l.11: 	let a = 1
-//│ ╙──      	        ^
-//│ ╔══[WARNING] ?a is unified with string because ub(α78' <: [[String]]))
+//│ ║  l.160: 	let a = 1
+//│ ╙──       	        ^
+//│ ╔══[WARNING] ?a is unified with string because ub(α77' <: [[String]]))
 //│ ║  
 //│ ╟── if-then-else expression
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	            ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── `else` branch
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	                             ^^^
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	                             ^^^
 //│ ╟── `else` branch
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ╙──      	                             ^^^
-//│ ╔══[WARNING] ?a is unified with string because ub(α71' <: [[String]]))
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ╙──       	                             ^^^
+//│ ╔══[WARNING] ?a is unified with string because ub(α70' <: [[String]]))
 //│ ║  
 //│ ╟── if-then-else expression
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	            ^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	            ^^^^^^^^^^^^^^^^^^^^
 //│ ╟── `else` branch
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ║        	                             ^^^
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	                             ^^^
 //│ ╟── `else` branch
-//│ ║  l.13: 	let f x y = if y then x else "x"
-//│ ╙──      	                             ^^^
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ╙──       	                             ^^^
+//│ ╔══[WARNING] ?a is unified with bool because ub(α69' <: Bool))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	        ^
+//│ ╟── if-then-else condition
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	               ^
+//│ ╙── type
+//│ ╔══[WARNING] ?a is unified with ?b because ub(α68' <: α70'))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	      ^
+//│ ╟── `then` branch
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ║         	                      ^
+//│ ╟── if-then-else expression
+//│ ║  l.162: 	let f x y = if y then x else "x"
+//│ ╙──       	            ^^^^^^^^^^^^^^^^^^^^
 //│ a: int
 //│ b: int
 //│ f: 'a -> bool -> (string | 'a)

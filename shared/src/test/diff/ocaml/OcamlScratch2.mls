@@ -1,23 +1,4 @@
 let confluence z = if true then z else 5
-//│ ╔══[WARNING] ?a is unified with int because lb(Int <: α57'))
-//│ ║  
-//│ ╟── `else` branch
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	                                       ^
-//│ ╟── if-then-else expression
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ╙──     	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[WARNING] ?a is unified with ?b because ub(α56' <: α57'))
-//│ ║  
-//│ ╟── variable
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	               ^
-//│ ╟── `then` branch
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	                                ^
-//│ ╟── if-then-else expression
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ╙──     	                   ^^^^^^^^^^^^^^^^^^^^^
 //│ confluence: 'a -> (int | 'a)
 
 :d
@@ -54,17 +35,6 @@ let mkpair x y = (x, confluence y)
 //│ 		α63' <: [[[α64']]]
 //│ 		α64' <: [[[α65']]]
 //│ 		α65' :> [[Int]]
-//│ ╔══[WARNING] ?a is unified with ?b because ub(α63' <: α64'))
-//│ ║  
-//│ ╟── variable
-//│ ║  l.24: 	let mkpair x y = (x, confluence y)
-//│ ║        	             ^
-//│ ╟── reference
-//│ ║  l.24: 	let mkpair x y = (x, confluence y)
-//│ ║        	                                ^
-//│ ╟── variable
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ╙──     	               ^
 //│ mkpair: 'a -> 'b -> ('a, int | 'b,)
 
 :d
@@ -136,24 +106,63 @@ let conflict x = mkpair (not x) x
 //│ unified α75' with:
 //│   Bool: ub(α75' <: Bool)
 //│   α77': ub(α75' <: α77')
-//│ ╔══[WARNING] ?a is unified with bool because lb([Bool] <: α76'))
+//│ α82' bounds
+//│ α81' bounds
+//│ α80' bounds
+//│ α79' bounds
+//│  α79' <: [[Int]] with lb([[Int]] <: α79') length: 3
+//│ UT α79' <: [[Int]] len: 4 
+//│ | UT  Int with
+//│ | UT  [[Int]] <: α79' <: Int
+//│ | UT [[Int]] <: [[Int]] len: 7 
+//│ | UT  α79' += ([[Int]],List(ub(α79' <: [[Int]])))
+//│  α79' :> [[Int]] with ub(α79' <: [[Int]]) length: 3
+//│ UT α79' <: [[Int]] len: 4 
+//│ α78' bounds
+//│ α77' bounds
+//│ α76' bounds
+//│  α76' <: [[[Bool]]] with lb([[[Bool]]] <: α76') length: 4
+//│ UT α76' <: [[[Bool]]] len: 5 
+//│ | UT  Bool with
+//│ | UT  [[[Bool]]] <: α76' <: Bool
+//│ | UT [[[Bool]]] <: [[[Bool]]] len: 9 
+//│ | | U [[[Bool]]] = [[[Bool]]] because lb([[[Bool]]] <: [[[Bool]]]) skipCache
+//│ | UT  α76' += ([[[Bool]]],List(ub(α76' <: [[[Bool]]])))
+//│  α76' :> [[[Bool]]] with ub(α76' <: [[[Bool]]]) length: 4
+//│ UT α76' <: [[[Bool]]] len: 5 
+//│ α75' bounds
+//│ ╔══[WARNING] ?a is unified with int because ub(α79' <: [[Int]]))
 //│ ║  
+//│ ╟── if-then-else expression
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── `else` branch
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                       ^
+//│ ╟── `else` branch
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ╙──     	                                       ^
+//│ ╔══[WARNING] ?a is unified with bool because ub(α76' <: [[[Bool]]]))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.5: 	let mkpair x y = (x, confluence y)
+//│ ║       	           ^
+//│ ╟── application
+//│ ║  l.45: 	let conflict x = mkpair (not x) x
+//│ ║        	                        ^^^^^^^
 //│ ╟── type reference
 //│ ║  builtin:56: 	let not: bool -> bool
 //│ ║              	                 ^^^^
-//│ ╟── application
-//│ ║  l.75: 	let conflict x = mkpair (not x) x
-//│ ║        	                        ^^^^^^^
-//│ ╟── variable
-//│ ║  l.24: 	let mkpair x y = (x, confluence y)
-//│ ╙──      	           ^
+//│ ╟── type reference
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ╙──            	                 ^^^^
 //│ ╔══[WARNING] ?a is unified with bool because ub(α75' <: Bool))
 //│ ║  
 //│ ╟── variable
-//│ ║  l.75: 	let conflict x = mkpair (not x) x
+//│ ║  l.45: 	let conflict x = mkpair (not x) x
 //│ ║        	             ^
 //│ ╟── reference
-//│ ║  l.75: 	let conflict x = mkpair (not x) x
+//│ ║  l.45: 	let conflict x = mkpair (not x) x
 //│ ║        	                             ^
 //│ ╟── type reference
 //│ ║  builtin:56: 	let not: bool -> bool
@@ -161,14 +170,14 @@ let conflict x = mkpair (not x) x
 //│ ╔══[WARNING] ?a is unified with ?b because ub(α75' <: α77'))
 //│ ║  
 //│ ╟── variable
-//│ ║  l.75: 	let conflict x = mkpair (not x) x
+//│ ║  l.45: 	let conflict x = mkpair (not x) x
 //│ ║        	             ^
 //│ ╟── reference
-//│ ║  l.75: 	let conflict x = mkpair (not x) x
+//│ ║  l.45: 	let conflict x = mkpair (not x) x
 //│ ║        	                                ^
 //│ ╟── variable
-//│ ║  l.24: 	let mkpair x y = (x, confluence y)
-//│ ╙──      	             ^
+//│ ║  l.5: 	let mkpair x y = (x, confluence y)
+//│ ╙──     	             ^
 //│ conflict: (bool & 'a) -> (bool, int | 'a,)
 
 :d
@@ -198,7 +207,7 @@ let g x = (not x, (if true then x else 5))
 //│ | | | CONSTRAIN [Bool] <! Bool
 //│ | | |   where 
 //│ | | | C [Bool] <! Bool    (0) where ProvType <: TypeRef}
-//│ | | | UT [Bool] <: Bool len: 1 
+//│ | | | UT [Bool] <: Bool len: 3 
 //│ | | | | U [Bool] = Bool because lb([Bool] <: Bool) skipCache
 //│ | | | 1. Typing term x
 //│ | | | 1. : [α90']
@@ -233,36 +242,50 @@ let g x = (not x, (if true then x else 5))
 //│ unified α90' with:
 //│   Bool: ub(α90' <: Bool)
 //│   α92': ub(α90' <: α92')
-//│ ╔══[WARNING] ?a is unified with int because lb(Int <: α92'))
+//│ α92' bounds
+//│  α92' <: [[Int]] with lb([[Int]] <: α92') length: 3
+//│ UT α92' <: [[Int]] len: 4 
+//│ | UT  Int with
+//│ | UT  [[Int]] <: α92' <: Int
+//│ | UT [[Int]] <: [[Int]] len: 7 
+//│ | UT  α92' += ([[Int]],List(ub(α92' <: [[Int]])))
+//│  α92' :> [[Int]] with ub(α92' <: [[Int]]) length: 3
+//│ UT α92' <: [[Int]] len: 4 
+//│ α91' bounds
+//│ α90' bounds
+//│ ╔══[WARNING] ?a is unified with int because ub(α92' <: [[Int]]))
 //│ ║  
-//│ ╟── `else` branch
-//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
-//│ ║        	                                       ^
 //│ ╟── if-then-else expression
-//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
-//│ ╙──      	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ║         	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── `else` branch
+//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ║         	                                       ^
+//│ ╟── `else` branch
+//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ╙──       	                                       ^
 //│ ╔══[WARNING] ?a is unified with bool because ub(α90' <: Bool))
 //│ ║  
 //│ ╟── variable
-//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
-//│ ║        	      ^
+//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ║         	      ^
 //│ ╟── reference
-//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
-//│ ║        	               ^
+//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ║         	               ^
 //│ ╟── type reference
 //│ ║  builtin:56: 	let not: bool -> bool
 //│ ╙──            	         ^^^^
 //│ ╔══[WARNING] ?a is unified with ?b because ub(α90' <: α92'))
 //│ ║  
 //│ ╟── variable
-//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
-//│ ║        	      ^
+//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ║         	      ^
 //│ ╟── `then` branch
-//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
-//│ ║        	                                ^
+//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ║         	                                ^
 //│ ╟── if-then-else expression
-//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
-//│ ╙──      	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ╙──       	                  ^^^^^^^^^^^^^^^^^^^^^^^
 //│ g: (bool & 'a) -> (bool, int | 'a,)
 
 :d
@@ -291,7 +314,7 @@ let g x = (not x, (if true then x else 5))
 //│ | | | CONSTRAIN [Bool] <! Bool
 //│ | | |   where 
 //│ | | | C [Bool] <! Bool    (0) where ProvType <: TypeRef}
-//│ | | | UT [Bool] <: Bool len: 1 
+//│ | | | UT [Bool] <: Bool len: 3 
 //│ | | | | U [Bool] = Bool because lb([Bool] <: Bool) skipCache
 //│ | | | 1. Typing term x
 //│ | | | 1. : [α97']
@@ -320,34 +343,4 @@ let g x = (not x, (if true then x else 5))
 //│  where: 
 //│ 		α97' <: [[[α99']]] & [[[Bool]]]
 //│ 		α99' :> [[Int]]
-//│ ╔══[WARNING] ?a is unified with int because lb(Int <: α99'))
-//│ ║  
-//│ ╟── `else` branch
-//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
-//│ ║         	                                       ^
-//│ ╟── if-then-else expression
-//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
-//│ ╙──       	                  ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[WARNING] ?a is unified with bool because ub(α97' <: Bool))
-//│ ║  
-//│ ╟── variable
-//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
-//│ ║         	      ^
-//│ ╟── reference
-//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
-//│ ║         	               ^
-//│ ╟── type reference
-//│ ║  builtin:56: 	let not: bool -> bool
-//│ ╙──            	         ^^^^
-//│ ╔══[WARNING] ?a is unified with ?b because ub(α97' <: α99'))
-//│ ║  
-//│ ╟── variable
-//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
-//│ ║         	      ^
-//│ ╟── `then` branch
-//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
-//│ ║         	                                ^
-//│ ╟── if-then-else expression
-//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
-//│ ╙──       	                  ^^^^^^^^^^^^^^^^^^^^^^^
 //│ g: (bool & 'a) -> (bool, int | 'a,)
