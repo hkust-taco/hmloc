@@ -107,7 +107,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   val BoolType: TypeRef = TypeRef(TypeName("bool"), Nil)(noTyProv)
   val IntType: TypeRef = TypeRef(TypeName("int"), Nil)(noTyProv)
   val ErrTypeId: SimpleTerm = Var("error")
-//  val NilType: TypeRef = TypeRef(TypeName("Nil"), Nil)(noTyProv)
 
   val builtinTypes: Ls[TypeDef] =
     TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("int")->Nil)) ::
@@ -122,16 +121,10 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     TypeDef(Als, TypeName("nothing"), Nil, Nil, BotType, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("error"), Nil, Nil, TopType, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("unit"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-//    TypeDef(Cls, TypeName("Nil"), Nil, Nil, NilType, Set.empty, N, Nil, S(TypeName("list") -> Nil)) :: {
-//      val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
-//      val body = RecordType(Ls(Var("_0") -> FieldType(N, listTyVar)(noTyProv)))(noTyProv)
-//      TypeDef(Cls, TypeName("Cons"), Nil, Nil, body, Set.empty, N, List("_0"), S(TypeName("list") -> Ls(0)))
-//    } :: {
-//      val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
-//      val body = ComposedType(true, NilType, TypeRef(TypeName("Cons"), Ls(listTyVar))(noTyProv))(noTyProv)
-//      TypeDef(Als, TypeName("list"), Ls((TypeName("'a"), listTyVar)), Ls(listTyVar), body, Set.empty, N, Nil, S(TypeName("list"), Nil))
-//    } ::
+    TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Set.empty, N, Nil) :: {
+      val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
+      TypeDef(Als, TypeName("list"), Ls((TypeName("'a"), listTyVar)), Ls(listTyVar), TopType, Set.empty, N, Nil, S(TypeName("list"), Nil))
+    } ::
     Nil
   val primitiveTypes: Set[Str] =
     builtinTypes.iterator.map(_.nme.name).toSet
@@ -147,22 +140,22 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         PolymorphicType(0, fun(v, fun(v, BoolType)(noProv))(noProv))
       },
       "error" -> BotType,
-//      "Cons" -> {
-//        val listTyVar: TypeVariable = freshVar(noProv, S("'0"))(1)
-//        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
-//        val args = TupleType(Ls(N -> FieldType(N, listTyVar)(noTyProv), N -> FieldType(N, ListType)(noTyProv)))(noTyProv)
-//        PolymorphicType(0, fun(args, ListType)(noProv))
-//      },
-//      "Nil" -> {
-//        val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
-//        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
-//        PolymorphicType(0, ListType)
-//      },
-//      "::" -> {
-//        val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
-//        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
-//        PolymorphicType(0, fun(listTyVar, fun(ListType, ListType)(noProv))(noProv))
-//      },
+      "Cons" -> {
+        val listTyVar: TypeVariable = freshVar(noProv, S("'0"))(1)
+        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
+        val args = TupleType(Ls(N -> FieldType(N, listTyVar)(noTyProv), N -> FieldType(N, ListType)(noTyProv)))(noTyProv)
+        PolymorphicType(0, fun(args, ListType)(noProv))
+      },
+      "Nil" -> {
+        val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
+        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
+        PolymorphicType(0, ListType)
+      },
+      "::" -> {
+        val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
+        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
+        PolymorphicType(0, fun(listTyVar, fun(ListType, ListType)(noProv))(noProv))
+      },
     )
   }
 
@@ -428,7 +421,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       }, prov, ctx)
 
       // also unify types
-      unifyTypes(lhs, rhs)(MutSet(), ctx, raise)
+//      unifyTypes(lhs, rhs)(MutSet(), ctx, raise)
       res
     }
     term match {
@@ -541,8 +534,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val res = freshVar(prov)
 //        val resTy = con(fun_ty, FunctionType(arg_ty, res)(hintProv(prov)), res)
         def go(f_ty: ST): ST = f_ty.unwrapProxies match {
-          case FunctionType(l, r) =>
-            con(arg_ty, l, r.withProv(prov))
+//          case FunctionType(l, r) =>
+//            con(arg_ty, l, r.withProv(prov))
           case _ =>
             val res = freshVar(prov, N)
             val resTy = con(fun_ty, FunctionType(arg_ty, res)(
