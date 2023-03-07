@@ -1,0 +1,353 @@
+let confluence z = if true then z else 5
+//│ ╔══[WARNING] ?a is unified with int because lb(Int <: α57'))
+//│ ║  
+//│ ╟── `else` branch
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                       ^
+//│ ╟── if-then-else expression
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ╙──     	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[WARNING] ?a is unified with ?b because ub(α56' <: α57'))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	               ^
+//│ ╟── `then` branch
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                ^
+//│ ╟── if-then-else expression
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ╙──     	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ confluence: 'a -> (int | 'a)
+
+:d
+let mkpair x y = (x, confluence y)
+//│ 1. Typing term x => y => x, confluence y,
+//│ | 1. Typing pattern x
+//│ | 1. : α62'
+//│ | 1. Typing term y => x, confluence y,
+//│ | | 1. Typing pattern y
+//│ | | 1. : α63'
+//│ | | 1. Typing term x, confluence y,
+//│ | | | 1. Typing term x
+//│ | | | 1. : [α62']
+//│ | | | 1. Typing term confluence y
+//│ | | | | 1. Typing term confluence
+//│ | | | | 1. : [(α64' -> α65')]
+//│ | | | | 1. Typing term y
+//│ | | | | 1. : [α63']
+//│ | | | | CONSTRAIN [α63'] <! α64'
+//│ | | | |   where 
+//│ 		α64' <: [[[α65']]]
+//│ 		α65' :> [[Int]]
+//│ | | | | C [α63'] <! α64'    (0) where ProvType <: TypeVariable}
+//│ | | | | | C α63' <! α64'    (0) where TypeVariable <: TypeVariable}
+//│ | | | | UT [α63'] <: α64' len: 3 
+//│ | | | | | UT  α64' with
+//│ | | | | | UT  α63' += (α64',List(ub(α63' <: α64')))
+//│ | | | 1. : [α65']
+//│ | | 1. : ([α62'], [α65'],)
+//│ | 1. : (α63' -> ([α62'], [α65'],))
+//│ 1. : (α62' -> (α63' -> ([α62'], [α65'],)))
+//│ ⬤ Typed as: (α62' -> (α63' -> ([α62'], [α65'],)))
+//│  where: 
+//│ 		α63' <: [[[α64']]]
+//│ 		α64' <: [[[α65']]]
+//│ 		α65' :> [[Int]]
+//│ ╔══[WARNING] ?a is unified with ?b because ub(α63' <: α64'))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.24: 	let mkpair x y = (x, confluence y)
+//│ ║        	             ^
+//│ ╟── reference
+//│ ║  l.24: 	let mkpair x y = (x, confluence y)
+//│ ║        	                                ^
+//│ ╟── variable
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ╙──     	               ^
+//│ mkpair: 'a -> 'b -> ('a, int | 'b,)
+
+:d
+// mkpair 1 "2"
+
+:unifyDbg
+:d
+let conflict x = mkpair (not x) x
+//│ 1. Typing term x => mkpair (not x) x
+//│ | 1. Typing pattern x
+//│ | 1. : α75'
+//│ | 1. Typing term mkpair (not x) x
+//│ | | 1. Typing term mkpair (not x)
+//│ | | | 1. Typing term mkpair
+//│ | | | 1. : [(α76' -> (α77' -> ([α76'], [α79'],)))]
+//│ | | | 1. Typing term not x
+//│ | | | | 1. Typing term not
+//│ | | | | 1. : [(Bool -> Bool)]
+//│ | | | | 1. Typing term x
+//│ | | | | 1. : [α75']
+//│ | | | | CONSTRAIN [α75'] <! Bool
+//│ | | | |   where 
+//│ | | | | C [α75'] <! Bool    (0) where ProvType <: TypeRef}
+//│ | | | | | C α75' <! Bool    (0) where TypeVariable <: TypeRef}
+//│ | | | | UT [α75'] <: Bool len: 3 
+//│ | | | | | UT  Bool with
+//│ | | | | | UT  α75' += (Bool,List(ub(α75' <: Bool)))
+//│ | | | 1. : [Bool]
+//│ | | | CONSTRAIN [Bool] <! α76'
+//│ | | |   where 
+//│ | | | C [Bool] <! α76'    (0) where ProvType <: TypeVariable}
+//│ | | | | C Bool <! α76'    (0) where TypeRef <: TypeVariable}
+//│ | | | UT [Bool] <: α76' len: 3 
+//│ | | | | UT  [Bool] with
+//│ | | | | UT  α76' += ([Bool],List(lb([Bool] <: α76')))
+//│ | | 1. : [(α77' -> ([α76'], [α79'],))]
+//│ | | 1. Typing term x
+//│ | | 1. : [α75']
+//│ | | CONSTRAIN [α75'] <! α77'
+//│ | |   where 
+//│ 		α75' <: [[[Bool]]]
+//│ 		α77' <: [[[α78']]]
+//│ 		α78' <: [[[α79']]]
+//│ 		α79' :> [[Int]]
+//│ | | C [α75'] <! α77'    (0) where ProvType <: TypeVariable}
+//│ | | | C α75' <! α77'    (0) where TypeVariable <: TypeVariable}
+//│ | | UT [α75'] <: α77' len: 3 
+//│ | | | UT  α77' with
+//│ | | | UT  α75' <: [[[Bool]]]  for ub(α75' <: Bool)
+//│ | | | U [[[Bool]]] = α77' because ub(α75' <: Bool), ub(α75' <: α77') ()
+//│ | | | UT  α75' += (α77',List(ub(α75' <: α77')))
+//│ | 1. : [([α76'], [α79'],)]
+//│ 1. : (α75' -> [([α76'], [α79'],)])
+//│ ⬤ Typed as: (α75' -> [([α76'], [α79'],)])
+//│  where: 
+//│ 		α75' <: [[[α77']]] & [[[Bool]]]
+//│ 		α76' :> [[[Bool]]]
+//│ 		α77' <: [[[α78']]]
+//│ 		α78' <: [[[α79']]]
+//│ 		α79' :> [[Int]]
+//│ unified α82' with:
+//│ unified α81' with:
+//│ unified α80' with:
+//│ unified α79' with:
+//│ unified α78' with:
+//│ unified α77' with:
+//│ unified α76' with:
+//│   [Bool]: lb([Bool] <: α76')
+//│ unified α75' with:
+//│   Bool: ub(α75' <: Bool)
+//│   α77': ub(α75' <: α77')
+//│ ╔══[WARNING] ?a is unified with bool because lb([Bool] <: α76'))
+//│ ║  
+//│ ╟── type reference
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ║              	                 ^^^^
+//│ ╟── application
+//│ ║  l.75: 	let conflict x = mkpair (not x) x
+//│ ║        	                        ^^^^^^^
+//│ ╟── variable
+//│ ║  l.24: 	let mkpair x y = (x, confluence y)
+//│ ╙──      	           ^
+//│ ╔══[WARNING] ?a is unified with bool because ub(α75' <: Bool))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.75: 	let conflict x = mkpair (not x) x
+//│ ║        	             ^
+//│ ╟── reference
+//│ ║  l.75: 	let conflict x = mkpair (not x) x
+//│ ║        	                             ^
+//│ ╟── type reference
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ╙──            	         ^^^^
+//│ ╔══[WARNING] ?a is unified with ?b because ub(α75' <: α77'))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.75: 	let conflict x = mkpair (not x) x
+//│ ║        	             ^
+//│ ╟── reference
+//│ ║  l.75: 	let conflict x = mkpair (not x) x
+//│ ║        	                                ^
+//│ ╟── variable
+//│ ║  l.24: 	let mkpair x y = (x, confluence y)
+//│ ╙──      	             ^
+//│ conflict: (bool & 'a) -> (bool, int | 'a,)
+
+:d
+:unifyDbg
+let g x = (not x, (if true then x else 5))
+//│ 1. Typing term x => not x, if true(true) then x then (false) then 5,
+//│ | 1. Typing pattern x
+//│ | 1. : α90'
+//│ | 1. Typing term not x, if true(true) then x then (false) then 5,
+//│ | | 1. Typing term not x
+//│ | | | 1. Typing term not
+//│ | | | 1. : [(Bool -> Bool)]
+//│ | | | 1. Typing term x
+//│ | | | 1. : [α90']
+//│ | | | CONSTRAIN [α90'] <! Bool
+//│ | | |   where 
+//│ | | | C [α90'] <! Bool    (0) where ProvType <: TypeRef}
+//│ | | | | C α90' <! Bool    (0) where TypeVariable <: TypeRef}
+//│ | | | UT [α90'] <: Bool len: 3 
+//│ | | | | UT  Bool with
+//│ | | | | UT  α90' += (Bool,List(ub(α90' <: Bool)))
+//│ | | 1. : [Bool]
+//│ | | 1. Typing term if true(true) then x then (false) then 5
+//│ | | | If(Var(true), List(IfThen(Var(true), Var(x), IfThen(Var(false), IntLit(5)))
+//│ | | | 1. Typing term true
+//│ | | | 1. : [Bool]
+//│ | | | CONSTRAIN [Bool] <! Bool
+//│ | | |   where 
+//│ | | | C [Bool] <! Bool    (0) where ProvType <: TypeRef}
+//│ | | | UT [Bool] <: Bool len: 1 
+//│ | | | | U [Bool] = Bool because lb([Bool] <: Bool) skipCache
+//│ | | | 1. Typing term x
+//│ | | | 1. : [α90']
+//│ | | | CONSTRAIN [α90'] <! α92'
+//│ | | |   where 
+//│ 		α90' <: [[[Bool]]]
+//│ | | | C [α90'] <! α92'    (0) where ProvType <: TypeVariable}
+//│ | | | | C α90' <! α92'    (0) where TypeVariable <: TypeVariable}
+//│ | | | UT [α90'] <: α92' len: 3 
+//│ | | | | UT  α92' with
+//│ | | | | UT  α90' <: [[[Bool]]]  for ub(α90' <: Bool)
+//│ | | | | U [[[Bool]]] = α92' because ub(α90' <: Bool), ub(α90' <: α92') ()
+//│ | | | | UT  α90' += (α92',List(ub(α90' <: α92')))
+//│ | | | 1. Typing term 5
+//│ | | | 1. : Int
+//│ | | | CONSTRAIN Int <! α92'
+//│ | | |   where 
+//│ | | | C Int <! α92'    (0) where TypeRef <: TypeVariable}
+//│ | | | UT Int <: α92' len: 2 
+//│ | | | | UT  Int with
+//│ | | | | UT  α92' += (Int,List(lb(Int <: α92')))
+//│ | | 1. : α92'
+//│ | 1. : ([Bool], α92',)
+//│ 1. : (α90' -> ([Bool], α92',))
+//│ ⬤ Typed as: (α90' -> ([Bool], α92',))
+//│  where: 
+//│ 		α90' <: [[[α92']]] & [[[Bool]]]
+//│ 		α92' :> [[Int]]
+//│ unified α92' with:
+//│   Int: lb(Int <: α92')
+//│ unified α91' with:
+//│ unified α90' with:
+//│   Bool: ub(α90' <: Bool)
+//│   α92': ub(α90' <: α92')
+//│ ╔══[WARNING] ?a is unified with int because lb(Int <: α92'))
+//│ ║  
+//│ ╟── `else` branch
+//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
+//│ ║        	                                       ^
+//│ ╟── if-then-else expression
+//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
+//│ ╙──      	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[WARNING] ?a is unified with bool because ub(α90' <: Bool))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
+//│ ║        	      ^
+//│ ╟── reference
+//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
+//│ ║        	               ^
+//│ ╟── type reference
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ╙──            	         ^^^^
+//│ ╔══[WARNING] ?a is unified with ?b because ub(α90' <: α92'))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
+//│ ║        	      ^
+//│ ╟── `then` branch
+//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
+//│ ║        	                                ^
+//│ ╟── if-then-else expression
+//│ ║  l.79: 	let g x = (not x, (if true then x else 5))
+//│ ╙──      	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ g: (bool & 'a) -> (bool, int | 'a,)
+
+:d
+let g x = (not x, (if true then x else 5))
+//│ 1. Typing term x => not x, if true(true) then x then (false) then 5,
+//│ | 1. Typing pattern x
+//│ | 1. : α97'
+//│ | 1. Typing term not x, if true(true) then x then (false) then 5,
+//│ | | 1. Typing term not x
+//│ | | | 1. Typing term not
+//│ | | | 1. : [(Bool -> Bool)]
+//│ | | | 1. Typing term x
+//│ | | | 1. : [α97']
+//│ | | | CONSTRAIN [α97'] <! Bool
+//│ | | |   where 
+//│ | | | C [α97'] <! Bool    (0) where ProvType <: TypeRef}
+//│ | | | | C α97' <! Bool    (0) where TypeVariable <: TypeRef}
+//│ | | | UT [α97'] <: Bool len: 3 
+//│ | | | | UT  Bool with
+//│ | | | | UT  α97' += (Bool,List(ub(α97' <: Bool)))
+//│ | | 1. : [Bool]
+//│ | | 1. Typing term if true(true) then x then (false) then 5
+//│ | | | If(Var(true), List(IfThen(Var(true), Var(x), IfThen(Var(false), IntLit(5)))
+//│ | | | 1. Typing term true
+//│ | | | 1. : [Bool]
+//│ | | | CONSTRAIN [Bool] <! Bool
+//│ | | |   where 
+//│ | | | C [Bool] <! Bool    (0) where ProvType <: TypeRef}
+//│ | | | UT [Bool] <: Bool len: 1 
+//│ | | | | U [Bool] = Bool because lb([Bool] <: Bool) skipCache
+//│ | | | 1. Typing term x
+//│ | | | 1. : [α97']
+//│ | | | CONSTRAIN [α97'] <! α99'
+//│ | | |   where 
+//│ 		α97' <: [[[Bool]]]
+//│ | | | C [α97'] <! α99'    (0) where ProvType <: TypeVariable}
+//│ | | | | C α97' <! α99'    (0) where TypeVariable <: TypeVariable}
+//│ | | | UT [α97'] <: α99' len: 3 
+//│ | | | | UT  α99' with
+//│ | | | | UT  α97' <: [[[Bool]]]  for ub(α97' <: Bool)
+//│ | | | | U [[[Bool]]] = α99' because ub(α97' <: Bool), ub(α97' <: α99') ()
+//│ | | | | UT  α97' += (α99',List(ub(α97' <: α99')))
+//│ | | | 1. Typing term 5
+//│ | | | 1. : Int
+//│ | | | CONSTRAIN Int <! α99'
+//│ | | |   where 
+//│ | | | C Int <! α99'    (0) where TypeRef <: TypeVariable}
+//│ | | | UT Int <: α99' len: 2 
+//│ | | | | UT  Int with
+//│ | | | | UT  α99' += (Int,List(lb(Int <: α99')))
+//│ | | 1. : α99'
+//│ | 1. : ([Bool], α99',)
+//│ 1. : (α97' -> ([Bool], α99',))
+//│ ⬤ Typed as: (α97' -> ([Bool], α99',))
+//│  where: 
+//│ 		α97' <: [[[α99']]] & [[[Bool]]]
+//│ 		α99' :> [[Int]]
+//│ ╔══[WARNING] ?a is unified with int because lb(Int <: α99'))
+//│ ║  
+//│ ╟── `else` branch
+//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
+//│ ║         	                                       ^
+//│ ╟── if-then-else expression
+//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
+//│ ╙──       	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[WARNING] ?a is unified with bool because ub(α97' <: Bool))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
+//│ ║         	      ^
+//│ ╟── reference
+//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
+//│ ║         	               ^
+//│ ╟── type reference
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ╙──            	         ^^^^
+//│ ╔══[WARNING] ?a is unified with ?b because ub(α97' <: α99'))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
+//│ ║         	      ^
+//│ ╟── `then` branch
+//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
+//│ ║         	                                ^
+//│ ╟── if-then-else expression
+//│ ║  l.172: 	let g x = (not x, (if true then x else 5))
+//│ ╙──       	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ g: (bool & 'a) -> (bool, int | 'a,)

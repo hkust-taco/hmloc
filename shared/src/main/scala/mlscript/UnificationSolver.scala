@@ -79,8 +79,9 @@ trait UnificationSolver extends TyperDatatypes {
           reportUnificationError(createUnification())
         }
       case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
-        traverseBounds(arg2, arg1, createProvs(arg2, arg1), S(createUnification("function argument")))
-        traverseBounds(res1, res2, createProvs(res1, res2), S(createUnification("function result")))
+//        traverseBounds(arg2, arg1, createProvs(arg2, arg1), S(createUnification("function argument")))
+//        traverseBounds(res1, res2, createProvs(res1, res2), S(createUnification("function result")))
+        ()
       case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
         () // TODO report error for recursive type
       case (tv: TypeVariable, st) =>
@@ -183,6 +184,19 @@ trait UnificationSolver extends TyperDatatypes {
     TypeVariable.createdTypeVars.foreach(tv => {
       println(s"unified ${tv} with:")
       tv.new_unification.foreach { case (st, reason) => println(s"  ${st}: ${reason}") }
+    })
+  }
+
+  def reportUnificationDebugInfo()(implicit ctx: Ctx, raise: Raise): Unit = {
+    TypeVariable.createdTypeVars.foreach(tv => {
+      tv.new_unification.foreach { case (st, reason) =>
+        val head = msg"${tv.expPos} is unified with ${st.expPos} because ${reason.toString})" -> N
+        val locs = reason.getProvs.map {
+          case nested: NestedTypeProvenance => msg"<nested> ${nested.nestingInfo.toString} len: ${nested.chain.length.toString}" -> N
+          case tp => msg"${tp.desc}" -> tp.loco
+        }
+        raise(WarningReport(head :: locs))
+      }
     })
   }
 

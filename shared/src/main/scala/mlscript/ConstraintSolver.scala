@@ -329,7 +329,9 @@ class ConstraintSolver extends NormalForms { self: Typer =>
         case S(nested) => 
           // the provenance chain for the constructor from the previous level
           // connects the provenances of lhs and rhs
-          (lhs :: lhs.withProv(nested) :: Nil) -> (rhs :: Nil)
+          val lhsNested = lhs.withProv(nested)
+          println(s"[nested] ${lhsNested.toString}")
+          (lhs :: lhsNested :: Nil) -> (rhs :: Nil)
       }
       
       // show provenance chains from both contexts to emphasize the new node added

@@ -173,7 +173,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
 
   /** The sole purpose of ProvType is to store additional type provenance info. */
   case class ProvType(underlying: SimpleType)(val prov: TypeProvenance) extends ProxyType {
-    override def toString = if (prov is NestedTypeProvenance) s"[$underlying] prov: $prov" else s"[$underlying]"
+    override def toString = if (prov is NestedTypeProvenance) s"{$underlying} prov: $prov" else s"[$underlying]"
     // override def toString = s"$underlying[${prov.desc.take(5)}]"
     // override def toString = s"$underlying[${prov.toString.take(5)}]"
     // override def toString = s"$underlying@${prov}"
