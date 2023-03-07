@@ -342,6 +342,24 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     } else typeTerm(rhs)(ctx.nextLevel, raise, vars)
     PolymorphicType(lvl, res)
   }
+  def typeLetRhsMono(isrec: Boolean, nme: Str, rhs: Term)(implicit ctx: Ctx, raise: Raise,
+      vars: Map[Str, SimpleType] = Map.empty): ST = {
+    val res = if (isrec) {
+      val e_ty = freshVar(
+        // It turns out it is better to NOT store a provenance here,
+        //    or it will obscure the true provenance of constraints causing errors
+        //    across recursive references.
+        noProv,
+        // TypeProvenance(rhs.toLoc, "let-bound value"),
+        S(nme)
+      )(lvl)
+      ctx += nme -> VarSymbol(e_ty, Var(nme))
+      val ty = typeTerm(rhs)(ctx, raise, vars)
+      constrain(ty, e_ty)(raise, TypeProvenance(rhs.toLoc, "binding of " + rhs.describe), ctx)
+      e_ty
+    } else typeTerm(rhs)(ctx, raise, vars)
+    res
+  }
   
   def mkProxy(ty: SimpleType, prov: TypeProvenance): SimpleType = {
     if (recordProvenances) ProvType(ty)(prov)
@@ -560,7 +578,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // methods have been removed only field selection works
         rcdSel(obj, fieldName)
       case Let(isrec, nme, rhs, bod) =>
-        val n_ty = typeLetRhs(isrec, nme.name, rhs)
+        val n_ty = typeLetRhsMono(isrec, nme.name, rhs)
         val newCtx = ctx.nest
         newCtx += nme.name -> VarSymbol(n_ty, nme)
         typeTerm(bod)(newCtx, raise)

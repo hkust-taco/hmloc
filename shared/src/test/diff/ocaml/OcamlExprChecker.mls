@@ -126,16 +126,12 @@ raise Unimplemented
 raise AlreadyDone
 //│ ╔══[ERROR] Type `anything` does not match `anything`
 //│ ║  
-//│ ╟── this record literal has type `anything`
 //│ ╟── this reference has type `anything`
 //│ ║  l.126: 	raise AlreadyDone
 //│ ║         	      ^^^^^^^^^^^
-//│ ╟── this <nested> has type `anything`
-//│ ╟── this <nested> has type `anything`
 //│ ╟── this reference has type `anything`
 //│ ║  l.126: 	raise AlreadyDone
-//│ ║         	      ^^^^^^^^^^^
-//│ ╙── this record literal has type `anything`
+//│ ╙──       	      ^^^^^^^^^^^
 //│ Unimplemented: anything
 //│ AlreadyDone: anything
 //│ res: nothing
@@ -204,6 +200,34 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 (("hi", 1) :: Nil)
 (("hi", 1) :: Nil):heap
 (("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ ╔══[ERROR] Type `?a list` does not match `heap`
+//│ ║  
+//│ ╟── `?a list` comes from this type expression
+//│ ║  l.5: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	               ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.202: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `heap`
+//│ ║  l.202: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── `heap` comes from this type expression
+//│ ║  l.202: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ ╙──       	                                 ^^^^
+//│ ╔══[ERROR] Type `?a list` does not match `heap`
+//│ ║  
+//│ ╟── `?a list` comes from this type expression
+//│ ║  l.5: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║       	               ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.201: 	(("hi", 1) :: Nil):heap
+//│ ║         	^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `heap`
+//│ ║  l.201: 	(("hi", 1) :: Nil):heap
+//│ ║         	^^^^^^^^^^^^^^^^^^
+//│ ╟── `heap` comes from this type expression
+//│ ║  l.201: 	(("hi", 1) :: Nil):heap
+//│ ╙──       	                   ^^^^
 //│ res: list[(string, int,)]
 //│ res: heap
 //│ res: heap
@@ -219,29 +243,45 @@ let interp2 = (fun (env:env) opt ->
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.216: 	fun (env: env) _ -> []
+//│ ║  l.240: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
 //│ res: error -> list[nothing]
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.217: 	let interp2 = (fun (env:env) opt ->
+//│ ║  l.241: 	let interp2 = (fun (env:env) opt ->
 //│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
 //│ ║  
-//│ ║  l.218: 	  match opt with
+//│ ║  l.242: 	  match opt with
 //│ ╙──       	        ^^^
 //│ interp2: error -> int
 
 let head xs = match xs with
   Cons(x, xs) -> x
   | _ -> raise Error
+//│ ╔══[ERROR] Type `anything` does not match `anything`
+//│ ║  
+//│ ╟── this reference has type `anything`
+//│ ║  l.261: 	  | _ -> raise Error
+//│ ║         	               ^^^^^
+//│ ╟── this reference has type `anything`
+//│ ║  l.261: 	  | _ -> raise Error
+//│ ╙──       	               ^^^^^
 //│ head: list['a] -> 'a
 
-// TODO
-// FIXME
+
+
 let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
+//│ ╔══[ERROR] Type `anything` does not match `anything`
+//│ ║  
+//│ ╟── this reference has type `anything`
+//│ ║  l.276: 	  | _ -> raise Error
+//│ ║         	               ^^^^^
+//│ ╟── this reference has type `anything`
+//│ ║  l.276: 	  | _ -> raise Error
+//│ ╙──       	               ^^^^^
 //│ head: list['a] -> 'a
 
 type ('a) bigHeap =
@@ -272,13 +312,14 @@ type ('a, 'b) paramlist = (('a * int) list * 'b) list
 //│ Defined type alias stringintlist
 //│ Defined type alias paramlist[+'a, +'b]
 
-// TODO
-// FIXME
+
+
 let check (v: ((int, int))) =
   match v with
    ((c, d)) -> c + d
 //│ check: (int, int,) -> int
 
+// TODO: confusing float with int
 let checkagain (v: (int, int, (int, int))) =
   match v with
    (a, b, (c, d)) -> a + b + c + d
@@ -287,27 +328,45 @@ let checkagain (v: (int, int, (int, int))) =
 //│ ╟── `float` comes from this type expression
 //│ ║  l.61: 	let (+.): float -> float -> float
 //│ ║        	                            ^^^^^
-//│ ╟── this <nested> has type `float`
 //│ ╟── this operator application has type `float`
 //│ ║  l.107: 	let c = 3.0 +. 4.0 *. 6.0
 //│ ║         	        ^^^^^^^^^^^^^^^^^
-//│ ╟── this reference has type `int`
-//│ ║  l.284: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	           ^
 //│ ╟── this operator application has type `int`
 //│ ║  l.107: 	let c = 3.0 +. 4.0 *. 6.0
 //│ ║         	        ^^^^^^^^^^^^^^^^^
-//│ ╟── this <nested> has type `int`
+//│ ╟── this reference has type `int`
+//│ ║  l.325: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	                             ^
 //│ ╟── `int` comes from this type expression
-//│ ║  l.282: 	let checkagain (v: (int, int, (int, int))) =
-//│ ╙──       	                               ^^^
-//│ ╔══[ERROR] identifier not found: d
+//│ ║  l.87: 	let (+): int -> int -> int
+//│ ╙──      	                ^^^
+//│ ╔══[ERROR] Type `int` does not match `error`
 //│ ║  
-//│ ║  l.284: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ╟── `int` comes from this type expression
+//│ ║  l.323: 	let checkagain (v: (int, int, (int, int))) =
+//│ ║         	                                    ^^^
+//│ ╟── `int * int` comes from this type expression
+//│ ║  l.323: 	let checkagain (v: (int, int, (int, int))) =
+//│ ║         	                              ^^^^^^^^^^
+//│ ╟── this 2 element of this tuple has type `int * int`
+//│ ║  l.325: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	   ^^^^^^^^^^^^^^
+//│ ╟── this 2 element of this tuple has type `?a * error`
+//│ ║  l.325: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	   ^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?a * error`
+//│ ║  l.325: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	           ^^^^
+//│ ╟── this reference has type `error`
+//│ ║  l.325: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ╙──       	              ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.284: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.325: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ╙──       	              ^
+//│ ╔══[ERROR] identifier not found: d
+//│ ║  
+//│ ║  l.325: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ╙──       	                                 ^
 //│ checkagain: (int, int, (int, int,),) -> int
 

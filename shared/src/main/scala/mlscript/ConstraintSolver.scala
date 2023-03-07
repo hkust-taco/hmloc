@@ -325,7 +325,8 @@ class ConstraintSolver extends NormalForms { self: Typer =>
           // is wrapped with provenances that go from consumer to producer. Since the producer
           // meets the lhs we need to store it in reverse
           // (rhs3, rhs2, rhs1) => (lhs0, lhs1, lhs2) ::: (rhs1, rhs2, rhs3)
-          (if (sameRhs) cctx._2 else cctx._2 ::: (rhs :: Nil)))
+          // (if (sameRhs) cctx._2 else cctx._2 ::: (rhs :: Nil)))
+          (if (sameRhs) cctx._2 else rhs :: cctx._2))
         case S(nested) => 
           // the provenance chain for the constructor from the previous level
           // connects the provenances of lhs and rhs
@@ -430,6 +431,19 @@ class ConstraintSolver extends NormalForms { self: Typer =>
               errorSimplifer.reportInfo(S(cctx))
               errorSimplifer.reportInfo(S(cctx), 3)
               ()
+          // Unification error needs transitive closure of bounds. Having
+          // bounds on both type variables ensures this.
+          case (lhs: TypeVariable, rhs: TypeVariable) if rhs.level === lhs.level =>
+            println(s"symmetric")
+            val newBound = (cctx._1 ::: cctx._2.reverse).foldRight(rhs: ST)((c, ty) =>
+              if (c.prov is noProv) ty else mkProxy(ty, c.prov))
+            lhs.upperBounds ::= newBound // update the bound
+            lhs.lowerBounds.foreach(rec(_, rhs)) // propagate from the bound
+
+            val revBound = (cctx._1 ::: cctx._2.reverse).foldLeft(lhs: ST)((ty, c) =>
+              if (c.prov is noProv) ty else mkProxy(ty, c.prov))
+            rhs.lowerBounds ::= revBound // update the bound
+            rhs.upperBounds.foreach(rec(lhs, _)) // propagate from the bound
           // for constraining type variables a new bound is created
           // the `newBound`'s provenance must record the whole flow
           // of the type variable from it's producer to it's consumer
