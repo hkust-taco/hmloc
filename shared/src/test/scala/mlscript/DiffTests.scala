@@ -361,6 +361,7 @@ class DiffTests
         // report errors and warnings
         def reportBase(diags: Ls[mlscript.Diagnostic], output: Str => Unit): Unit = {
           diags.foreach { diag =>
+            var unificationRelativeLineNums = false
             val sctx = Message.mkCtx(diag.allMsgs.iterator.map(_._1), "?")
             val headStr = diag match {
               case ErrorReport(msg, loco, src) =>
@@ -383,7 +384,10 @@ class DiffTests
                 s"╔══[WARNING] "
             }
             val seqStr = diag match {
-              case UnificationReport(_, _, seqStr, _) => seqStr
+              case UnificationReport(_, _, seqStr, _) => {
+                unificationRelativeLineNums = true
+                seqStr
+              }
               case _ => false
             }
             val prepre = "║  "
@@ -421,7 +425,7 @@ class DiffTests
                   val shownLineNum = {
                     if (loc.origin.fileName == "builtin") "builtin" else {
                       val linemarker = "l."
-                      if (showRelativeLineNums && relativeLineNum > 0) s"${linemarker}+$relativeLineNum"
+                      if (unificationRelativeLineNums || showRelativeLineNums && relativeLineNum > 0) s"${linemarker}$relativeLineNum"
                       else linemarker + globalLineNum
                     }
                   }
