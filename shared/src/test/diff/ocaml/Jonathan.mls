@@ -7,23 +7,23 @@ let h y = (not y, (if true then y else 5))
 //│ ╟──        int ---> ?a <--- ?b ---> bool 
 //│ ║  
 //│ ╟── this `else` branch has type `int` and it flows into `?a`
-//│ ║  l.4: 	let h y = (not y, (if true then y else 5))
+//│ ║  l.1: 	let h y = (not y, (if true then y else 5))
 //│ ║       	                                       ^
 //│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.4: 	let h y = (not y, (if true then y else 5))
+//│ ║  l.1: 	let h y = (not y, (if true then y else 5))
 //│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `then` branch has type `?a` and it flows from `?b`
-//│ ║  l.4: 	let h y = (not y, (if true then y else 5))
+//│ ║  l.1: 	let h y = (not y, (if true then y else 5))
 //│ ║       	                                ^
 //│ ╟── this variable has type `?b`
-//│ ║  l.4: 	let h y = (not y, (if true then y else 5))
+//│ ║  l.1: 	let h y = (not y, (if true then y else 5))
 //│ ║       	      ^
 //│ ╟── this reference has type `?b` and it flows into `bool`
-//│ ║  l.4: 	let h y = (not y, (if true then y else 5))
+//│ ║  l.1: 	let h y = (not y, (if true then y else 5))
 //│ ║       	               ^
 //│ ╟── this type reference has type `bool`
-//│ ║  builtin:56: 	let not: bool -> bool
-//│ ╙──            	         ^^^^
+//│ ║  builtin: 	let not: bool -> bool
+//│ ╙──         	         ^^^^
 //│ h: (bool & 'a) -> (bool, int | 'a,)
 
 
@@ -38,23 +38,23 @@ let h y = (not y, (if true then y else 5))
 //│ ╟──        int ---> ?a <--- ?b ---> bool 
 //│ ║  
 //│ ╟── this `else` branch has type `int` and it flows into `?a`
-//│ ║  l.35: 	let h y = (not y, (if true then y else 5))
-//│ ║        	                                       ^
+//│ ║  l.1: 	let h y = (not y, (if true then y else 5))
+//│ ║       	                                       ^
 //│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.35: 	let h y = (not y, (if true then y else 5))
-//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.1: 	let h y = (not y, (if true then y else 5))
+//│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `then` branch has type `?a` and it flows from `?b`
-//│ ║  l.35: 	let h y = (not y, (if true then y else 5))
-//│ ║        	                                ^
+//│ ║  l.1: 	let h y = (not y, (if true then y else 5))
+//│ ║       	                                ^
 //│ ╟── this variable has type `?b`
-//│ ║  l.35: 	let h y = (not y, (if true then y else 5))
-//│ ║        	      ^
+//│ ║  l.1: 	let h y = (not y, (if true then y else 5))
+//│ ║       	      ^
 //│ ╟── this reference has type `?b` and it flows into `bool`
-//│ ║  l.35: 	let h y = (not y, (if true then y else 5))
-//│ ║        	               ^
+//│ ║  l.1: 	let h y = (not y, (if true then y else 5))
+//│ ║       	               ^
 //│ ╟── this type reference has type `bool`
-//│ ║  builtin:56: 	let not: bool -> bool
-//│ ╙──            	         ^^^^
+//│ ║  builtin: 	let not: bool -> bool
+//│ ╙──         	         ^^^^
 //│ h: (bool & 'a) -> (bool, int | 'a,)
 
 
@@ -63,33 +63,58 @@ let h y = (not y, (if true then y else 5))
 :unify
 let confluence z = if true then z else 5
 confluence true
-//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟── this `else` branch has type `int`
-//│ ║  l.64: 	let confluence z = if true then z else 5
-//│ ║        	                                       ^
-//│ ╟── this if-then-else expression has type `int`
-//│ ║  l.64: 	let confluence z = if true then z else 5
-//│ ║        	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `bool`
-//│ ║  l.64: 	let confluence z = if true then z else 5
-//│ ║        	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `bool`
-//│ ║  l.64: 	let confluence z = if true then z else 5
-//│ ║        	                                ^
-//│ ╟── this variable has type `bool`
-//│ ║  l.64: 	let confluence z = if true then z else 5
-//│ ║        	               ^
+//│ ╟──        bool ---> ?a <--- int 
+//│ ║  
 //│ ╟── this reference has type `bool`
-//│ ║  l.65: 	confluence true
-//│ ╙──      	           ^^^^
+//│ ║  l.2: 	confluence true
+//│ ║       	           ^^^^
+//│ ╟── this variable has type `bool`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	               ^
+//│ ╟── this `then` branch has type `bool` and it flows into `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ╙──     	                                       ^
 //│ confluence: 'a -> (int | 'a)
 //│ res: bool | int
 
 // FIXME: no common location found investigate
 let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
-//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ║  
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.-24: 	let confluence z = if true then z else 5
+//│ ║         	                                       ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.-24: 	let confluence z = if true then z else 5
+//│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?c` and it flows from `?b`
+//│ ║  l.-24: 	let confluence z = if true then z else 5
+//│ ║         	                                ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.-24: 	let confluence z = if true then z else 5
+//│ ║         	               ^
+//│ ╟── this variable has type `?d`
+//│ ║  l.2: 	let conflict x = mkpair (not x) x
+//│ ║       	             ^
+//│ ╟── this reference has type `?d` and it flows into `bool`
+//│ ║  l.2: 	let conflict x = mkpair (not x) x
+//│ ║       	                             ^
+//│ ╟── this type reference has type `bool`
+//│ ║  builtin: 	let not: bool -> bool
+//│ ╙──         	         ^^^^
+//│ mkpair: 'a -> 'b -> ('a, int | 'b,)
+//│ conflict: (bool & 'a) -> (bool, int | 'a,)
 
 
 
@@ -100,20 +125,20 @@ let rec digitsOfInt n =
 //│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
 //│ ║  
 //│ ╟── `int` comes from this type expression
-//│ ║  builtin:19: 	let ( / ): int -> int -> int
-//│ ║              	                         ^^^
+//│ ║  builtin: 	let ( / ): int -> int -> int
+//│ ║           	                         ^^^
 //│ ╟── this operator application has type `int`
-//│ ║  l.99: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
-//│ ║        	                                      ^^^^^^^^
-//│ ╟── this variable has type `int`
-//│ ║  l.98: 	let rec digitsOfInt n =
-//│ ║        	                    ^
+//│ ║  l.2: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║       	                                      ^^^^^^^^
+//│ ╟── this operator application has type `(int -> int -> int) -> ?a`
+//│ ║  l.2: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║       	                                      ^^^^^^^^
 //│ ╟── this variable has type `(int -> int -> int) -> ?a`
-//│ ║  l.98: 	let rec digitsOfInt n =
-//│ ║        	                    ^
+//│ ║  l.1: 	let rec digitsOfInt n =
+//│ ║       	                    ^
 //│ ╟── this reference has type `(int -> int -> int) -> ?a`
-//│ ║  l.99: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
-//│ ╙──      	                                                   ^
+//│ ║  l.2: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ╙──     	                                                   ^
 //│ digitsOfInt: nothing -> list[nothing]
 
 let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
@@ -125,15 +150,15 @@ let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
 let digits n = digitsOfInt (abs n)
 //│ [ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
 //│  `int` comes from this type expression
-//│   builtin:21:‹   **let** abs: int -> _B_int__›
+//│   builtin:‹   **let** abs: int -> _B_int__›
 //│ This application has type `int`
-//│   l.125:‹   **let** digits n = digitsOfInt _B_(abs n)__›
-//│ This variable has type `int`
-//│   l.98:‹   **let** rec digitsOfInt _B_n__ =›
+//│   l.1:‹   **let** digits n = digitsOfInt _B_(abs n)__›
+//│ This application has type `(int -> int -> int) -> ?a`
+//│   l.1:‹   **let** digits n = digitsOfInt _B_(abs n)__›
 //│ This variable has type `(int -> int -> int) -> ?a`
-//│   l.98:‹   **let** rec digitsOfInt _B_n__ =›
+//│   l.-26:‹   **let** rec digitsOfInt _B_n__ =›
 //│ This reference has type `(int -> int -> int) -> ?a`
-//│   l.99:‹     if n <= 0 then [] else (digitsOfInt (n / 10)) @ [_B_n__ mod 10]›
+//│   l.-25:‹     if n <= 0 then [] else (digitsOfInt (n / 10)) @ [_B_n__ mod 10]›
 //│ digits: int -> list[nothing]
 
 :e
@@ -144,19 +169,19 @@ let rec additivePersistence n =
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
 //│ ╟── this `else` branch has type `bool`
-//│ ║  l.143: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
-//│ ║         	                                                         ^^^^^
+//│ ║  l.4: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ║       	                                                         ^^^^^
 //│ ╟── this if-then-else expression has type `bool`
-//│ ║  l.143: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
-//│ ║         	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.4: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this match expression has type `int`
-//│ ║  l.141: 	  match digits n with
-//│ ║         	  ^^^^^^^^^^^^^^^^^^^
-//│ ║  l.142: 	  | [] -> 0 ...
-//│ ║         	^^^^^^^^^^^
+//│ ║  l.2: 	  match digits n with
+//│ ║       	  ^^^^^^^^^^^^^^^^^^^
+//│ ║  l.3: 	  | [] -> 0 ...
+//│ ║       	^^^^^^^^^^^
 //│ ╟── this integer literal has type `int`
-//│ ║  l.142: 	  | [] -> 0
-//│ ╙──       	          ^
+//│ ║  l.3: 	  | [] -> 0
+//│ ╙──     	          ^
 //│ additivePersistence: int -> (bool | int)
 
 

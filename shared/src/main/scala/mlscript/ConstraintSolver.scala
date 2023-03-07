@@ -600,7 +600,7 @@ class ConstraintSolver extends NormalForms { self: Typer =>
         case (lunw, obj: ObjectTag)
           if obj.id.isInstanceOf[Var]
           => msg"is not an instance of type `${
-              if (primitiveTypes(obj.id.idStr)) obj.id.idStr else obj.id.idStr.capitalize}`"
+              if (primitiveTypes(obj.id.idStr)) obj.id.idStr else obj.id.idStr}`"
         case (lunw, obj: TypeRef)
           => msg"is not an instance of `${obj.expNeg}`"
         case (lunw, TupleType(fs))

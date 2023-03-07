@@ -107,7 +107,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   val BoolType: TypeRef = TypeRef(TypeName("bool"), Nil)(noTyProv)
   val IntType: TypeRef = TypeRef(TypeName("int"), Nil)(noTyProv)
   val ErrTypeId: SimpleTerm = Var("error")
-//  val NilType: TypeRef = TypeRef(TypeName("Nil"), Nil)(noTyProv)
 
   val builtinTypes: Ls[TypeDef] =
     TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("int")->Nil)) ::
@@ -121,17 +120,13 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     TypeDef(Als, TypeName("anything"), Nil, Nil, TopType, Set.empty, N, Nil) ::
     TypeDef(Als, TypeName("nothing"), Nil, Nil, BotType, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("error"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("unit"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-//    TypeDef(Cls, TypeName("Nil"), Nil, Nil, NilType, Set.empty, N, Nil, S(TypeName("list") -> Nil)) :: {
-//      val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
-//      val body = RecordType(Ls(Var("_0") -> FieldType(N, listTyVar)(noTyProv)))(noTyProv)
-//      TypeDef(Cls, TypeName("Cons"), Nil, Nil, body, Set.empty, N, List("_0"), S(TypeName("list") -> Ls(0)))
-//    } :: {
-//      val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
-//      val body = ComposedType(true, NilType, TypeRef(TypeName("Cons"), Ls(listTyVar))(noTyProv))(noTyProv)
-//      TypeDef(Als, TypeName("list"), Ls((TypeName("'a"), listTyVar)), Ls(listTyVar), body, Set.empty, N, Nil, S(TypeName("list"), Nil))
-//    } ::
+    TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("float")->Nil)) ::
+    TypeDef(Cls, TypeName("unit"), Nil, Nil, TopType, Set.empty, N, Nil) :: {
+      val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
+      val td = TypeDef(Cls, TypeName("list"), Ls((TypeName("A"), listTyVar)), Ls(listTyVar), TopType, Set.empty, N, Nil, S(TypeName("list"), Nil))
+      td.tvarVariances = S(MutMap(listTyVar -> VarianceInfo.co))
+      td
+    } ::
     Nil
   val primitiveTypes: Set[Str] =
     builtinTypes.iterator.map(_.nme.name).toSet
@@ -147,22 +142,22 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         PolymorphicType(0, fun(v, fun(v, BoolType)(noProv))(noProv))
       },
       "error" -> BotType,
-//      "Cons" -> {
-//        val listTyVar: TypeVariable = freshVar(noProv, S("'0"))(1)
-//        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
-//        val args = TupleType(Ls(N -> FieldType(N, listTyVar)(noTyProv), N -> FieldType(N, ListType)(noTyProv)))(noTyProv)
-//        PolymorphicType(0, fun(args, ListType)(noProv))
-//      },
-//      "Nil" -> {
-//        val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
-//        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
-//        PolymorphicType(0, ListType)
-//      },
-//      "::" -> {
-//        val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
-//        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
-//        PolymorphicType(0, fun(listTyVar, fun(ListType, ListType)(noProv))(noProv))
-//      },
+      "Cons" -> {
+        val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
+        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
+        val args = TupleType(Ls(N -> FieldType(N, listTyVar)(noTyProv), N -> FieldType(N, ListType)(noTyProv)))(noTyProv)
+        PolymorphicType(0, fun(args, ListType)(noProv))
+      },
+      "Nil" -> {
+        val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
+        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
+        PolymorphicType(0, ListType)
+      },
+      "::" -> {
+        val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
+        val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
+        PolymorphicType(0, fun(listTyVar, fun(ListType, ListType)(noProv))(noProv))
+      },
     )
   }
 
@@ -232,7 +227,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         ctx.env.getOrElse("this", err(msg"undeclared this" -> ty.toLoc :: Nil)) match {
           case VarSymbol(t: TypeScheme, _) => t.instantiate
         }
-      case tn @ TypeTag(name) => rec(TypeName(name.decapitalize))
+      case tn @ TypeTag(name) => rec(TypeName(name))
       case tn @ TypeName(name) =>
         val tyLoc = ty.toLoc
         val tpr = tyTp(tyLoc, "type reference")
@@ -244,14 +239,14 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
               } else TypeRef(tn, Nil)(tpr)
             case L(e) =>
               if (name.isEmpty || !name.head.isLower) e()
-              else (typeNamed(tyLoc, name.capitalize), ctx.tyDefs.get(name.capitalize)) match {
+              else (typeNamed(tyLoc, name), ctx.tyDefs.get(name)) match {
                 case (R((kind, _)), S(td)) => kind match {
                   case Cls => clsNameToNomTag(td)(tyTp(tyLoc, "class tag"), ctx)
                   case Trt => trtNameToNomTag(td)(tyTp(tyLoc, "trait tag"), ctx)
                   case Als => err(
-                    msg"Type alias ${name.capitalize} cannot be used as a type tag", tyLoc)(raise)
+                    msg"Type alias ${name} cannot be used as a type tag", tyLoc)(raise)
                   case Nms => err(
-                    msg"Namespaces ${name.capitalize} cannot be used as a type tag", tyLoc)(raise)
+                    msg"Namespaces ${name} cannot be used as a type tag", tyLoc)(raise)
                 }
                 case _ => e()
               }
@@ -563,8 +558,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val funProv = noProv
         // val resTy = con(fun_ty, FunctionType(arg_ty, res)(hintProv(prov)), res)
         def go(f_ty: ST): ST = f_ty.unwrapProxies match {
-          case FunctionType(l, r) =>
-            con(arg_ty, l, r.withProv(prov))
+//          case FunctionType(l, r) =>
+//            con(arg_ty, l, r.withProv(prov))
           case _ =>
             val res = freshVar(prov, N)
             val resTy = con(fun_ty, FunctionType(arg_ty, res)(
@@ -614,6 +609,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
               case v@Var("Tup1") => TypeName("Tup") -> Ls(0) -> v
               case v@Var("Tup2") => TypeName("Tup") -> Ls(0, 1) -> v
               case v@Var("Tup3") => TypeName("Tup") -> Ls(0, 1, 2) -> v
+              case v@Var("Cons") => TypeName("list") -> Ls(0) -> v
+              case v@Var("Nil") => TypeName("list") -> Ls() -> v
               case v@Var(name) => ctx.tyDefs.getOrElse(name, lastWords(s"could not find type definition ${name}"))
                 .adtData.getOrElse(lastWords(s"could not find adt data for type definition ${name}")) -> v
             }
@@ -645,7 +642,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
                 val newTargs = adtDef.targs.map(tv => freshVar(tv.prov, tv.nameHint))
                 // provenance for the first case expression from where we find the adt
                 val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "pattern")
-                // TODO weird duplication in OcamlPresentation errors
                 val adt_ty = TypeRef(adtName, newTargs)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "`match` condition"))
                 println(s"ADT type: $adt_ty")
                 (adt_ty, newTargs)

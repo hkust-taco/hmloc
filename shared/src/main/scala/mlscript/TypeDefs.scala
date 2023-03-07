@@ -57,11 +57,11 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
   
   def clsNameToNomTag(td: TypeDef)(prov: TypeProvenance, ctx: Ctx): ClassTag = {
     require(td.kind is Cls)
-    ClassTag(Var(td.nme.name.decapitalize), ctx.allBaseClassesOf(td.nme.name))(prov)
+    ClassTag(Var(td.nme.name), ctx.allBaseClassesOf(td.nme.name))(prov)
   }
   def trtNameToNomTag(td: TypeDef)(prov: TypeProvenance, ctx: Ctx): TraitTag = {
     require(td.kind is Trt)
-    TraitTag(Var(td.nme.name.decapitalize))(prov)
+    TraitTag(Var(td.nme.name))(prov)
   }
   
   def baseClassesOf(tyd: mlscript.TypeDef): Set[TypeName] =

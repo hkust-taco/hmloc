@@ -55,7 +55,7 @@ trait TypeSimplifier { self: Typer =>
       case ProvType(ty) if inPlace => ProvType(process(ty, parent))(ty.prov)
       case ProvType(ty) => process(ty, parent)
       
-      case tr @ TypeRef(defn, targs) if builtinTypes.contains(defn) => process(tr.expand, parent)
+      // case tr @ TypeRef(defn, targs) if builtinTypes.contains(defn) => process(tr.expand, parent)
       
       case RecordType(fields) => RecordType.mk(fields.flatMap { case (v @ Var(fnme), fty) =>
         // * We make a pass to transform the LB and UB of variant type parameter fields into their exterma
@@ -138,12 +138,12 @@ trait TypeSimplifier { self: Typer =>
             }
             
             val traitPrefixes =
-              tts.iterator.collect{ case TraitTag(Var(tagNme)) => tagNme.capitalize }.toSet
+              tts.iterator.collect{ case TraitTag(Var(tagNme)) => tagNme }.toSet
             
             bo match {
-              case S(cls @ ClassTag(Var(tagNme), ps)) if !primitiveTypes.contains(tagNme) =>
-                val clsNme = tagNme.capitalize
-                val clsTyNme = TypeName(tagNme.capitalize)
+              case S(cls @ ClassTag(Var(tagNme), ps)) /* if !primitiveTypes.contains(tagNme) */ =>
+                val clsNme = tagNme
+                val clsTyNme = TypeName(tagNme)
                 val td = ctx.tyDefs(clsNme)
                 
                 val rcdMap  = rcd.fields.toMap
@@ -176,7 +176,7 @@ trait TypeSimplifier { self: Typer =>
                 val clsFields = fieldsOf(typeRef.expandWith(paramTags = true), paramTags = true)
                 println(s"clsFields ${clsFields.mkString(", ")}")
                 
-                val cleanPrefixes = ps.map(_.name.capitalize) + clsNme ++ traitPrefixes
+                val cleanPrefixes = ps.map(_.name) + clsNme ++ traitPrefixes
                 
                 val cleanedRcd = RecordType(
                   rcd2.fields.filterNot { case (field, fty) =>
