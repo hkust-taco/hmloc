@@ -302,7 +302,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     case Def(isrec, nme, L(rhs), isByname) => // TODO reject R(..)
       if (nme.name === "_")
         err(msg"Illegal definition name: ${nme.name}", nme.toLoc)(raise)
-      val ty_sch = typeLetRhs(isrec, nme.name, rhs)
+      val ty_sch = typeLetRhs(isrec, nme, rhs)
       nme.uid = S(nextUid)
       ctx += nme.name -> VarSymbol(ty_sch, nme)
       R(nme.name -> ty_sch :: Nil)
@@ -329,18 +329,20 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   }
   
   /** Infer the type of a let binding right-hand side. */
-  def typeLetRhs(isrec: Boolean, nme: Str, rhs: Term)(implicit ctx: Ctx, raise: Raise,
+  def typeLetRhs(isrec: Boolean, nme: Var, rhs: Term)(implicit ctx: Ctx, raise: Raise,
       vars: Map[Str, SimpleType] = Map.empty): PolymorphicType = {
     val res = if (isrec) {
       val e_ty = freshVar(
         // It turns out it is better to NOT store a provenance here,
         //    or it will obscure the true provenance of constraints causing errors
         //    across recursive references.
-        noProv,
+        // noProv,
         // TypeProvenance(rhs.toLoc, "let-bound value"),
-        S(nme)
+        // TypeProvenance(rhs.toLoc, "let-bound value"),
+        TypeProvenance(nme.toLoc, "recursive binding"),
+        S(nme.name)
       )(lvl + 1)
-      ctx += nme -> VarSymbol(e_ty, Var(nme))
+      ctx += nme.name -> VarSymbol(e_ty, nme)
       val ty = typeTerm(rhs)(ctx.nextLevel, raise, vars)
       constrain(ty, e_ty)(raise, TypeProvenance(rhs.toLoc, "binding of " + rhs.describe), ctx)
       e_ty

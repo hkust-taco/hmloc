@@ -214,7 +214,7 @@ class DiffTests
 
             // statement is defined and has a body/definition
             case d @ Def(isrec, nme, L(rhs), isByname) =>
-              val ty_sch = typer.typeLetRhs(isrec, nme.name, rhs)(ctx, raise)
+              val ty_sch = typer.typeLetRhs(isrec, nme, rhs)(ctx, raise)
               // statement does not have a declared type for the body
               // the inferred type must be used and stored for lookup
               declared.get(nme.name) match {
@@ -660,7 +660,7 @@ class DiffTests
               // statement is defined and has a body/definition
               case d @ Def(isrec, nme, L(rhs), isByname) =>
                 typer.dbg = mode.dbg
-                val ty_sch = typer.typeLetRhs(isrec, nme.name, rhs)(ctx, raiseToBuffer)
+                val ty_sch = typer.typeLetRhs(isrec, nme, rhs)(ctx, raiseToBuffer)
                 val exp = getType(ty_sch)
                 // statement does not have a declared type for the body
                 // the inferred type must be used and stored for lookup
