@@ -1,8 +1,8 @@
 
 
-// FIXME missing provenances:
-//    let f x = [[x]] in
-//    (f 1 + [[f true]])
+
+
+
 
 let test =
   let f x = x in
@@ -21,87 +21,55 @@ let test =
 //│ ╟── this reference has type `bool`
 //│ ║  l.9: 	  (f 1 + f true)
 //│ ╙──     	           ^^^^
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟── this reference has type `bool`
-//│ ║  l.9: 	  (f 1 + f true)
-//│ ║       	           ^^^^
-//│ ╟── this variable has type `int`
-//│ ║  l.8: 	  let f x = x in
-//│ ║       	        ^
-//│ ╟── this reference has type `int`
-//│ ║  l.8: 	  let f x = x in
-//│ ║       	            ^
-//│ ╟── this application has type `int`
-//│ ║  l.9: 	  (f 1 + f true)
-//│ ║       	   ^^^
-//│ ╟── `int` comes from this type expression
-//│ ║  builtin:16: 	let (+): int -> int -> int
-//│ ╙──            	         ^^^
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟── this reference has type `bool`
-//│ ║  l.9: 	  (f 1 + f true)
-//│ ║       	           ^^^^
-//│ ╟── this variable has type `bool`
-//│ ║  l.8: 	  let f x = x in
-//│ ║       	        ^
-//│ ╟── `int` comes from this type expression
-//│ ║  builtin:16: 	let (+): int -> int -> int
-//│ ╙──            	                ^^^
 //│ test: int
 
 
-
-// FIXME missing provenances:
-//    let test2 = let (a, [[b]]) = test in b + 1
-//    let test2 = let (a, b) = test in [[b]] + 1
+// FIXME: list[?a] <: int not being detected by unification
+// :e
+let test2 = let (a, b) = test in [[b]] + 1
+//│ test2: int
 
 let test =
   let f x = x in
   (f 1, f true)
 //│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ║  
-//│ ╟──        int ---> ?a <--- bool 
-//│ ║  
-//│ ╟── this integer literal has type `int` and it flows into `?a`
-//│ ║  l.62: 	  (f 1, f true)
+//│ ╟── this integer literal has type `int`
+//│ ║  l.34: 	  (f 1, f true)
 //│ ║        	     ^
-//│ ╟── this variable has type `?a`
-//│ ║  l.61: 	  let f x = x in
+//│ ╟── this variable has type `int`
+//│ ║  l.33: 	  let f x = x in
 //│ ║        	        ^
-//│ ╟── this reference has type `bool` and it flows into `?a`
-//│ ║  l.62: 	  (f 1, f true)
+//│ ╟── this variable has type `bool`
+//│ ║  l.33: 	  let f x = x in
+//│ ║        	        ^
+//│ ╟── this reference has type `bool`
+//│ ║  l.34: 	  (f 1, f true)
 //│ ╙──      	          ^^^^
 //│ test: (bool | int, bool | int,)
 
+
+
 let test2 = let (a, b) = test in b + 1
-//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ║  
-//│ ╟──        bool ---> ?a <--- int 
-//│ ║  
-//│ ╟── this reference has type `bool` and it flows into `?a`
-//│ ║  l.62: 	  (f 1, f true)
-//│ ║        	          ^^^^
-//│ ╟── this variable has type `?a`
-//│ ║  l.61: 	  let f x = x in
+//│ ╟── this integer literal has type `int`
+//│ ║  l.34: 	  (f 1, f true)
+//│ ║        	     ^
+//│ ╟── this variable has type `int`
+//│ ║  l.33: 	  let f x = x in
 //│ ║        	        ^
-//│ ╟── this integer literal has type `int` and it flows into `?a`
-//│ ║  l.62: 	  (f 1, f true)
-//│ ╙──      	     ^
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟── this reference has type `bool`
-//│ ║  l.62: 	  (f 1, f true)
-//│ ║        	          ^^^^
 //│ ╟── this variable has type `bool`
-//│ ║  l.61: 	  let f x = x in
+//│ ║  l.33: 	  let f x = x in
 //│ ║        	        ^
-//│ ╟── `int` comes from this type expression
-//│ ║  builtin:16: 	let (+): int -> int -> int
-//│ ╙──            	         ^^^
+//│ ╟── this reference has type `bool`
+//│ ║  l.34: 	  (f 1, f true)
+//│ ╙──      	          ^^^^
 //│ test2: int
 
 
 
 
+
+[["1"]] + 1
+//│ res: int

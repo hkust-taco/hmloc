@@ -194,29 +194,7 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 (("hi", 1) :: Nil):heap
 (("hi", 1) :: ("bye", 2) :: Nil):heap
 //│ res: list[(string, int,)]
-//│ ╔══[ERROR] Type `?a list` does not match `heap`
-//│ ║  
-//│ ╟── `?a list` comes from this type expression
-//│ ║  l.5: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	               ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this application has type `?a list`
-//│ ║  l.194: 	(("hi", 1) :: Nil):heap
-//│ ║         	^^^^^^^^^^^^^^^^^^
-//│ ╟── `heap` comes from this type expression
-//│ ║  l.194: 	(("hi", 1) :: Nil):heap
-//│ ╙──       	                   ^^^^
 //│ res: heap
-//│ ╔══[ERROR] Type `?a list` does not match `heap`
-//│ ║  
-//│ ╟── `?a list` comes from this type expression
-//│ ║  l.5: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ║       	               ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this application has type `?a list`
-//│ ║  l.195: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ ║         	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── `heap` comes from this type expression
-//│ ║  l.195: 	(("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ ╙──       	                                 ^^^^
 //│ res: heap
 
 let update h str i = (str,i)::h
@@ -230,33 +208,30 @@ let interp2 = (fun (env:env) opt ->
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.227: 	fun (env: env) _ -> []
+//│ ║  l.205: 	fun (env: env) _ -> []
 //│ ╙──       	    ^^^^^^^^^^^^
 //│ res: error -> list[nothing]
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.228: 	let interp2 = (fun (env:env) opt ->
+//│ ║  l.206: 	let interp2 = (fun (env:env) opt ->
 //│ ╙──       	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
 //│ ║  
-//│ ║  l.229: 	  match opt with
+//│ ║  l.207: 	  match opt with
 //│ ╙──       	        ^^^
-//│ ╔══[ERROR] Type `error` does not match `?a option`
-//│ ║  
-//│ ╟── this reference has type `error`
-//│ ║  l.229: 	  match opt with
-//│ ║         	        ^^^
-//│ ╟── this `match` condition has type `?a option`
-//│ ║  l.229: 	  match opt with
-//│ ║         	        ^^^
-//│ ╟── this pattern has type `?a option`
-//│ ║  l.230: 	     None -> 0)
-//│ ╙──       	     ^^^^
 //│ interp2: error -> int
 
 let head xs = match xs with
   Cons(x, xs) -> x
   | _ -> raise Error
+//│ ╔══[ERROR] Type `anything` does not match `anything`
+//│ ║  
+//│ ╟── this reference has type `anything`
+//│ ║  l.226: 	  | _ -> raise Error
+//│ ║         	               ^^^^^
+//│ ╟── this reference has type `anything`
+//│ ║  l.226: 	  | _ -> raise Error
+//│ ╙──       	               ^^^^^
 //│ head: list['a] -> 'a
 
 // TODO
@@ -264,6 +239,14 @@ let head xs = match xs with
 let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
+//│ ╔══[ERROR] Type `anything` does not match `anything`
+//│ ║  
+//│ ╟── this reference has type `anything`
+//│ ║  l.241: 	  | _ -> raise Error
+//│ ║         	               ^^^^^
+//│ ╟── this reference has type `anything`
+//│ ║  l.241: 	  | _ -> raise Error
+//│ ╙──       	               ^^^^^
 //│ head: list['a] -> 'a
 
 type ('a) bigHeap =
@@ -304,122 +287,14 @@ let check (v: ((int, int))) =
 let checkagain (v: (int, int, (int, int))) =
   match v with
    (a, b, (c, d)) -> a + b + c + d
-//│ ╔══[ERROR] Type `float` does not match `int`
-//│ ║  
-//│ ╟── `float` comes from this type expression
-//│ ║  l.54: 	let (+.): float -> float -> float
-//│ ║        	                            ^^^^^
-//│ ╟── this operator application has type `float`
-//│ ║  l.100: 	let c = 3.0 +. 4.0 *. 6.0
-//│ ║         	        ^^^^^^^^^^^^^^^^^
-//│ ╟── this reference has type `float`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	           ^
-//│ ╟── this tuple literal has type `float * error`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	           ^^^^
-//│ ╟── this 2 element of this tuple has type `float * error`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	   ^^^^^^^^^^^^^^
-//│ ╟── this 2 element of this tuple has type `int * int`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	   ^^^^^^^^^^^^^^
-//│ ╟── `int * int` comes from this type expression
-//│ ║  l.304: 	let checkagain (v: (int, int, (int, int))) =
-//│ ║         	                              ^^^^^^^^^^
-//│ ╟── `int` comes from this type expression
-//│ ║  l.304: 	let checkagain (v: (int, int, (int, int))) =
-//│ ╙──       	                               ^^^
-//│ ╔══[ERROR] Type `error` does not match `int`
-//│ ║  
-//│ ╟── this reference has type `error`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	              ^
-//│ ╟── this tuple literal has type `float * error`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	           ^^^^
-//│ ╟── this 2 element of this tuple has type `float * error`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	   ^^^^^^^^^^^^^^
-//│ ╟── this 2 element of this tuple has type `int * int`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	   ^^^^^^^^^^^^^^
-//│ ╟── `int * int` comes from this type expression
-//│ ║  l.304: 	let checkagain (v: (int, int, (int, int))) =
-//│ ║         	                              ^^^^^^^^^^
-//│ ╟── `int` comes from this type expression
-//│ ║  l.304: 	let checkagain (v: (int, int, (int, int))) =
-//│ ╙──       	                                    ^^^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.289: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ╙──       	              ^
-//│ ╔══[ERROR] Type `int` does not match `float`
-//│ ║  
-//│ ╟── `int` comes from this type expression
-//│ ║  l.304: 	let checkagain (v: (int, int, (int, int))) =
-//│ ║         	                               ^^^
-//│ ╟── `int * int` comes from this type expression
-//│ ║  l.304: 	let checkagain (v: (int, int, (int, int))) =
-//│ ║         	                              ^^^^^^^^^^
-//│ ╟── this 2 element of this tuple has type `int * int`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	   ^^^^^^^^^^^^^^
-//│ ╟── this tuple literal has type `float * error`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	           ^^^^
-//│ ╟── this reference has type `float`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	           ^
-//│ ╟── this operator application has type `float`
-//│ ║  l.100: 	let c = 3.0 +. 4.0 *. 6.0
-//│ ║         	        ^^^^^^^^^^^^^^^^^
-//│ ╟── `float` comes from this type expression
-//│ ║  l.54: 	let (+.): float -> float -> float
-//│ ╙──      	                            ^^^^^
-//│ ╔══[ERROR] Type `int` does not match `error`
-//│ ║  
-//│ ╟── `int` comes from this type expression
-//│ ║  l.304: 	let checkagain (v: (int, int, (int, int))) =
-//│ ║         	                                    ^^^
-//│ ╟── `int * int` comes from this type expression
-//│ ║  l.304: 	let checkagain (v: (int, int, (int, int))) =
-//│ ║         	                              ^^^^^^^^^^
-//│ ╟── this 2 element of this tuple has type `int * int`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	   ^^^^^^^^^^^^^^
-//│ ╟── this tuple literal has type `float * error`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	           ^^^^
-//│ ╟── this reference has type `error`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ╙──       	              ^
-//│ ╔══[ERROR] Type `float` does not match `int`
-//│ ║  
-//│ ╟── `float` comes from this type expression
-//│ ║  l.54: 	let (+.): float -> float -> float
-//│ ║        	                            ^^^^^
-//│ ╟── this operator application has type `float`
-//│ ║  l.100: 	let c = 3.0 +. 4.0 *. 6.0
-//│ ║         	        ^^^^^^^^^^^^^^^^^
-//│ ╟── this reference has type `float`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	                             ^
-//│ ╟── `int` comes from this type expression
-//│ ║  l.80: 	let (+): int -> int -> int
-//│ ╙──      	                ^^^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.289: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ╙──       	                                 ^
-//│ ╔══[ERROR] Type `error` does not match `int`
-//│ ║  
-//│ ╟── this reference has type `error`
-//│ ║  l.306: 	   (a, b, (c, d)) -> a + b + c + d
-//│ ║         	                                 ^
-//│ ╟── `int` comes from this type expression
-//│ ║  l.80: 	let (+): int -> int -> int
-//│ ╙──      	                ^^^
 //│ checkagain: (int, int, (int, int,),) -> int
 
 let (<): 'a -> 'a -> bool

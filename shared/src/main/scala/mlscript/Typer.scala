@@ -446,7 +446,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       }, prov, ctx)
 
       // also unify types
-      unifyTypes(lhs, rhs)(MutSet(), ctx, raise)
+//      unifyTypes(lhs, rhs)(MutSet(), ctx, raise)
       res
     }
     term match {

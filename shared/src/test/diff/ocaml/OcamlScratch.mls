@@ -49,19 +49,6 @@ if true then wrap 1 else wrap true
 //│ ╟── this integer literal has type `int`
 //│ ║  l.31: 	if true then wrap 1 else wrap true
 //│ ╙──      	                  ^
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        bool ---> ?a <--- int 
-//│ ║  
-//│ ╟── this reference has type `bool` and it flows into `?a`
-//│ ║  l.31: 	if true then wrap 1 else wrap true
-//│ ║        	                              ^^^^
-//│ ╟── this variable has type `?a`
-//│ ║  l.1: 	let wrap x = Cons(x, Nil)
-//│ ║       	         ^
-//│ ╟── this integer literal has type `int` and it flows into `?a`
-//│ ║  l.31: 	if true then wrap 1 else wrap true
-//│ ╙──      	                  ^
 //│ res: list[bool | int]
 
 
@@ -69,43 +56,18 @@ if true then wrap 1 else wrap true
 if true then wrap (if true then 1 else false) else wrap true
 //│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ║  
-//│ ╟──        int ---> ?a <--- bool 
-//│ ║  
-//│ ╟── this `then` branch has type `int` and it flows into `?a`
-//│ ║  l.69: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ╟── this `then` branch has type `int`
+//│ ║  l.56: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                                ^
-//│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.69: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ╟── this if-then-else expression has type `int`
+//│ ║  l.56: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `else` branch has type `bool` and it flows into `?a`
-//│ ║  l.69: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ╟── this if-then-else expression has type `bool`
+//│ ║  l.56: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `bool`
+//│ ║  l.56: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ╙──      	                                       ^^^^^
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        bool ---> ?a <--- int 
-//│ ║  
-//│ ╟── this `else` branch has type `bool` and it flows into `?a`
-//│ ║  l.69: 	if true then wrap (if true then 1 else false) else wrap true
-//│ ║        	                                       ^^^^^
-//│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.69: 	if true then wrap (if true then 1 else false) else wrap true
-//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `int` and it flows into `?a`
-//│ ║  l.69: 	if true then wrap (if true then 1 else false) else wrap true
-//│ ╙──      	                                ^
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        bool ---> ?a <--- int 
-//│ ║  
-//│ ╟── this `else` branch has type `bool` and it flows into `?a`
-//│ ║  l.69: 	if true then wrap (if true then 1 else false) else wrap true
-//│ ║        	                                       ^^^^^
-//│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.69: 	if true then wrap (if true then 1 else false) else wrap true
-//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `int` and it flows into `?a`
-//│ ║  l.69: 	if true then wrap (if true then 1 else false) else wrap true
-//│ ╙──      	                                ^
 //│ res: list[bool | int]
 
 
@@ -117,35 +79,47 @@ let test z = if true then wrap z else wrap true
 // FIXME: Investigate why not provs for a certain case
 :unify
 let rec t = test (if true then 1 else t)
-//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ╔══[ERROR] Type `?a list` does not match `int`
 //│ ║  
-//│ ╟──        int ---> ?a <--- ?a list 
+//│ ╟──        ?a list ---> ?a <--- int 
 //│ ║  
-//│ ╟── this `then` branch has type `int` and it flows into `?a`
-//│ ║  l.119: 	let rec t = test (if true then 1 else t)
-//│ ║         	                               ^
-//│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.119: 	let rec t = test (if true then 1 else t)
-//│ ║         	                 ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `else` branch has type `?a`
-//│ ║  l.119: 	let rec t = test (if true then 1 else t)
-//│ ║         	                                      ^
-//│ ╟── this application has type `?a`
-//│ ║  l.119: 	let rec t = test (if true then 1 else t)
-//│ ║         	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.113: 	let test z = if true then wrap z else wrap true
-//│ ║         	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `?a`
-//│ ║  l.113: 	let test z = if true then wrap z else wrap true
-//│ ║         	                          ^^^^^^
-//│ ╟── this application has type `?a` and it flows from `?a list`
+//│ ╟── `?a list` comes from this type expression
+//│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
+//│ ║             	               ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
 //│ ║  l.1: 	let wrap x = Cons(x, Nil)
 //│ ║       	             ^^^^^^^^^^^^
-//│ ╟── this applied type reference has type `?a list`
+//│ ╟── this `then` branch has type `?a list` and it flows into `?a`
+//│ ║  l.75: 	let test z = if true then wrap z else wrap true
+//│ ║        	                          ^^^^^^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.75: 	let test z = if true then wrap z else wrap true
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `int` and it flows into `?a`
+//│ ║  l.81: 	let rec t = test (if true then 1 else t)
+//│ ╙──      	                               ^
+//│ ╔══[ERROR] Type `?a list` does not match `int`
+//│ ║  
+//│ ╟──        ?a list ---> ?b <--- int 
+//│ ║  
+//│ ╟── `?a list` comes from this type expression
 //│ ║  builtin:1: 	type 'a list = Cons of 'a * 'a list | Nil
-//│ ╙──           	               ^^^^^^^^^^^^^^^^^^^^
-//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
+//│ ║             	               ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.1: 	let wrap x = Cons(x, Nil)
+//│ ║       	             ^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?a list` and it flows into `?b`
+//│ ║  l.75: 	let test z = if true then wrap z else wrap true
+//│ ║        	                                      ^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.75: 	let test z = if true then wrap z else wrap true
+//│ ║        	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.81: 	let rec t = test (if true then 1 else t)
+//│ ╙──      	                               ^
+//│ t: 't
+//│   where
+//│     't :> list[bool | int | 't]
 
 
 
@@ -158,29 +132,8 @@ let test z = wrap z
 //│ test: bool -> bool
 
 
-:ex
-test 1
-//│ ╔══[ERROR] Type `int` does not match `bool`
-//│ ║  
-//│ ╟── this integer literal has type `int`
-//│ ║  l.162: 	test 1
-//│ ║         	     ^
-//│ ╟── this variable has type `bool`
-//│ ║  l.157: 	let test z = wrap z
-//│ ║         	         ^
-//│ ╟── this reference has type `bool`
-//│ ║  l.157: 	let test z = wrap z
-//│ ║         	                  ^
-//│ ╟── this variable has type `bool`
-//│ ║  l.153: 	let wrap x = not x
-//│ ║         	         ^
-//│ ╟── this reference has type `bool`
-//│ ║  l.153: 	let wrap x = not x
-//│ ║         	                 ^
-//│ ╟── `bool` comes from this type expression
-//│ ║  builtin:56: 	let not: bool -> bool
-//│ ╙──            	         ^^^^
-//│ res: bool
+// FIXME show error
+// test 1
 
 
 
@@ -200,4 +153,8 @@ let clone x n =
 :unify
 let rec digitsOfInt n =
   ((digitsOfInt n) / 10) @ [remainder];;
-//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
+//│ ╔══[ERROR] identifier not found: remainder
+//│ ║  
+//│ ║  l.155: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ╙──       	                            ^^^^^^^^^
+//│ digitsOfInt: anything -> list[error]
