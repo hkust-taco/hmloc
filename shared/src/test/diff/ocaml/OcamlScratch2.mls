@@ -5,36 +5,42 @@ let confluence z = if true then z else 5
 let mkpair x y = (x, confluence y)
 //│ 1. Typing term x => y => x, confluence y,
 //│ | 1. Typing pattern x
-//│ | 1. : α62'
+//│ | 1. : α65'
 //│ | 1. Typing term y => x, confluence y,
 //│ | | 1. Typing pattern y
-//│ | | 1. : α63'
+//│ | | 1. : α66'
 //│ | | 1. Typing term x, confluence y,
 //│ | | | 1. Typing term x
-//│ | | | 1. : [α62']
+//│ | | | 1. : [α65']
 //│ | | | 1. Typing term confluence y
 //│ | | | | 1. Typing term confluence
-//│ | | | | 1. : [(α64' -> α65')]
+//│ | | | | 1. : [(α67' -> α68')]
 //│ | | | | 1. Typing term y
-//│ | | | | 1. : [α63']
-//│ | | | | CONSTRAIN [α63'] <! α64'
+//│ | | | | 1. : [α66']
+//│ | | | | CONSTRAIN [(α67' -> α68')] <! ([α66'] -> α70')
 //│ | | | |   where 
-//│ 		α64' <: [[[α65']]]
-//│ 		α65' :> [[Int]]
-//│ | | | | C [α63'] <! α64'    (0) where ProvType <: TypeVariable}
-//│ | | | | | C α63' <! α64'    (0) where TypeVariable <: TypeVariable}
-//│ | | | | UT [α63'] <: α64' len: 3 
-//│ | | | | | UT  α64' with
-//│ | | | | | UT  α63' += (α64',List(ub(α63' <: α64')))
-//│ | | | 1. : [α65']
-//│ | | 1. : ([α62'], [α65'],)
-//│ | 1. : (α63' -> ([α62'], [α65'],))
-//│ 1. : (α62' -> (α63' -> ([α62'], [α65'],)))
-//│ ⬤ Typed as: (α62' -> (α63' -> ([α62'], [α65'],)))
+//│ 		α67' <: [[[α68']]]
+//│ 		α68' :> [[Int]]
+//│ | | | | C [(α67' -> α68')] <! ([α66'] -> α70')    (0) where ProvType <: FunctionType}
+//│ | | | | | C (α67' -> α68') <! ([α66'] -> α70')    (0) where FunctionType <: FunctionType}
+//│ | | | | | | [nested] [[α66']]
+//│ | | | | | | C [α66'] <! α67'    (1) where ProvType <: TypeVariable}
+//│ | | | | | | | C α66' <! α67'    (1) where TypeVariable <: TypeVariable}
+//│ | | | | | | [nested] [α68']
+//│ | | | | | | C α68' <! α70'    (2) where TypeVariable <: TypeVariable}
+//│ | | | | | | | C [[Int]] <! α70'    (3) where ProvType <: TypeVariable}
+//│ | | | | | | | | C [Int] <! α70'    (3) where ProvType <: TypeVariable}
+//│ | | | | | | | | | C Int <! α70'    (3) where TypeRef <: TypeVariable}
+//│ | | | 1. : α70'
+//│ | | 1. : ([α65'], α70',)
+//│ | 1. : (α66' -> ([α65'], α70',))
+//│ 1. : (α65' -> (α66' -> ([α65'], α70',)))
+//│ ⬤ Typed as: (α65' -> (α66' -> ([α65'], α70',)))
 //│  where: 
-//│ 		α63' <: [[[α64']]]
-//│ 		α64' <: [[[α65']]]
-//│ 		α65' :> [[Int]]
+//│ 		α66' <: [[[[α67']]]]
+//│ 		α67' <: [[[α68']]]
+//│ 		α68' :> [[Int]] <: [[[α70']]]
+//│ 		α70' :> [[[[Int]]]]
 //│ mkpair: 'a -> 'b -> ('a, int | 'b,)
 
 :d
@@ -45,93 +51,208 @@ let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
 //│ 1. Typing term x => mkpair (not x) x
 //│ | 1. Typing pattern x
-//│ | 1. : α75'
+//│ | 1. : α80'
 //│ | 1. Typing term mkpair (not x) x
 //│ | | 1. Typing term mkpair (not x)
 //│ | | | 1. Typing term mkpair
-//│ | | | 1. : [(α76' -> (α77' -> ([α76'], [α79'],)))]
+//│ | | | 1. : [(α81' -> (α82' -> ([α81'], α85',)))]
 //│ | | | 1. Typing term not x
 //│ | | | | 1. Typing term not
 //│ | | | | 1. : [(Bool -> Bool)]
 //│ | | | | 1. Typing term x
-//│ | | | | 1. : [α75']
-//│ | | | | CONSTRAIN [α75'] <! Bool
+//│ | | | | 1. : [α80']
+//│ | | | | CONSTRAIN [(Bool -> Bool)] <! ([α80'] -> α87')
 //│ | | | |   where 
-//│ | | | | C [α75'] <! Bool    (0) where ProvType <: TypeRef}
-//│ | | | | | C α75' <! Bool    (0) where TypeVariable <: TypeRef}
-//│ | | | | UT [α75'] <: Bool len: 3 
-//│ | | | | | UT  Bool with
-//│ | | | | | UT  α75' += (Bool,List(ub(α75' <: Bool)))
-//│ | | | 1. : [Bool]
-//│ | | | CONSTRAIN [Bool] <! α76'
+//│ | | | | C [(Bool -> Bool)] <! ([α80'] -> α87')    (0) where ProvType <: FunctionType}
+//│ | | | | | C (Bool -> Bool) <! ([α80'] -> α87')    (0) where FunctionType <: FunctionType}
+//│ | | | | | | [nested] [[α80']]
+//│ | | | | | | C [α80'] <! Bool    (1) where ProvType <: TypeRef}
+//│ | | | | | | | C α80' <! Bool    (1) where TypeVariable <: TypeRef}
+//│ | | | | | | [nested] [Bool]
+//│ | | | | | | C Bool <! α87'    (2) where TypeRef <: TypeVariable}
+//│ | | | 1. : α87'
+//│ | | | CONSTRAIN [(α81' -> (α82' -> ([α81'], α85',)))] <! (α87' -> α89')
 //│ | | |   where 
-//│ | | | C [Bool] <! α76'    (0) where ProvType <: TypeVariable}
-//│ | | | | C Bool <! α76'    (0) where TypeRef <: TypeVariable}
-//│ | | | UT [Bool] <: α76' len: 3 
-//│ | | | | UT  [Bool] with
-//│ | | | | UT  α76' += ([Bool],List(lb([Bool] <: α76')))
-//│ | | 1. : [(α77' -> ([α76'], [α79'],))]
+//│ 		α82' <: [[[[α83']]]]
+//│ 		α83' <: [[[α84']]]
+//│ 		α84' :> [[Int]] <: [[[α85']]]
+//│ 		α85' :> [[[[Int]]]]
+//│ 		α87' :> [[[Bool]]]
+//│ | | | C [(α81' -> (α82' -> ([α81'], α85',)))] <! (α87' -> α89')    (0) where ProvType <: FunctionType}
+//│ | | | | C (α81' -> (α82' -> ([α81'], α85',))) <! (α87' -> α89')    (0) where FunctionType <: FunctionType}
+//│ | | | | | [nested] [α87']
+//│ | | | | | C α87' <! α81'    (1) where TypeVariable <: TypeVariable}
+//│ | | | | | | C [[[Bool]]] <! α81'    (2) where ProvType <: TypeVariable}
+//│ | | | | | | | C [[Bool]] <! α81'    (2) where ProvType <: TypeVariable}
+//│ | | | | | | | | C [Bool] <! α81'    (2) where ProvType <: TypeVariable}
+//│ | | | | | | | | | C Bool <! α81'    (2) where TypeRef <: TypeVariable}
+//│ | | | | | [nested] [(α82' -> ([α81'], α85',))]
+//│ | | | | | C (α82' -> ([α81'], α85',)) <! α89'    (3) where FunctionType <: TypeVariable}
+//│ | | 1. : α89'
 //│ | | 1. Typing term x
-//│ | | 1. : [α75']
-//│ | | CONSTRAIN [α75'] <! α77'
+//│ | | 1. : [α80']
+//│ | | CONSTRAIN α89' <! ([α80'] -> α91')
 //│ | |   where 
-//│ 		α75' <: [[[Bool]]]
-//│ 		α77' <: [[[α78']]]
-//│ 		α78' <: [[[α79']]]
-//│ 		α79' :> [[Int]]
-//│ | | C [α75'] <! α77'    (0) where ProvType <: TypeVariable}
-//│ | | | C α75' <! α77'    (0) where TypeVariable <: TypeVariable}
-//│ | | UT [α75'] <: α77' len: 3 
-//│ | | | UT  α77' with
-//│ | | | UT  α75' <: [[[Bool]]]  for ub(α75' <: Bool)
-//│ | | | U [[[Bool]]] = α77' because ub(α75' <: Bool), ub(α75' <: α77') ()
-//│ | | | UT  α75' += (α77',List(ub(α75' <: α77')))
-//│ | 1. : [([α76'], [α79'],)]
-//│ 1. : (α75' -> [([α76'], [α79'],)])
-//│ ⬤ Typed as: (α75' -> [([α76'], [α79'],)])
+//│ 		α80' <: [[[[Bool]]]]
+//│ 		α81' :> [[[[[Bool]]]]]
+//│ 		α82' <: [[[[α83']]]]
+//│ 		α83' <: [[[α84']]]
+//│ 		α84' :> [[Int]] <: [[[α85']]]
+//│ 		α85' :> [[[[Int]]]]
+//│ 		α89' :> [[[(α82' -> ([α81'], α85',))]]]
+//│ | | C α89' <! ([α80'] -> α91')    (0) where TypeVariable <: FunctionType}
+//│ | | | C [[[(α82' -> ([α81'], α85',))]]] <! ([α80'] -> α91')    (1) where ProvType <: FunctionType}
+//│ | | | | C [[(α82' -> ([α81'], α85',))]] <! ([α80'] -> α91')    (1) where ProvType <: FunctionType}
+//│ | | | | | C [(α82' -> ([α81'], α85',))] <! ([α80'] -> α91')    (1) where ProvType <: FunctionType}
+//│ | | | | | | C (α82' -> ([α81'], α85',)) <! ([α80'] -> α91')    (1) where FunctionType <: FunctionType}
+//│ | | | | | | | [nested] [[α80']]
+//│ | | | | | | | C [α80'] <! α82'    (2) where ProvType <: TypeVariable}
+//│ | | | | | | | | C α80' <! α82'    (2) where TypeVariable <: TypeVariable}
+//│ | | | | | | | [nested] [([α81'], α85',)]
+//│ | | | | | | | C ([α81'], α85',) <! α91'    (3) where TupleType <: TypeVariable}
+//│ | 1. : α91'
+//│ 1. : (α80' -> α91')
+//│ ⬤ Typed as: (α80' -> α91')
 //│  where: 
-//│ 		α75' <: [[[α77']]] & [[[Bool]]]
-//│ 		α76' :> [[[Bool]]]
-//│ 		α77' <: [[[α78']]]
-//│ 		α78' <: [[[α79']]]
-//│ 		α79' :> [[Int]]
+//│ 		α80' <: [[[[α82']]]] & [[[[Bool]]]]
+//│ 		α81' :> [[[[[Bool]]]]]
+//│ 		α82' <: [[[[α83']]]]
+//│ 		α83' <: [[[α84']]]
+//│ 		α84' :> [[Int]] <: [[[α85']]]
+//│ 		α85' :> [[[[Int]]]]
+//│ 		α91' :> [[[([α81'], α85',)]]]
+//│ unified α91' with:
+//│ unified α90' with:
+//│ unified α89' with:
+//│ unified α88' with:
+//│ unified α87' with:
+//│ unified α86' with:
+//│ unified α85' with:
+//│ unified α84' with:
+//│ unified α83' with:
 //│ unified α82' with:
 //│ unified α81' with:
 //│ unified α80' with:
-//│ unified α79' with:
-//│ unified α78' with:
-//│ unified α77' with:
-//│ unified α76' with:
-//│   [Bool]: lb([Bool] <: α76')
-//│ unified α75' with:
-//│   Bool: ub(α75' <: Bool)
-//│   α77': ub(α75' <: α77')
-//│ α82' bounds
-//│ α81' bounds
-//│ α80' bounds
-//│ α79' bounds
-//│  α79' <: [[Int]] with lb([[Int]] <: α79') length: 3
-//│ UT α79' <: [[Int]] len: 4 
-//│ | UT  Int with
-//│ | UT  [[Int]] <: α79' <: Int
-//│ | UT [[Int]] <: [[Int]] len: 7 
-//│ | UT  α79' += ([[Int]],List(ub(α79' <: [[Int]])))
-//│  α79' :> [[Int]] with ub(α79' <: [[Int]]) length: 3
-//│ UT α79' <: [[Int]] len: 4 
-//│ α78' bounds
-//│ α77' bounds
-//│ α76' bounds
-//│  α76' <: [[[Bool]]] with lb([[[Bool]]] <: α76') length: 4
-//│ UT α76' <: [[[Bool]]] len: 5 
+//│ α91' bounds
+//│  α91' <: [[[([α81'], α85',)]]] with lb([[[([α81'], α85',)]]] <: α91') length: 4
+//│ UT α91' <: [[[([α81'], α85',)]]] len: 5 
+//│ | UT  ([α81'], α85',) with
+//│ | UT  [[[([α81'], α85',)]]] <: α91' <: ([α81'], α85',)
+//│ | UT [[[([α81'], α85',)]]] <: [[[([α81'], α85',)]]] len: 9 
+//│ | | U [[[([α81'], α85',)]]] = [[[([α81'], α85',)]]] because lb([[[([α81'], α85',)]]] <: [[[([α81'], α85',)]]]) skipCache
+//│ | | | UT [α81'] <: [α81'] len: 4 nested: [[[([α81'], α85',)]]] = [[[([α81'], α85',)]]] because lb([[[([α81'], α85',)]]] <: [[[([α81'], α85',)]]])
+//│ | | | UT α85' <: α85' len: 2 nested: [[[([α81'], α85',)]]] = [[[([α81'], α85',)]]] because lb([[[([α81'], α85',)]]] <: [[[([α81'], α85',)]]])
+//│ | UT  α91' += ([[[([α81'], α85',)]]],List(ub(α91' <: [[[([α81'], α85',)]]])))
+//│  α91' :> [[[([α81'], α85',)]]] with ub(α91' <: [[[([α81'], α85',)]]]) length: 4
+//│ UT α91' <: [[[([α81'], α85',)]]] len: 5 
+//│ α90' bounds
+//│ α89' bounds
+//│  α89' <: [[[(α82' -> ([α81'], α85',))]]] with lb([[[(α82' -> ([α81'], α85',))]]] <: α89') length: 4
+//│ UT α89' <: [[[(α82' -> ([α81'], α85',))]]] len: 5 
+//│ | UT  (α82' -> ([α81'], α85',)) with
+//│ | UT  [[[(α82' -> ([α81'], α85',))]]] <: α89' <: (α82' -> ([α81'], α85',))
+//│ | UT [[[(α82' -> ([α81'], α85',))]]] <: [[[(α82' -> ([α81'], α85',))]]] len: 9 
+//│ | | U [[[(α82' -> ([α81'], α85',))]]] = [[[(α82' -> ([α81'], α85',))]]] because lb([[[(α82' -> ([α81'], α85',))]]] <: [[[(α82' -> ([α81'], α85',))]]]) skipCache
+//│ | UT  (α82' -> ([α81'], α85',)) with
+//│ | UT  α89' += ([[[(α82' -> ([α81'], α85',))]]],List(ub(α89' <: [[[(α82' -> ([α81'], α85',))]]])))
+//│  α89' :> [[[(α82' -> ([α81'], α85',))]]] with ub(α89' <: [[[(α82' -> ([α81'], α85',))]]]) length: 4
+//│ UT α89' <: [[[(α82' -> ([α81'], α85',))]]] len: 5 
+//│ α88' bounds
+//│ α87' bounds
+//│  α87' <: [[[Bool]]] with lb([[[Bool]]] <: α87') length: 4
+//│ UT α87' <: [[[Bool]]] len: 5 
 //│ | UT  Bool with
-//│ | UT  [[[Bool]]] <: α76' <: Bool
+//│ | UT  [[[Bool]]] <: α87' <: Bool
 //│ | UT [[[Bool]]] <: [[[Bool]]] len: 9 
 //│ | | U [[[Bool]]] = [[[Bool]]] because lb([[[Bool]]] <: [[[Bool]]]) skipCache
-//│ | UT  α76' += ([[[Bool]]],List(ub(α76' <: [[[Bool]]])))
-//│  α76' :> [[[Bool]]] with ub(α76' <: [[[Bool]]]) length: 4
-//│ UT α76' <: [[[Bool]]] len: 5 
-//│ α75' bounds
-//│ ╔══[WARNING] ?a is unified with int because ub(α79' <: [[Int]]))
+//│ | UT  Bool with
+//│ | UT  α87' += ([[[Bool]]],List(ub(α87' <: [[[Bool]]])))
+//│  α87' :> [[[Bool]]] with ub(α87' <: [[[Bool]]]) length: 4
+//│ UT α87' <: [[[Bool]]] len: 5 
+//│ α86' bounds
+//│ α85' bounds
+//│  α85' <: [[[[Int]]]] with lb([[[[Int]]]] <: α85') length: 5
+//│ UT α85' <: [[[[Int]]]] len: 6 
+//│ | UT  Int with
+//│ | UT  [[[[Int]]]] <: α85' <: Int
+//│ | UT [[[[Int]]]] <: [[[[Int]]]] len: 11 
+//│ | UT  α85' += ([[[[Int]]]],List(ub(α85' <: [[[[Int]]]])))
+//│  α85' :> [[[[Int]]]] with ub(α85' <: [[[[Int]]]]) length: 5
+//│ UT α85' <: [[[[Int]]]] len: 6 
+//│ α84' bounds
+//│  α84' <: [[Int]] with lb([[Int]] <: α84') length: 3
+//│ UT α84' <: [[Int]] len: 4 
+//│ | UT  Int with
+//│ | UT  [[Int]] <: α84' <: Int
+//│ | UT [[Int]] <: [[Int]] len: 7 
+//│ | UT  Int with
+//│ | UT  α84' += ([[Int]],List(ub(α84' <: [[Int]])))
+//│  α84' :> [[Int]] with ub(α84' <: [[Int]]) length: 3
+//│ UT α84' <: [[Int]] len: 4 
+//│ α83' bounds
+//│ α82' bounds
+//│ α81' bounds
+//│  α81' <: [[[[[Bool]]]]] with lb([[[[[Bool]]]]] <: α81') length: 6
+//│ UT α81' <: [[[[[Bool]]]]] len: 7 
+//│ | UT  Bool with
+//│ | UT  [[[[[Bool]]]]] <: α81' <: Bool
+//│ | UT [[[[[Bool]]]]] <: [[[[[Bool]]]]] len: 13 
+//│ | UT  α81' += ([[[[[Bool]]]]],List(ub(α81' <: [[[[[Bool]]]]])))
+//│  α81' :> [[[[[Bool]]]]] with ub(α81' <: [[[[[Bool]]]]]) length: 6
+//│ UT α81' <: [[[[[Bool]]]]] len: 7 
+//│ α80' bounds
+//│ ╔══[WARNING] ?a is unified with ?b * ?c because ub(α91' <: [[[([α81'], α85',)]]]))
+//│ ║  
+//│ ╟── application
+//│ ║  l.51: 	let conflict x = mkpair (not x) x
+//│ ║        	                 ^^^^^^^^^^^^^^^^
+//│ ╟── <nested> function rhs len: 4
+//│ ╟── tuple literal
+//│ ║  l.5: 	let mkpair x y = (x, confluence y)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^
+//│ ╟── tuple literal
+//│ ║  l.5: 	let mkpair x y = (x, confluence y)
+//│ ╙──     	                 ^^^^^^^^^^^^^^^^^
+//│ ╔══[WARNING] ?a is unified with ?b -> ?c * ?d because ub(α89' <: [[[(α82' -> ([α81'], α85',))]]]))
+//│ ║  
+//│ ╟── application
+//│ ║  l.51: 	let conflict x = mkpair (not x) x
+//│ ║        	                 ^^^^^^^^^^^^^^
+//│ ╟── <nested> function rhs len: 3
+//│ ╟── function
+//│ ║  l.5: 	let mkpair x y = (x, confluence y)
+//│ ║       	             ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── function
+//│ ║  l.5: 	let mkpair x y = (x, confluence y)
+//│ ╙──     	             ^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[WARNING] ?a is unified with bool because ub(α87' <: [[[Bool]]]))
+//│ ║  
+//│ ╟── application
+//│ ║  l.51: 	let conflict x = mkpair (not x) x
+//│ ║        	                        ^^^^^^^
+//│ ╟── <nested> function rhs len: 3
+//│ ╟── type reference
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ║              	                 ^^^^
+//│ ╟── type reference
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ╙──            	                 ^^^^
+//│ ╔══[WARNING] ?a is unified with int because ub(α85' <: [[[[Int]]]]))
+//│ ║  
+//│ ╟── application
+//│ ║  l.5: 	let mkpair x y = (x, confluence y)
+//│ ║       	                     ^^^^^^^^^^^^
+//│ ╟── <nested> function rhs len: 3
+//│ ╟── if-then-else expression
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── `else` branch
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                       ^
+//│ ╟── `else` branch
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ╙──     	                                       ^
+//│ ╔══[WARNING] ?a is unified with int because ub(α84' <: [[Int]]))
 //│ ║  
 //│ ╟── if-then-else expression
 //│ ║  l.1: 	let confluence z = if true then z else 5
@@ -142,42 +263,22 @@ let conflict x = mkpair (not x) x
 //│ ╟── `else` branch
 //│ ║  l.1: 	let confluence z = if true then z else 5
 //│ ╙──     	                                       ^
-//│ ╔══[WARNING] ?a is unified with bool because ub(α76' <: [[[Bool]]]))
+//│ ╔══[WARNING] ?a is unified with bool because ub(α81' <: [[[[[Bool]]]]]))
 //│ ║  
 //│ ╟── variable
 //│ ║  l.5: 	let mkpair x y = (x, confluence y)
 //│ ║       	           ^
+//│ ╟── <nested> function lhs len: 3
 //│ ╟── application
-//│ ║  l.45: 	let conflict x = mkpair (not x) x
+//│ ║  l.51: 	let conflict x = mkpair (not x) x
 //│ ║        	                        ^^^^^^^
+//│ ╟── <nested> function rhs len: 3
 //│ ╟── type reference
 //│ ║  builtin:56: 	let not: bool -> bool
 //│ ║              	                 ^^^^
 //│ ╟── type reference
 //│ ║  builtin:56: 	let not: bool -> bool
 //│ ╙──            	                 ^^^^
-//│ ╔══[WARNING] ?a is unified with bool because ub(α75' <: Bool))
-//│ ║  
-//│ ╟── variable
-//│ ║  l.45: 	let conflict x = mkpair (not x) x
-//│ ║        	             ^
-//│ ╟── reference
-//│ ║  l.45: 	let conflict x = mkpair (not x) x
-//│ ║        	                             ^
-//│ ╟── type reference
-//│ ║  builtin:56: 	let not: bool -> bool
-//│ ╙──            	         ^^^^
-//│ ╔══[WARNING] ?a is unified with ?b because ub(α75' <: α77'))
-//│ ║  
-//│ ╟── variable
-//│ ║  l.45: 	let conflict x = mkpair (not x) x
-//│ ║        	             ^
-//│ ╟── reference
-//│ ║  l.45: 	let conflict x = mkpair (not x) x
-//│ ║        	                                ^
-//│ ╟── variable
-//│ ║  l.5: 	let mkpair x y = (x, confluence y)
-//│ ╙──     	             ^
 //│ conflict: (bool & 'a) -> (bool, int | 'a,)
 
 :d
@@ -185,21 +286,23 @@ let conflict x = mkpair (not x) x
 let g x = (not x, (if true then x else 5))
 //│ 1. Typing term x => not x, if true(true) then x then (false) then 5,
 //│ | 1. Typing pattern x
-//│ | 1. : α90'
+//│ | 1. : α101'
 //│ | 1. Typing term not x, if true(true) then x then (false) then 5,
 //│ | | 1. Typing term not x
 //│ | | | 1. Typing term not
 //│ | | | 1. : [(Bool -> Bool)]
 //│ | | | 1. Typing term x
-//│ | | | 1. : [α90']
-//│ | | | CONSTRAIN [α90'] <! Bool
+//│ | | | 1. : [α101']
+//│ | | | CONSTRAIN [(Bool -> Bool)] <! ([α101'] -> α103')
 //│ | | |   where 
-//│ | | | C [α90'] <! Bool    (0) where ProvType <: TypeRef}
-//│ | | | | C α90' <! Bool    (0) where TypeVariable <: TypeRef}
-//│ | | | UT [α90'] <: Bool len: 3 
-//│ | | | | UT  Bool with
-//│ | | | | UT  α90' += (Bool,List(ub(α90' <: Bool)))
-//│ | | 1. : [Bool]
+//│ | | | C [(Bool -> Bool)] <! ([α101'] -> α103')    (0) where ProvType <: FunctionType}
+//│ | | | | C (Bool -> Bool) <! ([α101'] -> α103')    (0) where FunctionType <: FunctionType}
+//│ | | | | | [nested] [[α101']]
+//│ | | | | | C [α101'] <! Bool    (1) where ProvType <: TypeRef}
+//│ | | | | | | C α101' <! Bool    (1) where TypeVariable <: TypeRef}
+//│ | | | | | [nested] [Bool]
+//│ | | | | | C Bool <! α103'    (2) where TypeRef <: TypeVariable}
+//│ | | 1. : α103'
 //│ | | 1. Typing term if true(true) then x then (false) then 5
 //│ | | | If(Var(true), List(IfThen(Var(true), Var(x), IfThen(Var(false), IntLit(5)))
 //│ | | | 1. Typing term true
@@ -207,106 +310,96 @@ let g x = (not x, (if true then x else 5))
 //│ | | | CONSTRAIN [Bool] <! Bool
 //│ | | |   where 
 //│ | | | C [Bool] <! Bool    (0) where ProvType <: TypeRef}
-//│ | | | UT [Bool] <: Bool len: 3 
-//│ | | | | U [Bool] = Bool because lb([Bool] <: Bool) skipCache
 //│ | | | 1. Typing term x
-//│ | | | 1. : [α90']
-//│ | | | CONSTRAIN [α90'] <! α92'
+//│ | | | 1. : [α101']
+//│ | | | CONSTRAIN [α101'] <! α104'
 //│ | | |   where 
-//│ 		α90' <: [[[Bool]]]
-//│ | | | C [α90'] <! α92'    (0) where ProvType <: TypeVariable}
-//│ | | | | C α90' <! α92'    (0) where TypeVariable <: TypeVariable}
-//│ | | | UT [α90'] <: α92' len: 3 
-//│ | | | | UT  α92' with
-//│ | | | | UT  α90' <: [[[Bool]]]  for ub(α90' <: Bool)
-//│ | | | | U [[[Bool]]] = α92' because ub(α90' <: Bool), ub(α90' <: α92') ()
-//│ | | | | UT  α90' += (α92',List(ub(α90' <: α92')))
+//│ 		α101' <: [[[[Bool]]]]
+//│ | | | C [α101'] <! α104'    (0) where ProvType <: TypeVariable}
+//│ | | | | C α101' <! α104'    (0) where TypeVariable <: TypeVariable}
 //│ | | | 1. Typing term 5
 //│ | | | 1. : Int
-//│ | | | CONSTRAIN Int <! α92'
+//│ | | | CONSTRAIN Int <! α104'
 //│ | | |   where 
-//│ | | | C Int <! α92'    (0) where TypeRef <: TypeVariable}
-//│ | | | UT Int <: α92' len: 2 
-//│ | | | | UT  Int with
-//│ | | | | UT  α92' += (Int,List(lb(Int <: α92')))
-//│ | | 1. : α92'
-//│ | 1. : ([Bool], α92',)
-//│ 1. : (α90' -> ([Bool], α92',))
-//│ ⬤ Typed as: (α90' -> ([Bool], α92',))
+//│ | | | C Int <! α104'    (0) where TypeRef <: TypeVariable}
+//│ | | 1. : α104'
+//│ | 1. : (α103', α104',)
+//│ 1. : (α101' -> (α103', α104',))
+//│ ⬤ Typed as: (α101' -> (α103', α104',))
 //│  where: 
-//│ 		α90' <: [[[α92']]] & [[[Bool]]]
-//│ 		α92' :> [[Int]]
-//│ unified α92' with:
-//│   Int: lb(Int <: α92')
-//│ unified α91' with:
-//│ unified α90' with:
-//│   Bool: ub(α90' <: Bool)
-//│   α92': ub(α90' <: α92')
-//│ α92' bounds
-//│  α92' <: [[Int]] with lb([[Int]] <: α92') length: 3
-//│ UT α92' <: [[Int]] len: 4 
+//│ 		α101' <: [[[α104']]] & [[[[Bool]]]]
+//│ 		α103' :> [[[Bool]]]
+//│ 		α104' :> [[Int]]
+//│ unified α104' with:
+//│ unified α103' with:
+//│ unified α102' with:
+//│ unified α101' with:
+//│ α104' bounds
+//│  α104' <: [[Int]] with lb([[Int]] <: α104') length: 3
+//│ UT α104' <: [[Int]] len: 4 
 //│ | UT  Int with
-//│ | UT  [[Int]] <: α92' <: Int
+//│ | UT  [[Int]] <: α104' <: Int
 //│ | UT [[Int]] <: [[Int]] len: 7 
-//│ | UT  α92' += ([[Int]],List(ub(α92' <: [[Int]])))
-//│  α92' :> [[Int]] with ub(α92' <: [[Int]]) length: 3
-//│ UT α92' <: [[Int]] len: 4 
-//│ α91' bounds
-//│ α90' bounds
-//│ ╔══[WARNING] ?a is unified with int because ub(α92' <: [[Int]]))
+//│ | UT  α104' += ([[Int]],List(ub(α104' <: [[Int]])))
+//│  α104' :> [[Int]] with ub(α104' <: [[Int]]) length: 3
+//│ UT α104' <: [[Int]] len: 4 
+//│ α103' bounds
+//│  α103' <: [[[Bool]]] with lb([[[Bool]]] <: α103') length: 4
+//│ UT α103' <: [[[Bool]]] len: 5 
+//│ | UT  Bool with
+//│ | UT  [[[Bool]]] <: α103' <: Bool
+//│ | UT [[[Bool]]] <: [[[Bool]]] len: 9 
+//│ | UT  α103' += ([[[Bool]]],List(ub(α103' <: [[[Bool]]])))
+//│  α103' :> [[[Bool]]] with ub(α103' <: [[[Bool]]]) length: 4
+//│ UT α103' <: [[[Bool]]] len: 5 
+//│ α102' bounds
+//│ α101' bounds
+//│ ╔══[WARNING] ?a is unified with int because ub(α104' <: [[Int]]))
 //│ ║  
 //│ ╟── if-then-else expression
-//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ║  l.286: 	let g x = (not x, (if true then x else 5))
 //│ ║         	                  ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── `else` branch
-//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ║  l.286: 	let g x = (not x, (if true then x else 5))
 //│ ║         	                                       ^
 //│ ╟── `else` branch
-//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
+//│ ║  l.286: 	let g x = (not x, (if true then x else 5))
 //│ ╙──       	                                       ^
-//│ ╔══[WARNING] ?a is unified with bool because ub(α90' <: Bool))
+//│ ╔══[WARNING] ?a is unified with bool because ub(α103' <: [[[Bool]]]))
 //│ ║  
-//│ ╟── variable
-//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
-//│ ║         	      ^
-//│ ╟── reference
-//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
-//│ ║         	               ^
+//│ ╟── application
+//│ ║  l.286: 	let g x = (not x, (if true then x else 5))
+//│ ║         	           ^^^^^
+//│ ╟── <nested> function rhs len: 3
 //│ ╟── type reference
 //│ ║  builtin:56: 	let not: bool -> bool
-//│ ╙──            	         ^^^^
-//│ ╔══[WARNING] ?a is unified with ?b because ub(α90' <: α92'))
-//│ ║  
-//│ ╟── variable
-//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
-//│ ║         	      ^
-//│ ╟── `then` branch
-//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
-//│ ║         	                                ^
-//│ ╟── if-then-else expression
-//│ ║  l.185: 	let g x = (not x, (if true then x else 5))
-//│ ╙──       	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║              	                 ^^^^
+//│ ╟── type reference
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ╙──            	                 ^^^^
 //│ g: (bool & 'a) -> (bool, int | 'a,)
 
 :d
 let g x = (not x, (if true then x else 5))
 //│ 1. Typing term x => not x, if true(true) then x then (false) then 5,
 //│ | 1. Typing pattern x
-//│ | 1. : α97'
+//│ | 1. : α110'
 //│ | 1. Typing term not x, if true(true) then x then (false) then 5,
 //│ | | 1. Typing term not x
 //│ | | | 1. Typing term not
 //│ | | | 1. : [(Bool -> Bool)]
 //│ | | | 1. Typing term x
-//│ | | | 1. : [α97']
-//│ | | | CONSTRAIN [α97'] <! Bool
+//│ | | | 1. : [α110']
+//│ | | | CONSTRAIN [(Bool -> Bool)] <! ([α110'] -> α112')
 //│ | | |   where 
-//│ | | | C [α97'] <! Bool    (0) where ProvType <: TypeRef}
-//│ | | | | C α97' <! Bool    (0) where TypeVariable <: TypeRef}
-//│ | | | UT [α97'] <: Bool len: 3 
-//│ | | | | UT  Bool with
-//│ | | | | UT  α97' += (Bool,List(ub(α97' <: Bool)))
-//│ | | 1. : [Bool]
+//│ | | | C [(Bool -> Bool)] <! ([α110'] -> α112')    (0) where ProvType <: FunctionType}
+//│ | | | | C (Bool -> Bool) <! ([α110'] -> α112')    (0) where FunctionType <: FunctionType}
+//│ | | | | | [nested] [[α110']]
+//│ | | | | | C [α110'] <! Bool    (1) where ProvType <: TypeRef}
+//│ | | | | | | C α110' <! Bool    (1) where TypeVariable <: TypeRef}
+//│ | | | | | [nested] [Bool]
+//│ | | | | | C Bool <! α112'    (2) where TypeRef <: TypeVariable}
+//│ | | 1. : α112'
 //│ | | 1. Typing term if true(true) then x then (false) then 5
 //│ | | | If(Var(true), List(IfThen(Var(true), Var(x), IfThen(Var(false), IntLit(5)))
 //│ | | | 1. Typing term true
@@ -314,33 +407,24 @@ let g x = (not x, (if true then x else 5))
 //│ | | | CONSTRAIN [Bool] <! Bool
 //│ | | |   where 
 //│ | | | C [Bool] <! Bool    (0) where ProvType <: TypeRef}
-//│ | | | UT [Bool] <: Bool len: 3 
-//│ | | | | U [Bool] = Bool because lb([Bool] <: Bool) skipCache
 //│ | | | 1. Typing term x
-//│ | | | 1. : [α97']
-//│ | | | CONSTRAIN [α97'] <! α99'
+//│ | | | 1. : [α110']
+//│ | | | CONSTRAIN [α110'] <! α113'
 //│ | | |   where 
-//│ 		α97' <: [[[Bool]]]
-//│ | | | C [α97'] <! α99'    (0) where ProvType <: TypeVariable}
-//│ | | | | C α97' <! α99'    (0) where TypeVariable <: TypeVariable}
-//│ | | | UT [α97'] <: α99' len: 3 
-//│ | | | | UT  α99' with
-//│ | | | | UT  α97' <: [[[Bool]]]  for ub(α97' <: Bool)
-//│ | | | | U [[[Bool]]] = α99' because ub(α97' <: Bool), ub(α97' <: α99') ()
-//│ | | | | UT  α97' += (α99',List(ub(α97' <: α99')))
+//│ 		α110' <: [[[[Bool]]]]
+//│ | | | C [α110'] <! α113'    (0) where ProvType <: TypeVariable}
+//│ | | | | C α110' <! α113'    (0) where TypeVariable <: TypeVariable}
 //│ | | | 1. Typing term 5
 //│ | | | 1. : Int
-//│ | | | CONSTRAIN Int <! α99'
+//│ | | | CONSTRAIN Int <! α113'
 //│ | | |   where 
-//│ | | | C Int <! α99'    (0) where TypeRef <: TypeVariable}
-//│ | | | UT Int <: α99' len: 2 
-//│ | | | | UT  Int with
-//│ | | | | UT  α99' += (Int,List(lb(Int <: α99')))
-//│ | | 1. : α99'
-//│ | 1. : ([Bool], α99',)
-//│ 1. : (α97' -> ([Bool], α99',))
-//│ ⬤ Typed as: (α97' -> ([Bool], α99',))
+//│ | | | C Int <! α113'    (0) where TypeRef <: TypeVariable}
+//│ | | 1. : α113'
+//│ | 1. : (α112', α113',)
+//│ 1. : (α110' -> (α112', α113',))
+//│ ⬤ Typed as: (α110' -> (α112', α113',))
 //│  where: 
-//│ 		α97' <: [[[α99']]] & [[[Bool]]]
-//│ 		α99' :> [[Int]]
+//│ 		α110' <: [[[α113']]] & [[[[Bool]]]]
+//│ 		α112' :> [[[Bool]]]
+//│ 		α113' :> [[Int]]
 //│ g: (bool & 'a) -> (bool, int | 'a,)
