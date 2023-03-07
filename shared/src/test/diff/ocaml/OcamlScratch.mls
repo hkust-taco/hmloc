@@ -27,26 +27,19 @@ let wrap x = Cons(x, Nil)
 // * We don't care about in-and-outs
 // ╟── int ---> int list ---> int --> int list ---> ...
 
-:unify
+:e // Disabled nested let polymorphism
 if true then wrap 1 else wrap true
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟── this reference has type `bool`
+//│ ╟──        bool ---> ?a <--- int 
+//│ ║  
+//│ ╟── this reference has type `bool` and it flows into `?a`
 //│ ║  l.31: 	if true then wrap 1 else wrap true
 //│ ║        	                              ^^^^
-//│ ╟── this variable has type `bool`
+//│ ╟── this variable has type `?a`
 //│ ║  l.1: 	let wrap x = Cons(x, Nil)
 //│ ║       	         ^
-//│ ╟── this reference has type `bool`
-//│ ║  l.1: 	let wrap x = Cons(x, Nil)
-//│ ║       	                  ^
-//│ ╟── this reference has type `int`
-//│ ║  l.1: 	let wrap x = Cons(x, Nil)
-//│ ║       	                  ^
-//│ ╟── this variable has type `int`
-//│ ║  l.1: 	let wrap x = Cons(x, Nil)
-//│ ║       	         ^
-//│ ╟── this integer literal has type `int`
+//│ ╟── this integer literal has type `int` and it flows into `?a`
 //│ ║  l.31: 	if true then wrap 1 else wrap true
 //│ ╙──      	                  ^
 //│ res: list[bool | int]
@@ -57,16 +50,16 @@ if true then wrap (if true then 1 else false) else wrap true
 //│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ║  
 //│ ╟── this `then` branch has type `int`
-//│ ║  l.56: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                                ^
 //│ ╟── this if-then-else expression has type `int`
-//│ ║  l.56: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this if-then-else expression has type `bool`
-//│ ║  l.56: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `else` branch has type `bool`
-//│ ║  l.56: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║  l.49: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ╙──      	                                       ^^^^^
 //│ res: list[bool | int]
 
@@ -76,7 +69,7 @@ let test z = if true then wrap z else wrap true
 //│ test: 'a -> list[bool | 'a]
 
 
-// FIXME: Investigate why not provs for a certain case
+
 :unify
 let rec t = test (if true then 1 else t)
 //│ ╔══[ERROR] Type `?a list` does not match `int`
@@ -90,13 +83,13 @@ let rec t = test (if true then 1 else t)
 //│ ║  l.1: 	let wrap x = Cons(x, Nil)
 //│ ║       	             ^^^^^^^^^^^^
 //│ ╟── this `then` branch has type `?a list` and it flows into `?a`
-//│ ║  l.75: 	let test z = if true then wrap z else wrap true
+//│ ║  l.68: 	let test z = if true then wrap z else wrap true
 //│ ║        	                          ^^^^^^
 //│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.75: 	let test z = if true then wrap z else wrap true
+//│ ║  l.68: 	let test z = if true then wrap z else wrap true
 //│ ║        	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `then` branch has type `int` and it flows into `?a`
-//│ ║  l.81: 	let rec t = test (if true then 1 else t)
+//│ ║  l.74: 	let rec t = test (if true then 1 else t)
 //│ ╙──      	                               ^
 //│ ╔══[ERROR] Type `?a list` does not match `int`
 //│ ║  
@@ -109,13 +102,13 @@ let rec t = test (if true then 1 else t)
 //│ ║  l.1: 	let wrap x = Cons(x, Nil)
 //│ ║       	             ^^^^^^^^^^^^
 //│ ╟── this `else` branch has type `?a list` and it flows into `?b`
-//│ ║  l.75: 	let test z = if true then wrap z else wrap true
+//│ ║  l.68: 	let test z = if true then wrap z else wrap true
 //│ ║        	                                      ^^^^^^^^^
 //│ ╟── this if-then-else expression has type `?b`
-//│ ║  l.75: 	let test z = if true then wrap z else wrap true
+//│ ║  l.68: 	let test z = if true then wrap z else wrap true
 //│ ║        	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `then` branch has type `int` and it flows into `?b`
-//│ ║  l.81: 	let rec t = test (if true then 1 else t)
+//│ ║  l.74: 	let rec t = test (if true then 1 else t)
 //│ ╙──      	                               ^
 //│ t: 't
 //│   where
@@ -148,13 +141,38 @@ let clone x n =
 //│     'b := 'a
 
 
-// FIXME: Investigate why not provs for a certain case
+
 :e
 :unify
 let rec digitsOfInt n =
   ((digitsOfInt n) / 10) @ [remainder];;
+//│ ╔══[ERROR] Type `error` does not match `error`
+//│ ║  
+//│ ╟── this reference has type `error`
+//│ ║  l.148: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║         	                            ^^^^^^^^^
+//│ ╟── this reference has type `error`
+//│ ║  l.148: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ╙──       	                            ^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list` does not match `int`
+//│ ║  
+//│ ╟── `?a list` comes from this type expression
+//│ ║  builtin:37: 	let (@): 'a list -> 'a list -> 'a list
+//│ ║              	                               ^^^^^^^
+//│ ╟── this operator application has type `?a list`
+//│ ║  l.148: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.148: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║         	   ^^^^^^^^^^^^^^^
+//│ ╟── this application has type `int`
+//│ ║  l.148: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║         	   ^^^^^^^^^^^^^^^
+//│ ╟── `int` comes from this type expression
+//│ ║  builtin:19: 	let ( / ): int -> int -> int
+//│ ╙──            	           ^^^
 //│ ╔══[ERROR] identifier not found: remainder
 //│ ║  
-//│ ║  l.155: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.148: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──       	                            ^^^^^^^^^
 //│ digitsOfInt: anything -> list[error]

@@ -22,7 +22,7 @@ trait UnificationSolver extends TyperDatatypes {
         unifyTypes(tv, lb)
         tv.new_unification += ((lb, reason))
       })
-      tv.lowerBounds.foreach(ub => {
+      tv.upperBounds.foreach(ub => {
         val reason = UB(tv, ub, ub.typeUseLocations)
         println(s" $tv :> $ub with $reason length: ${reason.provs.length}")
         unifyTypes(tv, ub)

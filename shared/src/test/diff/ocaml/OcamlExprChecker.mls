@@ -234,8 +234,8 @@ let head xs = match xs with
 //│ ╙──       	               ^^^^^
 //│ head: list['a] -> 'a
 
-// TODO
-// FIXME
+
+
 let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
@@ -277,23 +277,70 @@ type ('a, 'b) paramlist = (('a * int) list * 'b) list
 //│ Defined type alias stringintlist
 //│ Defined type alias paramlist[+'a, +'b]
 
-// TODO
-// FIXME
+
+
 let check (v: ((int, int))) =
   match v with
    ((c, d)) -> c + d
 //│ check: (int, int,) -> int
 
+// TODO: confusing float with int
 let checkagain (v: (int, int, (int, int))) =
   match v with
    (a, b, (c, d)) -> a + b + c + d
-//│ ╔══[ERROR] identifier not found: d
+//│ ╔══[ERROR] Type `int` does not match `float`
 //│ ║  
-//│ ║  l.289: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ╟── `int` comes from this type expression
+//│ ║  l.288: 	let checkagain (v: (int, int, (int, int))) =
+//│ ║         	                               ^^^
+//│ ╟── `int * int` comes from this type expression
+//│ ║  l.288: 	let checkagain (v: (int, int, (int, int))) =
+//│ ║         	                              ^^^^^^^^^^
+//│ ╟── this 2 element of this tuple has type `int * int`
+//│ ║  l.290: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	   ^^^^^^^^^^^^^^
+//│ ╟── this 2 element of this tuple has type `float * error`
+//│ ║  l.290: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	   ^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `float * error`
+//│ ║  l.290: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	           ^^^^
+//│ ╟── this reference has type `float`
+//│ ║  l.290: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	           ^
+//│ ╟── this operator application has type `float`
+//│ ║  l.100: 	let c = 3.0 +. 4.0 *. 6.0
+//│ ║         	        ^^^^^^^^^^^^^^^^^
+//│ ╟── `float` comes from this type expression
+//│ ║  l.54: 	let (+.): float -> float -> float
+//│ ╙──      	                            ^^^^^
+//│ ╔══[ERROR] Type `int` does not match `error`
+//│ ║  
+//│ ╟── `int` comes from this type expression
+//│ ║  l.288: 	let checkagain (v: (int, int, (int, int))) =
+//│ ║         	                                    ^^^
+//│ ╟── `int * int` comes from this type expression
+//│ ║  l.288: 	let checkagain (v: (int, int, (int, int))) =
+//│ ║         	                              ^^^^^^^^^^
+//│ ╟── this 2 element of this tuple has type `int * int`
+//│ ║  l.290: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	   ^^^^^^^^^^^^^^
+//│ ╟── this 2 element of this tuple has type `float * error`
+//│ ║  l.290: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	   ^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `float * error`
+//│ ║  l.290: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║         	           ^^^^
+//│ ╟── this reference has type `error`
+//│ ║  l.290: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ╙──       	              ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.289: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.290: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ╙──       	              ^
+//│ ╔══[ERROR] identifier not found: d
+//│ ║  
+//│ ║  l.290: 	   (a, b, (c, d)) -> a + b + c + d
 //│ ╙──       	                                 ^
 //│ checkagain: (int, int, (int, int,),) -> int
 

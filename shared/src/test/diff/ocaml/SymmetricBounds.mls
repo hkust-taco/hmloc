@@ -6,57 +6,109 @@ let mkpair x y = (x, confluence y)
 
 :e
 mkpair 1 "2"
-//│ ╔══[ERROR] Type `int` does not match `string`
+//│ ╔══[ERROR] Type `string` does not match `int`
 //│ ║  
-//│ ╟── this `else` branch has type `int`
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	                                       ^
-//│ ╟── this if-then-else expression has type `int`
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `string`
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `string`
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	                                ^
+//│ ╟── this string literal has type `string`
+//│ ║  l.8: 	mkpair 1 "2"
+//│ ║       	         ^^^
 //│ ╟── this variable has type `string`
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	               ^
+//│ ║  l.4: 	let mkpair x y = (x, confluence y)
+//│ ║       	             ^
 //│ ╟── this reference has type `string`
 //│ ║  l.4: 	let mkpair x y = (x, confluence y)
 //│ ║       	                                ^
 //│ ╟── this variable has type `string`
-//│ ║  l.4: 	let mkpair x y = (x, confluence y)
-//│ ║       	             ^
-//│ ╟── this string literal has type `string`
-//│ ║  l.8: 	mkpair 1 "2"
-//│ ╙──     	         ^^^
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	               ^
+//│ ╟── this `then` branch has type `string`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                ^
+//│ ╟── this if-then-else expression has type `string`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `int`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `int`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ╙──     	                                       ^
 //│ res: (int, int | string,)
 
 :e
 let conflict x = mkpair (not x) x
 //│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ║  
-//│ ╟── this `else` branch has type `int`
+//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ║  
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
 //│ ║  l.1: 	let confluence z = if true then z else 5
 //│ ║       	                                       ^
-//│ ╟── this if-then-else expression has type `int`
+//│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.1: 	let confluence z = if true then z else 5
 //│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this variable has type `bool`
+//│ ╟── this `then` branch has type `?a` and it flows from `?b`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	               ^
+//│ ╟── this variable has type `?c`
 //│ ║  l.38: 	let conflict x = mkpair (not x) x
 //│ ║        	             ^
-//│ ╟── this reference has type `bool`
+//│ ╟── this reference has type `?c` and it flows into `bool`
 //│ ║  l.38: 	let conflict x = mkpair (not x) x
 //│ ║        	                             ^
-//│ ╟── `bool` comes from this type expression
+//│ ╟── this type reference has type `bool`
 //│ ║  builtin:56: 	let not: bool -> bool
 //│ ╙──            	         ^^^^
 //│ conflict: (bool & 'a) -> (bool, int | 'a,)
 
 let g x = (not x, (if true then x else 5))
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ║  
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.66: 	let g x = (not x, (if true then x else 5))
+//│ ║        	                                       ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.66: 	let g x = (not x, (if true then x else 5))
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?a` and it flows from `?b`
+//│ ║  l.66: 	let g x = (not x, (if true then x else 5))
+//│ ║        	                                ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.66: 	let g x = (not x, (if true then x else 5))
+//│ ║        	      ^
+//│ ╟── this reference has type `?b` and it flows into `bool`
+//│ ║  l.66: 	let g x = (not x, (if true then x else 5))
+//│ ║        	               ^
+//│ ╟── this type reference has type `bool`
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ╙──            	         ^^^^
 //│ g: (bool & 'a) -> (bool, int | 'a,)
 
 let g x = (not x, (if true then x else 5))
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ║  
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.91: 	let g x = (not x, (if true then x else 5))
+//│ ║        	                                       ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.91: 	let g x = (not x, (if true then x else 5))
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?a` and it flows from `?b`
+//│ ║  l.91: 	let g x = (not x, (if true then x else 5))
+//│ ║        	                                ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.91: 	let g x = (not x, (if true then x else 5))
+//│ ║        	      ^
+//│ ╟── this reference has type `?b` and it flows into `bool`
+//│ ║  l.91: 	let g x = (not x, (if true then x else 5))
+//│ ║        	               ^
+//│ ╟── this type reference has type `bool`
+//│ ║  builtin:56: 	let not: bool -> bool
+//│ ╙──            	         ^^^^
 //│ g: (bool & 'a) -> (bool, int | 'a,)
