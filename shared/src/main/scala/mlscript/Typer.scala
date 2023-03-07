@@ -557,15 +557,17 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val fun_ty = typeTerm(f)
         val arg_ty = typeTerm(a)
         val res = freshVar(prov)
-//        val resTy = con(fun_ty, FunctionType(arg_ty, res)(hintProv(prov)), res)
+        // val funProv = tp(f.toCoveringLoc, "applied expression")
+        val funProv = noProv
+        // val resTy = con(fun_ty, FunctionType(arg_ty, res)(hintProv(prov)), res)
         def go(f_ty: ST): ST = f_ty.unwrapProxies match {
           case FunctionType(l, r) =>
             con(arg_ty, l, r.withProv(prov))
           case _ =>
             val res = freshVar(prov, N)
             val resTy = con(fun_ty, FunctionType(arg_ty, res)(
-              prov
-//               funProv // TODO: better?
+              // prov
+              funProv // TODO: better?
             ), res)
             resTy
         }
@@ -579,7 +581,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             fieldName -> res.toUpper(tp(fieldName.toLoc, "field selector")) :: Nil)(hintProv(prov))
           con(obj_ty, rcd_ty, res)
         }
-
         // methods have been removed only field selection works
         rcdSel(obj, fieldName)
       case Let(isrec, nme, rhs, bod) =>
