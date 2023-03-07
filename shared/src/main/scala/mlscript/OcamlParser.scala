@@ -507,10 +507,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   // * constructor left(a): either['a, 'b]
   // * constructor right(b): either['a, 'b]
   def ocamlTyDeclHelper(tyDef: TypeDef, alsName: TypeName, alsParams: Ls[TypeName]): Opt[Def] = {
-    val alsTy = alsParams match {
+    val alsTy = (alsParams match {
       case Nil => alsName
       case params => AppliedType(alsName, params)
-    }
+    }).withLocOf(tyDef)
     tyDef.kind match {
       case Cls => {
         tyDef.body match {
