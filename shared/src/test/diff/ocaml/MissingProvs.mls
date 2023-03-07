@@ -7,8 +7,28 @@
 let test =
   let f x = x in
   (f 1 + f true)
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int <--- ?a ---> bool 
+//│ ║  
+//│ ╟── `int` comes from this type expression
+//│ ║  builtin:16: 	let (+): int -> int -> int
+//│ ║              	                ^^^
+//│ ╟── this application has type `int`
+//│ ║  l.9: 	  (f 1 + f true)
+//│ ║       	         ^^^^^^
+//│ ╟── this reference has type `int` and it flows from `?a`
+//│ ║  l.8: 	  let f x = x in
+//│ ║       	            ^
+//│ ╟── this variable has type `?a`
+//│ ║  l.8: 	  let f x = x in
+//│ ║       	        ^
+//│ ╟── this reference has type `?a` and it flows into `bool`
+//│ ║  l.9: 	  (f 1 + f true)
+//│ ╙──     	           ^^^^
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
+//│ ╟── `bool` comes from this type expression
 //│ ╟── this reference has type `bool`
 //│ ║  l.9: 	  (f 1 + f true)
 //│ ║       	           ^^^^
@@ -34,20 +54,22 @@ let test =
 let test2 = let (a, b) = test in b + 1
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
+//│ ╟── `bool` comes from this type expression
 //│ ╟── this reference has type `bool`
-//│ ║  l.31: 	  (f 1, f true)
+//│ ║  l.51: 	  (f 1, f true)
 //│ ║        	          ^^^^
 //│ ╟── this variable has type `bool`
-//│ ║  l.30: 	  let f x = x in
+//│ ║  l.50: 	  let f x = x in
 //│ ║        	        ^
 //│ ╟── this reference has type `bool`
-//│ ║  l.30: 	  let f x = x in
+//│ ║  l.50: 	  let f x = x in
 //│ ║        	            ^
 //│ ╟── this application has type `bool`
-//│ ║  l.31: 	  (f 1, f true)
+//│ ║  l.51: 	  (f 1, f true)
 //│ ║        	        ^^^^^^
+//│ ╟── this <nested> has type `bool`
 //│ ╟── this 1 element of this tuple has type `bool`
-//│ ║  l.34: 	let test2 = let (a, b) = test in b + 1
+//│ ║  l.54: 	let test2 = let (a, b) = test in b + 1
 //│ ║        	                ^^^^^^
 //│ ╟── `int` comes from this type expression
 //│ ║  builtin:16: 	let (+): int -> int -> int
