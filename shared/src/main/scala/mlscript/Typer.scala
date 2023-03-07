@@ -120,9 +120,9 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     TypeDef(Als, TypeName("anything"), Nil, Nil, TopType, Set.empty, N, Nil) ::
     TypeDef(Als, TypeName("nothing"), Nil, Nil, BotType, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("error"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("unit"), Nil, Nil, TopType, Set.empty, N, Nil) ::
-    TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Set.empty, N, Nil) :: {
-      val listTyVar: TypeVariable = freshVar(noProv, N)(1)
+    TypeDef(Cls, TypeName("float"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("float")->Nil)) ::
+    TypeDef(Cls, TypeName("unit"), Nil, Nil, TopType, Set.empty, N, Nil) :: {
+      val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
       val td = TypeDef(Cls, TypeName("list"), Ls((TypeName("A"), listTyVar)), Ls(listTyVar), TopType, Set.empty, N, Nil, S(TypeName("list"), Nil))
       td.tvarVariances = S(MutMap(listTyVar -> VarianceInfo.co))
       td
@@ -143,7 +143,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       },
       "error" -> BotType,
       "Cons" -> {
-        val listTyVar: TypeVariable = freshVar(noProv, S("'0"))(1)
+        val listTyVar: TypeVariable = freshVar(noProv, S("'a"))(1)
         val ListType: TypeRef = TypeRef(TypeName("list"), Ls(listTyVar))(noTyProv)
         val args = TupleType(Ls(N -> FieldType(N, listTyVar)(noTyProv), N -> FieldType(N, ListType)(noTyProv)))(noTyProv)
         PolymorphicType(0, fun(args, ListType)(noProv))
@@ -606,6 +606,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
               case v@Var("Tup1") => TypeName("Tup") -> Ls(0) -> v
               case v@Var("Tup2") => TypeName("Tup") -> Ls(0, 1) -> v
               case v@Var("Tup3") => TypeName("Tup") -> Ls(0, 1, 2) -> v
+              case v@Var("Cons") => TypeName("list") -> Ls(0) -> v
+              case v@Var("Nil") => TypeName("list") -> Ls() -> v
               case v@Var(name) => ctx.tyDefs.getOrElse(name, lastWords(s"could not find type definition ${name}"))
                 .adtData.getOrElse(lastWords(s"could not find adt data for type definition ${name}")) -> v
             }
@@ -637,7 +639,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
                 val newTargs = adtDef.targs.map(tv => freshVar(tv.prov, tv.nameHint))
                 // provenance for the first case expression from where we find the adt
                 val caseAdtTyp = TypeProvenance(caseAdt.toLoc, "pattern")
-                // TODO weird duplication in OcamlPresentation errors
                 val adt_ty = TypeRef(adtName, newTargs)(caseAdtTyp).withProv(TypeProvenance(cond.toLoc, "`match` condition"))
                 println(s"ADT type: $adt_ty")
                 (adt_ty, newTargs)
