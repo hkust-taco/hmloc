@@ -551,12 +551,17 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val body_ty = typeTerm(body)(newCtx, raise, vars)
         FunctionType(param_ty, body_ty)(tp(term.toLoc, "function"))
       case App(f, a) =>
-        val fun_ty = typeTerm(f)
-        val arg_tv = freshVar(ttp(a, "function argument"))
-        val arg_ty = typeTerm(a)
-        con(arg_ty, arg_tv, arg_tv)
-        val res_ty = freshVar(prov)
-        con(fun_ty, FunctionType(arg_tv, res_ty)(hintProv(prov)), res_ty)
+        val f_ty = typeTerm(f)
+        val a_ty = typeTerm(a)
+        val res = freshVar(prov)
+        val resTy = con(f_ty, FunctionType(a_ty, res)(hintProv(prov)), res)
+        resTy
+//        val fun_ty = typeTerm(f)
+//        val arg_tv = freshVar(ttp(a, "function argument"))
+//        val arg_ty = typeTerm(a)
+//        con(arg_ty, arg_tv, arg_tv)
+//        val res_ty = freshVar(prov)
+//        con(fun_ty, FunctionType(arg_tv, res_ty)(hintProv(prov)), res_ty)
         // val funProv = tp(f.toCoveringLoc, "applied expression")
 //        val funProv = noProv
 //        def go(f_ty: ST): ST = f_ty.unwrapProxies match {

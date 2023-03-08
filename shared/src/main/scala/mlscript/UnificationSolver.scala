@@ -71,11 +71,19 @@ trait UnificationSolver extends TyperDatatypes {
         case (tr1: TypeRef, tr2: TypeRef)
           if tr1.defn === tr2.defn &&
             tr1.targs.length === tr2.targs.length &&
-            tr1.targs.zip(tr2.targs).forall { case (arg1, arg2) => arg1 === arg2 }
+            tr1.targs.zip(tr2.targs).forall {
+              case (arg1: TypeVariable, arg2) => true
+              case (arg1, arg2: TypeVariable) => true
+              case (arg1, arg2) => arg1 === arg2
+            }
         => ()
         case (tup1: TupleType, tup2: TupleType)
           if tup1.fields.length === tup2.fields.length &&
-            tup1.fields.zip(tup2.fields).forall { case (fld1, fld2) => fld1 === fld2 }
+            tup1.fields.zip(tup2.fields).forall {
+              case (N -> FieldType(N, fld1: TypeVariable), _) => true
+              case (_, N -> FieldType(N, fld2: TypeVariable)) => true
+              case (fld1, fld2) => fld1 === fld2
+            }
         => ()
         // cannot check functional equality
         case (FunctionType(arg1, res1), FunctionType(arg2, res2)) => ()

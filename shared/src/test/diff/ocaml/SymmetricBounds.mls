@@ -13,33 +13,63 @@ mkpair 1 "2"
 //│ ╟── this string literal has type `string`
 //│ ║  l.1: 	mkpair 1 "2"
 //│ ║       	         ^^^
-//│ ╟── this variable has type `string` and it flows into `?a`
+//│ ╟── this variable has type `string`
 //│ ║  l.-3: 	let mkpair x y = (x, confluence y)
 //│ ║        	             ^
-//│ ╟── this reference has type `?a`
+//│ ╟── this reference has type `string`
 //│ ║  l.-3: 	let mkpair x y = (x, confluence y)
 //│ ║        	                                ^
-//│ ╟── this if-then-else expression has type `?b` and it flows from `int`
+//│ ╟── this variable has type `string`
+//│ ║  l.-6: 	let confluence z = if true then z else 5
+//│ ║        	               ^
+//│ ╟── this `then` branch has type `string` and it flows into `?a`
+//│ ║  l.-6: 	let confluence z = if true then z else 5
+//│ ║        	                                ^
+//│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.-6: 	let confluence z = if true then z else 5
 //│ ║        	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `else` branch has type `int`
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
 //│ ║  l.-6: 	let confluence z = if true then z else 5
 //│ ╙──      	                                       ^
 //│ res: (int, int | string,)
 
 :e
 let conflict x = mkpair (not x) x
-//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
-//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
-//│ 	at: mlscript.UnificationSolver.makeMessagesUR$1(UnificationSolver.scala:244)
-//│ 	at: mlscript.UnificationSolver.createErrorMessage(UnificationSolver.scala:275)
-//│ 	at: mlscript.UnificationSolver.createErrorMessage$(UnificationSolver.scala:179)
-//│ 	at: mlscript.TypeDefs.createErrorMessage(TypeDefs.scala:11)
-//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:169)
-//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:168)
-//│ 	at: scala.collection.Iterator$$anon$7.hasNext(Iterator.scala:525)
-//│ 	at: scala.collection.immutable.List.prependedAll(List.scala:152)
-//│ 	at: scala.collection.IterableOnceOps.toList(IterableOnce.scala:1288)
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ║  
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.-35: 	let confluence z = if true then z else 5
+//│ ║         	                                       ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.-35: 	let confluence z = if true then z else 5
+//│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?c`
+//│ ║  l.-35: 	let confluence z = if true then z else 5
+//│ ║         	                                ^
+//│ ╟── this variable has type `?c`
+//│ ║  l.-35: 	let confluence z = if true then z else 5
+//│ ║         	               ^
+//│ ╟── this reference has type `?c`
+//│ ║  l.-32: 	let mkpair x y = (x, confluence y)
+//│ ║         	                                ^
+//│ ╟── this variable has type `?c`
+//│ ║  l.-32: 	let mkpair x y = (x, confluence y)
+//│ ║         	             ^
+//│ ╟── this reference has type `?c` and it flows from `?b`
+//│ ║  l.1: 	let conflict x = mkpair (not x) x
+//│ ║       	                                ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.1: 	let conflict x = mkpair (not x) x
+//│ ║       	             ^
+//│ ╟── this reference has type `?b` and it flows into `bool`
+//│ ║  l.1: 	let conflict x = mkpair (not x) x
+//│ ║       	                             ^
+//│ ╟── this type reference has type `bool`
+//│ ║  builtin: 	let not: bool -> bool
+//│ ╙──         	         ^^^^
+//│ conflict: (bool & 'a) -> (bool, int | 'a,)
 
 let g x = (not x, (if true then x else 5))
 //│ ╔══[ERROR] Type `int` does not match `bool`
