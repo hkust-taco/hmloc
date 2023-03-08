@@ -80,7 +80,7 @@ let interp2 = interp (fun (env:env) opt ->
 //│ Desugared: (env : TypeName(env)) _ => Nil
 //│ Desugared: def interp2: interp ((env : TypeName(env)) opt => if opt(None) then 0)
 
-// TODO floats and floating point operators
+
 2.0
 let b = 3.0
 let c = 3.0 +. 4.0 *. 6.0
@@ -94,14 +94,15 @@ let mktup = 1, 2, 3
 let mktup = 1, (2, 3)
 let mktup = [1, 2, 3], 4, (5, 6)
 app 2 3 4
-app 2,3 4 // TODO should this be tupled or not is this correct?
-app (2,3) 4 // TODO is the extra tupling correct?
+app (2,3) 4
+// app 2,3 4  // does not work in ocaml
 //│ Desugared: 1, 2, 3,
 //│ Desugared: def mktup: 1, 2, 3,
 //│ Desugared: def mktup: 1, 2, 3,,
 //│ Desugared: def mktup: Cons (1, 2, 3,, Nil,), 4, 5, 6,,
 //│ Desugared: app 2 3 4
-//│ Desugared: app 2, 3 4,
+//│ Desugared: app (2, 3,) 4
+
 
 let a = 1
 let b = 2
@@ -116,7 +117,7 @@ let b = 2
 //│ Desugared: Cons (a, b, Cons (a, b,, Nil,), 12,, Nil,)
 //│ Desugared: Cons (a, b, Cons (+ a (/ b 2), Nil,),, Nil,)
 
-// TODO sequential let
+
 let _ = 
   pr ansL; print_newline (); 
   pr ansS; print_newline ();
@@ -170,7 +171,7 @@ let head xs = match xs with
 let head xs = match xs with
   (::) x xs -> x
   | _ -> raise Error
-//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.171:4:   (::) x xs -> x
+//│ /!\ Parse error: Expected ")":2:4, found "::) x xs -" at l.172:4:   (::) x xs -> x
 
 :dp
 type h = H of int

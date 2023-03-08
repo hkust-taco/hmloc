@@ -24,7 +24,7 @@ let bigAdd l1 l2 =
 //│ ║  
 //│ ╟── this tuple literal has type `?a * ?b`
 //│ ║  l.8: 	  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│ ║       	                                                         ^^^^^^^^
+//│ ║       	                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this if-then-else expression has type `?a * ?b`
 //│ ║  l.8: 	  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
 //│ ║       	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -81,7 +81,7 @@ let bigAdd l1 l2 =
 //│ ║  
 //│ ╟── this tuple literal has type `?a * ?b`
 //│ ║  l.8: 	  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│ ║       	                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║       	                                                         ^^^^^^^^
 //│ ╟── this if-then-else expression has type `?a * ?b`
 //│ ║  l.8: 	  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
 //│ ║       	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -477,18 +477,18 @@ let rec additivePersistence n =
 //│ ║  
 //│ ╟──        bool ---> ?a <--- int 
 //│ ║  
-//│ ╟── this `else` branch has type `bool`
+//│ ╟── this `then` branch has type `bool` and it flows into `?a`
 //│ ║  l.8: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
-//│ ║       	                                                         ^^^^
-//│ ╟── this if-then-else expression has type `bool` and it flows into `?a`
+//│ ║       	                                              ^^^^^
+//│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.8: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
 //│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this match expression has type `?a`
+//│ ╟── this match expression has type `?b` and it flows from `int`
 //│ ║  l.6: 	  match digits n with
 //│ ║       	  ^^^^^^^^^^^^^^^^^^^
 //│ ║  l.7: 	  | [] -> 0 ...
 //│ ║       	^^^^^^^^^^^
-//│ ╟── this integer literal has type `int` and it flows into `?a`
+//│ ╟── this integer literal has type `int`
 //│ ║  l.7: 	  | [] -> 0
 //│ ╙──     	          ^
 //│ digitsOfInt: int -> list[int]
@@ -597,6 +597,7 @@ let rec addHelper (t,u) =
          else (addHelper (t, t')) @ [h' + h];;
 //│ addHelper: (list[int], list[int],) -> list[int]
 
+// FIXME: no common provs
 :e
 // file 1948 // TODO disconnected provs
 let rec helper x = if x = 0 then 1 else 10 * (helper (x - 1));;
@@ -624,18 +625,18 @@ let bigMul l1 l2 =
 //│ ║  l.8: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║       	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this function has type `?b -> ?c`
-//│ ║  l.-587: 	let bigAdd l1 l2 =
+//│ ║  l.-588: 	let bigAdd l1 l2 =
 //│ ║          	              ^^^^
-//│ ║  l.-586: 	  let add (l1,l2) = ...
+//│ ║  l.-587: 	  let add (l1,l2) = ...
 //│ ║          	^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?b -> ?c` does not match `int * ?a list`
 //│ ║  
 //│ ╟──        ?b -> ?c ---> ?d <--- int * ?a list 
 //│ ║  
 //│ ╟── this function has type `?b -> ?c`
-//│ ║  l.-587: 	let bigAdd l1 l2 =
+//│ ║  l.-588: 	let bigAdd l1 l2 =
 //│ ║          	              ^^^^
-//│ ║  l.-586: 	  let add (l1,l2) = ...
+//│ ║  l.-587: 	  let add (l1,l2) = ...
 //│ ║          	^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?b -> ?c`
 //│ ║  l.8: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -694,9 +695,9 @@ let bigMul l1 l2 =
 //│ ╔══[ERROR] Type `?a -> ?b` does not match `?c * ?d`
 //│ ║  
 //│ ╟── this function has type `?a -> ?b`
-//│ ║  l.-587: 	let bigAdd l1 l2 =
+//│ ║  l.-588: 	let bigAdd l1 l2 =
 //│ ║          	              ^^^^
-//│ ║  l.-586: 	  let add (l1,l2) = ...
+//│ ║  l.-587: 	  let add (l1,l2) = ...
 //│ ║          	^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?a -> ?b`
 //│ ║  l.8: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -744,17 +745,33 @@ let bigMul l1 l2 =
 //│ ╟── this pattern has type `?b * ?c`
 //│ ║  l.11: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ╙──      	      ^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a -> ?b` does not match `?c * ?d`
+//│ ║  
+//│ ╟── this function has type `?a -> ?b`
+//│ ║  l.-588: 	let bigAdd l1 l2 =
+//│ ║          	              ^^^^
+//│ ║  l.-587: 	  let add (l1,l2) = ...
+//│ ║          	^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a -> ?b`
+//│ ║  l.8: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║       	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this match expression has type `?a -> ?b`
+//│ ║  l.8: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║       	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?a -> ?b`
+//│ ║  l.7: 	    let (carry,res) = a in
+//│ ║       	    ^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.8: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ ║       	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?a -> ?b`
+//│ ║  l.6: 	    let (x1,x2) = x in
+//│ ║       	    ^^^^^^^^^^^^^^^^^^
+//│ ║  l.7: 	    let (carry,res) = a in ...
+//│ ║       	^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this pattern has type `?c * ?d`
+//│ ║  l.7: 	    let (carry,res) = a in
+//│ ╙──     	        ^^^^^^^^^^^
 //│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
-//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
-//│ 	at: mlscript.UnificationSolver.makeMessagesUR$1(UnificationSolver.scala:252)
-//│ 	at: mlscript.UnificationSolver.createErrorMessage(UnificationSolver.scala:283)
-//│ 	at: mlscript.UnificationSolver.createErrorMessage$(UnificationSolver.scala:187)
-//│ 	at: mlscript.TypeDefs.createErrorMessage(TypeDefs.scala:11)
-//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:177)
-//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:176)
-//│ 	at: scala.collection.Iterator$$anon$7.hasNext(Iterator.scala:525)
-//│ 	at: scala.collection.immutable.List.prependedAll(List.scala:152)
-//│ 	at: scala.collection.IterableOnceOps.toList(IterableOnce.scala:1288)
 
 // file 335
 let fixpointHelper f =
@@ -786,6 +803,7 @@ let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│        <: 'b & 'c
 //│ fixpoint: ((anything, bool,), anything,) -> nothing
 
+// FIXME: no common provs
 // file 3 mod
 let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
 let padZero l1 l2 =
@@ -883,34 +901,15 @@ let bigAdd l1 l2 =
 //│ ╙──      	                                 ^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?b * ?c` does not match `?a list`
 //│ ║  
-//│ ╟──        ?b * ?c <--- ?d ---> ?e <--- ?a list 
+//│ ╟──        ?b * ?c ---> ?d <--- ?a list 
 //│ ║  
-//│ ╟── this pattern has type `?b * ?c`
-//│ ║  l.19: 	        (let (toSum1,toSum2) = x in
-//│ ║        	             ^^^^^^^^^^^^^^^
-//│ ╟── this reference has type `?b * ?c` and it flows from `?d`
-//│ ║  l.19: 	        (let (toSum1,toSum2) = x in
-//│ ║        	                               ^
-//│ ╟── this variable has type `?d`
-//│ ║  l.14: 	    let f a x =
-//│ ║        	            ^
-//│ ╟── this reference has type `?d` and it flows into `?e`
-//│ ║  l.16: 	      if x = []
-//│ ║        	         ^
+//│ ╟── `?b * ?c` comes from this type expression and it flows into `?d`
+//│ ║  builtin: 	let List.combine: 'a list -> 'b list -> ('a * 'b) list
+//│ ║           	                                         ^^^^^^^
 //│ ╟── this reference has type `?a list` and it flows into `?e`
 //│ ║  l.16: 	      if x = []
 //│ ╙──      	             ^^
 //│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
-//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
-//│ 	at: mlscript.UnificationSolver.makeMessagesUR$1(UnificationSolver.scala:252)
-//│ 	at: mlscript.UnificationSolver.createErrorMessage(UnificationSolver.scala:283)
-//│ 	at: mlscript.UnificationSolver.createErrorMessage$(UnificationSolver.scala:187)
-//│ 	at: mlscript.TypeDefs.createErrorMessage(TypeDefs.scala:11)
-//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:177)
-//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:176)
-//│ 	at: scala.collection.Iterator$$anon$7.hasNext(Iterator.scala:525)
-//│ 	at: scala.collection.immutable.List.prependedAll(List.scala:152)
-//│ 	at: scala.collection.IterableOnceOps.toList(IterableOnce.scala:1288)
 
 // file 1935
 let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1));;
@@ -972,10 +971,10 @@ let rec wwhile (f,b) =
 //│ ║  l.1: 	let intboolf f x = ((f x), ((f x) < 1));;
 //│ ║       	               ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?a -> ?b * ?c`
-//│ ║  l.-201: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ║  l.-183: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ ║          	        ^^^
 //│ ╟── this pattern has type `?d * ?e`
-//│ ║  l.-201: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ║  l.-183: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ ╙──        	                   ^^^^^^^^^^
 //│ intboolf: ('a -> 'b) -> 'a -> ('b, bool,)
 //│ fixpoint: (anything, nothing -> anything,) -> nothing
@@ -1079,17 +1078,23 @@ let rec assoc (d,k,l) =
   | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
 //│ ╔══[ERROR] Type `?a -> ?b` does not match `?c * ?a * ?d`
 //│ ║  
-//│ ╟──        ?a -> ?b <--- ?c ---> ?c * ?a * ?d 
+//│ ╟──        ?a -> ?b <--- ?e ---> ?f <--- ?c ---> ?c * ?a * ?d 
 //│ ║  
-//│ ╟── this application has type `?a -> ?b`
-//│ ║  l.4: 	  | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
-//│ ║       	                                                    ^^^^^^^
-//│ ╟── this match expression has type `?a -> ?b`
+//│ ╟── this match expression has type `?e` and it flows into `?a -> ?b`
 //│ ║  l.2: 	  match l with
 //│ ║       	  ^^^^^^^^^^^^
 //│ ║  l.3: 	  | [] -> d ...
 //│ ║       	^^^^^^^^^^^
-//│ ╟── this reference has type `?a -> ?b` and it flows from `?c`
+//│ ╟── this `then` branch has type `?g`
+//│ ║  l.4: 	  | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
+//│ ║       	                                           ^^^
+//│ ╟── this if-then-else expression has type `?g` and it flows into `?f`
+//│ ║  l.4: 	  | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
+//│ ║       	                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?f`
+//│ ║  l.4: 	  | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this reference has type `?f` and it flows from `?c`
 //│ ║  l.3: 	  | [] -> d
 //│ ║       	          ^
 //│ ╟── this variable has type `?c`

@@ -170,6 +170,22 @@ let bigAdd l1 l2 =
 //│ ╙──      	                                 ^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?b * ?c` does not match `?a list`
 //│ ║  
+//│ ╟──        ?b * ?c ---> ?d <--- ?a list 
+//│ ║  
+//│ ╟── `?b * ?c` comes from this type expression
+//│ ║  builtin: 	let List.combine: 'a list -> 'b list -> ('a * 'b) list
+//│ ║           	                                         ^^^^^^^
+//│ ╟── this variable has type `?b * ?c` and it flows into `?d`
+//│ ║  l.3: 	    let f a x =
+//│ ║       	            ^
+//│ ╟── this reference has type `?d`
+//│ ║  l.5: 	      if x = []
+//│ ║       	         ^
+//│ ╟── this reference has type `?a list` and it flows into `?d`
+//│ ║  l.5: 	      if x = []
+//│ ╙──     	             ^^
+//│ ╔══[ERROR] Type `?b * ?c` does not match `?a list`
+//│ ║  
 //│ ╟──        ?b * ?c <--- ?d ---> ?e <--- ?a list 
 //│ ║  
 //│ ╟── this pattern has type `?b * ?c`
@@ -187,17 +203,25 @@ let bigAdd l1 l2 =
 //│ ╟── this reference has type `?a list` and it flows into `?e`
 //│ ║  l.5: 	      if x = []
 //│ ╙──     	             ^^
-//│ ╔══[ERROR] Type `?b * ?c` does not match `?a list`
-//│ ║  
-//│ ╟──        ?b * ?c ---> ?d <--- ?a list 
-//│ ║  
-//│ ╟── `?b * ?c` comes from this type expression and it flows into `?d`
-//│ ║  builtin: 	let List.combine: 'a list -> 'b list -> ('a * 'b) list
-//│ ║           	                                         ^^^^^^^
-//│ ╟── this reference has type `?a list` and it flows into `?e`
-//│ ║  l.5: 	      if x = []
-//│ ╙──     	             ^^
 //│ bigAdd: list[int] -> list[int] -> list[int]
+
+// TODO weird error not there before
+// ╔══[ERROR] Type `?b * ?c` does not match `?a list`
+// ║  
+// ╟──        ?b * ?c ---> ?d <--- ?a list 
+// ║  
+// ╟── `?b * ?c` comes from this type expression
+// ║  builtin: 	let List.combine: 'a list -> 'b list -> ('a * 'b) list
+// ║           	                                         ^^^^^^^
+// ╟── this variable has type `?b * ?c` and it flows into `?d`
+// ║  l.3: 	    let f a x =
+// ║       	            ^
+// ╟── this reference has type `?d`
+// ║  l.5: 	      if x = []
+// ║       	         ^
+// ╟── this reference has type `?a list` and it flows into `?d`
+// ║  l.5: 	      if x = []
+// ╙──     	             ^^
 
 ////////// file 1948
 
@@ -247,6 +271,7 @@ let rec mulByDigit i l =
 //│ bigAdd: list[int] -> list[int] -> list[int]
 //│ mulByDigit: int -> list[int] -> list[int]
 
+// FIXME: no common provs
 :unify
 let bigMul l1 l2 =
   let f a x =
@@ -270,18 +295,18 @@ let bigMul l1 l2 =
 //│ ║  l.5: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║       	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this function has type `?b -> ?c`
-//│ ║  l.-25: 	let bigAdd l1 l2 =
+//│ ║  l.-26: 	let bigAdd l1 l2 =
 //│ ║         	              ^^^^
-//│ ║  l.-24: 	  let add (l1,l2) = ...
+//│ ║  l.-25: 	  let add (l1,l2) = ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?b -> ?c` does not match `int * ?a list`
 //│ ║  
 //│ ╟──        ?b -> ?c ---> ?d <--- int * ?a list 
 //│ ║  
 //│ ╟── this function has type `?b -> ?c`
-//│ ║  l.-25: 	let bigAdd l1 l2 =
+//│ ║  l.-26: 	let bigAdd l1 l2 =
 //│ ║         	              ^^^^
-//│ ║  l.-24: 	  let add (l1,l2) = ...
+//│ ║  l.-25: 	  let add (l1,l2) = ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?b -> ?c`
 //│ ║  l.5: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -340,9 +365,9 @@ let bigMul l1 l2 =
 //│ ╔══[ERROR] Type `?a -> ?b` does not match `?c * ?d`
 //│ ║  
 //│ ╟── this function has type `?a -> ?b`
-//│ ║  l.-25: 	let bigAdd l1 l2 =
+//│ ║  l.-26: 	let bigAdd l1 l2 =
 //│ ║         	              ^^^^
-//│ ║  l.-24: 	  let add (l1,l2) = ...
+//│ ║  l.-25: 	  let add (l1,l2) = ...
 //│ ║         	^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?a -> ?b`
 //│ ║  l.5: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -390,38 +415,33 @@ let bigMul l1 l2 =
 //│ ╟── this pattern has type `?b * ?c`
 //│ ║  l.8: 	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ ╙──     	      ^^^^^^^^^^^
-//│ ╔══[ERROR] Type `?a list` does not match `?b * ?c`
+//│ ╔══[ERROR] Type `?a -> ?b` does not match `?c * ?d`
 //│ ║  
-//│ ╟── this reference has type `?a list`
+//│ ╟── this function has type `?a -> ?b`
+//│ ║  l.-26: 	let bigAdd l1 l2 =
+//│ ║         	              ^^^^
+//│ ║  l.-25: 	  let add (l1,l2) = ...
+//│ ║         	^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a -> ?b`
 //│ ║  l.5: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║       	                          ^^
-//│ ╟── this match expression has type `?a list`
+//│ ║       	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this match expression has type `?a -> ?b`
 //│ ║  l.5: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║       	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this let expression has type `?a list`
+//│ ╟── this let expression has type `?a -> ?b`
 //│ ║  l.4: 	    let (carry,res) = a in
 //│ ║       	    ^^^^^^^^^^^^^^^^^^^^^^
 //│ ║  l.5: 	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ ║       	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this let expression has type `?a list`
+//│ ╟── this let expression has type `?a -> ?b`
 //│ ║  l.3: 	    let (x1,x2) = x in
 //│ ║       	    ^^^^^^^^^^^^^^^^^^
 //│ ║  l.4: 	    let (carry,res) = a in ...
 //│ ║       	^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this pattern has type `?b * ?c`
+//│ ╟── this pattern has type `?c * ?d`
 //│ ║  l.4: 	    let (carry,res) = a in
 //│ ╙──     	        ^^^^^^^^^^^
 //│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
-//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
-//│ 	at: mlscript.UnificationSolver.makeMessagesUR$1(UnificationSolver.scala:252)
-//│ 	at: mlscript.UnificationSolver.createErrorMessage(UnificationSolver.scala:283)
-//│ 	at: mlscript.UnificationSolver.createErrorMessage$(UnificationSolver.scala:187)
-//│ 	at: mlscript.TypeDefs.createErrorMessage(TypeDefs.scala:11)
-//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:177)
-//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:176)
-//│ 	at: scala.collection.Iterator$$anon$7.hasNext(Iterator.scala:525)
-//│ 	at: scala.collection.immutable.List.prependedAll(List.scala:152)
-//│ 	at: scala.collection.IterableOnceOps.toList(IterableOnce.scala:1288)
 
 ////////// file 2361
 

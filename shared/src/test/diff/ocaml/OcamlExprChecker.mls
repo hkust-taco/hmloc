@@ -268,39 +268,36 @@ let check (v: ((int, int))) =
    ((c, d)) -> c + d
 //│ check: (int, int,) -> int
 
-// TODO: confusing float with int
+// FIXME: nested match case not working right now
 let checkagain (v: (int, int, (int, int))) =
   match v with
-   (a, b, (c, d)) -> a + b + c + d
-//│ ╔══[ERROR] Type `float` does not match `int`
-//│ ║  
-//│ ╟── `float` comes from this type expression
-//│ ║  l.-225: 	let (+.): float -> float -> float
-//│ ║          	                            ^^^^^
-//│ ╟── this operator application has type `float`
-//│ ║  l.-179: 	let c = 3.0 +. 4.0 *. 6.0
-//│ ║          	        ^^^^^^^^^^^^^^^^^
-//│ ╟── `int` comes from this type expression
-//│ ║  l.-199: 	let (+): int -> int -> int
-//│ ╙──        	                ^^^
-//│ ╔══[ERROR] Type `int * int` does not match `?a * error`
+   (a, b, (k, d)) -> a + b + k + d
+//│ ╔══[ERROR] Type `int * int` does not match `error * error`
 //│ ║  
 //│ ╟── `int * int` comes from this type expression
 //│ ║  l.1: 	let checkagain (v: (int, int, (int, int))) =
 //│ ║       	                              ^^^^^^^^^^
 //│ ╟── this 2 element of this tuple has type `int * int`
-//│ ║  l.3: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.3: 	   (a, b, (k, d)) -> a + b + k + d
 //│ ║       	   ^^^^^^^^^^^^^^
-//│ ╟── this tuple literal has type `?a * error`
-//│ ║  l.3: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ╟── this tuple literal has type `error * error`
+//│ ║  l.3: 	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──     	           ^^^^
+//│ ╔══[ERROR] identifier not found: k
+//│ ║  
+//│ ║  l.274: 	   (a, b, (k, d)) -> a + b + k + d
+//│ ╙──       	           ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.274: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.274: 	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──       	              ^
+//│ ╔══[ERROR] identifier not found: k
+//│ ║  
+//│ ║  l.274: 	   (a, b, (k, d)) -> a + b + k + d
+//│ ╙──       	                             ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.274: 	   (a, b, (c, d)) -> a + b + c + d
+//│ ║  l.274: 	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──       	                                 ^
 //│ checkagain: (int, int, (int, int,),) -> int
 

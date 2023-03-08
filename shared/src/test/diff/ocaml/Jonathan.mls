@@ -58,7 +58,7 @@ let h y = (not y, (if true then y else 5))
 //│ h: (bool & 'a) -> (bool, int | 'a,)
 
 
-// TODO merge message for common location
+
 :e
 :unify
 let confluence z = if true then z else 5
@@ -85,7 +85,7 @@ confluence true
 //│ confluence: 'a -> (int | 'a)
 //│ res: bool | int
 
-// FIXME: no common location found investigate
+
 let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
 //│ ╔══[ERROR] Type `int` does not match `bool`
@@ -98,21 +98,18 @@ let conflict x = mkpair (not x) x
 //│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.-24: 	let confluence z = if true then z else 5
 //│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `?a`
+//│ ╟── this `then` branch has type `?a` and it flows from `?b`
 //│ ║  l.-24: 	let confluence z = if true then z else 5
 //│ ║         	                                ^
-//│ ╟── this variable has type `?a`
+//│ ╟── this variable has type `?b`
 //│ ║  l.-24: 	let confluence z = if true then z else 5
 //│ ║         	               ^
-//│ ╟── this reference has type `?a` and it flows from `?b`
-//│ ║  l.1: 	let mkpair x y = (x, confluence y)
-//│ ║       	                                ^
-//│ ╟── this variable has type `?b`
+//│ ╟── this variable has type `?e` and it flows into `?c`
 //│ ║  l.1: 	let mkpair x y = (x, confluence y)
 //│ ║       	             ^
-//│ ╟── this application has type `?b` and it flows into `?c`
+//│ ╟── this reference has type `?c`
 //│ ║  l.1: 	let mkpair x y = (x, confluence y)
-//│ ║       	                     ^^^^^^^^^^^^
+//│ ║       	                                ^
 //│ ╟── this reference has type `?c` and it flows from `?d`
 //│ ║  l.2: 	let conflict x = mkpair (not x) x
 //│ ║       	                                ^
