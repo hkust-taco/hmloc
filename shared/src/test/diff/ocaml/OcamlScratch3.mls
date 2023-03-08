@@ -16,18 +16,9 @@ g b
 //│ ╟── this reference has type `int`
 //│ ║  l.2: 	let b = a
 //│ ║       	        ^
-//│ ╟── this reference has type `int`
+//│ ╟── this function argument has type `int`
 //│ ║  l.5: 	g b
-//│ ║       	  ^
-//│ ╟── this variable has type `int`
-//│ ║  l.3: 	let f x = if x then true else false
-//│ ║       	      ^
-//│ ╟── this variable has type `bool`
-//│ ║  l.3: 	let f x = if x then true else false
-//│ ║       	      ^
-//│ ╟── this if-then-else condition has type `bool`
-//│ ║  l.3: 	let f x = if x then true else false
-//│ ╙──     	             ^
+//│ ╙──     	  ^
 //│ a: int
 //│ b: int
 //│ f: bool -> bool
@@ -41,31 +32,31 @@ let b = a
 let f x y = if y then x else "x"
 let g = f
 g b true
-//│ ╔══[ERROR] Type `int` does not match `string`
+//│ ╔══[ERROR] Type `string` does not match `int`
 //│ ║  
-//│ ╟──        int ---> ?a <--- string 
+//│ ╟──        string ---> ?a <--- int 
 //│ ║  
-//│ ╟── this integer literal has type `int`
-//│ ║  l.1: 	let a = 1
-//│ ║       	        ^
-//│ ╟── this reference has type `int`
-//│ ║  l.2: 	let b = a
-//│ ║       	        ^
-//│ ╟── this reference has type `int`
-//│ ║  l.5: 	g b true
-//│ ║       	  ^
-//│ ╟── this variable has type `int`
+//│ ╟── this `else` branch has type `string` and it flows into `?a`
 //│ ║  l.3: 	let f x y = if y then x else "x"
-//│ ║       	      ^
-//│ ╟── this `then` branch has type `int` and it flows into `?a`
-//│ ║  l.3: 	let f x y = if y then x else "x"
-//│ ║       	                      ^
+//│ ║       	                             ^^^
 //│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.3: 	let f x y = if y then x else "x"
 //│ ║       	            ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `else` branch has type `string` and it flows into `?a`
+//│ ╟── this `then` branch has type `?a`
 //│ ║  l.3: 	let f x y = if y then x else "x"
-//│ ╙──     	                             ^^^
+//│ ║       	                      ^
+//│ ╟── this variable has type `?a`
+//│ ║  l.3: 	let f x y = if y then x else "x"
+//│ ║       	      ^
+//│ ╟── this reference has type `?a`
+//│ ║  l.5: 	g b true
+//│ ║       	  ^
+//│ ╟── this reference has type `?a` and it flows from `int`
+//│ ║  l.2: 	let b = a
+//│ ║       	        ^
+//│ ╟── this integer literal has type `int`
+//│ ║  l.1: 	let a = 1
+//│ ╙──     	        ^
 //│ a: int
 //│ b: int
 //│ f: 'a -> bool -> (string | 'a)

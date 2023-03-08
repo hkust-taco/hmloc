@@ -63,58 +63,32 @@ let h y = (not y, (if true then y else 5))
 :unify
 let confluence z = if true then z else 5
 confluence true
-//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ║  
-//│ ╟──        bool ---> ?a <--- int 
+//│ ╟──        int ---> ?a <--- bool 
 //│ ║  
-//│ ╟── this reference has type `bool`
-//│ ║  l.2: 	confluence true
-//│ ║       	           ^^^^
-//│ ╟── this variable has type `bool`
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
 //│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	               ^
-//│ ╟── this `then` branch has type `bool` and it flows into `?a`
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	                                ^
+//│ ║       	                                       ^
 //│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.1: 	let confluence z = if true then z else 5
 //│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ╟── this `then` branch has type `?a`
 //│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ╙──     	                                       ^
+//│ ║       	                                ^
+//│ ╟── this variable has type `?a` and it flows from `bool`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	               ^
+//│ ╟── this reference has type `bool`
+//│ ║  l.2: 	confluence true
+//│ ╙──     	           ^^^^
 //│ confluence: 'a -> (int | 'a)
 //│ res: bool | int
 
 // FIXME: no common location found investigate
 let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
-//│ ╔══[ERROR] Type `int` does not match `bool`
-//│ ║  
-//│ ╟──        int ---> ?a <--- ?b ---> bool 
-//│ ║  
-//│ ╟── this `else` branch has type `int` and it flows into `?a`
-//│ ║  l.-24: 	let confluence z = if true then z else 5
-//│ ║         	                                       ^
-//│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.-24: 	let confluence z = if true then z else 5
-//│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `?c` and it flows from `?b`
-//│ ║  l.-24: 	let confluence z = if true then z else 5
-//│ ║         	                                ^
-//│ ╟── this variable has type `?b`
-//│ ║  l.-24: 	let confluence z = if true then z else 5
-//│ ║         	               ^
-//│ ╟── this variable has type `?d`
-//│ ║  l.2: 	let conflict x = mkpair (not x) x
-//│ ║       	             ^
-//│ ╟── this reference has type `?d` and it flows into `bool`
-//│ ║  l.2: 	let conflict x = mkpair (not x) x
-//│ ║       	                             ^
-//│ ╟── this type reference has type `bool`
-//│ ║  builtin: 	let not: bool -> bool
-//│ ╙──         	         ^^^^
-//│ mkpair: 'a -> 'b -> ('a, int | 'b,)
-//│ conflict: (bool & 'a) -> (bool, int | 'a,)
+//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
 
 
 
@@ -122,24 +96,46 @@ let conflict x = mkpair (not x) x
 :e
 let rec digitsOfInt n =
   if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
-//│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
+//│ ╔══[ERROR] Type `?a list` does not match `?b list`
+//│ ║  
+//│ ╟── this application has type `?a list`
+//│ ║  l.2: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║       	                                                   ^^^^^^^^
+//│ ╟── `?b list` comes from this type expression
+//│ ║  builtin: 	let (@): 'a list -> 'a list -> 'a list
+//│ ╙──         	                    ^^^^^^^
+//│ ╔══[ERROR] Type `?b * ?a list` does not match `?a0 * ?a0 list`
+//│ ║  
+//│ ╟── this function argument has type `?b * ?a list`
+//│ ║  l.2: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ╙──     	                                                   ^^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `?a -> ?b`
+//│ ║  
+//│ ╟──        int <--- ?c ---> ?a -> ?b 
 //│ ║  
 //│ ╟── `int` comes from this type expression
 //│ ║  builtin: 	let ( / ): int -> int -> int
-//│ ║           	                         ^^^
-//│ ╟── this operator application has type `int`
+//│ ║           	           ^^^
+//│ ╟── this reference has type `int` and it flows from `?c`
 //│ ║  l.2: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
-//│ ║       	                                      ^^^^^^^^
-//│ ╟── this operator application has type `(int -> int -> int) -> ?a`
-//│ ║  l.2: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
-//│ ║       	                                      ^^^^^^^^
-//│ ╟── this variable has type `(int -> int -> int) -> ?a`
+//│ ║       	                                       ^
+//│ ╟── this variable has type `?c`
 //│ ║  l.1: 	let rec digitsOfInt n =
 //│ ║       	                    ^
-//│ ╟── this reference has type `(int -> int -> int) -> ?a`
+//│ ╟── this reference has type `?c` and it flows into `?a -> ?b`
 //│ ║  l.2: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
 //│ ╙──     	                                                   ^
-//│ digitsOfInt: nothing -> list[nothing]
+//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
+//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
+//│ 	at: mlscript.UnificationSolver.makeMessagesUR$1(UnificationSolver.scala:229)
+//│ 	at: mlscript.UnificationSolver.createErrorMessage(UnificationSolver.scala:275)
+//│ 	at: mlscript.UnificationSolver.createErrorMessage$(UnificationSolver.scala:179)
+//│ 	at: mlscript.TypeDefs.createErrorMessage(TypeDefs.scala:11)
+//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:169)
+//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:168)
+//│ 	at: scala.collection.Iterator$$anon$7.hasNext(Iterator.scala:525)
+//│ 	at: scala.collection.immutable.List.prependedAll(List.scala:152)
+//│ 	at: scala.collection.IterableOnceOps.toList(IterableOnce.scala:1288)
 
 let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
 //│ addNumbs: list[int] -> int
@@ -148,17 +144,28 @@ let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
 :e
 :tex
 let digits n = digitsOfInt (abs n)
-//│ [ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
+//│ [ERROR] Type `?a list` does not match `?b list`
+//│         ?a list ---> ?c <--- ?b list 
+//│   
+//│ This `then` branch has type `?a list` and it flows into `?c`
+//│   l.-47:‹     if n <= 0 then _B_[]__ else (digitsOfInt (n / 10)) @ [n mod 10]›
+//│ This if-then-else expression has type `?c`
+//│   l.-47:‹     _B_if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]__›
+//│ This `else` branch has type `?c` and it flows from `?b list`
+//│   l.-47:‹     if n <= 0 then [] else _B_(digitsOfInt (n / 10)) @ [n mod 10]__›
+//│ This applied type reference has type `?b list`
+//│   builtin:‹   **let** (@): 'a list -> 'a list -> _B_'a list__›
+//│ [ERROR] Type `int` does not match `?a -> ?b`
+//│         int <--- ?c ---> ?a -> ?b 
+//│   
 //│  `int` comes from this type expression
-//│   builtin:‹   **let** abs: int -> _B_int__›
-//│ This application has type `int`
-//│   l.1:‹   **let** digits n = digitsOfInt _B_(abs n)__›
-//│ This application has type `(int -> int -> int) -> ?a`
-//│   l.1:‹   **let** digits n = digitsOfInt _B_(abs n)__›
-//│ This variable has type `(int -> int -> int) -> ?a`
-//│   l.-26:‹   **let** rec digitsOfInt _B_n__ =›
-//│ This reference has type `(int -> int -> int) -> ?a`
-//│   l.-25:‹     if n <= 0 then [] else (digitsOfInt (n / 10)) @ [_B_n__ mod 10]›
+//│   builtin:‹   **let** ( / ): _B_int__ -> int -> int›
+//│ This reference has type `int` and it flows from `?c`
+//│   l.-47:‹     if n <= 0 then [] else (digitsOfInt (_B_n__ / 10)) @ [n mod 10]›
+//│ This variable has type `?c`
+//│   l.-48:‹   **let** rec digitsOfInt _B_n__ =›
+//│ This reference has type `?c` and it flows into `?a -> ?b`
+//│   l.-47:‹     if n <= 0 then [] else (digitsOfInt (n / 10)) @ [_B_n__ mod 10]›
 //│ digits: int -> list[nothing]
 
 :e
@@ -166,22 +173,90 @@ let rec additivePersistence n =
   match digits n with
   | [] -> 0
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ╔══[ERROR] Type `?a list` does not match `?a0 list`
+//│ ║  
+//│ ╟── this application has type `?a list`
+//│ ║  l.4: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ║       	                         ^^^^^^^^
+//│ ╟── this pattern has type `?a0 list`
+//│ ║  l.-31: 	let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
+//│ ╙──       	                                    ^^
+//│ ╔══[ERROR] Type `?a * ?a list` does not match `?a0 * ?a0 list`
+//│ ║  
+//│ ╟── this function argument has type `?a * ?a list`
+//│ ║  l.4: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ╙──     	                          ^^^^^^
 //│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
+//│ ╟──        bool ---> ?a <--- int 
 //│ ║  
 //│ ╟── this `else` branch has type `bool`
 //│ ║  l.4: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
 //│ ║       	                                                         ^^^^^
-//│ ╟── this if-then-else expression has type `bool`
+//│ ╟── this if-then-else expression has type `bool` and it flows into `?a`
 //│ ║  l.4: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
 //│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this match expression has type `int`
+//│ ╟── this match expression has type `?a`
 //│ ║  l.2: 	  match digits n with
 //│ ║       	  ^^^^^^^^^^^^^^^^^^^
 //│ ║  l.3: 	  | [] -> 0 ...
 //│ ║       	^^^^^^^^^^^
-//│ ╟── this integer literal has type `int`
+//│ ╟── this integer literal has type `int` and it flows into `?a`
 //│ ║  l.3: 	  | [] -> 0
 //│ ╙──     	          ^
+//│ ╔══[ERROR] Type `?a list` does not match `?b list`
+//│ ║  
+//│ ╟──        ?a list ---> ?c <--- ?b list 
+//│ ║  
+//│ ╟── this `then` branch has type `?a list` and it flows into `?c`
+//│ ║  l.-73: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║         	                 ^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.-73: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?c` and it flows from `?b list`
+//│ ║  l.-73: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║         	                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this applied type reference has type `?b list`
+//│ ║  builtin: 	let (@): 'a list -> 'a list -> 'a list
+//│ ╙──         	                               ^^^^^^^
+//│ ╔══[ERROR] Type `?b list` does not match `?a list`
+//│ ║  
+//│ ╟── `?b list` comes from this type expression
+//│ ║  builtin: 	let (@): 'a list -> 'a list -> 'a list
+//│ ║           	                               ^^^^^^^
+//│ ╟── this `else` branch has type `?b list`
+//│ ║  l.-73: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║         	                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?b list`
+//│ ║  l.-73: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?b list`
+//│ ║  l.-25: 	let digits n = digitsOfInt (abs n)
+//│ ║         	               ^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?b list`
+//│ ║  l.2: 	  match digits n with
+//│ ║       	        ^^^^^^^^
+//│ ╟── this pattern has type `?a list`
+//│ ║  l.3: 	  | [] -> 0
+//│ ╙──     	    ^^
+//│ ╔══[ERROR] Type `?a list` does not match `?a0 list`
+//│ ║  
+//│ ╟── this `then` branch has type `?a list`
+//│ ║  l.-73: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║         	                 ^^
+//│ ╟── this if-then-else expression has type `?a list`
+//│ ║  l.-73: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
+//│ ║         	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.-25: 	let digits n = digitsOfInt (abs n)
+//│ ║         	               ^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.2: 	  match digits n with
+//│ ║       	        ^^^^^^^^
+//│ ╟── this pattern has type `?a0 list`
+//│ ║  l.3: 	  | [] -> 0
+//│ ╙──     	    ^^
 //│ additivePersistence: int -> (bool | int)
 
 

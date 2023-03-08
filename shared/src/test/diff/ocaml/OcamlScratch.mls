@@ -1,4 +1,9 @@
 let wrap x = x :: []
+//│ ╔══[ERROR] Type `?b * ?a list` does not match `?a0 * ?a0 list`
+//│ ║  
+//│ ╟── this function argument has type `?b * ?a list`
+//│ ║  l.1: 	let wrap x = x :: []
+//│ ╙──     	             ^
 //│ wrap: 'a -> list['a]
 
 
@@ -29,47 +34,65 @@ let wrap x = x :: []
 
 
 if true then wrap 1 else wrap true
-//│ res: list[bool | int]
+//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
+//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
+//│ 	at: mlscript.UnificationSolver.makeMessagesUR$1(UnificationSolver.scala:244)
+//│ 	at: mlscript.UnificationSolver.createErrorMessage(UnificationSolver.scala:275)
+//│ 	at: mlscript.UnificationSolver.createErrorMessage$(UnificationSolver.scala:179)
+//│ 	at: mlscript.TypeDefs.createErrorMessage(TypeDefs.scala:11)
+//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:169)
+//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:168)
+//│ 	at: scala.collection.Iterator$$anon$7.hasNext(Iterator.scala:525)
+//│ 	at: scala.collection.immutable.List.prependedAll(List.scala:152)
+//│ 	at: scala.collection.IterableOnceOps.toList(IterableOnce.scala:1288)
 
 
 :unify
 if true then wrap (if true then 1 else false) else wrap true
-//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟── this `then` branch has type `int`
+//│ ╟──        bool ---> ?a <--- int 
+//│ ║  
+//│ ╟── this `else` branch has type `bool` and it flows into `?a`
 //│ ║  l.1: 	if true then wrap (if true then 1 else false) else wrap true
-//│ ║       	                                ^
-//│ ╟── this if-then-else expression has type `int`
+//│ ║       	                                       ^^^^^
+//│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.1: 	if true then wrap (if true then 1 else false) else wrap true
 //│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `bool`
+//│ ╟── this `then` branch has type `int` and it flows into `?a`
 //│ ║  l.1: 	if true then wrap (if true then 1 else false) else wrap true
-//│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `else` branch has type `bool`
-//│ ║  l.1: 	if true then wrap (if true then 1 else false) else wrap true
-//│ ╙──     	                                       ^^^^^
-//│ res: list[bool | int]
+//│ ╙──     	                                ^
+//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
+//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
+//│ 	at: mlscript.UnificationSolver.makeMessagesUR$1(UnificationSolver.scala:244)
+//│ 	at: mlscript.UnificationSolver.createErrorMessage(UnificationSolver.scala:275)
+//│ 	at: mlscript.UnificationSolver.createErrorMessage$(UnificationSolver.scala:179)
+//│ 	at: mlscript.TypeDefs.createErrorMessage(TypeDefs.scala:11)
+//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:169)
+//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:168)
+//│ 	at: scala.collection.Iterator$$anon$7.hasNext(Iterator.scala:525)
+//│ 	at: scala.collection.immutable.List.prependedAll(List.scala:152)
+//│ 	at: scala.collection.IterableOnceOps.toList(IterableOnce.scala:1288)
 
 
 :unify
 let test z = if true then wrap z else wrap true
-//│ test: 'a -> list[bool | 'a]
+//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
+//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
+//│ 	at: mlscript.UnificationSolver.makeMessagesUR$1(UnificationSolver.scala:244)
+//│ 	at: mlscript.UnificationSolver.createErrorMessage(UnificationSolver.scala:275)
+//│ 	at: mlscript.UnificationSolver.createErrorMessage$(UnificationSolver.scala:179)
+//│ 	at: mlscript.TypeDefs.createErrorMessage(TypeDefs.scala:11)
+//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:169)
+//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:168)
+//│ 	at: scala.collection.Iterator$$anon$7.hasNext(Iterator.scala:525)
+//│ 	at: scala.collection.immutable.List.prependedAll(List.scala:152)
+//│ 	at: scala.collection.IterableOnceOps.toList(IterableOnce.scala:1288)
 
 
 // FIXME: prov missing
 :unify
 let rec t = test (if true then 1 else t)
-//│ ╔══[ERROR] Type `?a list` does not match `int`
-//│ ║  
-//│ ╟── this application has type `?a list`
-//│ ║  l.-59: 	let wrap x = x :: []
-//│ ║         	             ^^^^^^^
-//│ ╟── this if-then-else expression has type `int`
-//│ ║  l.1: 	let rec t = test (if true then 1 else t)
-//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `int`
-//│ ║  l.1: 	let rec t = test (if true then 1 else t)
-//│ ╙──     	                               ^
 //│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
 
 
@@ -114,25 +137,24 @@ let rec digitsOfInt n =
 //│ ╟── this operator application has type `?a list`
 //│ ║  l.2: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this operator application has type `int`
-//│ ║  l.2: 	  ((digitsOfInt n) / 10) @ [remainder];;
-//│ ║       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this application has type `int`
-//│ ║  l.2: 	  ((digitsOfInt n) / 10) @ [remainder];;
-//│ ║       	   ^^^^^^^^^^^^^^^
 //│ ╟── `int` comes from this type expression
 //│ ║  builtin: 	let ( / ): int -> int -> int
 //│ ╙──         	           ^^^
-//│ ╔══[ERROR] Type `error` does not match `error`
+//│ ╔══[ERROR] Type `?a list` does not match `?b list`
 //│ ║  
-//│ ╟── this reference has type `error`
+//│ ╟── this application has type `?a list`
 //│ ║  l.2: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║       	                            ^^^^^^^^^
-//│ ╟── this reference has type `error`
+//│ ╟── `?b list` comes from this type expression
+//│ ║  builtin: 	let (@): 'a list -> 'a list -> 'a list
+//│ ╙──         	                    ^^^^^^^
+//│ ╔══[ERROR] Type `error * ?a list` does not match `?a0 * ?a0 list`
+//│ ║  
+//│ ╟── this function argument has type `error * ?a list`
 //│ ║  l.2: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──     	                            ^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: remainder
 //│ ║  
-//│ ║  l.108: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.131: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──       	                            ^^^^^^^^^
 //│ digitsOfInt: anything -> list[error]
