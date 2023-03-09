@@ -582,7 +582,8 @@ class ConstraintSolver extends NormalForms { self: Typer =>
       val lhsChain: List[ST] = cctx._1
       val rhsChain: List[ST] = cctx._2
       val lhs = cctx._1.head
-      val rhs = cctx._2.last  // right hand chain is reversed
+      // val rhs = cctx._2.last  // right hand chain is reversed
+      val rhs = cctx._2.head
       
       // println(s"context part 1 -\n  $cctx._1\n and part 2 -\n $cctx._2\n")
       // println(s"CONSTRAINT FAILURE: $lhs <: $rhs")
@@ -719,6 +720,20 @@ class ConstraintSolver extends NormalForms { self: Typer =>
       ).flatten
       
       raise(ErrorReport(msgs))
+    } else {
+    println(s"!! COLLISION ERROR ${cctx}")
+      
+      /* 
+      val fullCctx = cctx._1 ::: cctx._2.reverse
+      val lhs = fullCctx.map(_.prov).foldLeft(cctx._1.head)((acc, p) =>
+        acc.withProv(p))
+      val rhs = cctx._2.head
+      
+      // if (!fullCctx.exists(_.unwrapProvs.isInstanceOf[TV]))
+      freshVar(noProv, N, lhs :: Nil, rhs :: Nil)
+      */
+      
+      ()
     }
     
     rec(lhs, rhs)(raise, Nil -> Nil)
