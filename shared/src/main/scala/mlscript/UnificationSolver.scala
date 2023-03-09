@@ -32,17 +32,17 @@ trait UnificationSolver extends TyperDatatypes {
         println(s"U ${tv} += ${(ub, reason)}")
       })
     })
-
-    // unify all unifications with each other
-    TypeVariable.createdTypeVars.foreach(tv => {
-      for {
-        (tv1, ur1) <- tv.new_unification.iterator
-        (tv2, ur2) <- tv.new_unification.iterator
-        if tv1 != tv2
-      } {
-        unifyTypes(tv1, tv2, ur1 :: ur2 :: Nil)
-      }
-    })
+//
+//    // unify all unifications with each other
+//    TypeVariable.createdTypeVars.foreach(tv => {
+//      for {
+//        (tv1, ur1) <- tv.new_unification.iterator
+//        (tv2, ur2) <- tv.new_unification.iterator
+//        if tv1 != tv2
+//      } {
+//        unifyTypes(tv1, tv2, ur1 :: ur2 :: Nil)
+//      }
+//    })
   }
 
   // reason already has reason for a and b to be unified

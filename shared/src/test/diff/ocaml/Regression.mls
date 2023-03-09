@@ -19,3 +19,130 @@ let test2 = let (a, b) = test in [[b]] + 1
 //│ ╙──     	     ^
 //│ test: int
 //│ test2: int
+
+:d
+:unifyDbg
+let f x = x + 1
+not (f 1)
+//│ 1. Typing term x => + x 1
+//│ | 1. Typing pattern x
+//│ | 1. : α82'
+//│ | 1. Typing term + x 1
+//│ | | 1. Typing term + x
+//│ | | | 1. Typing term +
+//│ | | | 1. : [(int -> (int -> int))]
+//│ | | | 1. Typing term x
+//│ | | | 1. : [α82']
+//│ | | | CONSTRAIN [α82'] <! int
+//│ | | |   where 
+//│ | | | C [α82'] <! int    (0) where ProvType <: TypeRef}
+//│ | | | | C α82' <! int    (0) where TypeVariable <: TypeRef}
+//│ | | 1. : [(int -> int)]
+//│ | | 1. Typing term 1
+//│ | | 1. : int
+//│ | | CONSTRAIN int <! int
+//│ | |   where 
+//│ | | C int <! int    (0) where TypeRef <: TypeRef}
+//│ | 1. : [int]
+//│ 1. : (α82' -> [int])
+//│ ⬤ Typed as: (α82' -> [int])
+//│  where: 
+//│ 		α82' <: [[[int]]]
+//│ 0. Typing term not (f 1)
+//│ | 0. Typing term not
+//│ | 0. : [(bool -> bool)]
+//│ | 0. Typing term f 1
+//│ | | 0. Typing term f
+//│ | | 0. : [(α86 -> [int])]
+//│ | | 0. Typing term 1
+//│ | | 0. : int
+//│ | | CONSTRAIN int <! α86
+//│ | |   where 
+//│ 		α86 <: [[[int]]]
+//│ | | C int <! α86    (0) where TypeRef <: TypeVariable}
+//│ | | | C int <! [[[int]]]    (1) where TypeRef <: ProvType}
+//│ | 0. : [[int]]
+//│ | CONSTRAIN [[int]] <! bool
+//│ |   where 
+//│ | C [[int]] <! bool    (0) where ProvType <: TypeRef}
+//│ | | C [int] <! bool    (0) where ProvType <: TypeRef}
+//│ | | | C int <! bool    (0) where TypeRef <: TypeRef}
+//│ 0. : [bool]
+//│ ⬤ Typed as: [bool]
+//│  where: 
+//│ α88 bounds
+//│ α87 bounds
+//│ α86 bounds
+//│ U α86 <: [[int]] with 3 provs
+//│ U α86 = [[int]] because lb([[int]] <: α86) ()
+//│ U α86 += ([[int]],lb([[int]] <: α86))
+//│ U α86 :> [[[int]]] with 4 provs
+//│ U α86 = [[[int]]] because ub(α86 <: [[[int]]]) ()
+//│ | U Cached α86 = int
+//│ U α86 += ([[[int]]],ub(α86 <: [[[int]]]))
+//│ α84' bounds
+//│ α83' bounds
+//│ α82' bounds
+//│ U α82' :> [[[int]]] with 4 provs
+//│ U α82' = [[[int]]] because ub(α82' <: [[[int]]]) ()
+//│ U α82' += ([[[int]]],ub(α82' <: [[[int]]]))
+//│ unified α88 with:
+//│ unified α87 with:
+//│ unified α86 with:
+//│   [[int]]: ub(α86 <: [[[int]]])
+//│ unified α84' with:
+//│ unified α83' with:
+//│ unified α82' with:
+//│   [[[int]]]: ub(α82' <: [[[int]]])
+//│ ╔══[WARNING] ?a is unified with int because ub(α86 <: [[[int]]]))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.25: 	let f x = x + 1
+//│ ║        	      ^
+//│ ╟── reference
+//│ ║  l.25: 	let f x = x + 1
+//│ ║        	          ^
+//│ ╟── type reference
+//│ ║  builtin: 	let (+): int -> int -> int
+//│ ║           	         ^^^
+//│ ╟── type reference
+//│ ║  builtin: 	let (+): int -> int -> int
+//│ ╙──         	         ^^^
+//│ ╔══[WARNING] ?a is unified with int because ub(α82' <: [[[int]]]))
+//│ ║  
+//│ ╟── variable
+//│ ║  l.25: 	let f x = x + 1
+//│ ║        	      ^
+//│ ╟── reference
+//│ ║  l.25: 	let f x = x + 1
+//│ ║        	          ^
+//│ ╟── type reference
+//│ ║  builtin: 	let (+): int -> int -> int
+//│ ║           	         ^^^
+//│ ╟── type reference
+//│ ║  builtin: 	let (+): int -> int -> int
+//│ ╙──         	         ^^^
+//│ f: int -> int
+//│ res: bool
+
+:d
+let a = 1
+not a
+//│ 1. Typing term 1
+//│ 1. : int
+//│ ⬤ Typed as: int
+//│  where: 
+//│ 0. Typing term not a
+//│ | 0. Typing term not
+//│ | 0. : [(bool -> bool)]
+//│ | 0. Typing term a
+//│ | 0. : [int]
+//│ | CONSTRAIN [int] <! bool
+//│ |   where 
+//│ | C [int] <! bool    (0) where ProvType <: TypeRef}
+//│ | | C int <! bool    (0) where TypeRef <: TypeRef}
+//│ 0. : [bool]
+//│ ⬤ Typed as: [bool]
+//│  where: 
+//│ a: int
+//│ res: bool
