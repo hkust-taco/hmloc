@@ -179,6 +179,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   
   /** Subsitute operators with functions to handle special cases in ocaml */
   def appSubstitution: PartialFunction[Term, Term] = {
+    case App(App(op, v@Var("mod")), rhs) =>
+      val newLhs = appSubstitution(op)
+      val newRhs = appSubstitution(rhs)
+      App(App(v, newLhs), newRhs)
     // substitute x :: xs with Cons(x, xs) recursively
     // while retaining location information
     // the term is of this shape (App(App(Var("::"), Tup(a)), Tup(b)))

@@ -883,22 +883,6 @@ let bigAdd l1 l2 =
 //│ ╟── this tuple literal has type `int * ?a list`
 //│ ║  l.24: 	    let base = (0, []) in
 //│ ╙──      	               ^^^^^^^
-//│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
-//│ ║  
-//│ ╟──        int <--- ?b ---> (int -> int -> int) -> ?a 
-//│ ║  
-//│ ╟── `int` comes from this type expression
-//│ ║  builtin: 	let ( / ): int -> int -> int
-//│ ║           	           ^^^
-//│ ╟── this reference has type `int` and it flows from `?b`
-//│ ║  l.22: 	         let carry = intermediateValue / 10 in
-//│ ║        	                     ^^^^^^^^^^^^^^^^^
-//│ ╟── this operator application has type `?b`
-//│ ║  l.20: 	         let intermediateValue = (toSum1 + toSum2) + carry in
-//│ ║        	                                 ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this reference has type `?b` and it flows into `(int -> int -> int) -> ?a`
-//│ ║  l.21: 	         let valueToAddToArray = intermediateValue mod 10 in
-//│ ╙──      	                                 ^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?b * ?c` does not match `?a list`
 //│ ║  
 //│ ╟──        ?b * ?c ---> ?d <--- ?a list 
@@ -944,14 +928,6 @@ let bigAdd l1 l2 =
 //│ ╟── this pattern has type `?a * ?b`
 //│ ║  l.17: 	    let (_,res) = List.fold_left f base args in res in
 //│ ╙──      	        ^^^^^^^
-//│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
-//│ ║  
-//│ ╟── `int` comes from this type expression
-//│ ║  builtin: 	let (+): int -> int -> int
-//│ ║           	                       ^^^
-//│ ╟── this operator application has type `int`
-//│ ║  l.14: 	    let f a x = (a + x) mod 10 in
-//│ ╙──      	                ^^^^^^^
 //│ clone: 'a -> int -> list['a]
 //│ addTuple: (int, int,) -> int
 //│ padZero: (list['a] & 'b) -> (list['c] & 'd) -> (list[int | 'a] | 'b, list[int | 'c] | 'd,)
@@ -971,10 +947,10 @@ let rec wwhile (f,b) =
 //│ ║  l.1: 	let intboolf f x = ((f x), ((f x) < 1));;
 //│ ║       	               ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this application has type `?a -> ?b * ?c`
-//│ ║  l.-183: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ║  l.-159: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ ║          	        ^^^
 //│ ╟── this pattern has type `?d * ?e`
-//│ ║  l.-183: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ║  l.-159: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ ╙──        	                   ^^^^^^^^^^
 //│ intboolf: ('a -> 'b) -> 'a -> ('b, bool,)
 //│ fixpoint: (anything, nothing -> anything,) -> nothing
@@ -1078,23 +1054,17 @@ let rec assoc (d,k,l) =
   | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
 //│ ╔══[ERROR] Type `?a -> ?b` does not match `?c * ?a * ?d`
 //│ ║  
-//│ ╟──        ?a -> ?b <--- ?e ---> ?f <--- ?c ---> ?c * ?a * ?d 
+//│ ╟──        ?a -> ?b <--- ?c ---> ?c * ?a * ?d 
 //│ ║  
-//│ ╟── this match expression has type `?e` and it flows into `?a -> ?b`
+//│ ╟── this application has type `?a -> ?b`
+//│ ║  l.4: 	  | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
+//│ ║       	                                                    ^^^^^^^
+//│ ╟── this match expression has type `?a -> ?b`
 //│ ║  l.2: 	  match l with
 //│ ║       	  ^^^^^^^^^^^^
 //│ ║  l.3: 	  | [] -> d ...
 //│ ║       	^^^^^^^^^^^
-//│ ╟── this `then` branch has type `?g`
-//│ ║  l.4: 	  | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
-//│ ║       	                                           ^^^
-//│ ╟── this if-then-else expression has type `?g` and it flows into `?f`
-//│ ║  l.4: 	  | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
-//│ ║       	                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this let expression has type `?f`
-//│ ║  l.4: 	  | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
-//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this reference has type `?f` and it flows from `?c`
+//│ ╟── this reference has type `?a -> ?b` and it flows from `?c`
 //│ ║  l.3: 	  | [] -> d
 //│ ║       	          ^
 //│ ╟── this variable has type `?c`

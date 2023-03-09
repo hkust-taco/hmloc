@@ -131,23 +131,7 @@ let conflict x = mkpair (not x) x
 :e
 let rec digitsOfInt n =
   if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
-//│ ╔══[ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
-//│ ║  
-//│ ╟──        int <--- ?b ---> (int -> int -> int) -> ?a 
-//│ ║  
-//│ ╟── `int` comes from this type expression
-//│ ║  builtin: 	let ( / ): int -> int -> int
-//│ ║           	           ^^^
-//│ ╟── this reference has type `int` and it flows from `?b`
-//│ ║  l.2: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
-//│ ║       	                                       ^
-//│ ╟── this variable has type `?b`
-//│ ║  l.1: 	let rec digitsOfInt n =
-//│ ║       	                    ^
-//│ ╟── this reference has type `?b` and it flows into `(int -> int -> int) -> ?a`
-//│ ║  l.2: 	  if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
-//│ ╙──     	                                                   ^
-//│ digitsOfInt: nothing -> list[nothing]
+//│ digitsOfInt: int -> list[int]
 
 let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
 //│ addNumbs: list[int] -> int
@@ -156,18 +140,7 @@ let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
 :e
 :tex
 let digits n = digitsOfInt (abs n)
-//│ [ERROR] Type `int` does not match `(int -> int -> int) -> ?a`
-//│         int <--- ?b ---> (int -> int -> int) -> ?a 
-//│   
-//│  `int` comes from this type expression
-//│   builtin:‹   **let** ( / ): _B_int__ -> int -> int›
-//│ This reference has type `int` and it flows from `?b`
-//│   l.-24:‹     if n <= 0 then [] else (digitsOfInt (_B_n__ / 10)) @ [n mod 10]›
-//│ This variable has type `?b`
-//│   l.-25:‹   **let** rec digitsOfInt _B_n__ =›
-//│ This reference has type `?b` and it flows into `(int -> int -> int) -> ?a`
-//│   l.-24:‹     if n <= 0 then [] else (digitsOfInt (n / 10)) @ [_B_n__ mod 10]›
-//│ digits: int -> list[nothing]
+//│ digits: int -> list[int]
 
 :e
 let rec additivePersistence n =
@@ -178,18 +151,18 @@ let rec additivePersistence n =
 //│ ║  
 //│ ╟──        bool ---> ?a <--- int 
 //│ ║  
-//│ ╟── this `else` branch has type `bool`
+//│ ╟── this `then` branch has type `bool` and it flows into `?a`
 //│ ║  l.4: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
-//│ ║       	                                                         ^^^^^
-//│ ╟── this if-then-else expression has type `bool` and it flows into `?a`
+//│ ║       	                                              ^^^^^
+//│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.4: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
 //│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this match expression has type `?a`
+//│ ╟── this match expression has type `?b` and it flows from `int`
 //│ ║  l.2: 	  match digits n with
 //│ ║       	  ^^^^^^^^^^^^^^^^^^^
 //│ ║  l.3: 	  | [] -> 0 ...
 //│ ║       	^^^^^^^^^^^
-//│ ╟── this integer literal has type `int` and it flows into `?a`
+//│ ╟── this integer literal has type `int`
 //│ ║  l.3: 	  | [] -> 0
 //│ ╙──     	          ^
 //│ additivePersistence: int -> (bool | int)
