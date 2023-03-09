@@ -54,9 +54,9 @@ abstract class TypeImpl extends Located { self: Type =>
       val nme = nt._1.name
       s"${nme}: ${nt._2.showOcaml(ctx, 0)}"
     }.mkString("{", ", ", "}")
-    case Tuple(fields) => s"${fields.map(_.showOcaml(ctx, 0)).mkString(" * ")}"
+    case Tuple(fields) => parensIf(s"${fields.map(_.showOcaml(ctx, 2)).mkString(" * ")}", outerPrec > 1)
     case AppliedType(n, args) if args.length === 1 => s"${args.map(_.showOcaml(ctx, 0)).mkString(", ")} ${n.name}"
-    case AppliedType(n, args) => s"(${args.map(_.showOcaml(ctx, 0)).mkString(", ")}) ${n.name}"
+    case AppliedType(n, args) => s"(${args.map(_.showOcaml(ctx, 2)).mkString(", ")}) ${n.name}"
     case TypeName(name) => name
     case _ => lastWords(s"Cannot create showOcaml for ${this.show}")
   }

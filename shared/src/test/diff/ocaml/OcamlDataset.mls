@@ -341,7 +341,7 @@ let rec sepConcat sep sl =
       let f a x = a ^ (sep ^ x) in
       let base = h in let l = t in List.fold_left f base l;;
 let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
-//│ ╔══[ERROR] Type `string` does not match `?a * ?b -> ?c`
+//│ ╔══[ERROR] Type `string` does not match `(?a * ?b) -> ?c`
 //│ ║  
 //│ ╟── `string` comes from this type expression
 //│ ║  builtin: 	let (^): string -> string -> string
@@ -360,7 +360,7 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│ ╟── this application has type `string`
 //│ ║  l.7: 	let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│ ║       	                               ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this applied expression has type `?a * ?b -> ?c`
+//│ ╟── this applied expression has type `(?a * ?b) -> ?c`
 //│ ║  l.7: 	let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│ ╙──     	                               ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `(?b -> ?c) -> ?b list -> ?c list` does not match `?a list`
@@ -1427,12 +1427,12 @@ let intboolf f x = ((f x), ((f x) < 1));;
 let fixpoint (f,b) = wwhile (intboolf, b);;
 let rec wwhile (f,b) =
   match f b with | (b',c') -> if c' then wwhile (f, b') else b';;
-//│ ╔══[ERROR] Type `?a -> ?b * bool` does not match `?c * ?d`
+//│ ╔══[ERROR] Type `?a -> (?b * bool)` does not match `?c * ?d`
 //│ ║  
-//│ ╟── this function has type `?a -> ?b * bool`
+//│ ╟── this function has type `?a -> (?b * bool)`
 //│ ║  l.1: 	let intboolf f x = ((f x), ((f x) < 1));;
 //│ ║       	               ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this application has type `?a -> ?b * bool`
+//│ ╟── this application has type `?a -> (?b * bool)`
 //│ ║  l.-406: 	  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ ║          	        ^^^
 //│ ╟── this pattern has type `?c * ?d`
