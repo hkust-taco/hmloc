@@ -63,25 +63,25 @@ let h y = (not y, (if true then y else 5))
 :unify
 let confluence z = if true then z else 5
 confluence true
-//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟──        int ---> ?a <--- bool 
+//│ ╟──        bool ---> ?a <--- int 
 //│ ║  
-//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ╟── this reference has type `bool`
+//│ ║  l.2: 	confluence true
+//│ ║       	           ^^^^
+//│ ╟── this variable has type `bool`
 //│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	                                       ^
+//│ ║       	               ^
+//│ ╟── this `then` branch has type `bool` and it flows into `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                ^
 //│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.1: 	let confluence z = if true then z else 5
 //│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `?a`
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
 //│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	                                ^
-//│ ╟── this variable has type `?a` and it flows from `bool`
-//│ ║  l.1: 	let confluence z = if true then z else 5
-//│ ║       	               ^
-//│ ╟── this reference has type `bool`
-//│ ║  l.2: 	confluence true
-//│ ╙──     	           ^^^^
+//│ ╙──     	                                       ^
 //│ confluence: 'a -> (int | 'a)
 //│ res: bool | int
 
@@ -90,7 +90,7 @@ let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
 //│ ╔══[ERROR] Type `int` does not match `bool`
 //│ ║  
-//│ ╟──        int ---> ?a <--- ?b ---> ?c <--- ?d ---> bool 
+//│ ╟──        int ---> ?a <--- ?b ---> bool 
 //│ ║  
 //│ ╟── this `else` branch has type `int` and it flows into `?a`
 //│ ║  l.-24: 	let confluence z = if true then z else 5
@@ -98,25 +98,25 @@ let conflict x = mkpair (not x) x
 //│ ╟── this if-then-else expression has type `?a`
 //│ ║  l.-24: 	let confluence z = if true then z else 5
 //│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `?a` and it flows from `?b`
+//│ ╟── this `then` branch has type `?a`
 //│ ║  l.-24: 	let confluence z = if true then z else 5
 //│ ║         	                                ^
-//│ ╟── this variable has type `?b`
+//│ ╟── this variable has type `?a`
 //│ ║  l.-24: 	let confluence z = if true then z else 5
 //│ ║         	               ^
-//│ ╟── this variable has type `?e` and it flows into `?c`
-//│ ║  l.1: 	let mkpair x y = (x, confluence y)
-//│ ║       	             ^
-//│ ╟── this reference has type `?c`
+//│ ╟── this reference has type `?a`
 //│ ║  l.1: 	let mkpair x y = (x, confluence y)
 //│ ║       	                                ^
-//│ ╟── this reference has type `?c` and it flows from `?d`
+//│ ╟── this variable has type `?a`
+//│ ║  l.1: 	let mkpair x y = (x, confluence y)
+//│ ║       	             ^
+//│ ╟── this reference has type `?a` and it flows from `?b`
 //│ ║  l.2: 	let conflict x = mkpair (not x) x
 //│ ║       	                                ^
-//│ ╟── this variable has type `?d`
+//│ ╟── this variable has type `?b`
 //│ ║  l.2: 	let conflict x = mkpair (not x) x
 //│ ║       	             ^
-//│ ╟── this reference has type `?d` and it flows into `bool`
+//│ ╟── this reference has type `?b` and it flows into `bool`
 //│ ║  l.2: 	let conflict x = mkpair (not x) x
 //│ ║       	                             ^
 //│ ╟── this type reference has type `bool`

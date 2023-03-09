@@ -68,16 +68,22 @@ let rec t = test (if true then 1 else t)
 //│ ╟── this `else` branch has type `?a list`
 //│ ║  l.-5: 	let test z = if true then wrap z else wrap true
 //│ ║        	                                      ^^^^^^^^^
-//│ ╟── this if-then-else expression has type `?a list` and it flows into `?b`
+//│ ╟── this if-then-else expression has type `?a list`
 //│ ║  l.-5: 	let test z = if true then wrap z else wrap true
 //│ ║        	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this application has type `?b`
+//│ ╟── this application has type `?a list`
 //│ ║  l.1: 	let rec t = test (if true then 1 else t)
 //│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `?c` and it flows from `int`
+//│ ╟── this recursive binding has type `?a list`
+//│ ║  l.1: 	let rec t = test (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this `else` branch has type `?a list` and it flows into `?b`
+//│ ║  l.1: 	let rec t = test (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this if-then-else expression has type `?b`
 //│ ║  l.1: 	let rec t = test (if true then 1 else t)
 //│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `int`
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
 //│ ║  l.1: 	let rec t = test (if true then 1 else t)
 //│ ╙──     	                               ^
 //│ ╔══[ERROR] Type `?a list` does not match `int`
@@ -90,21 +96,27 @@ let rec t = test (if true then 1 else t)
 //│ ╟── this `then` branch has type `?a list`
 //│ ║  l.-5: 	let test z = if true then wrap z else wrap true
 //│ ║        	                          ^^^^^^
-//│ ╟── this if-then-else expression has type `?a list` and it flows into `?b`
+//│ ╟── this if-then-else expression has type `?a list`
 //│ ║  l.-5: 	let test z = if true then wrap z else wrap true
 //│ ║        	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this application has type `?b`
+//│ ╟── this application has type `?a list`
 //│ ║  l.1: 	let rec t = test (if true then 1 else t)
 //│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `?c` and it flows from `int`
+//│ ╟── this recursive binding has type `?a list`
+//│ ║  l.1: 	let rec t = test (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this `else` branch has type `?a list` and it flows into `?b`
+//│ ║  l.1: 	let rec t = test (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this if-then-else expression has type `?b`
 //│ ║  l.1: 	let rec t = test (if true then 1 else t)
 //│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this `then` branch has type `int`
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
 //│ ║  l.1: 	let rec t = test (if true then 1 else t)
 //│ ╙──     	                               ^
 //│ t: 't
 //│   where
-//│     't :> list[int | 't] | list[bool]
+//│     't :> list[int | 't | bool]
 
 
 
@@ -148,11 +160,14 @@ let rec digitsOfInt n =
 //│ ╟── this operator application has type `?a list`
 //│ ║  l.2: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ║       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.2: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║       	   ^^^^^^^^^^^^^^^
 //│ ╟── `int` comes from this type expression
 //│ ║  builtin: 	let ( / ): int -> int -> int
 //│ ╙──         	           ^^^
 //│ ╔══[ERROR] identifier not found: remainder
 //│ ║  
-//│ ║  l.142: 	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.154: 	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──       	                            ^^^^^^^^^
 //│ digitsOfInt: anything -> list[error]
