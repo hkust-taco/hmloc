@@ -137,16 +137,34 @@ trait UnificationSolver extends TyperDatatypes {
   }
 
   def collisionErrorMessage(u: Unification)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-    def makeMessage(st: ST, provs: Ls[TP]): Ls[Message -> Opt[Loc]] = provs.map {
-      case TypeProvenance(loco, desc, _, false) => msg"this ${desc} has type `${st.expPos}`" -> loco
-      case TypeProvenance(loco, desc, _, true) => msg"`${st.expPos}` comes from this type expression" -> loco
+    def makeMessageFirstType(st: ST, provs: Ls[TP]) = {
+      val fst = provs.head match {
+        case TypeProvenance(loco, desc, _, false) => msg"this ${desc} has type `${st.expPos}`" -> loco
+        case TypeProvenance(loco, desc, _, true) => msg"`${st.expPos}` comes from this type expression" -> loco
+      }
+
+      fst :: provs.tail.map {
+        case TypeProvenance(loco, desc, _, false) => msg"so this ${desc} has type `${st.expPos}`" -> loco
+        case TypeProvenance(loco, desc, _, true) => msg"`${st.expPos}` comes from this type expression" -> loco
+      }
+    }
+    def makeMessageSecondType(st: ST, provs: Ls[TP]) = {
+      val fst = provs.head match {
+        case TypeProvenance(loco, desc, _, false) => msg"but this ${desc} has type `${st.expPos}`" -> loco
+        case TypeProvenance(loco, desc, _, true) => msg"but `${st.expPos}` comes from this type expression" -> loco
+      }
+
+      fst :: provs.tail.map {
+        case TypeProvenance(loco, desc, _, false) => msg"because this ${desc} has type `${st.expPos}`" -> loco
+        case TypeProvenance(loco, desc, _, true) => msg"because `${st.expPos}` comes from this type expression" -> loco
+      }
     }
 
     // respect contravariant type flow
     val (lprov, rprov) = if (u.desc == "function argument") {
-      makeMessage(u.b, u.b.uniqueTypeUseLocations.reverse) -> makeMessage(u.a, u.a.uniqueTypeUseLocations)
+      makeMessageFirstType(u.b, u.b.uniqueTypeUseLocations.reverse) -> makeMessageSecondType(u.a, u.a.uniqueTypeUseLocations)
     } else {
-      makeMessage(u.a, u.a.uniqueTypeUseLocations.reverse) -> makeMessage(u.b, u.b.uniqueTypeUseLocations)
+      makeMessageFirstType(u.a, u.a.uniqueTypeUseLocations.reverse) -> makeMessageSecondType(u.b, u.b.uniqueTypeUseLocations)
     }
 
     u.reason match {
@@ -195,15 +213,23 @@ trait UnificationSolver extends TyperDatatypes {
 
   def createErrorMessage(firstUR: UnificationReason -> Bool, secondUR: UnificationReason -> Bool, showFirst: Bool = false)
                         (implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-    val diagistypeof = (st: ST, tp: TP) => msg"this ${tp.desc} has type `${st.expPos}`" -> tp.loco
-    val diagishere = (st: ST, tp: TP) => msg"`${st.expPos}` comes from this type expression" -> tp.loco
-    val msgistypeof = (st: ST, tp: TP) => if (tp.isType) {
-      msg"`${st.expPos}` comes from this type expression"
+    val diagistypeof = (st: ST, tp: TP, marker: Bool) => if (marker) {
+        msg"[`${st.expPos}`] comes from this ${tp.desc}" -> tp.loco
+      } else {
+        msg"so this ${tp.desc} has type `${st.expPos}`" -> tp.loco
+      }
+    val diagishere = (st: ST, tp: TP) => msg"[`${st.expPos}`] comes from this type expression" -> tp.loco
+    val msgistypeof = (st: ST, tp: TP, marker: Bool) => if (tp.isType) {
+      msg"[`${st.expPos}`] comes from this type expression"
     } else {
-      msg"this ${tp.desc} has type `${st.expPos}`"
+      if (marker) {
+        msg"[`${st.expPos}`] comes from this ${tp.desc}"
+      } else {
+        msg"so this ${tp.desc} has type `${st.expPos}`"
+      }
     }
-    val msgflowitfrom = (st: ST) => msg" and it flows from `${st.expPos}`"
-    val msgflowitinto = (st: ST) => msg" and it flows into `${st.expPos}`"
+    val msgflowintoit = (a: ST, b: ST) => msg". However `${a.expPos}` flows into `${b.expPos}`"
+    val msgitflowinto = (st: ST) => msg" and it flows into `${st.expPos}`"
 
     // take elements from first list upto and include first common element
     // a: 1, 2, 3, 4
@@ -218,10 +244,11 @@ trait UnificationSolver extends TyperDatatypes {
       }
     }
 
-    def makeMessagesST(st: ST, ls: Ls[TP]): Ls[Message -> Opt[Loc]] = ls.map {
-      case tp@TypeProvenance(_, _, _, false) => diagistypeof(st, tp)
-      case tp@TypeProvenance(_, _, _, true) => diagishere(st, tp)
-    }
+    def makeMessagesST(st: ST, ls: Ls[TP]): Ls[Message -> Opt[Loc]] =
+      ls.zipWithIndex.map {
+        case (tp@TypeProvenance(_, _, _, false), i) => diagistypeof(st, tp, showFirst && i == ls.length - 1)
+        case (tp@TypeProvenance(_, _, _, true), i) => diagishere(st, tp)
+      }
 
     // showFirst indicates if the merged location belongs to the type variable or the st
     // when showing first we show location of type variable
@@ -241,8 +268,9 @@ trait UnificationSolver extends TyperDatatypes {
         val a = ur._1.a
         val b = ur._1.b
         provs.reverse match {
-          case last :: Nil => msgistypeof(a, last) + msgflowitinto(b) -> last.loco :: Nil
-          case last :: sndLast :: tail => diagistypeof(b, last) :: msgistypeof(a, sndLast) + msgflowitinto(b) -> sndLast.loco :: makeMessagesST(a, tail)
+          case last :: Nil => msgistypeof(a, last, true) + msgitflowinto(b) -> last.loco :: Nil
+          case last :: sndLast :: Nil => diagistypeof(b, last, true) :: msgistypeof(a, sndLast, showFirst) + msgitflowinto(b) -> sndLast.loco :: Nil
+          case last :: sndLast :: tail => diagistypeof(b, last, true) :: msgistypeof(a, sndLast, false) + msgitflowinto(b) -> sndLast.loco :: makeMessagesST(a, tail)
           case _ => ???
         }
       }.reverse
@@ -250,14 +278,15 @@ trait UnificationSolver extends TyperDatatypes {
       // lb: st 1 -> tv from st 2 -> tv 3 -> tv 4 (rev)
       // ub: tv 1 -> st from tv 2 -> st 3 -> st 4 (rev)
       // false direction flow (showFirst = false)
-      // lb: st 1 -> tv from st 2 -> tv 3 (rev)
-      // ub: tv 1 -> st from tv 2 -> st 3 (rev)
+      // lb: st 1 -> tv however into st 2 -> tv 3 (rev)
+      // ub: tv 1 -> st however into tv 2 -> st 3 (rev)
       else {
         val a = ur._1.a
         val b = ur._1.b
         provs match {
-          case fst :: Nil => msgistypeof(a, fst) + msgflowitinto(b) -> fst.loco :: Nil
-          case fst :: snd :: tail => diagistypeof(a, fst) :: msgistypeof(b, snd) + msgflowitfrom(a) -> snd.loco :: makeMessagesST(b, tail)
+          case fst :: Nil => msgistypeof(a, fst, true) + msgitflowinto(b) -> fst.loco :: Nil
+          case fst :: snd :: Nil => diagistypeof(a, fst, true) :: msgistypeof(b, snd, showFirst) + msgflowintoit(a, b) -> snd.loco :: Nil
+          case fst :: snd :: tail => diagistypeof(a, fst, true) :: msgistypeof(b, snd, false) + msgflowintoit(a, b) -> snd.loco :: makeMessagesST(b, tail)
           case _ => ???
         }
       }.reverse
