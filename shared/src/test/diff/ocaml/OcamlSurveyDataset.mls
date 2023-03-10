@@ -81,6 +81,40 @@ let destructEither x y = if y then
 //│ ║  l.3: 	    | Left l -> l && true
 //│ ╙──     	      ^^^^
 
+// ╔══[ERROR] Type `bool` does not match `(?a, ?b) either`
+// ║  
+// ╟──        bool ---> ?c <--- ?d ---> (?a, ?b) either 
+// ║  
+// ╟── [bool] comes from this type expression
+// ║  builtin: 	let (||): bool -> bool -> bool
+// ║           	                          ^^^^
+// ╟── so this operator application has type `bool`
+// ║  l.4: 	    | Right r -> r || false
+// ║       	                 ^^^^^^^^^^
+// ╟── so this match expression has type `bool` and it flows into `?c`
+// ║  l.2: 	  match x with
+// ║       	  ^^^^^^^^^^^^
+// ║  l.3: 	    | Left l -> l && true ...
+// ║       	^^^^^^^^^^^^^^^^^^^^^^^^^
+// ╟── [?c] is the  assumed for this if-then-else expression
+// ║  l.1: 	let destructEither x y = if y then
+// ║       	                         ^^^^^^^^^
+// ║  l.2: 	  match x with ...
+// ║       	^^^^^^^^^^^^^^
+// ╟── so this `else` branch has type `?c`. However `?d` flows into `?c`
+// ║  l.5: 	  else x
+// ║       	       ^^
+// ╟── [?d] is the type of this variable
+// ║  l.1: 	let destructEither x y = if y then
+// ║       	                   ^
+// ╟── so this reference has type `?d` and it flows into `(?a, ?b) either`
+// ║  l.2: 	  match x with
+// ║       	        ^
+// ╟── [(?a, ?b) either] is the type of this pattern
+// ║  l.3: 	    | Left l -> l && true
+// ╙──     	      ^^^^
+
+
 // med 1
 // FIXME no common prov error
 let wrap x = x :: []
