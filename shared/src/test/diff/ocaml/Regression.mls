@@ -1,9 +1,10 @@
+:AllowTypeErrors
+
+// TODO: show better error
 :e
 let test =
   let f x = x in
   (f 1 + f true)
-  
-let test2 = let (a, b) = test in [[b]] + 1
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
 //│ ╟── this reference has type `bool`
@@ -16,116 +17,18 @@ let test2 = let (a, b) = test in [[b]] + 1
 //│ ║  builtin: 	let (+): int -> int -> int
 //│ ╙──         	                ^^^
 //│ test: int
+
+// TODO: show error
+let test2 = let (a, b) = test in [[b]] + 1
 //│ test2: int
 
-:d
-:unifyDbg
+// TODO: show error
 let f x = x + 1
 not (f 1)
-//│ 1. Typing term x => + x 1
-//│ | 1. Typing pattern x
-//│ | 1. : α82'
-//│ | 1. Typing term + x 1
-//│ | | 1. Typing term + x
-//│ | | | 1. Typing term +
-//│ | | | 1. : [(int -> (int -> int))]
-//│ | | | 1. Typing term x
-//│ | | | 1. : [α82']
-//│ | | | CONSTRAIN [α82'] <! int
-//│ | | |   where 
-//│ | | | C [α82'] <! int    (0) where ProvType <: TypeRef}
-//│ | | | | C α82' <! int    (0) where TypeVariable <: TypeRef}
-//│ | | 1. : [(int -> int)]
-//│ | | 1. Typing term 1
-//│ | | 1. : int
-//│ | | CONSTRAIN int <! int
-//│ | |   where 
-//│ | | C int <! int    (0) where TypeRef <: TypeRef}
-//│ | 1. : [int]
-//│ 1. : (α82' -> [int])
-//│ ⬤ Typed as: (α82' -> [int])
-//│  where: 
-//│ 		α82' <: [[[int]]]
-//│ 0. Typing term not (f 1)
-//│ | 0. Typing term not
-//│ | 0. : [(bool -> bool)]
-//│ | 0. Typing term f 1
-//│ | | 0. Typing term f
-//│ | | 0. : [(α86 -> [int])]
-//│ | | 0. Typing term 1
-//│ | | 0. : int
-//│ | | CONSTRAIN int <! α86
-//│ | |   where 
-//│ 		α86 <: [[[int]]]
-//│ | | C int <! α86    (0) where TypeRef <: TypeVariable}
-//│ | | | C int <! [[[int]]]    (1) where TypeRef <: ProvType}
-//│ | 0. : [[int]]
-//│ | CONSTRAIN [[int]] <! bool
-//│ |   where 
-//│ | C [[int]] <! bool    (0) where ProvType <: TypeRef}
-//│ | | C [int] <! bool    (0) where ProvType <: TypeRef}
-//│ | | | C int <! bool    (0) where TypeRef <: TypeRef}
-//│ | | | | !! COLLISION ERROR (List(int, [int], [[int]]),List(bool))
-//│ 0. : [bool]
-//│ ⬤ Typed as: [bool]
-//│  where: 
-//│ α88 bounds
-//│ α87 bounds
-//│ α86 bounds
-//│ U α86 <: [[int]] with 3 provs
-//│ U α86 = [[int]] because lb([[int]] <: α86)
-//│ U α86 += ([[int]],lb([[int]] <: α86))
-//│ U α86 :> [[[int]]] with 4 provs
-//│ U α86 = [[[int]]] because ub(α86 <: [[[int]]])
-//│ | U   int with
-//│ |     α86 = [[int]] for lb([[int]] <: α86)
-//│ | U [[int]] = int because lb([[int]] <: α86), ub(α86 <: [[[int]]])
-//│ U α86 += ([[[int]]],ub(α86 <: [[[int]]]))
-//│ α84' bounds
-//│ α83' bounds
-//│ α82' bounds
-//│ U α82' :> [[[int]]] with 4 provs
-//│ U α82' = [[[int]]] because ub(α82' <: [[[int]]])
-//│ U α82' += ([[[int]]],ub(α82' <: [[[int]]]))
-//│ unified α88 with:
-//│ unified α87 with:
-//│ unified α86 with:
-//│   [[int]]: ub(α86 <: [[[int]]])
-//│ unified α84' with:
-//│ unified α83' with:
-//│ unified α82' with:
-//│   [[[int]]]: ub(α82' <: [[[int]]])
-//│ ╔══[WARNING] ?a is unified with int because ub(α86 <: [[[int]]]))
-//│ ║  
-//│ ╟── variable
-//│ ║  l.23: 	let f x = x + 1
-//│ ║        	      ^
-//│ ╟── reference
-//│ ║  l.23: 	let f x = x + 1
-//│ ║        	          ^
-//│ ╟── type reference
-//│ ║  builtin: 	let (+): int -> int -> int
-//│ ║           	         ^^^
-//│ ╟── type reference
-//│ ║  builtin: 	let (+): int -> int -> int
-//│ ╙──         	         ^^^
-//│ ╔══[WARNING] ?a is unified with int because ub(α82' <: [[[int]]]))
-//│ ║  
-//│ ╟── variable
-//│ ║  l.23: 	let f x = x + 1
-//│ ║        	      ^
-//│ ╟── reference
-//│ ║  l.23: 	let f x = x + 1
-//│ ║        	          ^
-//│ ╟── type reference
-//│ ║  builtin: 	let (+): int -> int -> int
-//│ ║           	         ^^^
-//│ ╟── type reference
-//│ ║  builtin: 	let (+): int -> int -> int
-//│ ╙──         	         ^^^
 //│ f: int -> int
 //│ res: bool
 
+// TODO: show error
 :d
 let a = 1
 not a
@@ -148,3 +51,341 @@ not a
 //│  where: 
 //│ a: int
 //│ res: bool
+
+// TODO fix my sequence
+let confluence z = if true then z else 5
+confluence true
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- ?b 
+//│ ║  
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                       ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?a` and it flows from `?b`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ╙──     	               ^
+//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
+//│ ╟──        bool ---> ?a <--- int 
+//│ ║  
+//│ ╟── this reference has type `bool`
+//│ ║  l.2: 	confluence true
+//│ ║       	           ^^^^
+//│ ╟── this variable has type `bool`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	               ^
+//│ ╟── this `then` branch has type `bool` and it flows into `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ╙──     	                                       ^
+//│ confluence: 'a -> (int | 'a)
+//│ res: bool | int
+
+
+let x: int list
+let y: string list
+let f: string list -> unit
+//│ x: list[int]
+//│ y: list[string]
+//│ f: list[string] -> unit
+
+// TODO: this won't show error because there are no type variables
+f x
+
+// Should show
+// ╔══[ERROR] Type `string list` does not match `int list`
+// ║  
+// ╟──        string list ---> ?a <--- int list 
+// ║  
+// ╟── `string list` comes from this type expression
+// ║  l.-10: 	let y: string list
+// ║         	       ^^^^^^^^^^^
+// ╟── this `else` branch has type `string list` and it flows into `?a`
+// ║  l.1: 	if true then x else y
+// ║       	                    ^
+// ╟── this if-then-else expression has type `?a`
+// ║  l.1: 	if true then x else y
+// ║       	^^^^^^^^^^^^^^^^^^^^^
+// ╟── this `then` branch has type `?a` and it flows from `int list`
+// ║  l.1: 	if true then x else y
+// ║       	             ^
+// ╟── this applied type reference has type `int list`
+// ║  l.-11: 	let x: int list
+// ╙──       	       ^^^^^^^^
+// res: list[int | string]
+if true then x else y
+//│ ╔══[ERROR] Type `string list` does not match `int list`
+//│ ║  
+//│ ╟──        string list ---> ?a <--- int list 
+//│ ║  
+//│ ╟── `string list` comes from this type expression
+//│ ║  l.-29: 	let y: string list
+//│ ║         	       ^^^^^^^^^^^
+//│ ╟── this `else` branch has type `string list` and it flows into `?a`
+//│ ║  l.1: 	if true then x else y
+//│ ║       	                    ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.1: 	if true then x else y
+//│ ║       	^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?a` and it flows from `int list`
+//│ ║  l.1: 	if true then x else y
+//│ ║       	             ^
+//│ ╟── this applied type reference has type `int list`
+//│ ║  l.-30: 	let x: int list
+//│ ╙──       	       ^^^^^^^^
+//│ res: list[int | string]
+
+// TODO: show error
+Left 1 : int
+//│ res: int
+
+// Jonathan
+// TODO: show sequence properly
+// let confluence z = if true then z else 5
+// let mkpair x y = (x, confluence y)
+// mkpair 1 "2"
+
+// TODO nested prov not shown in collision error
+let a = 1
+let b = a
+let f x = if x then true else false
+let g = f
+g b
+//│ ╔══[ERROR] Type `bool` does not match `unit`
+//│ ║  
+//│ ╟── this `else` branch has type `bool`
+//│ ║  l.3: 	let f x = if x then true else false
+//│ ║       	                              ^^^^^
+//│ ╟── this if-then-else expression has type `bool`
+//│ ║  l.3: 	let f x = if x then true else false
+//│ ║       	          ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── `unit` comes from this type expression
+//│ ║  l.-61: 	let f: string list -> unit
+//│ ╙──       	                      ^^^^
+//│ ╔══[ERROR] Type `string list` does not match `bool`
+//│ ║  
+//│ ╟── `string list` comes from this type expression
+//│ ║  l.-61: 	let f: string list -> unit
+//│ ║         	       ^^^^^^^^^^^
+//│ ╟── this variable has type `string list`
+//│ ║  l.3: 	let f x = if x then true else false
+//│ ╙──     	      ^
+//│ a: int
+//│ b: int
+//│ bool -> bool
+//│   <:  f:
+//│ list[string] -> unit
+//│ g: list[string] -> unit
+
+let wrap x = x :: []
+  
+// TODO: show error
+if true then wrap 1 else wrap true
+//│ wrap: 'a -> list['a]
+
+// TODO: investigate double error
+if true then wrap (if true then 1 else false) else wrap true
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- bool 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?a`
+//│ ║  l.1: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║       	                                ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.1: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `bool` and it flows into `?a`
+//│ ║  l.1: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ╙──     	                                       ^^^^^
+//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
+//│ ╟──        bool ---> ?a <--- int 
+//│ ║  
+//│ ╟── this `else` branch has type `bool` and it flows into `?a`
+//│ ║  l.1: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║       	                                       ^^^^^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.1: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `int` and it flows into `?a`
+//│ ║  l.1: 	if true then wrap (if true then 1 else false) else wrap true
+//│ ╙──     	                                ^
+//│ res: list[bool | int]
+
+// TODO: duplicate error
+let rec t = wrap (if true then 1 else t)
+//│ ╔══[ERROR] Type `?a list` does not match `int`
+//│ ║  
+//│ ╟──        ?a list ---> ?b <--- int 
+//│ ║  
+//│ ╟── this application has type `?a list`
+//│ ║  l.-36: 	let wrap x = x :: []
+//│ ║         	             ^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.1: 	let rec t = wrap (if true then 1 else t)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this recursive binding has type `?a list`
+//│ ║  l.1: 	let rec t = wrap (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this `else` branch has type `?a list` and it flows into `?b`
+//│ ║  l.1: 	let rec t = wrap (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.1: 	let rec t = wrap (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.1: 	let rec t = wrap (if true then 1 else t)
+//│ ╙──     	                               ^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?a list 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.1: 	let rec t = wrap (if true then 1 else t)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.1: 	let rec t = wrap (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?a`
+//│ ║  l.1: 	let rec t = wrap (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?a`
+//│ ║  l.1: 	let rec t = wrap (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this application has type `?a` and it flows from `?a list`
+//│ ║  l.1: 	let rec t = wrap (if true then 1 else t)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.-36: 	let wrap x = x :: []
+//│ ╙──       	             ^^^^^^^
+//│ t: 't
+//│   where
+//│     't :> list[int | 't]
+
+// TODO show proper sequence
+let test z = if true then wrap z else wrap true
+ 
+let rec m = test (if true then 1 else m)
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?c 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	        ^
+//│ ╟── this application has type `?b` and it flows from `?c`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.1: 	let test z = if true then wrap z else wrap true
+//│ ╙──     	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list` does not match `int`
+//│ ║  
+//│ ╟──        ?a list ---> ?b <--- int 
+//│ ║  
+//│ ╟── this application has type `?a list`
+//│ ║  l.-86: 	let wrap x = x :: []
+//│ ║         	             ^^^^^^^
+//│ ╟── this `then` branch has type `?a list`
+//│ ║  l.1: 	let test z = if true then wrap z else wrap true
+//│ ║       	                          ^^^^^^
+//│ ╟── this if-then-else expression has type `?a list`
+//│ ║  l.1: 	let test z = if true then wrap z else wrap true
+//│ ║       	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this recursive binding has type `?a list`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	        ^
+//│ ╟── this `else` branch has type `?a list` and it flows into `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	                                      ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ╙──     	                               ^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?c 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	        ^
+//│ ╟── this application has type `?b` and it flows from `?c`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.1: 	let test z = if true then wrap z else wrap true
+//│ ╙──     	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list` does not match `int`
+//│ ║  
+//│ ╟──        ?a list ---> ?b <--- int 
+//│ ║  
+//│ ╟── this application has type `?a list`
+//│ ║  l.-86: 	let wrap x = x :: []
+//│ ║         	             ^^^^^^^
+//│ ╟── this `else` branch has type `?a list`
+//│ ║  l.1: 	let test z = if true then wrap z else wrap true
+//│ ║       	                                      ^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?a list`
+//│ ║  l.1: 	let test z = if true then wrap z else wrap true
+//│ ║       	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this recursive binding has type `?a list`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	        ^
+//│ ╟── this `else` branch has type `?a list` and it flows into `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	                                      ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec m = test (if true then 1 else m)
+//│ ╙──     	                               ^
+//│ test: 'a -> list[bool | 'a]
+//│ m: 'm
+//│   where
+//│     'm :> list[int | 'm | bool]
+
+
+// FIXME implementation exception
+let rec digitsOfInt n =
+  ((digitsOfInt n) / 10) @ [remainder];;
+//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing

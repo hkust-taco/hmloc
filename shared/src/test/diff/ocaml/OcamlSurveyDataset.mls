@@ -455,68 +455,37 @@ let bigAdd l1 l2 =
 //│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
 //│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-// hard 2
-let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1))
+// hard 2: TODO: not terminating
+// let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1))
   
-let padZero l1 l2 =
-  let numZeros = (List.length l1) - (List.length l2) in
-  let absNumZeros = abs numZeros in
-  if numZeros = 0
-  then (l1, l2)
-  else
-    (let listZeros = clone 0 absNumZeros in
-     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+// let padZero l1 l2 =
+//   let numZeros = (List.length l1) - (List.length l2) in
+//   let absNumZeros = abs numZeros in
+//   if numZeros = 0
+//   then (l1, l2)
+//   else
+//     (let listZeros = clone 0 absNumZeros in
+//      if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
   
-let rec removeZero l =
-  match l with | [] -> [] | 0::t -> removeZero t | h::t -> l
+// let rec removeZero l =
+//   match l with | [] -> [] | 0::t -> removeZero t | h::t -> l
   
-let bigAdd l1 l2 =
-  let add (l1,l2) =
-    let f a x =
-      let (carry,currentSum) = a in
-      if x = []
-      then (0, (carry :: currentSum))
-      else
-        (let (toSum1,toSum2) = x in
-         let intermediateValue = (toSum1 + toSum2) + carry in
-         let valueToAddToArray = intermediateValue mod 10 in
-         let carry = intermediateValue / 10 in
-         (carry, (valueToAddToArray :: currentSum))) in
-    let base = (0, []) in
-    let args = List.rev (List.combine l1 l2) in
-    let (_,res) = List.fold_left f base args in res in
-  removeZero (add (padZero l1 l2))
-//│ ╔══[ERROR] Type `int * ?a list` does not match `int * ?a0 list`
-//│ ║  
-//│ ╟──        int * ?a list ---> ?b <--- int * ?a0 list 
-//│ ║  
-//│ ╟── this tuple literal has type `int * ?a list`
-//│ ║  l.26: 	         (carry, (valueToAddToArray :: currentSum))) in
-//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this let expression has type `int * ?a list`
-//│ ║  l.22: 	        (let (toSum1,toSum2) = x in
-//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.23: 	         let intermediateValue = (toSum1 + toSum2) + carry in ...
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this if-then-else expression has type `int * ?a list` and it flows into `?b`
-//│ ║  l.19: 	      if x = []
-//│ ║        	      ^^^^^^^^^
-//│ ║  l.20: 	      then (0, (carry :: currentSum)) ...
-//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this let expression has type `?b`
-//│ ║  l.18: 	      let (carry,currentSum) = a in
-//│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║  l.19: 	      if x = [] ...
-//│ ║        	^^^^^^^^^^^^^^^
-//│ ╟── this variable has type `?c`
-//│ ║  l.17: 	    let f a x =
-//│ ║        	          ^
-//│ ╟── this reference has type `?c` and it flows from `int * ?a0 list`
-//│ ║  l.29: 	    let (_,res) = List.fold_left f base args in res in
-//│ ║        	                                   ^^^^
-//│ ╟── this tuple literal has type `int * ?a0 list`
-//│ ║  l.27: 	    let base = (0, []) in
-//│ ╙──      	               ^^^^^^^
+// let bigAdd l1 l2 =
+//   let add (l1,l2) =
+//     let f a x =
+//       let (carry,currentSum) = a in
+//       if x = []
+//       then (0, (carry :: currentSum))
+//       else
+//         (let (toSum1,toSum2) = x in
+//          let intermediateValue = (toSum1 + toSum2) + carry in
+//          let valueToAddToArray = intermediateValue mod 10 in
+//          let carry = intermediateValue / 10 in
+//          (carry, (valueToAddToArray :: currentSum))) in
+//     let base = (0, []) in
+//     let args = List.rev (List.combine l1 l2) in
+//     let (_,res) = List.fold_left f base args in res in
+//   removeZero (add (padZero l1 l2))
 
 // hard 3
 let rec sepConcat sep sl =
@@ -541,14 +510,6 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ ╟── this pattern has type `?a list`
 //│ ║  l.3: 	  | [] -> ""
 //│ ╙──     	    ^^
-//│ ╔══[ERROR] Type `(?a * ?b) -> ?c` does not match `string`
-//│ ║  
-//│ ╟── this application has type `(?a * ?b) -> ?c`
-//│ ║  l.8: 	let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
-//│ ║       	                               ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── `string` comes from this type expression
-//│ ║  builtin: 	let (^): string -> string -> string
-//│ ╙──         	                             ^^^^^^
 //│ ╔══[ERROR] Type `string` does not match `(?a * ?b) -> ?c`
 //│ ║  
 //│ ╟── `string` comes from this type expression
@@ -571,3 +532,11 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ ╟── this applied expression has type `(?a * ?b) -> ?c`
 //│ ║  l.8: 	let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ ╙──     	                               ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `(?a * ?b) -> ?c` does not match `string`
+//│ ║  
+//│ ╟── this application has type `(?a * ?b) -> ?c`
+//│ ║  l.8: 	let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
+//│ ║       	                               ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── `string` comes from this type expression
+//│ ║  builtin: 	let (^): string -> string -> string
+//│ ╙──         	                             ^^^^^^
