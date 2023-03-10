@@ -4,15 +4,18 @@ import mlscript.Message.MessageContext
 import mlscript.utils._
 import mlscript.utils.shorthands._
 
-import scala.collection.mutable.{Set => MutSet}
+import scala.collection.mutable.{Set => MutSet, Map => MutMap}
 
 trait UnificationSolver extends TyperDatatypes {
   self: Typer =>
 
+  val errorCache: MutMap[(ST, ST), Unification] = MutMap()
   var unifyMode: Bool = false
 
   // Unify all type variables crated by accessing them from the hook
   def unifyTypes()(implicit ctx: Ctx, raise: Raise): Unit = {
+    errorCache.clear()
+
     // register all bounds as unifications
     TypeVariable.createdTypeVars.foreach(tv => {
       println(s"$tv bounds")
@@ -31,6 +34,9 @@ trait UnificationSolver extends TyperDatatypes {
         println(s"U ${tv} += ${(ub, reason)}")
       })
     })
+
+    errorCache.values.foreach(reportUnificationError)
+    errorCache.clear()
   }
 
   // reason already has reason for a and b to be unified
@@ -89,7 +95,7 @@ trait UnificationSolver extends TyperDatatypes {
           }
         case (_, _) =>
           // report error
-          reportUnificationError(createUnification())
+          registerUnificationError(createUnification())
       }
     }()
 
@@ -150,7 +156,7 @@ trait UnificationSolver extends TyperDatatypes {
   }
 
   def reportUnificationError(u: Unification)(implicit raise: Raise, ctx: Ctx): Unit = {
-    println(s"UERR  ${u.toString}")
+    println(s"UERR REPORT ${u.toString}")
     val msgdoesnotmatch = (a: ST, b: ST) => msg"Type `${a.expPos}` does not match `${b.expPos}`"
     u.unificationChain match {
       case Nil => ()
@@ -165,6 +171,25 @@ trait UnificationSolver extends TyperDatatypes {
           msgdoesnotmatch(u.a, u.b) -> N ::
             msg"       " + toSequenceString(u) -> N :: messages
           , true))
+    }
+  }
+
+  def registerUnificationError(u: Unification): Unit = {
+    val (a, b, level, length) = (u.a, u.b, u.unificationLevel, u.reason.length)
+
+    errorCache.get((a, b)).fold {
+      println(s"UERR CACHE [$level] [$length] ${u.toString}")
+      errorCache += (((a, b), u))
+      ()
+    } {
+      case cachedU if level < cachedU.unificationLevel =>
+        errorCache += (((a, b), u))
+        println(s"UERR UPDATE [$level] ${u.toString}")
+      case cachedU if level == cachedU.unificationLevel && length < cachedU.reason.length =>
+        errorCache += (((a, b), u))
+        println(s"UERR UPDATE [$level] [$length] ${u.toString}")
+      case _ =>
+        println(s"UERR IGNORE ${u.toString}")
     }
   }
 
