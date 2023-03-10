@@ -433,6 +433,7 @@ class DiffTests
                   if (tex) {
                     val pre = s"$shownLineNum:"
                     val curLine = loc.origin.fph.lines(l - 1)
+                    val whitespace = curLine.takeWhile(c => c == ' ').length
                     // println(curLine.length.toString)
                     // println(stdout)
                     // output(prepre + pre + "\t" + curLine)
@@ -443,16 +444,16 @@ class DiffTests
                     // println(lastCol,curLine.length)
                     var i = 0
                     while (i < c - 1) { tickBuilder += curLine(i); i += 1 }
+                    while (c <= whitespace) { tickBuilder += ' '; c += 1 }
                     tickBuilder ++= "_B_"
                     while (c < lastCol) { tickBuilder += curLine(c - 1); c += 1 }
-                    tickBuilder ++= "__"
-                    while (c <= curLine.length) { tickBuilder += curLine(c - 1); c += 1 }
-                    // truncate large output second line onwards
                     if (l - startLineNum =:= 1 && l != endLineNum) {
                       tickBuilder ++= " ..."
                       l = endLineNum + 1
                     }
-                    // if (c =:= startLineCol) tickBuilder += ('^')
+                    tickBuilder ++= "__"
+                    while (c <= curLine.length) { tickBuilder += curLine(c - 1); c += 1 }
+                    // truncate large output second line onwards
                     val lnStr = tickBuilder.toString
                       .replaceAll("let", "**let**")
                       .replaceAll("val", "**val**")
@@ -460,8 +461,11 @@ class DiffTests
                   } else {
                     val pre = s"$shownLineNum: "
                     val curLine = loc.origin.fph.lines(l - 1)
+                    val whitespace = curLine.takeWhile(c => c == ' ').length
+                    var dotextend = false
                     // truncate large output second line onwards
                     if (l - startLineNum =:= 1 && l != endLineNum) {
+                      dotextend = true
                       output(prepre + pre + "\t" + curLine + " ...")
                       l = endLineNum + 1
                     } else {
@@ -472,8 +476,13 @@ class DiffTests
                       (if (isLast && l =:= endLineNum) "╙──" else prepre)
                       + " " * pre.length + "\t" + " " * (c - 1))
                     val lastCol = if (l =:= endLineNum) endLineCol else curLine.length + 1
-                    while (c < lastCol) { tickBuilder += ('^'); c += 1 }
+                    while (c < lastCol) {
+                      if (c > whitespace) tickBuilder += '^'
+                      else tickBuilder += ' '
+                      c += 1
+                    }
                     if (c =:= startLineCol) tickBuilder += ('^')
+                    if (dotextend) tickBuilder ++= "^^^^"
                     output(tickBuilder.toString)
                   }
                   c = 1
