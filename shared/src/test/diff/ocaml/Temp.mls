@@ -1,0 +1,129 @@
+
+let destructEither x = if x then
+  match x with
+   | Left l -> l + 1
+   | Right r -> r && true
+  else x
+//│ ╔══[ERROR] Type `int` does not match `(_, _) either`
+//│ ║  
+//│ ╟──        int ---> ?a <--- ?b ---> (_, _) either 
+//│ ║  
+//│ ╟── [`int`] comes from this type expression
+//│ ║  builtin	let (+): int -> int -> int
+//│ ║         	                       ^^^
+//│ ╟── so this operator application has type `int`
+//│ ║  l.3:	   | Left l -> l + 1
+//│ ║      	               ^^^^^
+//│ ╟── so this match expression has type `int` and it flows into `?a`
+//│ ║  l.2:	  match x with
+//│ ║      	  ^^^^^^^^^^^^
+//│ ║      	   | Left l -> l + 1 ...
+//│ ║      	   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── [`?a`] comes from this if-then-else expression
+//│ ║  l.1:	let destructEither x = if x then
+//│ ║      	                       ^^^^^^^^^
+//│ ║      	  match x with ...
+//│ ║      	  ^^^^^^^^^^^^^^^^
+//│ ╟── so this `else` branch has type `?a`. However `?b` flows into `?a`
+//│ ║  l.5:	  else x
+//│ ║      	       ^^
+//│ ╟── [`?b`] comes from this variable
+//│ ║  l.1:	let destructEither x = if x then
+//│ ║      	                   ^
+//│ ╟── so this reference has type `?b` and it flows into `(_, _) either`
+//│ ║  l.2:	  match x with
+//│ ║      	        ^
+//│ ╟── [`(_, _) either`] comes from this pattern
+//│ ║  l.3:	   | Left l -> l + 1
+//│ ╙──    	     ^^^^
+//│ ╔══[ERROR] Type `bool` does not match `(_, _) either`
+//│ ║  
+//│ ╟──        bool ---> ?a <--- ?b ---> (_, _) either 
+//│ ║  
+//│ ╟── [`bool`] comes from this type expression
+//│ ║  builtin	let (&&): bool -> bool -> bool
+//│ ║         	                          ^^^^
+//│ ╟── so this operator application has type `bool`
+//│ ║  l.4:	   | Right r -> r && true
+//│ ║      	                ^^^^^^^^^
+//│ ╟── so this match expression has type `bool` and it flows into `?a`
+//│ ║  l.2:	  match x with
+//│ ║      	  ^^^^^^^^^^^^
+//│ ║      	   | Left l -> l + 1 ...
+//│ ║      	   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── [`?a`] comes from this if-then-else expression
+//│ ║  l.1:	let destructEither x = if x then
+//│ ║      	                       ^^^^^^^^^
+//│ ║      	  match x with ...
+//│ ║      	  ^^^^^^^^^^^^^^^^
+//│ ╟── so this `else` branch has type `?a`. However `?b` flows into `?a`
+//│ ║  l.5:	  else x
+//│ ║      	       ^^
+//│ ╟── [`?b`] comes from this variable
+//│ ║  l.1:	let destructEither x = if x then
+//│ ║      	                   ^
+//│ ╟── so this reference has type `?b` and it flows into `(_, _) either`
+//│ ║  l.2:	  match x with
+//│ ║      	        ^
+//│ ╟── [`(_, _) either`] comes from this pattern
+//│ ║  l.3:	   | Left l -> l + 1
+//│ ╙──    	     ^^^^
+//│ ╔══[ERROR] Type `(_, _) either` does not match `bool`
+//│ ║  
+//│ ╟──        (_, _) either <--- ?a ---> bool 
+//│ ║  
+//│ ╟── [`(_, _) either`] comes from this pattern
+//│ ║  l.3:	   | Left l -> l + 1
+//│ ║      	     ^^^^
+//│ ╟── so this reference has type `(_, _) either`. However `?a` flows into `(_, _) either`
+//│ ║  l.2:	  match x with
+//│ ║      	        ^
+//│ ╟── [`?a`] comes from this variable
+//│ ║  l.1:	let destructEither x = if x then
+//│ ║      	                   ^
+//│ ╟── [`?a`] comes from this if-then-else condition and it flows into `bool`
+//│ ║  l.1:	let destructEither x = if x then
+//│ ╙──    	                          ^
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- bool 
+//│ ║  
+//│ ╟── [`int`] comes from this type expression
+//│ ║  builtin	let (+): int -> int -> int
+//│ ║         	                       ^^^
+//│ ╟── so this operator application has type `int` and it flows into `?a`
+//│ ║  l.3:	   | Left l -> l + 1
+//│ ║      	               ^^^^^
+//│ ╟── [`?a`] comes from this match expression
+//│ ║  l.2:	  match x with
+//│ ║      	  ^^^^^^^^^^^^
+//│ ║      	   | Left l -> l + 1 ...
+//│ ║      	   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── so this operator application has type `?a`. However `bool` flows into `?a`
+//│ ║  l.4:	   | Right r -> r && true
+//│ ║      	                ^^^^^^^^^
+//│ ╟── [`bool`] comes from this type reference
+//│ ║  builtin	let (&&): bool -> bool -> bool
+//│ ╙──       	                          ^^^^
+//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
+//│ ╟──        bool ---> ?a <--- int 
+//│ ║  
+//│ ╟── [`bool`] comes from this type expression
+//│ ║  builtin	let (&&): bool -> bool -> bool
+//│ ║         	                          ^^^^
+//│ ╟── so this operator application has type `bool` and it flows into `?a`
+//│ ║  l.4:	   | Right r -> r && true
+//│ ║      	                ^^^^^^^^^
+//│ ╟── [`?a`] comes from this match expression
+//│ ║  l.2:	  match x with
+//│ ║      	  ^^^^^^^^^^^^
+//│ ║      	   | Left l -> l + 1 ...
+//│ ║      	   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── so this operator application has type `?a`. However `int` flows into `?a`
+//│ ║  l.3:	   | Left l -> l + 1
+//│ ║      	               ^^^^^
+//│ ╟── [`int`] comes from this type reference
+//│ ║  builtin	let (+): int -> int -> int
+//│ ╙──       	                       ^^^
+//│ destructEither: bool -> (bool | int)

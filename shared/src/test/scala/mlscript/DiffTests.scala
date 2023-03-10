@@ -423,15 +423,17 @@ class DiffTests
                 while (l <= endLineNum) {
                   val globalLineNum = loc.origin.startLineNum + l - 1
                   val relativeLineNum = globalLineNum - blockLineNum + 1
-                  val shownLineNum = {
-                    if (loc.origin.fileName == "builtin") "builtin" else {
+                  val lineNumber = {
+                    if (loc.origin.fileName == "builtin") "builtin:"
+                    else if (l == startLineNum) {
                       val linemarker = "l."
-                      if (unificationRelativeLineNums || showRelativeLineNums && relativeLineNum > 0) s"${linemarker}$relativeLineNum"
-                      else linemarker + globalLineNum
+                      if (unificationRelativeLineNums || showRelativeLineNums && relativeLineNum > 0) s"${linemarker}$relativeLineNum:"
+                      else s"$linemarker$globalLineNum:"
+                    } else {
+                      "    "  // about the same space as if it had line number
                     }
                   }
                   if (tex) {
-                    val pre = s"$shownLineNum:"
                     val curLine = loc.origin.fph.lines(l - 1)
                     val whitespace = curLine.takeWhile(c => c == ' ').length
                     // println(curLine.length.toString)
@@ -457,24 +459,23 @@ class DiffTests
                     val lnStr = tickBuilder.toString
                       .replaceAll("let", "**let**")
                       .replaceAll("val", "**val**")
-                    output(prepre + pre + "‹   " + lnStr + "›")
+                    output(prepre + lineNumber + "‹   " + lnStr + "›")
                   } else {
-                    val pre = s"$shownLineNum: "
                     val curLine = loc.origin.fph.lines(l - 1)
                     val whitespace = curLine.takeWhile(c => c == ' ').length
                     var dotextend = false
                     // truncate large output second line onwards
                     if (l - startLineNum =:= 1 && l != endLineNum) {
                       dotextend = true
-                      output(prepre + pre + "\t" + curLine + " ...")
+                      output(prepre + lineNumber + "\t" + curLine + " ...")
                       l = endLineNum + 1
                     } else {
-                      output(prepre + pre + "\t" + curLine)
+                      output(prepre + lineNumber + "\t" + curLine)
                     }
                     val tickBuilder = new StringBuilder()
                     tickBuilder ++= (
                       (if (isLast && l =:= endLineNum) "╙──" else prepre)
-                      + " " * pre.length + "\t" + " " * (c - 1))
+                      + " " * lineNumber.length + "\t" + " " * (c - 1))
                     val lastCol = if (l =:= endLineNum) endLineCol else curLine.length + 1
                     while (c < lastCol) {
                       if (c > whitespace) tickBuilder += '^'
