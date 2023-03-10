@@ -17,6 +17,28 @@ let test2 = let (a, b) = test in [[b]] + 1
 //│ ╟── this integer literal has type `int` and it flows into `?a`
 //│ ║  l.3: 	  (f 1 + f true)
 //│ ╙──     	     ^
+//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
+//│ ╟── this reference has type `bool`
+//│ ║  l.3: 	  (f 1 + f true)
+//│ ║       	           ^^^^
+//│ ╟── this variable has type `bool`
+//│ ║  l.2: 	  let f x = x in
+//│ ║       	        ^
+//│ ╟── `int` comes from this type expression
+//│ ║  builtin: 	let (+): int -> int -> int
+//│ ╙──         	                ^^^
+//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
+//│ ╟── this reference has type `bool`
+//│ ║  l.3: 	  (f 1 + f true)
+//│ ║       	           ^^^^
+//│ ╟── this variable has type `bool`
+//│ ║  l.2: 	  let f x = x in
+//│ ║       	        ^
+//│ ╟── `int` comes from this type expression
+//│ ║  builtin: 	let (+): int -> int -> int
+//│ ╙──         	         ^^^
 //│ test: int
 //│ test2: int
 
@@ -75,17 +97,19 @@ not (f 1)
 //│ α87 bounds
 //│ α86 bounds
 //│ U α86 <: [[int]] with 3 provs
-//│ U α86 = [[int]] because lb([[int]] <: α86) ()
+//│ U α86 = [[int]] because lb([[int]] <: α86)
 //│ U α86 += ([[int]],lb([[int]] <: α86))
 //│ U α86 :> [[[int]]] with 4 provs
-//│ U α86 = [[[int]]] because ub(α86 <: [[[int]]]) ()
-//│ | U Cached α86 = int
+//│ U α86 = [[[int]]] because ub(α86 <: [[[int]]])
+//│ | U   int with
+//│ |     α86 = [[int]] for lb([[int]] <: α86)
+//│ | U [[int]] = int because lb([[int]] <: α86), ub(α86 <: [[[int]]])
 //│ U α86 += ([[[int]]],ub(α86 <: [[[int]]]))
 //│ α84' bounds
 //│ α83' bounds
 //│ α82' bounds
 //│ U α82' :> [[[int]]] with 4 provs
-//│ U α82' = [[[int]]] because ub(α82' <: [[[int]]]) ()
+//│ U α82' = [[[int]]] because ub(α82' <: [[[int]]])
 //│ U α82' += ([[[int]]],ub(α82' <: [[[int]]]))
 //│ unified α88 with:
 //│ unified α87 with:

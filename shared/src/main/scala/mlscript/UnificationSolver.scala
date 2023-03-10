@@ -9,7 +9,6 @@ import scala.collection.mutable.{Set => MutSet}
 trait UnificationSolver extends TyperDatatypes {
   self: Typer =>
 
-  implicit val cache: MutSet[(ST, ST)] = MutSet()
   var unifyMode: Bool = false
 
   // Unify all type variables crated by accessing them from the hook
@@ -20,52 +19,37 @@ trait UnificationSolver extends TyperDatatypes {
       tv.lowerBounds.foreach(lb => {
         val reason = LB(lb, tv, lb.typeUseLocations.reverse)
         println(s"U $tv <: $lb with ${reason.provs.length} provs")
-        unifyTypes(tv, lb, reason :: Nil)
+        unifyTypes(tv, lb, reason :: Nil, Set())
         tv.new_unification += ((lb, reason))
         println(s"U ${tv} += ${(lb, reason)}")
       })
       tv.upperBounds.foreach(ub => {
         val reason = UB(tv, ub, ub.typeUseLocations)
         println(s"U $tv :> $ub with ${reason.provs.length} provs")
-        unifyTypes(tv, ub, reason :: Nil)
+        unifyTypes(tv, ub, reason :: Nil, Set())
         tv.new_unification += ((ub, reason))
         println(s"U ${tv} += ${(ub, reason)}")
       })
     })
-//
-//    // unify all unifications with each other
-//    TypeVariable.createdTypeVars.foreach(tv => {
-//      for {
-//        (tv1, ur1) <- tv.new_unification.iterator
-//        (tv2, ur2) <- tv.new_unification.iterator
-//        if tv1 != tv2
-//      } {
-//        unifyTypes(tv1, tv2, ur1 :: ur2 :: Nil)
-//      }
-//    })
   }
 
   // reason already has reason for a and b to be unified
   // this unification unifies types and create errors if they fail
-  def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason], skipCache: Bool = false)
-                (implicit cache: MutSet[(ST, ST)], ctx: Ctx, raise: Raise): Unit =
-    trace(s"U ${a} = ${b} because ${reason.mkString(", ")} ${if (skipCache) "skipCache"}") {
+  def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason], cache: Set[(ST, ST)])
+                (implicit ctx: Ctx, raise: Raise): Unit =
+    trace(s"U ${a} = ${b} because ${reason.mkString(", ")}") {
       val st1 = a.unwrapProvs
       val st2 = b.unwrapProvs
 
       def createUnification(desc: Str = ""): Unification = Unification(a, b, reason, desc)
 
       // unification doesn't have an ordering
-      if (!skipCache) {
-        if (cache((st1, st2)) || cache(st2, st1)) {
-          println(s"U Cached ${st1} = ${st2}")
-          return
-        }
-        else {
-          cache += ((st1, st2))
-          cache += ((st2, st1))
-        }
+      if (cache((st1, st2)) || cache(st2, st1)) {
+        println(s"U Cached ${st1} = ${st2}")
+        return
       }
+
+      val newCache = cache + ((a, b)) + ((b, a))
 
       (st1, st2) match {
         case (tr1: TypeRef, tr2: TypeRef)
@@ -94,14 +78,14 @@ trait UnificationSolver extends TyperDatatypes {
           tv.new_unification.foreach {
             case ((prev, prevReason)) =>
               println(s"    ${tv} = ${prev} for ${prevReason}")
-              unifyTypes(prev, st, prevReason :: reason)
+              unifyTypes(prev, st, prevReason :: reason, newCache)
           }
         case (st, tv: TypeVariable) =>
           if (tv.new_unification.nonEmpty) println(s"U   ${st} with")
           tv.new_unification.foreach {
             case ((prev, prevReason)) =>
               println(s"    ${tv} = ${prev} for ${prevReason}")
-              unifyTypes(prev, st, prevReason :: reason.reverse)
+              unifyTypes(prev, st, prevReason :: reason.reverse, newCache)
           }
         case (_, _) =>
           // report error

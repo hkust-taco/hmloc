@@ -82,6 +82,22 @@ confluence true
 //│ ╟── this `else` branch has type `int` and it flows into `?a`
 //│ ║  l.1: 	let confluence z = if true then z else 5
 //│ ╙──     	                                       ^
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- ?b 
+//│ ║  
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                       ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?a` and it flows from `?b`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ║       	                                ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.1: 	let confluence z = if true then z else 5
+//│ ╙──     	               ^
 //│ confluence: 'a -> (int | 'a)
 //│ res: bool | int
 
@@ -93,16 +109,16 @@ let conflict x = mkpair (not x) x
 //│ ╟──        int ---> ?a <--- ?b ---> bool 
 //│ ║  
 //│ ╟── this `else` branch has type `int` and it flows into `?a`
-//│ ║  l.-24: 	let confluence z = if true then z else 5
+//│ ║  l.-40: 	let confluence z = if true then z else 5
 //│ ║         	                                       ^
 //│ ╟── this if-then-else expression has type `?a`
-//│ ║  l.-24: 	let confluence z = if true then z else 5
+//│ ║  l.-40: 	let confluence z = if true then z else 5
 //│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this `then` branch has type `?a`
-//│ ║  l.-24: 	let confluence z = if true then z else 5
+//│ ║  l.-40: 	let confluence z = if true then z else 5
 //│ ║         	                                ^
 //│ ╟── this variable has type `?a`
-//│ ║  l.-24: 	let confluence z = if true then z else 5
+//│ ║  l.-40: 	let confluence z = if true then z else 5
 //│ ║         	               ^
 //│ ╟── this reference has type `?a`
 //│ ║  l.1: 	let mkpair x y = (x, confluence y)
@@ -122,8 +138,98 @@ let conflict x = mkpair (not x) x
 //│ ╟── this type reference has type `bool`
 //│ ║  builtin: 	let not: bool -> bool
 //│ ╙──         	         ^^^^
-//│ mkpair: 'a -> 'b -> ('a, int | 'b,)
-//│ conflict: (bool & 'a) -> (bool, int | 'a,)
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ║  
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	                                       ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?a`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	                                ^
+//│ ╟── this variable has type `?a`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	               ^
+//│ ╟── this reference has type `?a` and it flows from `?b`
+//│ ║  l.1: 	let mkpair x y = (x, confluence y)
+//│ ║       	                                ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.1: 	let mkpair x y = (x, confluence y)
+//│ ║       	             ^
+//│ ╟── this variable has type `?c`
+//│ ║  l.2: 	let conflict x = mkpair (not x) x
+//│ ║       	             ^
+//│ ╟── this reference has type `?c` and it flows into `bool`
+//│ ║  l.2: 	let conflict x = mkpair (not x) x
+//│ ║       	                             ^
+//│ ╟── this type reference has type `bool`
+//│ ║  builtin: 	let not: bool -> bool
+//│ ╙──         	         ^^^^
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ║  
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	                                       ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?a` and it flows from `?b`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	                                ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	               ^
+//│ ╟── this variable has type `?c`
+//│ ║  l.2: 	let conflict x = mkpair (not x) x
+//│ ║       	             ^
+//│ ╟── this reference has type `?c` and it flows into `bool`
+//│ ║  l.2: 	let conflict x = mkpair (not x) x
+//│ ║       	                             ^
+//│ ╟── this type reference has type `bool`
+//│ ║  builtin: 	let not: bool -> bool
+//│ ╙──         	         ^^^^
+//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ║  
+//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ║  
+//│ ╟── this `else` branch has type `int` and it flows into `?a`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	                                       ^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?a` and it flows from `?b`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	                                ^
+//│ ╟── this variable has type `?b`
+//│ ║  l.-40: 	let confluence z = if true then z else 5
+//│ ║         	               ^
+//│ ╟── this variable has type `?c`
+//│ ║  l.2: 	let conflict x = mkpair (not x) x
+//│ ║       	             ^
+//│ ╟── this reference has type `?c` and it flows into `bool`
+//│ ║  l.2: 	let conflict x = mkpair (not x) x
+//│ ║       	                             ^
+//│ ╟── this type reference has type `bool`
+//│ ║  builtin: 	let not: bool -> bool
+//│ ╙──         	         ^^^^
+//│ /!!!\ Uncaught error: scala.NotImplementedError: an implementation is missing
+//│ 	at: scala.Predef$.$qmark$qmark$qmark(Predef.scala:344)
+//│ 	at: mlscript.UnificationSolver.makeMessagesUR$1(UnificationSolver.scala:221)
+//│ 	at: mlscript.UnificationSolver.createErrorMessage(UnificationSolver.scala:267)
+//│ 	at: mlscript.UnificationSolver.createErrorMessage$(UnificationSolver.scala:171)
+//│ 	at: mlscript.TypeDefs.createErrorMessage(TypeDefs.scala:11)
+//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:161)
+//│ 	at: mlscript.UnificationSolver$$anonfun$1.applyOrElse(UnificationSolver.scala:160)
+//│ 	at: scala.collection.Iterator$$anon$7.hasNext(Iterator.scala:525)
+//│ 	at: scala.collection.immutable.List.prependedAll(List.scala:155)
+//│ 	at: scala.collection.IterableOnceOps.toList(IterableOnce.scala:1288)
 
 
 
@@ -165,7 +271,28 @@ let rec additivePersistence n =
 //│ ╟── this integer literal has type `int`
 //│ ║  l.3: 	  | [] -> 0
 //│ ╙──     	          ^
+//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
+//│ ╟──        bool ---> ?a <--- int 
+//│ ║  
+//│ ╟── this `else` branch has type `bool`
+//│ ║  l.4: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ║       	                                                         ^^^^^
+//│ ╟── this if-then-else expression has type `bool` and it flows into `?a`
+//│ ║  l.4: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this match expression has type `?a`
+//│ ║  l.2: 	  match digits n with
+//│ ║       	  ^^^^^^^^^^^^^^^^^^^
+//│ ║  l.3: 	  | [] -> 0 ...
+//│ ║       	^^^^^^^^^^^
+//│ ╟── this integer literal has type `int` and it flows into `?a`
+//│ ║  l.3: 	  | [] -> 0
+//│ ╙──     	          ^
 //│ additivePersistence: int -> (bool | int)
 
 
-
+let y x = [x]
+let k a = if a then [2] else y true
+//│ y: 'a -> list['a]
+//│ k: bool -> list[bool | int]

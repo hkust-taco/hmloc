@@ -80,6 +80,38 @@ let destructEither x y = if y then
 //│ ╟── this pattern has type `(?a, ?b) either`
 //│ ║  l.3: 	    | Left l -> l && true
 //│ ╙──     	      ^^^^
+//│ ╔══[ERROR] Type `bool` does not match `(?a, ?b) either`
+//│ ║  
+//│ ╟──        bool ---> ?c <--- ?d ---> (?a, ?b) either 
+//│ ║  
+//│ ╟── `bool` comes from this type expression
+//│ ║  builtin: 	let (&&): bool -> bool -> bool
+//│ ║           	                          ^^^^
+//│ ╟── this operator application has type `bool` and it flows into `?c`
+//│ ║  l.3: 	    | Left l -> l && true
+//│ ║       	                ^^^^^^^^^
+//│ ╟── this match expression has type `?c`
+//│ ║  l.2: 	  match x with
+//│ ║       	  ^^^^^^^^^^^^
+//│ ║  l.3: 	    | Left l -> l && true ...
+//│ ║       	^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?e`
+//│ ║  l.1: 	let destructEither x y = if y then
+//│ ║       	                         ^^^^^^^^^
+//│ ║  l.2: 	  match x with ...
+//│ ║       	^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?e` and it flows from `?d`
+//│ ║  l.5: 	  else x
+//│ ║       	       ^^
+//│ ╟── this variable has type `?d`
+//│ ║  l.1: 	let destructEither x y = if y then
+//│ ║       	                   ^
+//│ ╟── this reference has type `?d` and it flows into `(?a, ?b) either`
+//│ ║  l.2: 	  match x with
+//│ ║       	        ^
+//│ ╟── this pattern has type `(?a, ?b) either`
+//│ ║  l.3: 	    | Left l -> l && true
+//│ ╙──     	      ^^^^
 
 // med 1
 // FIXME no common prov error
@@ -142,6 +174,252 @@ let rec t = test (if true then 1 else t)
 //│ ╟── this `then` branch has type `int` and it flows into `?b`
 //│ ║  l.3: 	let rec t = test (if true then 1 else t)
 //│ ╙──     	                               ^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?c 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this application has type `?b` and it flows from `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ╙──     	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?c 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this application has type `?b` and it flows from `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ╙──     	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?c ---> ?d <--- ?a list 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this application has type `?b` and it flows from `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	         ^
+//│ ╟── this reference has type `?c` and it flows into `?d`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	                               ^
+//│ ╟── this variable has type `?d`
+//│ ║  l.1: 	let wrap x = x :: []
+//│ ║       	         ^
+//│ ╟── this `then` branch has type `?d` and it flows from `?a list`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	                          ^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.1: 	let wrap x = x :: []
+//│ ╙──     	             ^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?c ---> ?d <--- ?a list 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this application has type `?b` and it flows from `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	         ^
+//│ ╟── this reference has type `?c` and it flows into `?d`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	                               ^
+//│ ╟── this variable has type `?d`
+//│ ║  l.1: 	let wrap x = x :: []
+//│ ║       	         ^
+//│ ╟── this `else` branch has type `?d` and it flows from `?a list`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	                                      ^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.1: 	let wrap x = x :: []
+//│ ╙──     	             ^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?c 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?d`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?d`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this application has type `?d` and it flows from `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ╙──     	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?c 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?d`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?d`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this application has type `?d` and it flows from `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ╙──     	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?a list 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this application has type `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?c` and it flows from `?a list`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	                                      ^^^^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.1: 	let wrap x = x :: []
+//│ ╙──     	             ^^^^^^^
+//│ ╔══[ERROR] Type `int` does not match `?a list`
+//│ ║  
+//│ ╟──        int ---> ?b <--- ?a list 
+//│ ║  
+//│ ╟── this `then` branch has type `int` and it flows into `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                               ^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `else` branch has type `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                                      ^
+//│ ╟── this recursive binding has type `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	        ^
+//│ ╟── this application has type `?c`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `?c` and it flows from `?a list`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	                          ^^^^^^
+//│ ╟── this application has type `?a list`
+//│ ║  l.1: 	let wrap x = x :: []
+//│ ╙──     	             ^^^^^^^
+//│ ╔══[ERROR] Type `?a list` does not match `int`
+//│ ║  
+//│ ╟──        ?a list ---> ?b <--- int 
+//│ ║  
+//│ ╟── this application has type `?a list`
+//│ ║  l.1: 	let wrap x = x :: []
+//│ ║       	             ^^^^^^^
+//│ ╟── this `else` branch has type `?a list` and it flows into `?b`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	                                      ^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?b`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `?c`
+//│ ║  l.1: 	let wrap x = x :: []
+//│ ║       	         ^
+//│ ╟── this reference has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	                               ^
+//│ ╟── this variable has type `?c`
+//│ ║  l.2: 	let test z = if true then wrap z else wrap true
+//│ ║       	         ^
+//│ ╟── this if-then-else expression has type `?c` and it flows from `int`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ║       	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this `then` branch has type `int`
+//│ ║  l.3: 	let rec t = test (if true then 1 else t)
+//│ ╙──     	                               ^
 
 // med 2
 let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0
@@ -168,6 +446,34 @@ let rec mulByDigit i l =
 //│ ╟── `int` comes from this type expression
 //│ ║  builtin: 	let ( * ): int -> int -> int
 //│ ╙──         	                  ^^^
+//│ ╔══[ERROR] Type `?a list` does not match `int`
+//│ ║  
+//│ ╟── this application has type `?a list`
+//│ ║  l.5: 	let y = [1, 2, 3]
+//│ ║       	        ^^^^^^^^^
+//│ ╟── this reference has type `?a list`
+//│ ║  l.10: 	  | h::t -> [remainder x y] @ (mulByDigit i t)
+//│ ║        	                         ^
+//│ ╟── this variable has type `?a list`
+//│ ║  l.1: 	let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0
+//│ ║       	                ^
+//│ ╟── `int` comes from this type expression
+//│ ║  builtin: 	let ( * ): int -> int -> int
+//│ ╙──         	                  ^^^
+//│ ╔══[ERROR] Type `?a -> ?b list -> ?c list` does not match `int`
+//│ ║  
+//│ ╟── this function has type `?a -> ?b list -> ?c list`
+//│ ║  l.3: 	let x l = List.map string_of_int
+//│ ║       	      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this reference has type `?a -> ?b list -> ?c list`
+//│ ║  l.10: 	  | h::t -> [remainder x y] @ (mulByDigit i t)
+//│ ║        	                       ^
+//│ ╟── this variable has type `?a -> ?b list -> ?c list`
+//│ ║  l.1: 	let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0
+//│ ║       	              ^
+//│ ╟── `int` comes from this type expression
+//│ ║  builtin: 	let ( * ): int -> int -> int
+//│ ╙──         	           ^^^
 //│ ╔══[ERROR] Type `?a -> ?b list -> ?c list` does not match `int`
 //│ ║  
 //│ ╟── this function has type `?a -> ?b list -> ?c list`
@@ -211,6 +517,24 @@ let rec additivePersistence n =
 //│ ║  l.10: 	  | [] -> 0 ...
 //│ ║        	^^^^^^^^^^^
 //│ ╟── this integer literal has type `int` and it flows into `?a`
+//│ ║  l.10: 	  | [] -> 0
+//│ ╙──      	          ^
+//│ ╔══[ERROR] Type `bool` does not match `int`
+//│ ║  
+//│ ╟──        bool ---> ?a <--- int 
+//│ ║  
+//│ ╟── this `then` branch has type `bool` and it flows into `?a`
+//│ ║  l.11: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ║        	                                              ^^^^^
+//│ ╟── this if-then-else expression has type `?a`
+//│ ║  l.11: 	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ ║        	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this match expression has type `?b` and it flows from `int`
+//│ ║  l.9: 	  match digits n with
+//│ ║       	  ^^^^^^^^^^^^^^^^^^^
+//│ ║  l.10: 	  | [] -> 0 ...
+//│ ║        	^^^^^^^^^^^
+//│ ╟── this integer literal has type `int`
 //│ ║  l.10: 	  | [] -> 0
 //│ ╙──      	          ^
 
@@ -261,6 +585,51 @@ let bigAdd l1 l2 =
 //│ ╟── this tuple literal has type `?c list * ?b` and it flows into `?d`
 //│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
 //│ ╙──      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a * ?b` does not match `?c list * ?b`
+//│ ║  
+//│ ╟──        ?a * ?b ---> ?d <--- ?c list * ?b 
+//│ ║  
+//│ ╟── this tuple literal has type `?a * ?b` and it flows into `?d`
+//│ ║  l.14: 	    else (l1, l2)
+//│ ║        	         ^^^^^^^^
+//│ ╟── this if-then-else expression has type `?d`
+//│ ║  l.12: 	    if (List.length l1) < (List.length l2)
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c list * ?b` and it flows into `?e`
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ ╙──      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list * ?b` does not match `?c * ?b`
+//│ ║  
+//│ ╟──        ?a list * ?b ---> ?d <--- ?c * ?b 
+//│ ║  
+//│ ╟── this tuple literal has type `?a list * ?b` and it flows into `?d`
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?d`
+//│ ║  l.12: 	    if (List.length l1) < (List.length l2)
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c * ?b` and it flows into `?d`
+//│ ║  l.14: 	    else (l1, l2)
+//│ ╙──      	         ^^^^^^^^
+//│ ╔══[ERROR] Type `?a list * ?b` does not match `?c * ?b`
+//│ ║  
+//│ ╟──        ?a list * ?b ---> ?d <--- ?c * ?b 
+//│ ║  
+//│ ╟── this tuple literal has type `?a list * ?b` and it flows into `?d`
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?d`
+//│ ║  l.12: 	    if (List.length l1) < (List.length l2)
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c * ?b` and it flows into `?e`
+//│ ║  l.14: 	    else (l1, l2)
+//│ ╙──      	         ^^^^^^^^
 //│ ╔══[ERROR] Type `?a list * ?b` does not match `?c * ?d list`
 //│ ║  
 //│ ╟──        ?a list * ?b ---> ?e <--- ?c * ?d list 
@@ -279,6 +648,26 @@ let bigAdd l1 l2 =
 //│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this tuple literal has type `?c * ?d list` and it flows into `?e`
+//│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list * ?b` does not match `?c * ?d list`
+//│ ║  
+//│ ╟──        ?a list * ?b ---> ?e <--- ?c * ?d list 
+//│ ║  
+//│ ╟── this tuple literal has type `?a list * ?b` and it flows into `?e`
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?e`
+//│ ║  l.12: 	    if (List.length l1) < (List.length l2)
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?f` and it flows from `?c * ?d list`
+//│ ║  l.9: 	  if (List.length l1) > (List.length l2)
+//│ ║       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c * ?d list`
 //│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
 //│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?a * ?b` does not match `?a * ?c list`
@@ -301,6 +690,26 @@ let bigAdd l1 l2 =
 //│ ╟── this tuple literal has type `?a * ?c list`
 //│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
 //│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a * ?b` does not match `?a * ?c list`
+//│ ║  
+//│ ╟──        ?a * ?b ---> ?d <--- ?a * ?c list 
+//│ ║  
+//│ ╟── this tuple literal has type `?a * ?b`
+//│ ║  l.14: 	    else (l1, l2)
+//│ ║        	         ^^^^^^^^
+//│ ╟── this if-then-else expression has type `?a * ?b` and it flows into `?d`
+//│ ║  l.12: 	    if (List.length l1) < (List.length l2)
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?d`
+//│ ║  l.9: 	  if (List.length l1) > (List.length l2)
+//│ ║       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?a * ?c list` and it flows into `?d`
+//│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `int` does not match `?a * ?b`
 //│ ║  
 //│ ╟── this integer literal has type `int`
@@ -312,6 +721,57 @@ let bigAdd l1 l2 =
 //│ ╟── this pattern has type `?a * ?b`
 //│ ║  l.21: 	    let (_,res) = List.fold_left f base args in res in
 //│ ╙──      	        ^^^^^^^
+//│ ╔══[ERROR] Type `?a * ?b` does not match `int`
+//│ ║  
+//│ ╟──        ?a * ?b <--- ?c ---> int 
+//│ ║  
+//│ ╟── this pattern has type `?a * ?b` and it flows from `?c`
+//│ ║  l.21: 	    let (_,res) = List.fold_left f base args in res in
+//│ ║        	        ^^^^^^^
+//│ ╟── this application has type `?c`
+//│ ║  l.21: 	    let (_,res) = List.fold_left f base args in res in
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `?c`
+//│ ║  l.18: 	    let f a x = mod (a + x) 10 in
+//│ ║        	          ^
+//│ ╟── this reference has type `?c` and it flows into `int`
+//│ ║  l.18: 	    let f a x = mod (a + x) 10 in
+//│ ║        	                     ^
+//│ ╟── this type reference has type `int`
+//│ ║  builtin: 	let (+): int -> int -> int
+//│ ╙──         	         ^^^
+//│ ╔══[ERROR] Type `?a * ?b` does not match `int`
+//│ ║  
+//│ ╟──        ?a * ?b <--- ?c ---> ?d <--- int 
+//│ ║  
+//│ ╟── this pattern has type `?a * ?b` and it flows from `?c`
+//│ ║  l.21: 	    let (_,res) = List.fold_left f base args in res in
+//│ ║        	        ^^^^^^^
+//│ ╟── this application has type `?c`
+//│ ║  l.21: 	    let (_,res) = List.fold_left f base args in res in
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `?c` and it flows into `?d`
+//│ ║  l.18: 	    let f a x = mod (a + x) 10 in
+//│ ║        	          ^
+//│ ╟── this application has type `?d` and it flows from `int`
+//│ ║  l.18: 	    let f a x = mod (a + x) 10 in
+//│ ║        	                ^^^^^^^^^^^^^^
+//│ ╟── this type reference has type `int`
+//│ ║  builtin: 	let mod: int -> int -> int
+//│ ╙──         	                       ^^^
+//│ ╔══[ERROR] Type `?a * ?b` does not match `int`
+//│ ║  
+//│ ╟──        ?a * ?b <--- ?c ---> ?d 
+//│ ║  
+//│ ╟── this pattern has type `?a * ?b` and it flows from `?c`
+//│ ║  l.21: 	    let (_,res) = List.fold_left f base args in res in
+//│ ║        	        ^^^^^^^
+//│ ╟── this application has type `?c`
+//│ ║  l.21: 	    let (_,res) = List.fold_left f base args in res in
+//│ ║        	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this variable has type `?c` and it flows into `?d`
+//│ ║  l.18: 	    let f a x = mod (a + x) 10 in
+//│ ╙──      	          ^
 //│ ╔══[ERROR] Type `?a * ?b` does not match `?c list * ?b`
 //│ ║  
 //│ ╟──        ?a * ?b ---> ?d <--- ?c list * ?b 
@@ -327,6 +787,51 @@ let bigAdd l1 l2 =
 //│ ╟── this tuple literal has type `?c list * ?b` and it flows into `?d`
 //│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
 //│ ╙──      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a * ?b` does not match `?c list * ?b`
+//│ ║  
+//│ ╟──        ?a * ?b ---> ?d <--- ?c list * ?b 
+//│ ║  
+//│ ╟── this tuple literal has type `?a * ?b` and it flows into `?d`
+//│ ║  l.14: 	    else (l1, l2)
+//│ ║        	         ^^^^^^^^
+//│ ╟── this if-then-else expression has type `?d`
+//│ ║  l.12: 	    if (List.length l1) < (List.length l2)
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c list * ?b` and it flows into `?e`
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ ╙──      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list * ?b` does not match `?c * ?b`
+//│ ║  
+//│ ╟──        ?a list * ?b ---> ?d <--- ?c * ?b 
+//│ ║  
+//│ ╟── this tuple literal has type `?a list * ?b` and it flows into `?d`
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?d`
+//│ ║  l.12: 	    if (List.length l1) < (List.length l2)
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c * ?b` and it flows into `?d`
+//│ ║  l.14: 	    else (l1, l2)
+//│ ╙──      	         ^^^^^^^^
+//│ ╔══[ERROR] Type `?a list * ?b` does not match `?c * ?b`
+//│ ║  
+//│ ╟──        ?a list * ?b ---> ?d <--- ?c * ?b 
+//│ ║  
+//│ ╟── this tuple literal has type `?a list * ?b` and it flows into `?d`
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?d`
+//│ ║  l.12: 	    if (List.length l1) < (List.length l2)
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c * ?b` and it flows into `?e`
+//│ ║  l.14: 	    else (l1, l2)
+//│ ╙──      	         ^^^^^^^^
 //│ ╔══[ERROR] Type `?a list * ?b` does not match `?c * ?d list`
 //│ ║  
 //│ ╟──        ?a list * ?b ---> ?e <--- ?c * ?d list 
@@ -365,6 +870,46 @@ let bigAdd l1 l2 =
 //│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
 //│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── this tuple literal has type `?a * ?c list` and it flows into `?d`
+//│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list * ?b` does not match `?c * ?d list`
+//│ ║  
+//│ ╟──        ?a list * ?b ---> ?e <--- ?c * ?d list 
+//│ ║  
+//│ ╟── this tuple literal has type `?a list * ?b` and it flows into `?e`
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?e`
+//│ ║  l.12: 	    if (List.length l1) < (List.length l2)
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?f` and it flows from `?c * ?d list`
+//│ ║  l.9: 	  if (List.length l1) > (List.length l2)
+//│ ║       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c * ?d list`
+//│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a * ?b` does not match `?a * ?c list`
+//│ ║  
+//│ ╟──        ?a * ?b ---> ?d <--- ?a * ?c list 
+//│ ║  
+//│ ╟── this tuple literal has type `?a * ?b` and it flows into `?d`
+//│ ║  l.14: 	    else (l1, l2)
+//│ ║        	         ^^^^^^^^
+//│ ╟── this if-then-else expression has type `?d`
+//│ ║  l.12: 	    if (List.length l1) < (List.length l2)
+//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.13: 	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?e` and it flows from `?a * ?c list`
+//│ ║  l.9: 	  if (List.length l1) > (List.length l2)
+//│ ║       	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?a * ?c list`
 //│ ║  l.10: 	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
 //│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -412,6 +957,45 @@ let bigAdd l1 l2 =
 //│ ╟── this tuple literal has type `?c * ?d list` and it flows into `?e`
 //│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
 //│ ╙──      	                          ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a list * ?b` does not match `?c * ?d list`
+//│ ║  
+//│ ╟──        ?a list * ?b ---> ?e <--- ?c * ?d list 
+//│ ║  
+//│ ╟── this tuple literal has type `?a list * ?b` and it flows into `?e`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ║        	                                                      ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?e`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c * ?d list` and it flows into `?f`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ╙──      	                          ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a * ?b list` does not match `?c list * ?d`
+//│ ║  
+//│ ╟──        ?a * ?b list ---> ?e <--- ?c list * ?d 
+//│ ║  
+//│ ╟── this tuple literal has type `?a * ?b list` and it flows into `?e`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ║        	                          ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?e`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c list * ?d` and it flows into `?f`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ╙──      	                                                      ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `?a * ?b list` does not match `?c list * ?d`
+//│ ║  
+//│ ╟──        ?a * ?b list ---> ?e <--- ?c list * ?d 
+//│ ║  
+//│ ╟── this tuple literal has type `?a * ?b list` and it flows into `?e`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ║        	                          ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?e`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c list * ?d` and it flows into `?e`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ╙──      	                                                      ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] Type `?a * ?b list` does not match `?a * ?c`
 //│ ║  
 //│ ╟──        ?a * ?b list ---> ?d <--- ?a * ?c 
@@ -446,6 +1030,42 @@ let bigAdd l1 l2 =
 //│ ║  l.7: 	  then (l1, l2) ...
 //│ ║       	^^^^^^^^^^^^^^^
 //│ ╟── this tuple literal has type `?c * ?b`
+//│ ║  l.7: 	  then (l1, l2)
+//│ ╙──     	       ^^^^^^^^
+//│ ╔══[ERROR] Type `?a * ?b list` does not match `?a * ?c`
+//│ ║  
+//│ ╟──        ?a * ?b list ---> ?d <--- ?a * ?c 
+//│ ║  
+//│ ╟── this tuple literal has type `?a * ?b list`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ║        	                          ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?a * ?b list` and it flows into `?d`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?d`
+//│ ║  l.6: 	  if numZeros = 0
+//│ ║       	  ^^^^^^^^^^^^^^^
+//│ ║  l.7: 	  then (l1, l2) ...
+//│ ║       	^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?a * ?c` and it flows into `?d`
+//│ ║  l.7: 	  then (l1, l2)
+//│ ╙──     	       ^^^^^^^^
+//│ ╔══[ERROR] Type `?a list * ?b` does not match `?c * ?b`
+//│ ║  
+//│ ╟──        ?a list * ?b ---> ?d <--- ?c * ?b 
+//│ ║  
+//│ ╟── this tuple literal has type `?a list * ?b`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ║        	                                                      ^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?a list * ?b` and it flows into `?d`
+//│ ║  l.10: 	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2))
+//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?d`
+//│ ║  l.6: 	  if numZeros = 0
+//│ ║       	  ^^^^^^^^^^^^^^^
+//│ ║  l.7: 	  then (l1, l2) ...
+//│ ║       	^^^^^^^^^^^^^^^
+//│ ╟── this tuple literal has type `?c * ?b` and it flows into `?d`
 //│ ║  l.7: 	  then (l1, l2)
 //│ ╙──     	       ^^^^^^^^
 //│ ╔══[ERROR] Type `int * ?a list` does not match `int * ?a0 list`
@@ -519,16 +1139,48 @@ let bigAdd l1 l2 =
 //│ ╟── this tuple literal has type `int * ?a0 list`
 //│ ║  l.26: 	         (carry, (valueToAddToArray :: currentSum))) in
 //│ ╙──      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `?b * ?c` does not match `?a list`
+//│ ╔══[ERROR] Type `int * ?a list` does not match `int * ?a0 list`
 //│ ║  
-//│ ╟──        ?b * ?c ---> ?d <--- ?a list 
+//│ ╟──        int * ?a list ---> ?b <--- ?c 
 //│ ║  
-//│ ╟── `?b * ?c` comes from this type expression and it flows into `?d`
-//│ ║  builtin: 	let List.combine: 'a list -> 'b list -> ('a * 'b) list
-//│ ║           	                                         ^^^^^^^
-//│ ╟── this reference has type `?a list` and it flows into `?e`
+//│ ╟── this tuple literal has type `int * ?a list` and it flows into `?b`
+//│ ║  l.20: 	      then (0, (carry :: currentSum))
+//│ ║        	           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?b`
 //│ ║  l.19: 	      if x = []
-//│ ╙──      	             ^^
+//│ ║        	      ^^^^^^^^^
+//│ ║  l.20: 	      then (0, (carry :: currentSum)) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?c` and it flows into `?b`
+//│ ║  l.22: 	        (let (toSum1,toSum2) = x in
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.23: 	         let intermediateValue = (toSum1 + toSum2) + carry in ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╔══[ERROR] Type `int * ?a list` does not match `int * ?a0 list`
+//│ ║  
+//│ ╟──        int * ?a list ---> ?b <--- ?c 
+//│ ║  
+//│ ╟── this tuple literal has type `int * ?a list` and it flows into `?b`
+//│ ║  l.27: 	    let base = (0, []) in
+//│ ║        	               ^^^^^^^
+//│ ╟── this reference has type `?b`
+//│ ║  l.29: 	    let (_,res) = List.fold_left f base args in res in
+//│ ║        	                                   ^^^^
+//│ ╟── this let expression has type `?b`
+//│ ║  l.18: 	      let (carry,currentSum) = a in
+//│ ║        	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.19: 	      if x = [] ...
+//│ ║        	^^^^^^^^^^^^^^^
+//│ ╟── this if-then-else expression has type `?b` and it flows from `?c`
+//│ ║  l.19: 	      if x = []
+//│ ║        	      ^^^^^^^^^
+//│ ║  l.20: 	      then (0, (carry :: currentSum)) ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── this let expression has type `?c`
+//│ ║  l.22: 	        (let (toSum1,toSum2) = x in
+//│ ║        	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.23: 	         let intermediateValue = (toSum1 + toSum2) + carry in ...
+//│ ║        	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 // hard 3
 let rec sepConcat sep sl =
@@ -561,17 +1213,14 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ ╟── this applied expression has type `(?a * ?b) -> ?c`
 //│ ║  l.8: 	let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ ╙──     	                               ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `(?b -> ?c) -> ?b list -> ?c list` does not match `?a list`
+//│ ╔══[ERROR] Type `string` does not match `(?a * ?b) -> ?c`
 //│ ║  
-//│ ╟── `(?b -> ?c) -> ?b list -> ?c list` comes from this type expression
-//│ ║  builtin: 	let List.map: ('a -> 'b) -> 'a list -> 'b list
-//│ ║           	               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── this reference has type `(?b -> ?c) -> ?b list -> ?c list`
+//│ ╟── `string` comes from this type expression
+//│ ║  builtin: 	let (^): string -> string -> string
+//│ ║           	                             ^^^^^^
+//│ ╟── this operator application has type `string`
+//│ ║  l.5: 	      let f a x = a ^ (sep ^ x) in
+//│ ║       	                  ^^^^^^^^^^^^^
+//│ ╟── this applied expression has type `(?a * ?b) -> ?c`
 //│ ║  l.8: 	let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
-//│ ║       	                                              ^^^^^^^^
-//│ ╟── this variable has type `(?b -> ?c) -> ?b list -> ?c list`
-//│ ║  l.1: 	let rec sepConcat sep sl =
-//│ ║       	                      ^^
-//│ ╟── this pattern has type `?a list`
-//│ ║  l.3: 	  | [] -> ""
-//│ ╙──     	    ^^
+//│ ╙──     	                               ^^^^^^^^^^^^^^^^^^^^^^^
