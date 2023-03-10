@@ -48,6 +48,7 @@ abstract class TypeImpl extends Located { self: Type =>
             .map(_.showIn(ctx, prec))
             .reduce(_ + opStr + _), outerPrec > prec)
       }
+    case TypeVar(_, S("_")) => "_"
     case uv: TypeVar => ctx.vs(uv)
     case Function(l, r) => parensIf(l.showOcaml(ctx, 31) + " -> " + r.showOcaml(ctx, 30), outerPrec > 30)
     case Record(fs) => fs.map { nt =>

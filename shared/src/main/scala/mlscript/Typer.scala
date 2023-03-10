@@ -848,7 +848,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   }
 
   /** Convert an inferred SimpleType into the immutable Type representation. */
-  def expandType(st: SimpleType, stopAtTyVars: Bool = false)(implicit ctx: Ctx): Type = {
+  def expandType(st: SimpleType, stopAtTyVars: Bool = false, showTV: Set[TV] = Set(), ocamlStyle: Bool = false)(implicit ctx: Ctx): Type = {
     val expandType = ()
     
     import Set.{empty => semp}
@@ -862,6 +862,12 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     def go(st: SimpleType): Type =
             // trace(s"expand $st") {
           st.unwrapProvs match {
+        case tv: TypeVariable if ocamlStyle =>
+          if (showTV(tv)) {
+            tv.asTypeVar
+          } else {
+            tv.asTypeVar.copy(nameHint = S("_"))
+          }
         case tv: TypeVariable if stopAtTyVars => tv.asTypeVar
         case tv: TypeVariable =>
           val nv = tv.asTypeVar

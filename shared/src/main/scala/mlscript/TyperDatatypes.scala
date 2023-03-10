@@ -354,6 +354,15 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       }
     }
 
+    def unificationSequenceTVars: Set[TV] = {
+      val tvSet: MutSet[TV] = MutSet()
+      unificationChain.map { case (ur, _) =>
+        ur.a.unwrapProvs match { case tv: TypeVariable => tvSet += tv case _ => ()}
+        ur.b.unwrapProvs match { case tv: TypeVariable => tvSet += tv case _ => ()}
+      }
+      tvSet.toSet
+    }
+
     def unificationSequence: Ls[ST -> Bool] = reason match {
       case Nil => Nil
       case head :: _ =>

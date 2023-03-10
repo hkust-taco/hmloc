@@ -119,44 +119,45 @@ trait UnificationSolver extends TyperDatatypes {
     })
   }
 
-  def toSequenceString(u: Unification)(implicit ctx: Ctx): Message = u.unificationChain match {
+  def toSequenceString(u: Unification)(implicit ctx: Ctx, showTV: Set[TV]): Message = u.unificationChain match {
     case Nil => msg""
     case head :: tail => val first = head match {
-      case (LB(st, tv, _), true) => msg"${st.expPos} ---> ${tv.expPos} "
-      case (LB(st, tv, _), false) => msg"${tv.expPos} <--- ${st.expPos} "
-      case (UB(tv, st, _), false) => msg"${st.expPos} <--- ${tv.expPos} "
-      case (UB(tv, st, _), true) => msg"${tv.expPos} ---> ${st.expPos} "
+      case (LB(st, tv, _), true) => msg"${st.expOcamlTy()} ---> ${tv.expOcamlTy()} "
+      case (LB(st, tv, _), false) => msg"${tv.expOcamlTy()} <--- ${st.expOcamlTy()} "
+      case (UB(tv, st, _), false) => msg"${st.expOcamlTy()} <--- ${tv.expOcamlTy()} "
+      case (UB(tv, st, _), true) => msg"${tv.expOcamlTy()} ---> ${st.expOcamlTy()} "
     }
 
       tail.foldLeft(first) {
-        case (prev, (LB(st, tv, _), true)) => prev + msg"---> ${tv.expPos} "
-        case (prev, (LB(st, tv, _), false)) => prev + msg"<--- ${st.expPos} "
-        case (prev, (UB(tv, st, _), false)) => prev + msg"<--- ${tv.expPos} "
-        case (prev, (UB(tv, st, _), true)) => prev + msg"---> ${st.expPos} "
+        case (prev, (LB(st, tv, _), true)) => prev + msg"---> ${tv.expOcamlTy()} "
+        case (prev, (LB(st, tv, _), false)) => prev + msg"<--- ${st.expOcamlTy()} "
+        case (prev, (UB(tv, st, _), false)) => prev + msg"<--- ${tv.expOcamlTy()} "
+        case (prev, (UB(tv, st, _), true)) => prev + msg"---> ${st.expOcamlTy()} "
       }
   }
 
   def collisionErrorMessage(u: Unification)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+    implicit val showTV: Set[TV] = Set()
     def makeMessageFirstType(st: ST, provs: Ls[TP]) = {
       val fst = provs.head match {
-        case TypeProvenance(loco, desc, _, false) => msg"this ${desc} has type `${st.expPos}`" -> loco
-        case TypeProvenance(loco, desc, _, true) => msg"`${st.expPos}` comes from this type expression" -> loco
+        case TypeProvenance(loco, desc, _, false) => msg"this ${desc} has type `${st.expOcamlTy()}`" -> loco
+        case TypeProvenance(loco, desc, _, true) => msg"`${st.expOcamlTy()}` comes from this type expression" -> loco
       }
 
       fst :: provs.tail.map {
-        case TypeProvenance(loco, desc, _, false) => msg"so this ${desc} has type `${st.expPos}`" -> loco
-        case TypeProvenance(loco, desc, _, true) => msg"`${st.expPos}` comes from this type expression" -> loco
+        case TypeProvenance(loco, desc, _, false) => msg"so this ${desc} has type `${st.expOcamlTy()}`" -> loco
+        case TypeProvenance(loco, desc, _, true) => msg"`${st.expOcamlTy()}` comes from this type expression" -> loco
       }
     }
     def makeMessageSecondType(st: ST, provs: Ls[TP]) = {
       val fst = provs.head match {
-        case TypeProvenance(loco, desc, _, false) => msg"but this ${desc} has type `${st.expPos}`" -> loco
-        case TypeProvenance(loco, desc, _, true) => msg"but `${st.expPos}` comes from this type expression" -> loco
+        case TypeProvenance(loco, desc, _, false) => msg"but this ${desc} has type `${st.expOcamlTy()}`" -> loco
+        case TypeProvenance(loco, desc, _, true) => msg"but `${st.expOcamlTy()}` comes from this type expression" -> loco
       }
 
       fst :: provs.tail.map {
-        case TypeProvenance(loco, desc, _, false) => msg"because this ${desc} has type `${st.expPos}`" -> loco
-        case TypeProvenance(loco, desc, _, true) => msg"because `${st.expPos}` comes from this type expression" -> loco
+        case TypeProvenance(loco, desc, _, false) => msg"because this ${desc} has type `${st.expOcamlTy()}`" -> loco
+        case TypeProvenance(loco, desc, _, true) => msg"because `${st.expOcamlTy()}` comes from this type expression" -> loco
       }
     }
 
@@ -175,7 +176,8 @@ trait UnificationSolver extends TyperDatatypes {
 
   def reportUnificationError(u: Unification)(implicit raise: Raise, ctx: Ctx): Unit = {
     println(s"UERR REPORT ${u.toString}")
-    val msgdoesnotmatch = (a: ST, b: ST) => msg"Type `${a.expPos}` does not match `${b.expPos}`"
+    implicit val showTV: Set[TV] = u.unificationSequenceTVars
+    val msgdoesnotmatch = (a: ST, b: ST) => msg"Type `${a.expOcamlTy()(ctx, Set())}` does not match `${b.expOcamlTy()(ctx, Set())}`"
     u.unificationChain match {
       case Nil => ()
       case _ :: Nil =>
@@ -212,24 +214,24 @@ trait UnificationSolver extends TyperDatatypes {
   }
 
   def createErrorMessage(firstUR: UnificationReason -> Bool, secondUR: UnificationReason -> Bool, showFirst: Bool = false)
-                        (implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
+                        (implicit ctx: Ctx, showTV: Set[TV]): Ls[Message -> Opt[Loc]] = {
     val diagistypeof = (st: ST, tp: TP, marker: Bool) => if (marker) {
-        msg"[`${st.expPos}`] comes from this ${tp.desc}" -> tp.loco
+        msg"[`${st.expOcamlTy()}`] comes from this ${tp.desc}" -> tp.loco
       } else {
-        msg"so this ${tp.desc} has type `${st.expPos}`" -> tp.loco
+        msg"so this ${tp.desc} has type `${st.expOcamlTy()}`" -> tp.loco
       }
-    val diagishere = (st: ST, tp: TP) => msg"[`${st.expPos}`] comes from this type expression" -> tp.loco
+    val diagishere = (st: ST, tp: TP) => msg"[`${st.expOcamlTy()}`] comes from this type expression" -> tp.loco
     val msgistypeof = (st: ST, tp: TP, marker: Bool) => if (tp.isType) {
-      msg"[`${st.expPos}`] comes from this type expression"
+      msg"[`${st.expOcamlTy()}`] comes from this type expression"
     } else {
       if (marker) {
-        msg"[`${st.expPos}`] comes from this ${tp.desc}"
+        msg"[`${st.expOcamlTy()}`] comes from this ${tp.desc}"
       } else {
-        msg"so this ${tp.desc} has type `${st.expPos}`"
+        msg"so this ${tp.desc} has type `${st.expOcamlTy()}`"
       }
     }
-    val msgflowintoit = (a: ST, b: ST) => msg". However `${a.expPos}` flows into `${b.expPos}`"
-    val msgitflowinto = (st: ST) => msg" and it flows into `${st.expPos}`"
+    val msgflowintoit = (a: ST, b: ST) => msg". However `${a.expOcamlTy()}` flows into `${b.expOcamlTy()}`"
+    val msgitflowinto = (st: ST) => msg" and it flows into `${st.expOcamlTy()}`"
 
     // take elements from first list upto and include first common element
     // a: 1, 2, 3, 4

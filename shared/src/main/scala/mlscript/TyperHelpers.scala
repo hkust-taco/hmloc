@@ -676,6 +676,10 @@ abstract class TyperHelpers { Typer: Typer =>
         |> (expandType(_, stopAtTyVars = true))
       )
 
+    def expOcamlTy()(implicit ctx: Ctx, showTV: Set[TV]): Type = {
+      expandType(this, stopAtTyVars = true, showTV, true)
+    }
+
     /** List of valid locations a type has been used at by collecting location from provenances.
       * Tightest location last
       */
