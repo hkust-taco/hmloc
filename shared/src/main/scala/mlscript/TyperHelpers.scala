@@ -243,6 +243,8 @@ abstract class TyperHelpers { Typer: Typer =>
   trait SimpleTypeImpl {
     self: SimpleType =>
 
+    implicit val ord: Ordering[ST] = Ordering.by(_.toString)
+
     def showProvOver(enabled: Bool)(str: Str): Str =
       if (enabled) str + prov.toString
       else str

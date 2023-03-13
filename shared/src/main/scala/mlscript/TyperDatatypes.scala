@@ -399,10 +399,12 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       case Nil => false
       case _ :: Nil => false
       case _ => reason.sliding(2).exists {
-        case Seq(LB(_, tv1: TV, _), LB(tv2: TV, _, _)) => tv1 == tv2
-        case Seq(UB(_, tv1: TV, _), UB(tv2: TV, _, _)) => tv1 == tv2
-        case Seq(LB(_, tv1: TV, _), UB(tv2: TV, _, _)) => tv1 == tv2
-        case Seq(UB(_, tv1: TV, _), LB(tv2: TV, _, _)) => tv1 == tv2
+        case Seq(LB(_, tv1, _), LB(tv2, _, _)) => tv1.unwrapProvs == tv2.unwrapProvs
+        case Seq(UB(_, tv1, _), UB(tv2, _, _)) => tv1.unwrapProvs == tv2.unwrapProvs
+        case Seq(LB(_, tv1, _), UB(tv2, _, _)) => tv1.unwrapProvs == tv2.unwrapProvs
+        case Seq(UB(tv2, _, _), LB(_, tv1, _)) => tv1.unwrapProvs == tv2.unwrapProvs
+        case Seq(UB(_, tv1, _), LB(tv2, _, _)) => tv1.unwrapProvs == tv2.unwrapProvs
+        case Seq(LB(tv2, _, _), UB(_, tv1, _)) => tv1.unwrapProvs == tv2.unwrapProvs
         case _ => false
       }
     }

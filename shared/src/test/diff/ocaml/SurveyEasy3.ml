@@ -3,35 +3,35 @@ let destructEither x y = if y then
     | Left l -> l && true
     | Right r -> r || false
   else x
-//│ ╔══[ERROR] Type `bool` does not match `(_, _) either`
+//│ ╔══[ERROR] Type `(_, _) either` does not match `bool`
 //│ ║  
-//│ ╟──        bool ---> ?a <--- ?b ---> (_, _) either 
+//│ ╟──        (_, _) either <--- ?a ---> ?b <--- bool 
 //│ ║  
-//│ ╟── [`bool`] comes from this type expression
-//│ ║  builtin:	let (||): bool -> bool -> bool
-//│ ║          	                          ^^^^
-//│ ╟── so this operator application has type `bool`
-//│ ║  l.4:	    | Right r -> r || false
-//│ ║      	                 ^^^^^^^^^^
-//│ ╟── so this match expression has type `bool` and it flows into `?a`
+//│ ╟── [`(_, _) either`] comes from this pattern
+//│ ║  l.3:	    | Left l -> l && true
+//│ ║      	      ^^^^
+//│ ╟── so this reference has type `(_, _) either`. However `?a` flows into `(_, _) either`
 //│ ║  l.2:	  match x with
-//│ ║      	  ^^^^^^^^^^^^
-//│ ║      	    | Left l -> l && true ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`?a`] comes from this if-then-else expression
+//│ ║      	        ^
+//│ ╟── [`?a`] comes from this variable
+//│ ║  l.1:	let destructEither x y = if y then
+//│ ║      	                   ^
+//│ ╟── so this `else` branch has type `?a` and it flows into `?b`
+//│ ║  l.5:	  else x
+//│ ║      	       ^^
+//│ ╟── [`?b`] comes from this if-then-else expression
 //│ ║  l.1:	let destructEither x y = if y then
 //│ ║      	                         ^^^^^^^^^
 //│ ║      	  match x with ...
 //│ ║      	  ^^^^^^^^^^^^^^^^
-//│ ╟── so this `else` branch has type `?a`. However `?b` flows into `?a`
-//│ ║  l.5:	  else x
-//│ ║      	       ^^
-//│ ╟── [`?b`] comes from this variable
-//│ ║  l.1:	let destructEither x y = if y then
-//│ ║      	                   ^
-//│ ╟── so this reference has type `?b` and it flows into `(_, _) either`
+//│ ╟── so this match expression has type `?b`
 //│ ║  l.2:	  match x with
-//│ ║      	        ^
-//│ ╟── [`(_, _) either`] comes from this pattern
-//│ ║  l.3:	    | Left l -> l && true
-//│ ╙──    	      ^^^^
+//│ ║      	  ^^^^^^^^^^^^
+//│ ║      	    | Left l -> l && true ...
+//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── so this operator application has type `?b`. However `bool` flows into `?b`
+//│ ║  l.4:	    | Right r -> r || false
+//│ ║      	                 ^^^^^^^^^^
+//│ ╟── [`bool`] comes from this type reference
+//│ ║  builtin:	let (||): bool -> bool -> bool
+//│ ╙──        	                          ^^^^

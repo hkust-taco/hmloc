@@ -1,19 +1,19 @@
 :AllowTypeErrors
 
 let boolToInt x = if x then "0" else 1
-//│ ╔══[ERROR] Type `int` does not match `string`
+//│ ╔══[ERROR] Type `string` does not match `int`
 //│ ║  
-//│ ╟──        int ---> ?a <--- string 
+//│ ╟──        string ---> ?a <--- int 
 //│ ║  
-//│ ╟── [`int`] comes from this `else` branch and it flows into `?a`
+//│ ╟── [`string`] comes from this `then` branch and it flows into `?a`
 //│ ║  l.1:	let boolToInt x = if x then "0" else 1
-//│ ║      	                                     ^
+//│ ║      	                            ^^^
 //│ ╟── [`?a`] comes from this if-then-else expression
 //│ ║  l.1:	let boolToInt x = if x then "0" else 1
 //│ ║      	                  ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`string`] comes from this `then` branch and it flows into `?a`
+//│ ╟── [`int`] comes from this `else` branch and it flows into `?a`
 //│ ║  l.1:	let boolToInt x = if x then "0" else 1
-//│ ╙──    	                            ^^^
+//│ ╙──    	                                     ^
 //│ boolToInt: bool -> (int | string)
 
 
@@ -51,9 +51,9 @@ let destructEither x = if x then
    | Left l -> l + 1
    | Right r -> r && true
   else x
-//│ ╔══[ERROR] Type `(_, _) either` does not match `bool`
+//│ ╔══[ERROR] Type `(_, _) either` does not match `int`
 //│ ║  
-//│ ╟──        (_, _) either <--- ?a ---> bool 
+//│ ╟──        (_, _) either <--- ?a ---> ?b <--- int 
 //│ ║  
 //│ ╟── [`(_, _) either`] comes from this pattern
 //│ ║  l.3:	   | Left l -> l + 1
@@ -64,89 +64,36 @@ let destructEither x = if x then
 //│ ╟── [`?a`] comes from this variable
 //│ ║  l.1:	let destructEither x = if x then
 //│ ║      	                   ^
-//│ ╟── [`?a`] comes from this if-then-else condition and it flows into `bool`
-//│ ║  l.1:	let destructEither x = if x then
-//│ ╙──    	                          ^
-//│ ╔══[ERROR] Type `int` does not match `(_, _) either`
-//│ ║  
-//│ ╟──        int ---> ?a <--- ?b ---> (_, _) either 
-//│ ║  
-//│ ╟── [`int`] comes from this type expression
-//│ ║  builtin:	let (+): int -> int -> int
-//│ ║          	                       ^^^
-//│ ╟── so this operator application has type `int`
-//│ ║  l.3:	   | Left l -> l + 1
-//│ ║      	               ^^^^^
-//│ ╟── so this match expression has type `int` and it flows into `?a`
-//│ ║  l.2:	  match x with
-//│ ║      	  ^^^^^^^^^^^^
-//│ ║      	   | Left l -> l + 1 ...
-//│ ║      	   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`?a`] comes from this if-then-else expression
+//│ ╟── so this `else` branch has type `?a` and it flows into `?b`
+//│ ║  l.5:	  else x
+//│ ║      	       ^^
+//│ ╟── [`?b`] comes from this if-then-else expression
 //│ ║  l.1:	let destructEither x = if x then
 //│ ║      	                       ^^^^^^^^^
 //│ ║      	  match x with ...
 //│ ║      	  ^^^^^^^^^^^^^^^^
-//│ ╟── so this `else` branch has type `?a`. However `?b` flows into `?a`
-//│ ║  l.5:	  else x
-//│ ║      	       ^^
-//│ ╟── [`?b`] comes from this variable
-//│ ║  l.1:	let destructEither x = if x then
-//│ ║      	                   ^
-//│ ╟── so this reference has type `?b` and it flows into `(_, _) either`
-//│ ║  l.2:	  match x with
-//│ ║      	        ^
-//│ ╟── [`(_, _) either`] comes from this pattern
-//│ ║  l.3:	   | Left l -> l + 1
-//│ ╙──    	     ^^^^
-//│ ╔══[ERROR] Type `int` does not match `bool`
-//│ ║  
-//│ ╟──        int ---> ?a <--- bool 
-//│ ║  
-//│ ╟── [`int`] comes from this type expression
-//│ ║  builtin:	let (+): int -> int -> int
-//│ ║          	                       ^^^
-//│ ╟── so this operator application has type `int` and it flows into `?a`
-//│ ║  l.3:	   | Left l -> l + 1
-//│ ║      	               ^^^^^
-//│ ╟── [`?a`] comes from this match expression
+//│ ╟── so this match expression has type `?b`
 //│ ║  l.2:	  match x with
 //│ ║      	  ^^^^^^^^^^^^
 //│ ║      	   | Left l -> l + 1 ...
 //│ ║      	   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this operator application has type `?a`. However `bool` flows into `?a`
-//│ ║  l.4:	   | Right r -> r && true
-//│ ║      	                ^^^^^^^^^
-//│ ╟── [`bool`] comes from this type reference
-//│ ║  builtin:	let (&&): bool -> bool -> bool
-//│ ╙──        	                          ^^^^
+//│ ╟── so this operator application has type `?b`. However `int` flows into `?b`
+//│ ║  l.3:	   | Left l -> l + 1
+//│ ║      	               ^^^^^
+//│ ╟── [`int`] comes from this type reference
+//│ ║  builtin:	let (+): int -> int -> int
+//│ ╙──        	                       ^^^
 //│ ╔══[ERROR] Type `bool` does not match `(_, _) either`
 //│ ║  
-//│ ╟──        bool ---> ?a <--- ?b ---> (_, _) either 
+//│ ╟──        bool <--- ?a ---> (_, _) either 
 //│ ║  
-//│ ╟── [`bool`] comes from this type expression
-//│ ║  builtin:	let (&&): bool -> bool -> bool
-//│ ║          	                          ^^^^
-//│ ╟── so this operator application has type `bool`
-//│ ║  l.4:	   | Right r -> r && true
-//│ ║      	                ^^^^^^^^^
-//│ ╟── so this match expression has type `bool` and it flows into `?a`
-//│ ║  l.2:	  match x with
-//│ ║      	  ^^^^^^^^^^^^
-//│ ║      	   | Left l -> l + 1 ...
-//│ ║      	   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`?a`] comes from this if-then-else expression
+//│ ╟── [`bool`] comes from this if-then-else condition. However `?a` flows into `bool`
 //│ ║  l.1:	let destructEither x = if x then
-//│ ║      	                       ^^^^^^^^^
-//│ ║      	  match x with ...
-//│ ║      	  ^^^^^^^^^^^^^^^^
-//│ ╟── so this `else` branch has type `?a`. However `?b` flows into `?a`
-//│ ║  l.5:	  else x
-//│ ║      	       ^^
-//│ ╟── [`?b`] comes from this variable
+//│ ║      	                          ^
+//│ ╟── [`?a`] comes from this variable
 //│ ║  l.1:	let destructEither x = if x then
 //│ ║      	                   ^
-//│ ╟── so this reference has type `?b` and it flows into `(_, _) either`
+//│ ╟── so this reference has type `?a` and it flows into `(_, _) either`
 //│ ║  l.2:	  match x with
 //│ ║      	        ^
 //│ ╟── [`(_, _) either`] comes from this pattern
@@ -179,51 +126,51 @@ let succ: int -> int
   
 let test2 x = match x with
  | true -> succ x
-//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟──        int <--- ?a ---> bool 
+//│ ╟──        bool <--- ?a ---> int 
 //│ ║  
-//│ ╟── [`int`] comes from this type expression
-//│ ║  l.1:	let succ: int -> int
-//│ ║      	          ^^^
-//│ ╟── so this reference has type `int`. However `?a` flows into `int`
+//│ ╟── [`bool`] comes from this pattern
 //│ ║  l.4:	 | true -> succ x
-//│ ║      	                ^
+//│ ║      	   ^^^^
+//│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
+//│ ║  l.3:	let test2 x = match x with
+//│ ║      	                    ^
 //│ ╟── [`?a`] comes from this variable
 //│ ║  l.3:	let test2 x = match x with
 //│ ║      	          ^
-//│ ╟── so this reference has type `?a` and it flows into `bool`
-//│ ║  l.3:	let test2 x = match x with
-//│ ║      	                    ^
-//│ ╟── [`bool`] comes from this pattern
+//│ ╟── so this reference has type `?a` and it flows into `int`
 //│ ║  l.4:	 | true -> succ x
-//│ ╙──    	   ^^^^
+//│ ║      	                ^
+//│ ╟── [`int`] comes from this type reference
+//│ ║  l.1:	let succ: int -> int
+//│ ╙──    	          ^^^
 //│ succ: int -> int
 //│ test2: nothing -> int
 
 let g x = (not x, (if true then x else 5))
-//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ╟──        bool <--- ?a ---> ?b <--- int 
 //│ ║  
-//│ ╟── [`int`] comes from this `else` branch and it flows into `?a`
-//│ ║  l.1:	let g x = (not x, (if true then x else 5))
-//│ ║      	                                       ^
-//│ ╟── [`?a`] comes from this if-then-else expression
-//│ ║  l.1:	let g x = (not x, (if true then x else 5))
-//│ ║      	                  ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this `then` branch has type `?a`. However `?b` flows into `?a`
-//│ ║  l.1:	let g x = (not x, (if true then x else 5))
-//│ ║      	                                ^
-//│ ╟── [`?b`] comes from this variable
-//│ ║  l.1:	let g x = (not x, (if true then x else 5))
-//│ ║      	      ^
-//│ ╟── so this reference has type `?b` and it flows into `bool`
+//│ ╟── [`bool`] comes from this type expression
+//│ ║  builtin:	let not: bool -> bool
+//│ ║          	         ^^^^
+//│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
 //│ ║  l.1:	let g x = (not x, (if true then x else 5))
 //│ ║      	               ^
-//│ ╟── [`bool`] comes from this type reference
-//│ ║  builtin:	let not: bool -> bool
-//│ ╙──        	         ^^^^
+//│ ╟── [`?a`] comes from this variable
+//│ ║  l.1:	let g x = (not x, (if true then x else 5))
+//│ ║      	      ^
+//│ ╟── so this `then` branch has type `?a` and it flows into `?b`
+//│ ║  l.1:	let g x = (not x, (if true then x else 5))
+//│ ║      	                                ^
+//│ ╟── [`?b`] comes from this if-then-else expression
+//│ ║  l.1:	let g x = (not x, (if true then x else 5))
+//│ ║      	                  ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── [`int`] comes from this `else` branch and it flows into `?b`
+//│ ║  l.1:	let g x = (not x, (if true then x else 5))
+//│ ╙──    	                                       ^
 //│ g: (bool & 'a) -> (bool, int | 'a,)
 
 // Jonathan
@@ -231,40 +178,40 @@ let confluence z = if true then z else 5
 let mkpair x y = (x, confluence y)
   
 let conflict x = mkpair (not x) x
-//│ ╔══[ERROR] Type `int` does not match `bool`
+//│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟──        int ---> ?a <--- ?b ---> bool 
+//│ ╟──        bool <--- ?a ---> ?b <--- int 
 //│ ║  
-//│ ╟── [`int`] comes from this `else` branch and it flows into `?a`
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ║      	                                       ^
-//│ ╟── [`?a`] comes from this if-then-else expression
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ║      	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this `then` branch has type `?a`
-//│ ║  l.1:	let confluence z = if true then z else 5
+//│ ╟── [`bool`] comes from this type expression
+//│ ║  builtin:	let not: bool -> bool
+//│ ║          	         ^^^^
+//│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
+//│ ║  l.4:	let conflict x = mkpair (not x) x
+//│ ║      	                             ^
+//│ ╟── [`?a`] comes from this variable
+//│ ║  l.4:	let conflict x = mkpair (not x) x
+//│ ║      	             ^
+//│ ╟── so this reference has type `?a`
+//│ ║  l.4:	let conflict x = mkpair (not x) x
 //│ ║      	                                ^
 //│ ╟── so this variable has type `?a`
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ║      	               ^
+//│ ║  l.2:	let mkpair x y = (x, confluence y)
+//│ ║      	             ^
 //│ ╟── so this reference has type `?a`
 //│ ║  l.2:	let mkpair x y = (x, confluence y)
 //│ ║      	                                ^
 //│ ╟── so this variable has type `?a`
-//│ ║  l.2:	let mkpair x y = (x, confluence y)
-//│ ║      	             ^
-//│ ╟── so this reference has type `?a`. However `?b` flows into `?a`
-//│ ║  l.4:	let conflict x = mkpair (not x) x
+//│ ║  l.1:	let confluence z = if true then z else 5
+//│ ║      	               ^
+//│ ╟── so this `then` branch has type `?a` and it flows into `?b`
+//│ ║  l.1:	let confluence z = if true then z else 5
 //│ ║      	                                ^
-//│ ╟── [`?b`] comes from this variable
-//│ ║  l.4:	let conflict x = mkpair (not x) x
-//│ ║      	             ^
-//│ ╟── so this reference has type `?b` and it flows into `bool`
-//│ ║  l.4:	let conflict x = mkpair (not x) x
-//│ ║      	                             ^
-//│ ╟── [`bool`] comes from this type reference
-//│ ║  builtin:	let not: bool -> bool
-//│ ╙──        	         ^^^^
+//│ ╟── [`?b`] comes from this if-then-else expression
+//│ ║  l.1:	let confluence z = if true then z else 5
+//│ ║      	                   ^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── [`int`] comes from this `else` branch and it flows into `?b`
+//│ ║  l.1:	let confluence z = if true then z else 5
+//│ ╙──    	                                       ^
 //│ confluence: 'a -> (int | 'a)
 //│ mkpair: 'a -> 'b -> ('a, int | 'b,)
 //│ conflict: (bool & 'a) -> (bool, int | 'a,)
@@ -293,12 +240,12 @@ let wrap x = x :: []
 let rec t = wrap (if true then 1 else t)
 //│ ╔══[ERROR] Type `int` does not match `_ list`
 //│ ║  
-//│ ╟──        int ---> ?b <--- ?a list 
+//│ ╟──        int ---> ?a <--- _ list 
 //│ ║  
-//│ ╟── [`int`] comes from this `then` branch and it flows into `?b`
+//│ ╟── [`int`] comes from this `then` branch and it flows into `?a`
 //│ ║  l.2:	let rec t = wrap (if true then 1 else t)
 //│ ║      	                               ^
-//│ ╟── [`?b`] comes from this if-then-else expression
+//│ ╟── [`?a`] comes from this if-then-else expression
 //│ ║  l.2:	let rec t = wrap (if true then 1 else t)
 //│ ║      	                 ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── so this `else` branch has type `?a`
@@ -307,34 +254,12 @@ let rec t = wrap (if true then 1 else t)
 //│ ╟── so this recursive binding has type `?a`
 //│ ║  l.2:	let rec t = wrap (if true then 1 else t)
 //│ ║      	        ^
-//│ ╟── so this application has type `?a`. However `?a list` flows into `?a`
+//│ ╟── so this application has type `?a`. However `_ list` flows into `?a`
 //│ ║  l.2:	let rec t = wrap (if true then 1 else t)
 //│ ║      	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`?a list`] comes from this application
-//│ ║  l.1:	let wrap x = x :: []
-//│ ╙──    	             ^^^^^^^
-//│ ╔══[ERROR] Type `_ list` does not match `int`
-//│ ║  
-//│ ╟──        _ list ---> ?a <--- int 
-//│ ║  
 //│ ╟── [`_ list`] comes from this application
 //│ ║  l.1:	let wrap x = x :: []
-//│ ║      	             ^^^^^^^
-//│ ╟── so this application has type `_ list`
-//│ ║  l.2:	let rec t = wrap (if true then 1 else t)
-//│ ║      	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this recursive binding has type `_ list`
-//│ ║  l.2:	let rec t = wrap (if true then 1 else t)
-//│ ║      	        ^
-//│ ╟── so this `else` branch has type `_ list` and it flows into `?a`
-//│ ║  l.2:	let rec t = wrap (if true then 1 else t)
-//│ ║      	                                      ^
-//│ ╟── [`?a`] comes from this if-then-else expression
-//│ ║  l.2:	let rec t = wrap (if true then 1 else t)
-//│ ║      	                 ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`int`] comes from this `then` branch and it flows into `?a`
-//│ ║  l.2:	let rec t = wrap (if true then 1 else t)
-//│ ╙──    	                               ^
+//│ ╙──    	             ^^^^^^^
 //│ wrap: 'a -> list['a]
 //│ t: 't
 //│   where

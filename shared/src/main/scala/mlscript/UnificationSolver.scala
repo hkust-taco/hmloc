@@ -16,28 +16,40 @@ trait UnificationSolver extends TyperDatatypes {
   // Unify all type variables crated by accessing them from the hook
   def unifyTypes()(implicit ctx: Ctx, raise: Raise): Unit = {
     errorCache.clear()
+    cache.clear()
 
     // register all bounds as unifications
     TypeVariable.createdTypeVars.foreach(tv => {
-      println(s"$tv bounds")
+      println(s"$tv is ${tv.prov.desc} and it's bounds are")
       tv.lowerBounds.foreach(lb => {
         val reason = LB(lb, tv, lb.typeUseLocations.reverse)
         println(s"U $tv <: $lb with ${reason.provs.length} provs")
-        unifyTypes(tv, lb, reason :: Nil, cache)
         tv.new_unification += ((lb, reason))
         println(s"U ${tv} += ${(lb, reason)}")
       })
       tv.upperBounds.foreach(ub => {
         val reason = UB(tv, ub, ub.typeUseLocations)
         println(s"U $tv :> $ub with ${reason.provs.length} provs")
-        unifyTypes(tv, ub, reason :: Nil, cache)
         tv.new_unification += ((ub, reason))
         println(s"U ${tv} += ${(ub, reason)}")
       })
     })
 
-    errorCache.values.foreach(reportUnificationError)
+    TypeVariable.createdTypeVars.foreach(tv => {
+      for {
+        (tv1, ur1) <- tv.new_unification
+        (tv2, ur2) <- tv.new_unification
+        if tv1 != tv2
+      } {
+        unifyTypes(tv1, tv2, ur1 :: ur2 :: Nil, MutSet())
+      }
+    })
+
+    errorCache.values
+      .toSortedSet(Ordering.by(u => u.a.toString ++ u.b.toString))
+        .foreach(reportUnificationError)
     errorCache.clear()
+    cache.clear()
   }
 
   // reason already has reason for a and b to be unified
@@ -205,13 +217,16 @@ trait UnificationSolver extends TyperDatatypes {
     errorCache.get((a, b)).fold {
       println(s"UERR CACHE [$level] [$length] ${u.toString}")
       errorCache += (((a, b), u))
+      errorCache += (((b, a), u))
       ()
     } {
       case cachedU if level < cachedU.unificationLevel =>
         errorCache += (((a, b), u))
+        errorCache += (((b, a), u))
         println(s"UERR UPDATE [$level] ${u.toString}")
       case cachedU if level == cachedU.unificationLevel && length < cachedU.reason.length =>
         errorCache += (((a, b), u))
+        errorCache += (((b, a), u))
         println(s"UERR UPDATE [$level] [$length] ${u.toString}")
       case _ =>
         println(s"UERR IGNORE ${u.toString}")
@@ -278,6 +293,7 @@ trait UnificationSolver extends TyperDatatypes {
           case last :: Nil => msgistypeof(a, last, true) + msgitflowinto(b) -> last.loco :: Nil
           case last :: sndLast :: Nil => diagistypeof(b, last, true) :: msgistypeof(a, sndLast, showFirst) + msgitflowinto(b) -> sndLast.loco :: Nil
           case last :: sndLast :: tail => diagistypeof(b, last, true) :: msgistypeof(a, sndLast, false) + msgitflowinto(b) -> sndLast.loco :: makeMessagesST(a, tail)
+          case Nil => msg"TODO: Exception empty list for ${ur.toString()}" -> N :: Nil
         }
       }.reverse
       // false direction flow (showFirst = true)
@@ -293,6 +309,7 @@ trait UnificationSolver extends TyperDatatypes {
           case fst :: Nil => msgistypeof(a, fst, true) + msgitflowinto(b) -> fst.loco :: Nil
           case fst :: snd :: Nil => diagistypeof(a, fst, true) :: msgistypeof(b, snd, showFirst) + msgflowintoit(a, b) -> snd.loco :: Nil
           case fst :: snd :: tail => diagistypeof(a, fst, true) :: msgistypeof(b, snd, false) + msgflowintoit(a, b) -> snd.loco :: makeMessagesST(b, tail)
+          case Nil => msg"Exception empty list for ${ur.toString()}" -> N :: Nil
         }
       }.reverse
     }
