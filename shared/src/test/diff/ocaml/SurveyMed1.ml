@@ -57,3 +57,4 @@ let rec t = test (if true then 1 else t)
 //│ ╟── [`_ list`] comes from this application
 //│ ║  l.1:	let wrap x = x :: []
 //│ ╙──    	             ^^^^^^^
+
