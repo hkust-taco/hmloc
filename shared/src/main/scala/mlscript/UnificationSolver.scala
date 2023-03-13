@@ -10,6 +10,7 @@ trait UnificationSolver extends TyperDatatypes {
   self: Typer =>
 
   val errorCache: MutMap[(ST, ST), Unification] = MutMap()
+  val cache: MutSet[(ST, ST)] = MutSet()
   var unifyMode: Bool = false
 
   // Unify all type variables crated by accessing them from the hook
@@ -22,14 +23,14 @@ trait UnificationSolver extends TyperDatatypes {
       tv.lowerBounds.foreach(lb => {
         val reason = LB(lb, tv, lb.typeUseLocations.reverse)
         println(s"U $tv <: $lb with ${reason.provs.length} provs")
-        unifyTypes(tv, lb, reason :: Nil, Set())
+        unifyTypes(tv, lb, reason :: Nil, cache)
         tv.new_unification += ((lb, reason))
         println(s"U ${tv} += ${(lb, reason)}")
       })
       tv.upperBounds.foreach(ub => {
         val reason = UB(tv, ub, ub.typeUseLocations)
         println(s"U $tv :> $ub with ${reason.provs.length} provs")
-        unifyTypes(tv, ub, reason :: Nil, Set())
+        unifyTypes(tv, ub, reason :: Nil, cache)
         tv.new_unification += ((ub, reason))
         println(s"U ${tv} += ${(ub, reason)}")
       })
@@ -41,7 +42,7 @@ trait UnificationSolver extends TyperDatatypes {
 
   // reason already has reason for a and b to be unified
   // this unification unifies types and create errors if they fail
-  def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason], cache: Set[(ST, ST)])
+  def unifyTypes(a: ST, b: ST, reason: Ls[UnificationReason], cache: MutSet[(ST, ST)])
                 (implicit ctx: Ctx, raise: Raise): Unit =
     trace(s"U ${a} = ${b} because ${reason.mkString(", ")}") {
       val st1 = a.unwrapProvs
@@ -49,13 +50,17 @@ trait UnificationSolver extends TyperDatatypes {
 
       def createUnification(desc: Str = ""): Unification = Unification(a, b, reason, desc)
 
+      // check if unification reason as through flow
+      if (createUnification().throughFlow) return
+
       // unification doesn't have an ordering
       if (cache((st1, st2)) || cache(st2, st1)) {
         println(s"U Cached ${st1} = ${st2}")
         return
       }
 
-      val newCache = cache + ((a, b)) + ((b, a))
+      cache += ((a, b))
+      cache += ((b, a))
 
       (st1, st2) match {
         case (tr1: TypeRef, tr2: TypeRef)
@@ -84,14 +89,14 @@ trait UnificationSolver extends TyperDatatypes {
           tv.new_unification.foreach {
             case ((prev, prevReason)) =>
               println(s"    ${tv} = ${prev} for ${prevReason}")
-              unifyTypes(prev, st, prevReason :: reason, newCache)
+              unifyTypes(prev, st, prevReason :: reason, cache)
           }
         case (st, tv: TypeVariable) =>
           if (tv.new_unification.nonEmpty) println(s"U   ${st} with")
           tv.new_unification.foreach {
             case ((prev, prevReason)) =>
               println(s"    ${tv} = ${prev} for ${prevReason}")
-              unifyTypes(prev, st, prevReason :: reason.reverse, newCache)
+              unifyTypes(prev, st, prevReason :: reason.reverse, cache)
           }
         case (_, _) =>
           // report error
@@ -273,7 +278,6 @@ trait UnificationSolver extends TyperDatatypes {
           case last :: Nil => msgistypeof(a, last, true) + msgitflowinto(b) -> last.loco :: Nil
           case last :: sndLast :: Nil => diagistypeof(b, last, true) :: msgistypeof(a, sndLast, showFirst) + msgitflowinto(b) -> sndLast.loco :: Nil
           case last :: sndLast :: tail => diagistypeof(b, last, true) :: msgistypeof(a, sndLast, false) + msgitflowinto(b) -> sndLast.loco :: makeMessagesST(a, tail)
-          case _ => ???
         }
       }.reverse
       // false direction flow (showFirst = true)
@@ -289,7 +293,6 @@ trait UnificationSolver extends TyperDatatypes {
           case fst :: Nil => msgistypeof(a, fst, true) + msgitflowinto(b) -> fst.loco :: Nil
           case fst :: snd :: Nil => diagistypeof(a, fst, true) :: msgistypeof(b, snd, showFirst) + msgflowintoit(a, b) -> snd.loco :: Nil
           case fst :: snd :: tail => diagistypeof(a, fst, true) :: msgistypeof(b, snd, false) + msgflowintoit(a, b) -> snd.loco :: makeMessagesST(b, tail)
-          case _ => ???
         }
       }.reverse
     }

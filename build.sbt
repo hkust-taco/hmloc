@@ -37,7 +37,7 @@ lazy val mlscript = crossProject(JSPlatform, JVMPlatform).in(file("."))
     libraryDependencies += "com.lihaoyi" %% "os-lib" % "0.8.0",
     // 
     watchSources += WatchSource(
-      sourceDirectory.value.getParentFile.getParentFile/"shared/src/test/diff", "*.fun", NothingFilter),
+      sourceDirectory.value.getParentFile.getParentFile/"shared/src/test/diff", "*.ml", NothingFilter),
     watchSources += WatchSource(
       sourceDirectory.value.getParentFile.getParentFile/"shared/src/test/diff", "*.mls", NothingFilter),
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oC"),

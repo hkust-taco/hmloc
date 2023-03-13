@@ -391,6 +391,21 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
             tv1 -> flow
         }.toList ::: end -> false :: Nil // last type locations are always shown from consumption to introduction
     }
+
+    // check if any pair of reasons represents a through flow
+    // ignore such reasons because they are an artifact of
+    // symmetric bounds constraining
+    def throughFlow: Bool = reason match {
+      case Nil => false
+      case _ :: Nil => false
+      case _ => reason.sliding(2).exists {
+        case Seq(LB(_, tv1: TV, _), LB(tv2: TV, _, _)) => tv1 == tv2
+        case Seq(UB(_, tv1: TV, _), UB(tv2: TV, _, _)) => tv1 == tv2
+        case Seq(LB(_, tv1: TV, _), UB(tv2: TV, _, _)) => tv1 == tv2
+        case Seq(UB(_, tv1: TV, _), LB(tv2: TV, _, _)) => tv1 == tv2
+        case _ => false
+      }
+    }
   }
 
   abstract class UnificationReason {

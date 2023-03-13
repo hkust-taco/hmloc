@@ -830,7 +830,7 @@ object DiffTests {
 
   private val allFiles = os.walk(dir).filter(_.toIO.isFile)
   
-  private val validExt = Set("fun", "mls")
+  private val validExt = Set("ml", "mls")
   
   // Aggregate unstaged modified files to only run the tests on them, if there are any
   private val modified: Set[os.RelPath] =
