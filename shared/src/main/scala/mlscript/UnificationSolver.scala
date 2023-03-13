@@ -63,7 +63,9 @@ trait UnificationSolver extends TyperDatatypes {
       def createUnification(desc: Str = ""): Unification = Unification(a, b, reason, desc)
 
       // check if unification reason as through flow
-      if (createUnification().throughFlow) return
+      // however allow through flow of length 2 because
+      // it can be a collision error
+      if (reason.length > 2 && createUnification().throughFlow) return
 
       // unification doesn't have an ordering
       if (cache((st1, st2)) || cache(st2, st1)) {
