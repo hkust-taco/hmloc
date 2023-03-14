@@ -16,10 +16,7 @@ let rec mulByDigit i l =
 //│ ╟── so this reference has type `_ list`
 //│ ║  l.10:	  | h::t -> [remainder x y] @ (mulByDigit i t)
 //│ ║       	                         ^
-//│ ╟── so this variable has type `_ list`
-//│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
-//│ ║      	                ^
-//│ ╟── but this variable has type `int`
+//│ ╟── so this variable has type `_ list`. However it flows into `int`
 //│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
 //│ ║      	                ^
 //│ ╟── because this reference has type `int`
@@ -36,10 +33,7 @@ let rec mulByDigit i l =
 //│ ╟── so this reference has type `int`
 //│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
 //│ ║      	                                          ^
-//│ ╟── so this variable has type `int`
-//│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
-//│ ║      	              ^
-//│ ╟── but this variable has type `_ -> _ list -> _ list`
+//│ ╟── so this variable has type `int`. However it flows into `_ -> _ list -> _ list`
 //│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
 //│ ║      	              ^
 //│ ╟── because this reference has type `_ -> _ list -> _ list`

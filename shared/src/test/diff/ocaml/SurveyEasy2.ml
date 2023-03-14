@@ -3,15 +3,15 @@ let destructEither x = match x with
  | Right r -> r && true
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟──        bool ---> ?a <--- int 
+//│ ╟──        (bool) ---> (?a) <--- (int) 
 //│ ║  
-//│ ╟── [`bool`] comes from this type expression
+//│ ╟── (bool) comes from this type expression
 //│ ║  builtin:	let (&&): bool -> bool -> bool
 //│ ║          	                          ^^^^
 //│ ╟── so this operator application has type `bool` and it flows into `?a`
 //│ ║  l.3:	 | Right r -> r && true
 //│ ║      	              ^^^^^^^^^^
-//│ ╟── [`?a`] comes from this match expression
+//│ ╟── (?a) is assumed as the type of this match expression
 //│ ║  l.1:	let destructEither x = match x with
 //│ ║      	                       ^^^^^^^^^^^^
 //│ ║      	 | Left l -> l + 1 ...
@@ -19,6 +19,6 @@ let destructEither x = match x with
 //│ ╟── so this operator application has type `?a`. However `int` flows into `?a`
 //│ ║  l.2:	 | Left l -> l + 1
 //│ ║      	             ^^^^^
-//│ ╟── [`int`] comes from this type reference
+//│ ╟── (int) is assumed as the type of this type reference
 //│ ║  builtin:	let (+): int -> int -> int
 //│ ╙──        	                       ^^^

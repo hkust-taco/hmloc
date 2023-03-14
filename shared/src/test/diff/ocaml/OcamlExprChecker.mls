@@ -261,10 +261,7 @@ let checkagain (v: (int, int, (int, int))) =
 //│ ╟── this tuple literal has type `error * error`
 //│ ║  l.3:	   (a, b, (k, d)) -> a + b + k + d
 //│ ║      	           ^^^^
-//│ ╟── so this 2 element of this tuple has type `error * error`
-//│ ║  l.3:	   (a, b, (k, d)) -> a + b + k + d
-//│ ║      	   ^^^^^^^^^^^^^^
-//│ ╟── but this 2 element of this tuple has type `int * int`
+//│ ╟── so this 2 element of this tuple has type `error * error`. However it flows into `int * int`
 //│ ║  l.3:	   (a, b, (k, d)) -> a + b + k + d
 //│ ║      	   ^^^^^^^^^^^^^^
 //│ ╟── because `int * int` comes from this type expression
@@ -336,12 +333,12 @@ let g x = x, if true then x else x
 [0, 1; 2, 3, 4]
 //│ ╔══[ERROR] Type `int * int * int` does not match `int * int`
 //│ ║  
-//│ ╟──        int * int * int ---> ?a <--- int * int 
+//│ ╟──        (int * int * int) ---> (?a) <--- (int * int) 
 //│ ║  
-//│ ╟── [`int * int * int`] comes from this tuple literal and it flows into `?a`
+//│ ╟── (int * int * int) is the type of this tuple literal and it flows into `?a`
 //│ ║  l.1:	[0, 1; 2, 3, 4]
 //│ ║      	       ^^^^^^^
-//│ ╟── [`int * int`] comes from this tuple literal and it flows into `?a`
+//│ ╟── (int * int) is the type of this tuple literal and it flows into `?a`
 //│ ║  l.1:	[0, 1; 2, 3, 4]
 //│ ╙──    	 ^^^^
 //│ res: list[Array[int] & {_1: int, _2: int}]

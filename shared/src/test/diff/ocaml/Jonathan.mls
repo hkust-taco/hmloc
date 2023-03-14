@@ -4,24 +4,24 @@
 let h y = (not y, (if true then y else 5))
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟──        bool <--- ?a ---> ?b <--- int 
+//│ ╟──        (bool) <--- (?a) ---> (?b) <--- (int) 
 //│ ║  
-//│ ╟── [`bool`] comes from this type expression
+//│ ╟── (bool) comes from this type expression
 //│ ║  builtin:	let not: bool -> bool
 //│ ║          	         ^^^^
 //│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
 //│ ║  l.1:	let h y = (not y, (if true then y else 5))
 //│ ║      	               ^
-//│ ╟── [`?a`] comes from this variable
+//│ ╟── (?a) is assumed as the type of this variable
 //│ ║  l.1:	let h y = (not y, (if true then y else 5))
 //│ ║      	      ^
 //│ ╟── so this `then` branch has type `?a` and it flows into `?b`
 //│ ║  l.1:	let h y = (not y, (if true then y else 5))
 //│ ║      	                                ^
-//│ ╟── [`?b`] comes from this if-then-else expression
+//│ ╟── (?b) is assumed as the type of this if-then-else expression
 //│ ║  l.1:	let h y = (not y, (if true then y else 5))
 //│ ║      	                  ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`int`] comes from this `else` branch and it flows into `?b`
+//│ ╟── (int) is the type of this `else` branch and it flows into `?b`
 //│ ║  l.1:	let h y = (not y, (if true then y else 5))
 //│ ╙──    	                                       ^
 //│ h: (bool & 'a) -> (bool, int | 'a,)
@@ -35,24 +35,24 @@ let h y = (not y, (if true then y else 5))
 let h y = (not y, (if true then y else 5))
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟──        bool <--- ?a ---> ?b <--- int 
+//│ ╟──        (bool) <--- (?a) ---> (?b) <--- (int) 
 //│ ║  
-//│ ╟── [`bool`] comes from this type expression
+//│ ╟── (bool) comes from this type expression
 //│ ║  builtin:	let not: bool -> bool
 //│ ║          	         ^^^^
 //│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
 //│ ║  l.1:	let h y = (not y, (if true then y else 5))
 //│ ║      	               ^
-//│ ╟── [`?a`] comes from this variable
+//│ ╟── (?a) is assumed as the type of this variable
 //│ ║  l.1:	let h y = (not y, (if true then y else 5))
 //│ ║      	      ^
 //│ ╟── so this `then` branch has type `?a` and it flows into `?b`
 //│ ║  l.1:	let h y = (not y, (if true then y else 5))
 //│ ║      	                                ^
-//│ ╟── [`?b`] comes from this if-then-else expression
+//│ ╟── (?b) is assumed as the type of this if-then-else expression
 //│ ║  l.1:	let h y = (not y, (if true then y else 5))
 //│ ║      	                  ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`int`] comes from this `else` branch and it flows into `?b`
+//│ ╟── (int) is the type of this `else` branch and it flows into `?b`
 //│ ║  l.1:	let h y = (not y, (if true then y else 5))
 //│ ╙──    	                                       ^
 //│ h: (bool & 'a) -> (bool, int | 'a,)
@@ -65,9 +65,9 @@ let confluence z = if true then z else 5
 confluence true
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟──        bool ---> ?a <--- int 
+//│ ╟──        (bool) ---> (?a) <--- (int) 
 //│ ║  
-//│ ╟── [`bool`] comes from this reference
+//│ ╟── (bool) is assumed as the type of this reference
 //│ ║  l.2:	confluence true
 //│ ║      	           ^^^^
 //│ ╟── so this variable has type `bool`
@@ -76,10 +76,10 @@ confluence true
 //│ ╟── so this `then` branch has type `bool` and it flows into `?a`
 //│ ║  l.1:	let confluence z = if true then z else 5
 //│ ║      	                                ^
-//│ ╟── [`?a`] comes from this if-then-else expression
+//│ ╟── (?a) is assumed as the type of this if-then-else expression
 //│ ║  l.1:	let confluence z = if true then z else 5
 //│ ║      	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`int`] comes from this `else` branch and it flows into `?a`
+//│ ╟── (int) is the type of this `else` branch and it flows into `?a`
 //│ ║  l.1:	let confluence z = if true then z else 5
 //│ ╙──    	                                       ^
 //│ confluence: 'a -> (int | 'a)
@@ -90,15 +90,15 @@ let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟──        bool <--- ?a ---> ?b <--- int 
+//│ ╟──        (bool) <--- (?a) ---> (?b) <--- (int) 
 //│ ║  
-//│ ╟── [`bool`] comes from this type expression
+//│ ╟── (bool) comes from this type expression
 //│ ║  builtin:	let not: bool -> bool
 //│ ║          	         ^^^^
 //│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
 //│ ║  l.2:	let conflict x = mkpair (not x) x
 //│ ║      	                             ^
-//│ ╟── [`?a`] comes from this variable
+//│ ╟── (?a) is assumed as the type of this variable
 //│ ║  l.2:	let conflict x = mkpair (not x) x
 //│ ║      	             ^
 //│ ╟── so this reference has type `?a`
@@ -116,10 +116,10 @@ let conflict x = mkpair (not x) x
 //│ ╟── so this `then` branch has type `?a` and it flows into `?b`
 //│ ║  l.-24:	let confluence z = if true then z else 5
 //│ ║        	                                ^
-//│ ╟── [`?b`] comes from this if-then-else expression
+//│ ╟── (?b) is assumed as the type of this if-then-else expression
 //│ ║  l.-24:	let confluence z = if true then z else 5
 //│ ║        	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`int`] comes from this `else` branch and it flows into `?b`
+//│ ╟── (int) is the type of this `else` branch and it flows into `?b`
 //│ ║  l.-24:	let confluence z = if true then z else 5
 //│ ╙──      	                                       ^
 //│ mkpair: 'a -> 'b -> ('a, int | 'b,)
@@ -149,20 +149,20 @@ let rec additivePersistence n =
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
-//│ ╟──        bool ---> ?a <--- int 
+//│ ╟──        (bool) ---> (?a) <--- (int) 
 //│ ║  
-//│ ╟── [`bool`] comes from this `else` branch
+//│ ╟── (bool) is assumed as the type of this `else` branch
 //│ ║  l.4:	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
 //│ ║      	                                                         ^^^^^
 //│ ╟── so this if-then-else expression has type `bool` and it flows into `?a`
 //│ ║  l.4:	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
 //│ ║      	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── [`?a`] comes from this match expression
+//│ ╟── (?a) is assumed as the type of this match expression
 //│ ║  l.2:	  match digits n with
 //│ ║      	  ^^^^^^^^^^^^^^^^^^^
 //│ ║      	  | [] -> 0 ...
 //│ ║      	  ^^^^^^^^^^^^^
-//│ ╟── [`int`] comes from this integer literal and it flows into `?a`
+//│ ╟── (int) is the type of this integer literal and it flows into `?a`
 //│ ║  l.3:	  | [] -> 0
 //│ ╙──    	          ^
 //│ additivePersistence: int -> (bool | int)

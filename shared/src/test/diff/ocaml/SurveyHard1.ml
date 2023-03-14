@@ -8,10 +8,7 @@ let rec sepConcat sep sl =
 let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ ╔══[ERROR] Type `(_ * _) -> _` does not match `string`
 //│ ║  
-//│ ╟── this application has type `(_ * _) -> _`
-//│ ║  l.8:	let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
-//│ ║      	                               ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── but this application has type `string`
+//│ ╟── this application has type `(_ * _) -> _`. However it flows into `string`
 //│ ║  l.8:	let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ ║      	                               ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── because this match expression has type `string`
@@ -36,10 +33,7 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ ╟── so this reference has type `_ list`
 //│ ║  l.2:	  match sl with
 //│ ║      	        ^^
-//│ ╟── so this variable has type `_ list`
-//│ ║  l.1:	let rec sepConcat sep sl =
-//│ ║      	                      ^^
-//│ ╟── but this variable has type `(_ -> _) -> _ list -> _ list`
+//│ ╟── so this variable has type `_ list`. However it flows into `(_ -> _) -> _ list -> _ list`
 //│ ║  l.1:	let rec sepConcat sep sl =
 //│ ║      	                      ^^
 //│ ╟── because this reference has type `(_ -> _) -> _ list -> _ list`
