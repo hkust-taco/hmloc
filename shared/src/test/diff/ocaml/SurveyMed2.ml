@@ -1,4 +1,4 @@
-let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0
+let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
   
 let x l = List.map string_of_int
   
@@ -17,14 +17,14 @@ let rec mulByDigit i l =
 //│ ║  l.10:	  | h::t -> [remainder x y] @ (mulByDigit i t)
 //│ ║       	                         ^
 //│ ╟── so this variable has type `_ list`
-//│ ║  l.1:	let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0
+//│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
 //│ ║      	                ^
 //│ ╟── but this variable has type `int`
-//│ ║  l.1:	let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0
+//│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
 //│ ║      	                ^
 //│ ╟── because this reference has type `int`
-//│ ║  l.1:	let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0
-//│ ║      	                                                  ^
+//│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
+//│ ║      	                                              ^
 //│ ╟── because `int` comes from this type expression
 //│ ║  builtin:	let ( * ): int -> int -> int
 //│ ╙──        	                  ^^^
@@ -34,13 +34,13 @@ let rec mulByDigit i l =
 //│ ║  builtin:	let ( * ): int -> int -> int
 //│ ║          	           ^^^
 //│ ╟── so this reference has type `int`
-//│ ║  l.1:	let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0
-//│ ║      	                                              ^
+//│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
+//│ ║      	                                          ^
 //│ ╟── so this variable has type `int`
-//│ ║  l.1:	let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0
+//│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
 //│ ║      	              ^
 //│ ╟── but this variable has type `_ -> _ list -> _ list`
-//│ ║  l.1:	let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0
+//│ ║  l.1:	let remainder x y = if (x * y) > 10 then (x * y) mod 10 else 0
 //│ ║      	              ^
 //│ ╟── because this reference has type `_ -> _ list -> _ list`
 //│ ║  l.10:	  | h::t -> [remainder x y] @ (mulByDigit i t)

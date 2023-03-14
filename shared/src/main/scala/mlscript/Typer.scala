@@ -857,16 +857,26 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     
     val seenVars = mutable.Set.empty[TV]
     
-    def field(ft: FieldType): Type = go(ft.ub)
+    def field(ft: FieldType)(implicit cache: Set[TV]): Type = go(ft.ub)
 
-    def go(st: SimpleType): Type =
+    def go(st: SimpleType)(implicit cache: Set[TV]): Type =
             // trace(s"expand $st") {
           st.unwrapProvs match {
         case tv: TypeVariable if ocamlStyle =>
           if (showTV(tv)) {
             tv.asTypeVar
           } else {
-            tv.asTypeVar.copy(nameHint = S("_"))
+            tv.asTypeVar
+              .copy(nameHint = S("_"))
+            /* 
+            tv.lowerBounds match {
+              case lb :: _ if !cache.contains(tv) => go(lb)(cache + tv)
+              case _ => tv.upperBounds match {
+                case ub :: _ if !cache.contains(tv) => go(ub)(cache + tv)
+                case _ => tv.asTypeVar//.copy(nameHint = S("_"))
+              }
+            }
+            */
           }
         case tv: TypeVariable if stopAtTyVars => tv.asTypeVar
         case tv: TypeVariable =>
@@ -912,7 +922,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     }
     // }(r => s"~> $r")
     
-    val res = go(st)
+    val res = go(st)(Set.empty)
     if (bounds.isEmpty) res
     else Constrained(res, bounds)
   }
