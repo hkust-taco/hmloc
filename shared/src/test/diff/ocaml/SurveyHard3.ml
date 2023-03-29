@@ -28,6 +28,12 @@ let bigAdd l1 l2 =
     let args = List.rev (List.combine l1 l2) in
     let (_,res) = List.fold_left f base args in res in
   removeZero (add (padZero l1 l2))
+  
+(* (@): 'a list -> 'a list -> 'a list is a list concatenation operator *)
+(* List.length: 'a list -> int *)
+(* List.fold_left: ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a *)
+(* List.combine: 'a list -> 'b list -> ('a * 'b) list zips two lists together *)
+(* List.rev: 'a list -> 'a list reverses a list *)
 //│ ╔══[ERROR] Type `_ * _ list` does not match `_ list * _`
 //│ ║  
 //│ ╟──        (_ * _ list) ---> (?a) <--- (_ list * _) 

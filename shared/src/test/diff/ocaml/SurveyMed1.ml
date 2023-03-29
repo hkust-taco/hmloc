@@ -1,59 +1,62 @@
 let wrap x = x :: []
-let test z = if true then wrap z else wrap true
-let rec t = test (if true then 1 else t)
-//│ ╔══[ERROR] Type `int` does not match `_ list`
+ 
+let test z cond = if cond
+ then wrap z
+ else wrap true
+ 
+let rec check cond =
+ test (if cond then false else check (not cond)) cond
+//│ ╔══[ERROR] Type `bool` does not match `_ list`
 //│ ║  
-//│ ╟──        (int) ---> (?a) <--- (_ list) 
+//│ ╟──        (bool) ---> (?a) <--- (_ list) 
 //│ ║  
-//│ ╟── (int) is the type of this `then` branch and it flows into `?a`
-//│ ║  l.3:	let rec t = test (if true then 1 else t)
-//│ ║      	                               ^
+//│ ╟── (bool) is the type of this `then` branch and it flows into `?a`
+//│ ║  l.8:	 test (if cond then false else check (not cond)) cond
+//│ ║      	                    ^^^^^
 //│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.3:	let rec t = test (if true then 1 else t)
-//│ ║      	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.8:	 test (if cond then false else check (not cond)) cond
+//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── so this `else` branch has type `?a`
-//│ ║  l.3:	let rec t = test (if true then 1 else t)
-//│ ║      	                                      ^
-//│ ╟── so this recursive binding has type `?a`
-//│ ║  l.3:	let rec t = test (if true then 1 else t)
-//│ ║      	        ^
+//│ ║  l.8:	 test (if cond then false else check (not cond)) cond
+//│ ║      	                               ^^^^^^^^^^^^^^^^
 //│ ╟── so this application has type `?a`
-//│ ║  l.3:	let rec t = test (if true then 1 else t)
-//│ ║      	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.8:	 test (if cond then false else check (not cond)) cond
+//│ ║      	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── so this if-then-else expression has type `?a`
-//│ ║  l.2:	let test z = if true then wrap z else wrap true
-//│ ║      	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.3:	let test z cond = if cond
+//│ ║      	                  ^^^^^^^
+//│ ║      	 then wrap z ...
+//│ ║      	 ^^^^^^^^^^^^^^^
 //│ ╟── so this `else` branch has type `?a`. However `_ list` flows into `?a`
-//│ ║  l.2:	let test z = if true then wrap z else wrap true
-//│ ║      	                                      ^^^^^^^^^
+//│ ║  l.5:	 else wrap true
+//│ ║      	      ^^^^^^^^^
 //│ ╟── (_ list) is assumed as the type of this application
 //│ ║  l.1:	let wrap x = x :: []
 //│ ╙──    	             ^^^^^^^
-//│ ╔══[ERROR] Type `int` does not match `_ list`
+//│ ╔══[ERROR] Type `bool` does not match `_ list`
 //│ ║  
-//│ ╟──        (int) ---> (?a) <--- (_ list) 
+//│ ╟──        (bool) ---> (?a) <--- (_ list) 
 //│ ║  
-//│ ╟── (int) is the type of this `then` branch and it flows into `?a`
-//│ ║  l.3:	let rec t = test (if true then 1 else t)
-//│ ║      	                               ^
+//│ ╟── (bool) is the type of this `then` branch and it flows into `?a`
+//│ ║  l.8:	 test (if cond then false else check (not cond)) cond
+//│ ║      	                    ^^^^^
 //│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.3:	let rec t = test (if true then 1 else t)
-//│ ║      	                 ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.8:	 test (if cond then false else check (not cond)) cond
+//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── so this `else` branch has type `?a`
-//│ ║  l.3:	let rec t = test (if true then 1 else t)
-//│ ║      	                                      ^
-//│ ╟── so this recursive binding has type `?a`
-//│ ║  l.3:	let rec t = test (if true then 1 else t)
-//│ ║      	        ^
+//│ ║  l.8:	 test (if cond then false else check (not cond)) cond
+//│ ║      	                               ^^^^^^^^^^^^^^^^
 //│ ╟── so this application has type `?a`
-//│ ║  l.3:	let rec t = test (if true then 1 else t)
-//│ ║      	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.8:	 test (if cond then false else check (not cond)) cond
+//│ ║      	 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── so this if-then-else expression has type `?a`
-//│ ║  l.2:	let test z = if true then wrap z else wrap true
-//│ ║      	             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ║  l.3:	let test z cond = if cond
+//│ ║      	                  ^^^^^^^
+//│ ║      	 then wrap z ...
+//│ ║      	 ^^^^^^^^^^^^^^^
 //│ ╟── so this `then` branch has type `?a`. However `_ list` flows into `?a`
-//│ ║  l.2:	let test z = if true then wrap z else wrap true
-//│ ║      	                          ^^^^^^
+//│ ║  l.4:	 then wrap z
+//│ ║      	      ^^^^^^
 //│ ╟── (_ list) is assumed as the type of this application
 //│ ║  l.1:	let wrap x = x :: []
 //│ ╙──    	             ^^^^^^^

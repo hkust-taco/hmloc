@@ -1,37 +1,41 @@
-let destructEither x y = if y then
-  match x with
-    | Left l -> l && true
-    | Right r -> r || false
-  else x
-//│ ╔══[ERROR] Type `(_, _) either` does not match `bool`
+let check result condition =
+ if condition then
+   match result with
+    | Left n -> "OK"
+    | Right msg -> "ERROR: " ^ msg
+ else result
+ 
+(* (^): string -> string -> string is a string concatenation operator *)
+(* Remember Left and Right are the constructors of the either type *)
+//│ ╔══[ERROR] Type `(_, _) either` does not match `string`
 //│ ║  
-//│ ╟──        ((_, _) either) <--- (?a) ---> (?b) <--- (bool) 
+//│ ╟──        ((_, _) either) <--- (?a) ---> (?b) <--- (string) 
 //│ ║  
 //│ ╟── ((_, _) either) is assumed as the type of this pattern
-//│ ║  l.3:	    | Left l -> l && true
+//│ ║  l.4:	    | Left n -> "OK"
 //│ ║      	      ^^^^
 //│ ╟── so this reference has type `(_, _) either`. However `?a` flows into `(_, _) either`
-//│ ║  l.2:	  match x with
-//│ ║      	        ^
+//│ ║  l.3:	   match result with
+//│ ║      	         ^^^^^^
 //│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.1:	let destructEither x y = if y then
-//│ ║      	                   ^
+//│ ║  l.1:	let check result condition =
+//│ ║      	          ^^^^^^
 //│ ╟── so this `else` branch has type `?a` and it flows into `?b`
-//│ ║  l.5:	  else x
-//│ ║      	       ^^
+//│ ║  l.6:	 else result
+//│ ║      	      ^^^^^^
 //│ ╟── (?b) is assumed as the type of this if-then-else expression
-//│ ║  l.1:	let destructEither x y = if y then
-//│ ║      	                         ^^^^^^^^^
-//│ ║      	  match x with ...
-//│ ║      	  ^^^^^^^^^^^^^^^^
+//│ ║  l.2:	 if condition then
+//│ ║      	 ^^^^^^^^^^^^^^^^^
+//│ ║      	   match result with ...
+//│ ║      	   ^^^^^^^^^^^^^^^^^^^^^
 //│ ╟── so this match expression has type `?b`
-//│ ║  l.2:	  match x with
-//│ ║      	  ^^^^^^^^^^^^
-//│ ║      	    | Left l -> l && true ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this operator application has type `?b`. However `bool` flows into `?b`
-//│ ║  l.4:	    | Right r -> r || false
-//│ ║      	                 ^^^^^^^^^^
-//│ ╟── (bool) is assumed as the type of this type reference
-//│ ║  builtin:	let (||): bool -> bool -> bool
-//│ ╙──        	                          ^^^^
+//│ ║  l.3:	   match result with
+//│ ║      	   ^^^^^^^^^^^^^^^^^
+//│ ║      	    | Left n -> "OK" ...
+//│ ║      	    ^^^^^^^^^^^^^^^^^^^^
+//│ ╟── so this operator application has type `?b`. However `string` flows into `?b`
+//│ ║  l.5:	    | Right msg -> "ERROR: " ^ msg
+//│ ║      	                   ^^^^^^^^^^^^^^^
+//│ ╟── (string) is assumed as the type of this type reference
+//│ ║  builtin:	let (^): string -> string -> string
+//│ ╙──        	                             ^^^^^^
