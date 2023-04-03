@@ -211,7 +211,7 @@ let head xs = match xs with
 //│ head: list['a] -> 'a
 
 
-
+:s
 let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
@@ -246,10 +246,26 @@ type ('a, 'b) paramlist = (('a * int) list * 'b) list
 //│ Defined type alias paramlist[+'a, +'b]
 
 
-
+// FIXME: nested type unification
 let check (v: ((int, int))) =
   match v with
    ((c, d)) -> c + d
+//│ ╔══[ERROR] Type `int * int` does not match `_ * _`
+//│ ║  
+//│ ╟──        (int * int) <--- (?a) ---> (_ * _) 
+//│ ║  
+//│ ╟── (int * int) comes from this type expression. However `?a` flows into `int * int`
+//│ ║  l.1:	let check (v: ((int, int))) =
+//│ ║      	              ^^^^^^^^^^^^
+//│ ╟── (?a) is assumed as the type of this variable
+//│ ║  l.1:	let check (v: ((int, int))) =
+//│ ║      	           ^
+//│ ╟── so this reference has type `?a` and it flows into `_ * _`
+//│ ║  l.2:	  match v with
+//│ ║      	        ^
+//│ ╟── (_ * _) is assumed as the type of this pattern
+//│ ║  l.3:	   ((c, d)) -> c + d
+//│ ╙──    	   ^^^^^^^^
 //│ check: (int, int,) -> int
 
 // FIXME: nested match case not working right now
@@ -258,30 +274,43 @@ let checkagain (v: (int, int, (int, int))) =
    (a, b, (k, d)) -> a + b + k + d
 //│ ╔══[ERROR] Type `error * error` does not match `int * int`
 //│ ║  
-//│ ╟── this tuple literal has type `error * error`
+//│ ╟── this 2 element of tuple has type `error * error`. However it flows into `int * int`
 //│ ║  l.3:	   (a, b, (k, d)) -> a + b + k + d
 //│ ║      	           ^^^^
-//│ ╟── so this 2 element of this tuple has type `error * error`. However it flows into `int * int`
-//│ ║  l.3:	   (a, b, (k, d)) -> a + b + k + d
-//│ ║      	   ^^^^^^^^^^^^^^
 //│ ╟── because `int * int` comes from this type expression
 //│ ║  l.1:	let checkagain (v: (int, int, (int, int))) =
 //│ ╙──    	                              ^^^^^^^^^^
+//│ ╔══[ERROR] Type `_ * _ * _` does not match `int * int * (int * int)`
+//│ ║  
+//│ ╟──        (_ * _ * _) <--- (?a) ---> (int * int * (int * int)) 
+//│ ║  
+//│ ╟── (_ * _ * _) is assumed as the type of this pattern
+//│ ║  l.3:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║      	   ^^^^^^^^^^^^^^
+//│ ╟── so this reference has type `_ * _ * _`. However `?a` flows into `_ * _ * _`
+//│ ║  l.2:	  match v with
+//│ ║      	        ^
+//│ ╟── (?a) is assumed as the type of this variable
+//│ ║  l.1:	let checkagain (v: (int, int, (int, int))) =
+//│ ║      	                ^
+//│ ╟── (?a) comes from this type expression and it flows into `int * int * (int * int)`
+//│ ║  l.1:	let checkagain (v: (int, int, (int, int))) =
+//│ ╙──    	                   ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: k
 //│ ║  
-//│ ║  l.258:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.274:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	           ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.258:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.274:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	              ^
 //│ ╔══[ERROR] identifier not found: k
 //│ ║  
-//│ ║  l.258:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.274:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	                             ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.258:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.274:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	                                 ^
 //│ checkagain: (int, int, (int, int,),) -> int
 
@@ -342,3 +371,36 @@ let g x = x, if true then x else x
 //│ ║  l.1:	[0, 1; 2, 3, 4]
 //│ ╙──    	 ^^^^
 //│ res: list[Array[int] & {_1: int, _2: int}]
+
+let increment x = match x with
+  | 0 -> 1
+  | 1 -> 2
+  | x -> x + 1
+let score stmt = match stmt with
+ | Skip -> 0
+ | Assign tup -> 1
+ | _ -> 2
+let test n = match n with | x -> x + 1 - x - 1
+let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
+//│ increment: int -> int
+//│ score: stmt -> int
+//│ test: int -> int
+//│ length: list[?] -> int
+
+:e
+let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
+//│ ╔══[ERROR] Type `string` does not match `_ list`
+//│ ║  
+//│ ╟──        (string) <--- (?a) ---> (_ list) 
+//│ ║  
+//│ ╟── (string) is the type of this string literal. However `?a` flows into `string`
+//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
+//│ ║      	                             ^^^^^^^^^^
+//│ ╟── (?a) is assumed as the type of this reference
+//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
+//│ ║      	                   ^^
+//│ ╟── (?a) is the assumed type of this pattern and it flows into `_ list`
+//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
+//│ ╙──    	                                               ^^
+//│ len: nothing -> int
+

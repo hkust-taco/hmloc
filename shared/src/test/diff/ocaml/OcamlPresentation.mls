@@ -57,7 +57,7 @@ let destructEither x = if x then
 //│ ║  
 //│ ╟── ((_, _) either) is assumed as the type of this pattern
 //│ ║  l.3:	   | Left l -> l + 1
-//│ ║      	     ^^^^
+//│ ║      	     ^^^^^^
 //│ ╟── so this reference has type `(_, _) either`. However `?a` flows into `(_, _) either`
 //│ ║  l.2:	  match x with
 //│ ║      	        ^
@@ -98,7 +98,7 @@ let destructEither x = if x then
 //│ ║      	        ^
 //│ ╟── ((_, _) either) is assumed as the type of this pattern
 //│ ║  l.3:	   | Left l -> l + 1
-//│ ╙──    	     ^^^^
+//│ ╙──    	     ^^^^^^
 //│ ╔══[ERROR] Type `bool` does not match `int`
 //│ ║  
 //│ ╟──        (bool) ---> (?a) <--- (int) 
@@ -257,10 +257,57 @@ let rec t = wrap (if true then 1 else t)
 //│ ╟── so this application has type `?a`. However `_ list` flows into `?a`
 //│ ║  l.2:	let rec t = wrap (if true then 1 else t)
 //│ ║      	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ list) is assumed as the type of this application
+//│ ╟── (_ list) is assumed as the type of this operator application
 //│ ║  l.1:	let wrap x = x :: []
 //│ ╙──    	             ^^^^^^^
 //│ wrap: 'a -> list['a]
 //│ t: 't
 //│   where
 //│     't :> list[int | 't]
+
+let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
+let weird x = (x + 1, length x)
+//│ ╔══[ERROR] Type `_ list` does not match `int`
+//│ ║  
+//│ ╟──        (_ list) <--- (?a) ---> (int) 
+//│ ║  
+//│ ╟── (_ list) is assumed as the type of this pattern
+//│ ║  l.1:	let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
+//│ ║      	                                                                ^^
+//│ ╟── so this reference has type `_ list`
+//│ ║  l.1:	let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
+//│ ║      	                          ^^
+//│ ╟── so this variable has type `_ list`
+//│ ║  l.1:	let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
+//│ ║      	               ^^
+//│ ╟── so this reference has type `_ list`. However `?a` flows into `_ list`
+//│ ║  l.2:	let weird x = (x + 1, length x)
+//│ ║      	                             ^
+//│ ╟── (?a) is assumed as the type of this variable
+//│ ║  l.2:	let weird x = (x + 1, length x)
+//│ ║      	          ^
+//│ ╟── so this reference has type `?a` and it flows into `int`
+//│ ║  l.2:	let weird x = (x + 1, length x)
+//│ ║      	               ^
+//│ ╟── (int) is assumed as the type of this type reference
+//│ ║  builtin:	let (+): int -> int -> int
+//│ ╙──        	         ^^^
+//│ length: list[?] -> int
+//│ weird: nothing -> (int, int,)
+
+:e
+let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
+//│ ╔══[ERROR] Type `string` does not match `_ list`
+//│ ║  
+//│ ╟──        (string) <--- (?a) ---> (_ list) 
+//│ ║  
+//│ ╟── (string) is the type of this string literal. However `?a` flows into `string`
+//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
+//│ ║      	                             ^^^^^^^^^^
+//│ ╟── (?a) is assumed as the type of this reference
+//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
+//│ ║      	                   ^^
+//│ ╟── (?a) is the assumed type of this pattern and it flows into `_ list`
+//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
+//│ ╙──    	                                               ^^
+//│ len: nothing -> int

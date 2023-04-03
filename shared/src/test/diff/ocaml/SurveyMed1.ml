@@ -27,10 +27,10 @@ let rec check cond =
 //│ ║      	                  ^^^^^^^
 //│ ║      	 then wrap z ...
 //│ ║      	 ^^^^^^^^^^^^^^^
-//│ ╟── so this `else` branch has type `?a`. However `_ list` flows into `?a`
-//│ ║  l.5:	 else wrap true
-//│ ║      	      ^^^^^^^^^
-//│ ╟── (_ list) is assumed as the type of this application
+//│ ╟── so this `then` branch has type `?a`. However `_ list` flows into `?a`
+//│ ║  l.4:	 then wrap z
+//│ ║      	      ^^^^^^
+//│ ╟── (_ list) is assumed as the type of this operator application
 //│ ║  l.1:	let wrap x = x :: []
 //│ ╙──    	             ^^^^^^^
 //│ ╔══[ERROR] Type `bool` does not match `_ list`
@@ -54,10 +54,10 @@ let rec check cond =
 //│ ║      	                  ^^^^^^^
 //│ ║      	 then wrap z ...
 //│ ║      	 ^^^^^^^^^^^^^^^
-//│ ╟── so this `then` branch has type `?a`. However `_ list` flows into `?a`
-//│ ║  l.4:	 then wrap z
-//│ ║      	      ^^^^^^
-//│ ╟── (_ list) is assumed as the type of this application
+//│ ╟── so this `else` branch has type `?a`. However `_ list` flows into `?a`
+//│ ║  l.5:	 else wrap true
+//│ ║      	      ^^^^^^^^^
+//│ ╟── (_ list) is assumed as the type of this operator application
 //│ ║  l.1:	let wrap x = x :: []
 //│ ╙──    	             ^^^^^^^
 

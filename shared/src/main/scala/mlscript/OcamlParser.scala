@@ -191,11 +191,13 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case App(App(op@Var("::"), lhs), rhs) =>
       val newLhs = appSubstitution(lhs)
       val newRhs = appSubstitution(rhs)
-      App(op.copy(name = "Cons"), Tup(newLhs :: newRhs :: Nil))
+      val newOp = op.copy(name = "Cons").withLoc(op.toLoc)
+      App(newOp, Tup(newLhs :: newRhs :: Nil))
     case o@App(i@App(op@Var("="), lhs), rhs) =>
       val newLhs = appSubstitution(lhs)
       val newRhs = appSubstitution(rhs)
-      o.copy(lhs = i.copy(lhs = op.copy(name = "eq"), rhs = newLhs), rhs = newRhs)
+      val newOp = op.copy(name = "eq").withLoc(op.toLoc)
+      o.copy(lhs = i.copy(lhs = newOp, rhs = newLhs), rhs = newRhs)
     case t@Tup(value :: Nil) =>
       t.copy(fields = appSubstitution(value) :: Nil)
     case t@Tup(fields) =>

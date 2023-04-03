@@ -13,7 +13,7 @@ let check result condition =
 //│ ║  
 //│ ╟── ((_, _) either) is assumed as the type of this pattern
 //│ ║  l.4:	    | Left n -> "OK"
-//│ ║      	      ^^^^
+//│ ║      	      ^^^^^^
 //│ ╟── so this reference has type `(_, _) either`. However `?a` flows into `(_, _) either`
 //│ ║  l.3:	   match result with
 //│ ║      	         ^^^^^^
