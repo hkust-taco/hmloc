@@ -1,0 +1,56 @@
+
+
+let f = if true then [0, 1] else [0], [1]
+//│ ╔══[ERROR] Type `_ list * _ list` does not match `_ list`
+//│ ║  
+//│ ╟──        (_ list * _ list) ---> (?a) <--- (_ list) 
+//│ ║  
+//│ ╟── (_ list * _ list) is the type of this tuple literal and it flows into `?a`
+//│ ║  l.1:	let f = if true then [0, 1] else [0], [1]
+//│ ║      	                                 ^^^^^^^^
+//│ ╟── (?a) is assumed as the type of this if-then-else expression
+//│ ║  l.1:	let f = if true then [0, 1] else [0], [1]
+//│ ║      	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── (_ list) is the type of this `then` branch and it flows into `?a`
+//│ ║  l.1:	let f = if true then [0, 1] else [0], [1]
+//│ ╙──    	                     ^^^^^^
+//│ f: (list[int], list[int],) | list[(int, int,)]
+
+let f x = if true then [0, 1] else x, [1]
+//│ ╔══[ERROR] Type `_ * _ list` does not match `_ list`
+//│ ║  
+//│ ╟──        (_ * _ list) ---> (?a) <--- (_ list) 
+//│ ║  
+//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
+//│ ║  l.1:	let f x = if true then [0, 1] else x, [1]
+//│ ║      	                                   ^^^^^^
+//│ ╟── (?a) is assumed as the type of this if-then-else expression
+//│ ║  l.1:	let f x = if true then [0, 1] else x, [1]
+//│ ║      	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── (_ list) is the type of this `then` branch and it flows into `?a`
+//│ ║  l.1:	let f x = if true then [0, 1] else x, [1]
+//│ ╙──    	                       ^^^^^^
+//│ f: 'a -> (('a, list[int],) | list[(int, int,)])
+
+let test: (int * int) list
+//│ test: list[(int, int,)]
+
+let f x = if true then test else x, [1]
+//│ ╔══[ERROR] Type `_ * _ list` does not match `(int * int) list`
+//│ ║  
+//│ ╟──        (_ * _ list) ---> (?a) <--- ((int * int) list) 
+//│ ║  
+//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
+//│ ║  l.1:	let f x = if true then test else x, [1]
+//│ ║      	                                 ^^^^^^
+//│ ╟── (?a) is assumed as the type of this if-then-else expression
+//│ ║  l.1:	let f x = if true then test else x, [1]
+//│ ║      	          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ╟── so this `then` branch has type `?a`. However `(int * int) list` flows into `?a`
+//│ ║  l.1:	let f x = if true then test else x, [1]
+//│ ║      	                       ^^^^
+//│ ╟── ((int * int) list) is assumed as the type of this applied type reference
+//│ ║  l.-2:	let test: (int * int) list
+//│ ╙──     	           ^^^^^^^^^^^^^^^
+//│ f: 'a -> (('a, list[int],) | list[(int, int,)])
+
