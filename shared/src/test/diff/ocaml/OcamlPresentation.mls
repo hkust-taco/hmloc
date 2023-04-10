@@ -1,20 +1,9 @@
 :AllowTypeErrors
 
 let boolToInt x = if x then "0" else 1
-//│ ╔══[ERROR] Type `string` does not match `int`
-//│ ║  
-//│ ╟──        (string) ---> (?a) <--- (int) 
-//│ ║  
-//│ ╟── (string) is the type of this `then` branch and it flows into `?a`
-//│ ║  l.1:	let boolToInt x = if x then "0" else 1
-//│ ║      	                            ^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.1:	let boolToInt x = if x then "0" else 1
-//│ ║      	                  ^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (int) is the type of this `else` branch and it flows into `?a`
-//│ ║  l.1:	let boolToInt x = if x then "0" else 1
-//│ ╙──    	                                     ^
 //│ boolToInt: bool -> (int | string)
+//│ UERR 1 errors
+//│ [string ~ [[int]], [[string]] <: α68', [[int]] <: α68']
 
 
 
@@ -22,28 +11,10 @@ let boolToInt x = if x then "0" else 1
 let destructEither x = match x with
  | Left l -> l + 1
  | Right r -> r && true
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) ---> (?a) <--- (int) 
-//│ ║  
-//│ ╟── (bool) comes from this type expression
-//│ ║  builtin:	let (&&): bool -> bool -> bool
-//│ ║          	                          ^^^^
-//│ ╟── so this operator application has type `bool` and it flows into `?a`
-//│ ║  l.3:	 | Right r -> r && true
-//│ ║      	              ^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this match expression
-//│ ║  l.1:	let destructEither x = match x with
-//│ ║      	                       ^^^^^^^^^^^^
-//│ ║      	 | Left l -> l + 1 ...
-//│ ║      	 ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this operator application has type `?a`. However `int` flows into `?a`
-//│ ║  l.2:	 | Left l -> l + 1
-//│ ║      	             ^^^^^
-//│ ╟── (int) is assumed as the type of this type reference
-//│ ║  builtin:	let (+): int -> int -> int
-//│ ╙──        	                       ^^^
 //│ destructEither: either[int, bool] -> (bool | int)
+//│ UERR 2 errors
+//│ [int ~ [[[bool]]], [[[int]]] <: α72', [[[bool]]] <: α72']
+//│ [string ~ [[int]], [[string]] <: α68', [[int]] <: α68']
 
 
 let destructEither x = if x then
@@ -51,263 +22,173 @@ let destructEither x = if x then
    | Left l -> l + 1
    | Right r -> r && true
   else x
-//│ ╔══[ERROR] Type `(_, _) either` does not match `int`
-//│ ║  
-//│ ╟──        ((_, _) either) <--- (?a) ---> (?b) <--- (int) 
-//│ ║  
-//│ ╟── ((_, _) either) is assumed as the type of this pattern
-//│ ║  l.3:	   | Left l -> l + 1
-//│ ║      	     ^^^^^^
-//│ ╟── so this reference has type `(_, _) either`. However `?a` flows into `(_, _) either`
-//│ ║  l.2:	  match x with
-//│ ║      	        ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.1:	let destructEither x = if x then
-//│ ║      	                   ^
-//│ ╟── so this `else` branch has type `?a` and it flows into `?b`
-//│ ║  l.5:	  else x
-//│ ║      	       ^^
-//│ ╟── (?b) is assumed as the type of this if-then-else expression
-//│ ║  l.1:	let destructEither x = if x then
-//│ ║      	                       ^^^^^^^^^
-//│ ║      	  match x with ...
-//│ ║      	  ^^^^^^^^^^^^^^^^
-//│ ╟── so this match expression has type `?b`
-//│ ║  l.2:	  match x with
-//│ ║      	  ^^^^^^^^^^^^
-//│ ║      	   | Left l -> l + 1 ...
-//│ ║      	   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this operator application has type `?b`. However `int` flows into `?b`
-//│ ║  l.3:	   | Left l -> l + 1
-//│ ║      	               ^^^^^
-//│ ╟── (int) is assumed as the type of this type reference
-//│ ║  builtin:	let (+): int -> int -> int
-//│ ╙──        	                       ^^^
-//│ ╔══[ERROR] Type `bool` does not match `(_, _) either`
-//│ ║  
-//│ ╟──        (bool) <--- (?a) ---> ((_, _) either) 
-//│ ║  
-//│ ╟── (bool) is the type of this if-then-else condition. However `?a` flows into `bool`
-//│ ║  l.1:	let destructEither x = if x then
-//│ ║      	                          ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.1:	let destructEither x = if x then
-//│ ║      	                   ^
-//│ ╟── so this reference has type `?a` and it flows into `(_, _) either`
-//│ ║  l.2:	  match x with
-//│ ║      	        ^
-//│ ╟── ((_, _) either) is assumed as the type of this pattern
-//│ ║  l.3:	   | Left l -> l + 1
-//│ ╙──    	     ^^^^^^
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) ---> (?a) <--- (int) 
-//│ ║  
-//│ ╟── (bool) comes from this type expression
-//│ ║  builtin:	let (&&): bool -> bool -> bool
-//│ ║          	                          ^^^^
-//│ ╟── so this operator application has type `bool` and it flows into `?a`
-//│ ║  l.4:	   | Right r -> r && true
-//│ ║      	                ^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this match expression
-//│ ║  l.2:	  match x with
-//│ ║      	  ^^^^^^^^^^^^
-//│ ║      	   | Left l -> l + 1 ...
-//│ ║      	   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this operator application has type `?a`. However `int` flows into `?a`
-//│ ║  l.3:	   | Left l -> l + 1
-//│ ║      	               ^^^^^
-//│ ╟── (int) is assumed as the type of this type reference
-//│ ║  builtin:	let (+): int -> int -> int
-//│ ╙──        	                       ^^^
 //│ destructEither: bool -> (bool | int)
+//│ UERR 8 errors
+//│ [bool ~ [[[[either['a86','b87']]]]], [[[[bool]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [[[[[either['a86','b87']]]]] ~ bool, α83' <: [[[[either['a86','b87']]]]], α83' <: [[[bool]]]]
+//│ [bool ~ [[[[int]]]], [[[[bool]]]] <: α84', [[[[int]]]] <: α84']
+//│ [int ~ [[[bool]]], [[[int]]] <: α72', [[[bool]]] <: α72']
+//│ [string ~ [[int]], [[string]] <: α68', [[int]] <: α68']
+//│ [[[[[int]]]] ~ bool, [[[[int]]]] <: α84', α83' <: [[[α84']]], α83' <: [[[bool]]]]
+//│ [int ~ [[[[either['a86','b87']]]]], [[[[int]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[[int]]] <: α85', [[[bool]]] <: α85']
 
 let succ: int -> int
   
 let test2 x = match x with
  | true -> succ x
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) <--- (?a) ---> (int) 
-//│ ║  
-//│ ╟── (bool) is assumed as the type of this pattern
-//│ ║  l.4:	 | true -> succ x
-//│ ║      	   ^^^^
-//│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
-//│ ║  l.3:	let test2 x = match x with
-//│ ║      	                    ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.3:	let test2 x = match x with
-//│ ║      	          ^
-//│ ╟── so this reference has type `?a` and it flows into `int`
-//│ ║  l.4:	 | true -> succ x
-//│ ║      	                ^
-//│ ╟── (int) is assumed as the type of this type reference
-//│ ║  l.1:	let succ: int -> int
-//│ ╙──    	          ^^^
 //│ succ: int -> int
 //│ test2: nothing -> int
+//│ UERR 9 errors
+//│ [bool ~ [[[[either['a86','b87']]]]], [[[[bool]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [[[[[either['a86','b87']]]]] ~ bool, α83' <: [[[[either['a86','b87']]]]], α83' <: [[[bool]]]]
+//│ [bool ~ [[[[int]]]], [[[[bool]]]] <: α84', [[[[int]]]] <: α84']
+//│ [int ~ [[[bool]]], [[[int]]] <: α72', [[[bool]]] <: α72']
+//│ [string ~ [[int]], [[string]] <: α68', [[int]] <: α68']
+//│ [[[[int]]] ~ bool, α97' <: [[[int]]], α97' <: [[[[bool]]]]]
+//│ [[[[[int]]]] ~ bool, [[[[int]]]] <: α84', α83' <: [[[α84']]], α83' <: [[[bool]]]]
+//│ [int ~ [[[[either['a86','b87']]]]], [[[[int]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[[int]]] <: α85', [[[bool]]] <: α85']
 
 let g x = (not x, (if true then x else 5))
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) <--- (?a) ---> (?b) <--- (int) 
-//│ ║  
-//│ ╟── (bool) comes from this type expression
-//│ ║  builtin:	let not: bool -> bool
-//│ ║          	         ^^^^
-//│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
-//│ ║  l.1:	let g x = (not x, (if true then x else 5))
-//│ ║      	               ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.1:	let g x = (not x, (if true then x else 5))
-//│ ║      	      ^
-//│ ╟── so this `then` branch has type `?a` and it flows into `?b`
-//│ ║  l.1:	let g x = (not x, (if true then x else 5))
-//│ ║      	                                ^
-//│ ╟── (?b) is assumed as the type of this if-then-else expression
-//│ ║  l.1:	let g x = (not x, (if true then x else 5))
-//│ ║      	                  ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (int) is the type of this `else` branch and it flows into `?b`
-//│ ║  l.1:	let g x = (not x, (if true then x else 5))
-//│ ╙──    	                                       ^
 //│ g: (bool & 'a) -> (bool, int | 'a,)
+//│ UERR 11 errors
+//│ [bool ~ [[[[either['a86','b87']]]]], [[[[bool]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [[[[[either['a86','b87']]]]] ~ bool, α83' <: [[[[either['a86','b87']]]]], α83' <: [[[bool]]]]
+//│ [bool ~ [[[[int]]]], [[[[bool]]]] <: α84', [[[[int]]]] <: α84']
+//│ [int ~ [[[bool]]], [[[int]]] <: α72', [[[bool]]] <: α72']
+//│ [string ~ [[int]], [[string]] <: α68', [[int]] <: α68']
+//│ [[[int]] ~ bool, [[int]] <: α104', α102' <: [[[α104']]], α102' <: [[[bool]]]]
+//│ [[[[int]]] ~ bool, α97' <: [[[int]]], α97' <: [[[[bool]]]]]
+//│ [[[[[int]]]] ~ bool, [[[[int]]]] <: α84', α83' <: [[[α84']]], α83' <: [[[bool]]]]
+//│ [bool ~ [[int]], α102' <: [[[bool]]], [[[α102']]] <: α104', [[int]] <: α104']
+//│ [int ~ [[[[either['a86','b87']]]]], [[[[int]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[[int]]] <: α85', [[[bool]]] <: α85']
 
 // Jonathan
 let confluence z = if true then z else 5
 let mkpair x y = (x, confluence y)
   
 let conflict x = mkpair (not x) x
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) <--- (?a) ---> (?b) <--- (int) 
-//│ ║  
-//│ ╟── (bool) comes from this type expression
-//│ ║  builtin:	let not: bool -> bool
-//│ ║          	         ^^^^
-//│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
-//│ ║  l.4:	let conflict x = mkpair (not x) x
-//│ ║      	                             ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.4:	let conflict x = mkpair (not x) x
-//│ ║      	             ^
-//│ ╟── so this reference has type `?a`
-//│ ║  l.4:	let conflict x = mkpair (not x) x
-//│ ║      	                                ^
-//│ ╟── so this variable has type `?a`
-//│ ║  l.2:	let mkpair x y = (x, confluence y)
-//│ ║      	             ^
-//│ ╟── so this reference has type `?a`
-//│ ║  l.2:	let mkpair x y = (x, confluence y)
-//│ ║      	                                ^
-//│ ╟── so this variable has type `?a`
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ║      	               ^
-//│ ╟── so this `then` branch has type `?a` and it flows into `?b`
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ║      	                                ^
-//│ ╟── (?b) is assumed as the type of this if-then-else expression
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ║      	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (int) is the type of this `else` branch and it flows into `?b`
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ╙──    	                                       ^
 //│ confluence: 'a -> (int | 'a)
 //│ mkpair: 'a -> 'b -> ('a, int | 'b,)
 //│ conflict: (bool & 'a) -> (bool, int | 'a,)
+//│ UERR 14 errors
+//│ [bool ~ [[[[either['a86','b87']]]]], [[[[bool]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α131', [[[α132']]] <: α131', [[[α130']]] <: α132', [[[α128']]] <: α130', α128' <: [[[bool]]]]
+//│ [[[[[either['a86','b87']]]]] ~ bool, α83' <: [[[[either['a86','b87']]]]], α83' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[[int]]] <: α72', [[[bool]]] <: α72']
+//│ [string ~ [[int]], [[string]] <: α68', [[int]] <: α68']
+//│ [[[[int]]] ~ bool, α97' <: [[[int]]], α97' <: [[[[bool]]]]]
+//│ [bool ~ [[int]], α102' <: [[[bool]]], [[[α102']]] <: α104', [[int]] <: α104']
+//│ [int ~ [[[bool]]], [[[int]]] <: α85', [[[bool]]] <: α85']
+//│ [int ~ [[[bool]]], [[int]] <: α131', α130' <: [[[[[α131']]]]], [[[α130']]] <: α132', [[[α130']]] <: α132', [[[α128']]] <: α130', α128' <: [[[bool]]]]
+//│ [bool ~ [[[[int]]]], [[[[bool]]]] <: α84', [[[[int]]]] <: α84']
+//│ [[[int]] ~ bool, [[int]] <: α104', α102' <: [[[α104']]], α102' <: [[[bool]]]]
+//│ [bool ~ [[int]], α128' <: [[[bool]]], [[[α128']]] <: α130', [[[α128']]] <: α130', α128' <: [[[[[[[α131']]]]]]], [[int]] <: α131']
+//│ [[[[[int]]]] ~ bool, [[[[int]]]] <: α84', α83' <: [[[α84']]], α83' <: [[[bool]]]]
+//│ [int ~ [[[[either['a86','b87']]]]], [[[[int]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
 
 let test =
   let f x = x in
   (f 1, f true)
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) ---> (?a) <--- (int) 
-//│ ║  
-//│ ╟── (bool) is the type of this reference and it flows into `?a`
-//│ ║  l.3:	  (f 1, f true)
-//│ ║      	          ^^^^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.2:	  let f x = x in
-//│ ║      	        ^
-//│ ╟── (int) is the type of this integer literal and it flows into `?a`
-//│ ║  l.3:	  (f 1, f true)
-//│ ╙──    	     ^
 //│ test: (bool | int, bool | int,)
+//│ UERR 15 errors
+//│ [bool ~ [[[[either['a86','b87']]]]], [[[[bool]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α131', [[[α132']]] <: α131', [[[α130']]] <: α132', [[[α128']]] <: α130', α128' <: [[[bool]]]]
+//│ [[[[[either['a86','b87']]]]] ~ bool, α83' <: [[[[either['a86','b87']]]]], α83' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[[int]]] <: α72', [[[bool]]] <: α72']
+//│ [string ~ [[int]], [[string]] <: α68', [[int]] <: α68']
+//│ [[[[int]]] ~ bool, α97' <: [[[int]]], α97' <: [[[[bool]]]]]
+//│ [bool ~ [[int]], α102' <: [[[bool]]], [[[α102']]] <: α104', [[int]] <: α104']
+//│ [int ~ [[[bool]]], [[[int]]] <: α85', [[[bool]]] <: α85']
+//│ [int ~ [[[bool]]], [[int]] <: α131', α130' <: [[[[[α131']]]]], [[[α130']]] <: α132', [[[α130']]] <: α132', [[[α128']]] <: α130', α128' <: [[[bool]]]]
+//│ [bool ~ [[[[int]]]], [[[[bool]]]] <: α84', [[[[int]]]] <: α84']
+//│ [[[int]] ~ bool, [[int]] <: α104', α102' <: [[[α104']]], α102' <: [[[bool]]]]
+//│ [bool ~ [[int]], α128' <: [[[bool]]], [[[α128']]] <: α130', [[[α128']]] <: α130', α128' <: [[[[[[[α131']]]]]]], [[int]] <: α131']
+//│ [[[[[int]]]] ~ bool, [[[[int]]]] <: α84', α83' <: [[[α84']]], α83' <: [[[bool]]]]
+//│ [int ~ [[[[either['a86','b87']]]]], [[[[int]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α143', [[[bool]]] <: α143']
 
 
 
 let wrap x = x :: []
 let rec t = wrap (if true then 1 else t)
-//│ ╔══[ERROR] Type `int` does not match `_ list`
-//│ ║  
-//│ ╟──        (int) ---> (?a) <--- (_ list) 
-//│ ║  
-//│ ╟── (int) is the type of this `then` branch and it flows into `?a`
-//│ ║  l.2:	let rec t = wrap (if true then 1 else t)
-//│ ║      	                               ^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.2:	let rec t = wrap (if true then 1 else t)
-//│ ║      	                 ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this `else` branch has type `?a`
-//│ ║  l.2:	let rec t = wrap (if true then 1 else t)
-//│ ║      	                                      ^
-//│ ╟── so this recursive binding has type `?a`
-//│ ║  l.2:	let rec t = wrap (if true then 1 else t)
-//│ ║      	        ^
-//│ ╟── so this application has type `?a`. However `_ list` flows into `?a`
-//│ ║  l.2:	let rec t = wrap (if true then 1 else t)
-//│ ║      	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ list) is assumed as the type of this operator application
-//│ ║  l.1:	let wrap x = x :: []
-//│ ╙──    	             ^^^^^^^
 //│ wrap: 'a -> list['a]
 //│ t: 't
 //│   where
 //│     't :> list[int | 't]
+//│ UERR 19 errors
+//│ [bool ~ [[[[either['a86','b87']]]]], [[[[bool]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α131', [[[α132']]] <: α131', [[[α130']]] <: α132', [[[α128']]] <: α130', α128' <: [[[bool]]]]
+//│ [[[[[either['a86','b87']]]]] ~ bool, α83' <: [[[[either['a86','b87']]]]], α83' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[[int]]] <: α72', [[[bool]]] <: α72']
+//│ [string ~ [[int]], [[string]] <: α68', [[int]] <: α68']
+//│ [[[[int]]] ~ bool, α97' <: [[[int]]], α97' <: [[[[bool]]]]]
+//│ [int ~ [[[[list['a158']]]]], [[int]] <: α160', [[[t156']]] <: α160', [[[[list['a158']]]]] <: t156']
+//│ [int ~ [[[[list['a158']]]]], [[int]] <: α160', t156' <: [[[α160']]], [[[[t156']]]] <: α157', [[[[t156']]]] <: α157', [[[[list['a158']]]]] <: t156']
+//│ [int ~ [[[[list['a158']]]]], [[[int]]] <: α157', t156' <: [[[[α157']]]], t156' <: [[[α160']]], [[[t156']]] <: α160', [[[[list['a158']]]]] <: t156']
+//│ [bool ~ [[int]], α102' <: [[[bool]]], [[[α102']]] <: α104', [[int]] <: α104']
+//│ [int ~ [[[bool]]], [[[int]]] <: α85', [[[bool]]] <: α85']
+//│ [int ~ [[[bool]]], [[int]] <: α131', α130' <: [[[[[α131']]]]], [[[α130']]] <: α132', [[[α130']]] <: α132', [[[α128']]] <: α130', α128' <: [[[bool]]]]
+//│ [int ~ [[[[list['a158']]]]], [[int]] <: α160', t156' <: [[[α160']]], [[[[[[t156']]]]]] <: 'a158', [[[α157']]] <: 'a158', [[[[t156']]]] <: α157', [[[[list['a158']]]]] <: t156']
+//│ [bool ~ [[[[int]]]], [[[[bool]]]] <: α84', [[[[int]]]] <: α84']
+//│ [[[int]] ~ bool, [[int]] <: α104', α102' <: [[[α104']]], α102' <: [[[bool]]]]
+//│ [bool ~ [[int]], α128' <: [[[bool]]], [[[α128']]] <: α130', [[[α128']]] <: α130', α128' <: [[[[[[[α131']]]]]]], [[int]] <: α131']
+//│ [[[[[int]]]] ~ bool, [[[[int]]]] <: α84', α83' <: [[[α84']]], α83' <: [[[bool]]]]
+//│ [int ~ [[[[either['a86','b87']]]]], [[[[int]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α143', [[[bool]]] <: α143']
 
 let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 let weird x = (x + 1, length x)
-//│ ╔══[ERROR] Type `_ list` does not match `int`
-//│ ║  
-//│ ╟──        (_ list) <--- (?a) ---> (int) 
-//│ ║  
-//│ ╟── (_ list) is assumed as the type of this pattern
-//│ ║  l.1:	let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
-//│ ║      	                                                                ^^
-//│ ╟── so this reference has type `_ list`
-//│ ║  l.1:	let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
-//│ ║      	                          ^^
-//│ ╟── so this variable has type `_ list`
-//│ ║  l.1:	let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
-//│ ║      	               ^^
-//│ ╟── so this reference has type `_ list`. However `?a` flows into `_ list`
-//│ ║  l.2:	let weird x = (x + 1, length x)
-//│ ║      	                             ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.2:	let weird x = (x + 1, length x)
-//│ ║      	          ^
-//│ ╟── so this reference has type `?a` and it flows into `int`
-//│ ║  l.2:	let weird x = (x + 1, length x)
-//│ ║      	               ^
-//│ ╟── (int) is assumed as the type of this type reference
-//│ ║  builtin:	let (+): int -> int -> int
-//│ ╙──        	         ^^^
 //│ length: list[?] -> int
 //│ weird: nothing -> (int, int,)
+//│ UERR 21 errors
+//│ [bool ~ [[[[either['a86','b87']]]]], [[[[bool]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α131', [[[α132']]] <: α131', [[[α130']]] <: α132', [[[α128']]] <: α130', α128' <: [[[bool]]]]
+//│ [[[[[either['a86','b87']]]]] ~ bool, α83' <: [[[[either['a86','b87']]]]], α83' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[[int]]] <: α72', [[[bool]]] <: α72']
+//│ [string ~ [[int]], [[string]] <: α68', [[int]] <: α68']
+//│ [[[[int]]] ~ bool, α97' <: [[[int]]], α97' <: [[[[bool]]]]]
+//│ [int ~ [[[[list['a158']]]]], [[int]] <: α160', [[[t156']]] <: α160', [[[[list['a158']]]]] <: t156']
+//│ [list['a187'] ~ [[[int]]], [[[[list['a187']]]]] <: α186', [[[[α182']]]] <: α186', α182' <: [[[int]]]]
+//│ [int ~ [[[[list['a158']]]]], [[int]] <: α160', t156' <: [[[α160']]], [[[[t156']]]] <: α157', [[[[t156']]]] <: α157', [[[[list['a158']]]]] <: t156']
+//│ [int ~ [[[[list['a158']]]]], [[[int]]] <: α157', t156' <: [[[[α157']]]], t156' <: [[[α160']]], [[[t156']]] <: α160', [[[[list['a158']]]]] <: t156']
+//│ [bool ~ [[int]], α102' <: [[[bool]]], [[[α102']]] <: α104', [[int]] <: α104']
+//│ [int ~ [[[bool]]], [[[int]]] <: α85', [[[bool]]] <: α85']
+//│ [int ~ [[[bool]]], [[int]] <: α131', α130' <: [[[[[α131']]]]], [[[α130']]] <: α132', [[[α130']]] <: α132', [[[α128']]] <: α130', α128' <: [[[bool]]]]
+//│ [int ~ [[[[list['a158']]]]], [[int]] <: α160', t156' <: [[[α160']]], [[[[[[t156']]]]]] <: 'a158', [[[α157']]] <: 'a158', [[[[t156']]]] <: α157', [[[[list['a158']]]]] <: t156']
+//│ [bool ~ [[[[int]]]], [[[[bool]]]] <: α84', [[[[int]]]] <: α84']
+//│ [[[int]] ~ bool, [[int]] <: α104', α102' <: [[[α104']]], α102' <: [[[bool]]]]
+//│ [bool ~ [[int]], α128' <: [[[bool]]], [[[α128']]] <: α130', [[[α128']]] <: α130', α128' <: [[[[[[[α131']]]]]]], [[int]] <: α131']
+//│ [[[[[int]]]] ~ bool, [[[[int]]]] <: α84', α83' <: [[[α84']]], α83' <: [[[bool]]]]
+//│ [[[[int]]] ~ list['a187'], α182' <: [[[int]]], [[α182'] - ([α182'] -> α191') ~ ([list['a187']] -> α189') - [list['a187']], length185' <: [[[([α182'] -> α191')]]], length185' <: [[[([list['a187']] -> α189')]]]]]
+//│ [int ~ [[[[either['a86','b87']]]]], [[[[int]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α143', [[[bool]]] <: α143']
 
-:e
+
 let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│ ╔══[ERROR] Type `string` does not match `_ list`
-//│ ║  
-//│ ╟──        (string) <--- (?a) ---> (_ list) 
-//│ ║  
-//│ ╟── (string) is the type of this string literal. However `?a` flows into `string`
-//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│ ║      	                             ^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this reference
-//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│ ║      	                   ^^
-//│ ╟── (?a) is the assumed type of this pattern and it flows into `_ list`
-//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│ ╙──    	                                               ^^
 //│ len: nothing -> int
+//│ UERR 22 errors
+//│ [bool ~ [[[[either['a86','b87']]]]], [[[[bool]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α131', [[[α132']]] <: α131', [[[α130']]] <: α132', [[[α128']]] <: α130', α128' <: [[[bool]]]]
+//│ [[[[[either['a86','b87']]]]] ~ bool, α83' <: [[[[either['a86','b87']]]]], α83' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[[int]]] <: α72', [[[bool]]] <: α72']
+//│ [string ~ [[int]], [[string]] <: α68', [[int]] <: α68']
+//│ [[[[int]]] ~ bool, α97' <: [[[int]]], α97' <: [[[[bool]]]]]
+//│ [int ~ [[[[list['a158']]]]], [[int]] <: α160', [[[t156']]] <: α160', [[[[list['a158']]]]] <: t156']
+//│ [list['a187'] ~ [[[int]]], [[[[list['a187']]]]] <: α186', [[[[α182']]]] <: α186', α182' <: [[[int]]]]
+//│ [int ~ [[[[list['a158']]]]], [[int]] <: α160', t156' <: [[[α160']]], [[[[t156']]]] <: α157', [[[[t156']]]] <: α157', [[[[list['a158']]]]] <: t156']
+//│ [int ~ [[[[list['a158']]]]], [[[int]]] <: α157', t156' <: [[[[α157']]]], t156' <: [[[α160']]], [[[t156']]] <: α160', [[[[list['a158']]]]] <: t156']
+//│ [bool ~ [[int]], α102' <: [[[bool]]], [[[α102']]] <: α104', [[int]] <: α104']
+//│ [int ~ [[[bool]]], [[[int]]] <: α85', [[[bool]]] <: α85']
+//│ [int ~ [[[bool]]], [[int]] <: α131', α130' <: [[[[[α131']]]]], [[[α130']]] <: α132', [[[α130']]] <: α132', [[[α128']]] <: α130', α128' <: [[[bool]]]]
+//│ [int ~ [[[[list['a158']]]]], [[int]] <: α160', t156' <: [[[α160']]], [[[[[[t156']]]]]] <: 'a158', [[[α157']]] <: 'a158', [[[[t156']]]] <: α157', [[[[list['a158']]]]] <: t156']
+//│ [bool ~ [[[[int]]]], [[[[bool]]]] <: α84', [[[[int]]]] <: α84']
+//│ [[[int]] ~ bool, [[int]] <: α104', α102' <: [[[α104']]], α102' <: [[[bool]]]]
+//│ [bool ~ [[int]], α128' <: [[[bool]]], [[[α128']]] <: α130', [[[α128']]] <: α130', α128' <: [[[[[[[α131']]]]]]], [[int]] <: α131']
+//│ [[[[[list['a199']]]]] ~ string, α197' <: [[[[list['a199']]]]], α197' <: [[[string]]]]
+//│ [[[[[int]]]] ~ bool, [[[[int]]]] <: α84', α83' <: [[[α84']]], α83' <: [[[bool]]]]
+//│ [[[[int]]] ~ list['a187'], α182' <: [[[int]]], [[α182'] - ([α182'] -> α191') ~ ([list['a187']] -> α189') - [list['a187']], length185' <: [[[([α182'] -> α191')]]], length185' <: [[[([list['a187']] -> α189')]]]]]
+//│ [int ~ [[[[either['a86','b87']]]]], [[[[int]]]] <: α84', [[[α83']]] <: α84', α83' <: [[[[either['a86','b87']]]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α143', [[[bool]]] <: α143']

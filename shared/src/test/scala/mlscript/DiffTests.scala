@@ -729,9 +729,10 @@ class DiffTests
             if (mode.unify) {
               val temp = typer.dbg
               typer.dbg = mode.unifyDbg
-              typer.unifyTypes()(ctx, raise)
-              typer.showUnificationDebugInfo()
-              if (mode.unifyDbg) typer.reportUnificationDebugInfo()(ctx, raise)
+              typer.newUnifyTypes()(ctx, raise)
+              val errors = typer.outputUnificationErrors()
+              if (errors.nonEmpty) typingOutputs += L(errors)
+//              if (mode.unifyDbg) typer.reportUnificationDebugInfo()(ctx, raise)
               typer.TypeVariable.clearCollectedTypeVars()
               typer.dbg = temp
             }

@@ -4,7 +4,7 @@ import mlscript.Message.MessageContext
 import mlscript.utils._
 import mlscript.utils.shorthands._
 
-import scala.collection.mutable.{Set => MutSet, Map => MutMap}
+import scala.collection.mutable.{Set => MutSet, Map => MutMap, ArrayDeque => MutQueue}
 
 trait UnificationSolver extends TyperDatatypes {
   self: Typer =>
@@ -230,6 +230,11 @@ trait UnificationSolver extends TyperDatatypes {
     }
   }
 
+  def registerNewUnificationError(u: NewUnification): Unit = {
+    println(s"UERR $u")
+    newErrorCache += u
+  }
+
   def registerUnificationError(u: Unification): Unit = {
     val (a, b, level, length) = (u.a, u.b, u.unificationLevel, u.reason.length)
 
@@ -368,4 +373,134 @@ trait UnificationSolver extends TyperDatatypes {
       makeMessagesUR(secondUR, provs)
     }
   }
+
+  val newErrorCache: MutSet[NewUnification] = MutSet()
+
+  // Unify all type variables crated by accessing them from the hook
+  def newUnifyTypes()(implicit ctx: Ctx, raise: Raise): Unit = {
+    errorCache.clear()
+    cache.clear()
+
+    // register all bounds as unifications
+    TypeVariable.createdTypeVars.foreach(tv => {
+      tv.lowerBounds.foreach(tv.lbs ::= Constraint(_, tv))
+      tv.upperBounds.foreach(tv.ubs ::= Constraint(tv, _))
+    })
+
+    TypeVariable.createdTypeVars.foreach(tv => {
+      val cache: MutSet[(ST, ST)] = MutSet()
+      tv.lbs.foreach{ case c@Constraint(a, b) => newUnifyTypes(NewUnification(a, b, c), cache)}
+      tv.ubs.foreach{ case c@Constraint(a, b) => newUnifyTypes(NewUnification(a, b, c), cache)}
+    })
+
+    errorCache.values
+      .toSortedSet(Ordering.by(u => u.a.toString ++ u.b.toString))
+      .foreach(reportUnificationError)
+    errorCache.clear()
+    cache.clear()
+  }
+  def newUnifyTypes(u: NewUnification, cache: MutSet[(ST, ST)], level: Int = 0)
+                (implicit ctx: Ctx, raise: Raise): Unit =
+    trace(s"U $u") {
+      val (a, b, flow) = NewUnification.unapply(u).get
+
+      if (flow.throughFlow) return
+
+      val st1 = a.unwrapProvs
+      val st2 = b.unwrapProvs
+
+      // unification doesn't have an ordering
+      /** Cache unified types and their nesting level. Nesting level is needed because
+        * the type arguments are directly constrained but we also want to unify them
+        * through constructor data flow. So we need to consider the level in cache.
+        */
+      if (cache((st1, st2)) || cache(st2, st1)) {
+        println(s"U Cached $st1 = $st2")
+        return
+      }
+
+      cache += ((a, b))
+      cache += ((b, a))
+
+      (st1, st2) match {
+        case (tr1: TypeRef, tr2: TypeRef) if tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length =>
+          tr1.targs.zip(tr2.targs).foreach { case (arg1, arg2) =>
+            newUnifyTypes(NewUnification(arg1, arg2, Constructor(arg1, arg2, tr1, tr2, flow)), cache, level + 1)
+          }
+        case (_: TypeRef, _: TypeRef) => registerNewUnificationError(u)
+        case (tup1: TupleType, tup2: TupleType) if tup1.fields.length === tup2.fields.length =>
+            tup1.fields.map(_._2.ub).zip(tup2.fields.map(_._2.ub)).foreach {
+              case (arg1, arg2) => newUnifyTypes(NewUnification(arg1, arg2, Constructor(arg1, arg2, tup1, tup2, flow)), cache, level + 1)
+            }
+        case (_: TupleType, _: TupleType) => registerNewUnificationError(u)
+        case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
+          newUnifyTypes(NewUnification(arg1, arg2, Constructor(arg1, arg2, st1, st2, flow)), cache, level + 1)
+          newUnifyTypes(NewUnification(res1, res2, Constructor(arg1, arg2, st1, st2, flow)), cache, level + 1)
+        case (_: FunctionType, _: FunctionType) => registerNewUnificationError(u)
+        case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
+          // because bounds are added to both sides any a1 <: a2 and a2 :> a1
+          // all type variables will become equal to each other
+          // TODO: find a way to not catch those or catch recursive types differently
+          // registerUnificationError(u)
+          ()
+        case (tv: TypeVariable, st) =>
+          tv.lbs.foreach(c => newUnifyTypes(NewUnification(c.a, st, flow.addLeft(c)), cache))
+          tv.ubs.foreach(c => newUnifyTypes(NewUnification(c.b, st, flow.addLeft(c)), cache))
+        case (st, tv: TypeVariable) =>
+          tv.lbs.foreach(c => newUnifyTypes(NewUnification(st, c.a, flow.addRight(c)), cache))
+          tv.ubs.foreach(c => newUnifyTypes(NewUnification(st, c.b, flow.addRight(c)), cache))
+        case _ => registerNewUnificationError(u)
+      }
+    }()
+
+  def outputUnificationErrors(): Ls[Str] = {
+    if (newErrorCache.nonEmpty) {
+      s"UERR ${newErrorCache.size} errors" :: newErrorCache.map(_.toString()).toList
+    } else {
+      Ls()
+    }
+  }
+
+  case class NewUnification(a: ST, b: ST, flow: DataFlow) {
+    override def toString: Str = s"[$a ~ $b, $flow]"
+  }
+
+  class DataFlow {
+    override def toString: Str = this match {
+      case Constraint(a, b) => s"$a <: $b"
+      case Sequence(flow) => flow.mkString(", ")
+      case Constructor(a, b, ctora, ctorb, flow) => s"[$a - $ctora ~ $ctorb - $b, $flow]"
+    }
+
+    def addLeft(c: Constraint): Sequence = this match {
+      case c1: Constraint => Sequence(MutQueue(c, c1))
+      case Sequence(flow) => Sequence(c +: flow)
+      case c1: Constructor => Sequence(MutQueue(c, c1))
+    }
+
+    def addRight(c: Constraint): Sequence = this match {
+      case c1: Constraint => Sequence(MutQueue(c1, c))
+      case Sequence(flow) => Sequence(flow :+ c)
+      case c1: Constructor => Sequence(MutQueue(c1, c))
+    }
+
+    def nestingLevel: Int = this match {
+      case c: Constraint => 0
+      case Sequence(flow) => flow.map(_.nestingLevel).max
+      case ctor: Constructor => 1 + ctor.flow.nestingLevel
+    }
+
+    def throughFlow: Bool = this match {
+      case Sequence(flow) => flow.iterator.sliding(2).exists {
+        case Seq(Constraint(_, b), Constraint(b1, _)) => b.unwrapProvs === b1.unwrapProvs
+        case _ => false
+      }
+      case ctor: Constructor => ctor.flow.throughFlow
+      case _ => false
+    }
+  }
+
+  case class Constraint(a: ST, b: ST) extends DataFlow
+  case class Sequence(flow: MutQueue[DataFlow]) extends DataFlow
+  case class Constructor(a: ST, b: ST, ctora: ST, ctorb: ST, flow: DataFlow) extends DataFlow
 }

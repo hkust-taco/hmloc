@@ -19,61 +19,6 @@ let padZero l1 l2 =
     else (l1, l2);;
 let rec removeZero l =
   match l with | [] -> [] | h::t -> if h = 0 then removeZero t else h :: t;;
-//│ ╔══[ERROR] Type `_ * _ list` does not match `_ list * _`
-//│ ║  
-//│ ╟──        (_ * _ list) ---> (?a) <--- (_ list * _) 
-//│ ║  
-//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.5:	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
-//│ ║      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.4:	  if (List.length l1) > (List.length l2)
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `?a`. However `_ list * _` flows into `?a`
-//│ ║  l.7:	    if (List.length l1) < (List.length l2)
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ list * _) is assumed as the type of this tuple literal
-//│ ║  l.8:	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│ ╙──    	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ list * _`
-//│ ║  
-//│ ╟──        (_ * _) ---> (?a) <--- (_ list * _) 
-//│ ║  
-//│ ╟── (_ * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.9:	    else (l1, l2);;
-//│ ║      	         ^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.7:	    if (List.length l1) < (List.length l2)
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ list * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.8:	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│ ╙──    	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ * _ list`
-//│ ║  
-//│ ╟──        (_ * _) ---> (?a) <--- (_ * _ list) 
-//│ ║  
-//│ ╟── (_ * _) is assumed as the type of this tuple literal
-//│ ║  l.9:	    else (l1, l2);;
-//│ ║      	         ^^^^^^^^
-//│ ╟── so this if-then-else expression has type `_ * _` and it flows into `?a`
-//│ ║  l.7:	    if (List.length l1) < (List.length l2)
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.4:	  if (List.length l1) > (List.length l2)
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.5:	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
-//│ ╙──    	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ clone: 'a -> int -> list['a]
 //│ addTuple: (int, int,) -> int
 //│ padZero: (list['a] & 'b) -> (list['c] & 'd) -> (list[int | 'a] | 'b, list[int | 'c] | 'd,)
@@ -87,81 +32,10 @@ let bigAdd l1 l2 =
     let args = List.map addTuple (List.combine l1 l2) in
     let (_,res) = List.fold_left f base args in res in
   removeZero (add (padZero l1 l2));;
-//│ ╔══[ERROR] Type `_ * _` does not match `_ list * _`
-//│ ║  
-//│ ╟──        (_ * _) ---> (?a) <--- (_ list * _) 
-//│ ║  
-//│ ╟── (_ * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.-63:	    else (l1, l2);;
-//│ ║        	         ^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.-65:	    if (List.length l1) < (List.length l2)
-//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ list * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.-64:	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│ ╙──      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ list * _` does not match `_ * _ list`
-//│ ║  
-//│ ╟──        (_ list * _) ---> (?a) <--- (_ * _ list) 
-//│ ║  
-//│ ╟── (_ list * _) is assumed as the type of this tuple literal
-//│ ║  l.-64:	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│ ║        	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `_ list * _` and it flows into `?a`
-//│ ║  l.-65:	    if (List.length l1) < (List.length l2)
-//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.-68:	  if (List.length l1) > (List.length l2)
-//│ ║        	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.-67:	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
-//│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ * _ list`
-//│ ║  
-//│ ╟──        (_ * _) ---> (?a) <--- (_ * _ list) 
-//│ ║  
-//│ ╟── (_ * _) is assumed as the type of this tuple literal
-//│ ║  l.-63:	    else (l1, l2);;
-//│ ║        	         ^^^^^^^^
-//│ ╟── so this if-then-else expression has type `_ * _` and it flows into `?a`
-//│ ║  l.-65:	    if (List.length l1) < (List.length l2)
-//│ ║        	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.-68:	  if (List.length l1) > (List.length l2)
-//│ ║        	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.-67:	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
-//│ ╙──      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `int` does not match `_ * _`
-//│ ║  
-//│ ╟──        (int) <--- (?a) ---> (_ * _) 
-//│ ║  
-//│ ╟── (int) comes from this type expression
-//│ ║  builtin:	let (+): int -> int -> int
-//│ ║          	         ^^^
-//│ ╟── so this reference has type `int`. However `?a` flows into `int`
-//│ ║  l.3:	    let f a x = (a + x) mod 10 in
-//│ ║      	                 ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.3:	    let f a x = (a + x) mod 10 in
-//│ ║      	          ^
-//│ ╟── so this application has type `?a` and it flows into `_ * _`
-//│ ║  l.6:	    let (_,res) = List.fold_left f base args in res in
-//│ ║      	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _) is assumed as the type of this pattern
-//│ ║  l.6:	    let (_,res) = List.fold_left f base args in res in
-//│ ╙──    	        ^^^^^^^
 //│ bigAdd: list[int] -> list[int] -> list[nothing]
+//│ UERR 2 errors
+//│ [int ~ [[[([α239'], [α240'],)]]], α233' <: [[[[int]]]], [[α233']] <: α217', [[α233']] <: α217', α233' <: [[[([α239'], [α240'],)]]]]
+//│ [([α239'], [α240'],) ~ [[[int]]], α233' <: [[[([α239'], [α240'],)]]], α233' <: [[α217']], [[α233']] <: α217', [[[int]]] <: α233']
 
 ////////// file 0003
 
@@ -184,61 +58,15 @@ let padZero l1 l2 =
      if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
 let rec removeZero l =
   match l with | [] -> [] | 0::t -> removeZero t | h::t -> l;;
-//│ ╔══[ERROR] Type `_ * _ list` does not match `_ list * _`
-//│ ║  
-//│ ╟──        (_ * _ list) ---> (?a) <--- (_ list * _) 
-//│ ║  
-//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.9:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║      	                          ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.9:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║      	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ list * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.9:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ╙──    	                                                      ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ list * _` does not match `_ * _`
-//│ ║  
-//│ ╟──        (_ list * _) ---> (?a) <--- (_ * _) 
-//│ ║  
-//│ ╟── (_ list * _) is assumed as the type of this tuple literal
-//│ ║  l.9:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║      	                                                      ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `_ list * _` and it flows into `?a`
-//│ ║  l.9:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║      	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.5:	  if numZeros = 0
-//│ ║      	  ^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, l2) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.6:	  then (l1, l2)
-//│ ╙──    	       ^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _ list` does not match `_ * _`
-//│ ║  
-//│ ╟──        (_ * _ list) ---> (?a) <--- (_ * _) 
-//│ ║  
-//│ ╟── (_ * _ list) is assumed as the type of this tuple literal
-//│ ║  l.9:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║      	                          ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `_ * _ list` and it flows into `?a`
-//│ ║  l.9:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║      	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.5:	  if numZeros = 0
-//│ ║      	  ^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, l2) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.6:	  then (l1, l2)
-//│ ╙──    	       ^^^^^^^^
 //│ clone: 'a -> int -> list['a]
 //│ padZero: (list['a] & 'b) -> (list['c] & 'd) -> (list[int | 'a] | 'b, list[int | 'c] | 'd,)
 //│ removeZero: (list[int] & 'a & 'b) -> 'a
 //│   where
 //│     'a := 'b
 //│     'b := 'a
+//│ UERR 2 errors
+//│ [int ~ [[[([α239'], [α240'],)]]], α233' <: [[[[int]]]], [[α233']] <: α217', [[α233']] <: α217', α233' <: [[[([α239'], [α240'],)]]]]
+//│ [([α239'], [α240'],) ~ [[[int]]], α233' <: [[[([α239'], [α240'],)]]], α233' <: [[α217']], [[α233']] <: α217', [[[int]]] <: α233']
 
 :unify
 let bigAdd l1 l2 =
@@ -257,318 +85,17 @@ let bigAdd l1 l2 =
     let args = List.rev (List.combine l1 l2) in
     let (_,res) = List.fold_left f base args in res in
   removeZero (add (padZero l1 l2));;
-//│ ╔══[ERROR] Type `_ list * _` does not match `_ * _ list`
-//│ ║  
-//│ ╟──        (_ list * _) ---> (?a) <--- (_ * _ list) 
-//│ ║  
-//│ ╟── (_ list * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.-59:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║        	                                                      ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.-59:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.-59:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ╙──      	                          ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `_ * _`
-//│ ║  
-//│ ╟── this tuple literal has type `int * _ list`
-//│ ║  l.13:	    let base = (0, []) in
-//│ ║       	               ^^^^^^^
-//│ ╟── so this reference has type `int * _ list`
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ║       	                                   ^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this application has type `_ * _`
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this pattern has type `_ * _`
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ╙──     	        ^^^^^^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `int * _ list`
-//│ ║  
-//│ ╟──        (int * _ list) ---> (?a) <--- (int * _ list) 
-//│ ║  
-//│ ╟── (int * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.13:	    let base = (0, []) in
-//│ ║       	               ^^^^^^^
-//│ ╟── (?a) is assumed as the type of this reference
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ║       	                                   ^^^^
-//│ ╟── so this let expression has type `?a`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	      if x = [] ...
-//│ ║      	      ^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `?a`. However `int * _ list` flows into `?a`
-//│ ║  l.5:	      if x = []
-//│ ║      	      ^^^^^^^^^
-//│ ║      	      then (0, (carry :: currentSum)) ...
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (int * _ list) is assumed as the type of this tuple literal
-//│ ║  l.6:	      then (0, (carry :: currentSum))
-//│ ╙──    	           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ list * _` does not match `_ * _`
-//│ ║  
-//│ ╟──        (_ list * _) ---> (?a) <--- (_ * _) 
-//│ ║  
-//│ ╟── (_ list * _) is assumed as the type of this tuple literal
-//│ ║  l.-59:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║        	                                                      ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `_ list * _` and it flows into `?a`
-//│ ║  l.-59:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.-63:	  if numZeros = 0
-//│ ║        	  ^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, l2) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.-62:	  then (l1, l2)
-//│ ╙──      	       ^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _ list` does not match `_ * _`
-//│ ║  
-//│ ╟──        (_ * _ list) ---> (?a) <--- (_ * _) 
-//│ ║  
-//│ ╟── (_ * _ list) is assumed as the type of this tuple literal
-//│ ║  l.-59:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║        	                          ^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `_ * _ list` and it flows into `?a`
-//│ ║  l.-59:	     if numZeros > 0 then (l1, (listZeros @ l2)) else ((listZeros @ l1), l2));;
-//│ ║        	     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.-63:	  if numZeros = 0
-//│ ║        	  ^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, l2) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.-62:	  then (l1, l2)
-//│ ╙──      	       ^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ list`
-//│ ║  
-//│ ╟──        (_ * _) <--- (?a) ---> (?b) <--- (_ list) 
-//│ ║  
-//│ ╟── (_ * _) is assumed as the type of this pattern
-//│ ║  l.8:	        (let (toSum1,toSum2) = x in
-//│ ║      	             ^^^^^^^^^^^^^^^
-//│ ╟── so this reference has type `_ * _`. However `?a` flows into `_ * _`
-//│ ║  l.8:	        (let (toSum1,toSum2) = x in
-//│ ║      	                               ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.3:	    let f a x =
-//│ ║      	            ^
-//│ ╟── (?a) is the assumed type of this reference and it flows into `?b`
-//│ ║  l.5:	      if x = []
-//│ ║      	         ^
-//│ ╟── (_ list) is the type of this reference and it flows into `?b`
-//│ ║  l.5:	      if x = []
-//│ ╙──    	             ^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `_ * _`
-//│ ║  
-//│ ╟── this tuple literal has type `int * _ list`
-//│ ║  l.6:	      then (0, (carry :: currentSum))
-//│ ║      	           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `int * _ list`
-//│ ║  l.5:	      if x = []
-//│ ║      	      ^^^^^^^^^
-//│ ║      	      then (0, (carry :: currentSum)) ...
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `int * _ list`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	      if x = [] ...
-//│ ║      	      ^^^^^^^^^^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this application has type `_ * _`
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this pattern has type `_ * _`
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ╙──     	        ^^^^^^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `int * _ list`
-//│ ║  
-//│ ╟──        (int * _ list) ---> (?a) <--- (int * _ list) 
-//│ ║  
-//│ ╟── (int * _ list) is assumed as the type of this tuple literal
-//│ ║  l.12:	         (carry, (valueToAddToArray :: currentSum))) in
-//│ ║       	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `int * _ list`
-//│ ║  l.8:	        (let (toSum1,toSum2) = x in
-//│ ║      	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	         let intermediateValue = (toSum1 + toSum2) + carry in ...
-//│ ║      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `int * _ list` and it flows into `?a`
-//│ ║  l.5:	      if x = []
-//│ ║      	      ^^^^^^^^^
-//│ ║      	      then (0, (carry :: currentSum)) ...
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this let expression
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	      if x = [] ...
-//│ ║      	      ^^^^^^^^^^^^^
-//│ ╟── so this reference has type `?a`. However `int * _ list` flows into `?a`
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ║       	                                   ^^^^
-//│ ╟── (int * _ list) is assumed as the type of this tuple literal
-//│ ║  l.13:	    let base = (0, []) in
-//│ ╙──     	               ^^^^^^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `_ * _`
-//│ ║  
-//│ ╟── this tuple literal has type `int * _ list`
-//│ ║  l.12:	         (carry, (valueToAddToArray :: currentSum))) in
-//│ ║       	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `int * _ list`
-//│ ║  l.8:	        (let (toSum1,toSum2) = x in
-//│ ║      	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	         let intermediateValue = (toSum1 + toSum2) + carry in ...
-//│ ║      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `int * _ list`
-//│ ║  l.5:	      if x = []
-//│ ║      	      ^^^^^^^^^
-//│ ║      	      then (0, (carry :: currentSum)) ...
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `int * _ list`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	      if x = [] ...
-//│ ║      	      ^^^^^^^^^^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this application has type `_ * _`
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this pattern has type `_ * _`
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ╙──     	        ^^^^^^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `int * _ list`
-//│ ║  
-//│ ╟──        (int * _ list) ---> (?a) <--- (int * _ list) 
-//│ ║  
-//│ ╟── (int * _ list) is assumed as the type of this tuple literal
-//│ ║  l.12:	         (carry, (valueToAddToArray :: currentSum))) in
-//│ ║       	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `int * _ list` and it flows into `?a`
-//│ ║  l.8:	        (let (toSum1,toSum2) = x in
-//│ ║      	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	         let intermediateValue = (toSum1 + toSum2) + carry in ...
-//│ ║      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.5:	      if x = []
-//│ ║      	      ^^^^^^^^^
-//│ ║      	      then (0, (carry :: currentSum)) ...
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (int * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.6:	      then (0, (carry :: currentSum))
-//│ ╙──    	           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `int * _ list`
-//│ ║  
-//│ ╟── this pattern has type `_ * _`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	          ^^^^^^^^^^^^^^^^^^
-//│ ╟── so this reference has type `_ * _`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	                               ^
-//│ ╟── so this variable has type `_ * _`
-//│ ║  l.3:	    let f a x =
-//│ ║      	          ^
-//│ ╟── TODO No common prov
-//│ ╟── because this reference has type `int * _ list`
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ║       	                                   ^^^^
-//│ ╟── because this tuple literal has type `int * _ list`
-//│ ║  l.13:	    let base = (0, []) in
-//│ ╙──     	               ^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ * _`
-//│ ║  
-//│ ╟──        (_ * _) <--- (?a) ---> (_ * _) 
-//│ ║  
-//│ ╟── (_ * _) is assumed as the type of this pattern
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	          ^^^^^^^^^^^^^^^^^^
-//│ ╟── so this reference has type `_ * _`. However `?a` flows into `_ * _`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	                               ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.3:	    let f a x =
-//│ ║      	          ^
-//│ ╟── so this application has type `?a` and it flows into `_ * _`
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ║       	                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _) is assumed as the type of this pattern
-//│ ║  l.15:	    let (_,res) = List.fold_left f base args in res in
-//│ ╙──     	        ^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `int * _ list`
-//│ ║  
-//│ ╟── this pattern has type `_ * _`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	          ^^^^^^^^^^^^^^^^^^
-//│ ╟── so this reference has type `_ * _`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	                               ^
-//│ ╟── so this variable has type `_ * _`
-//│ ║  l.3:	    let f a x =
-//│ ║      	          ^
-//│ ╟── TODO No common prov
-//│ ╟── because this let expression has type `int * _ list`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	      if x = [] ...
-//│ ║      	      ^^^^^^^^^^^^^
-//│ ╟── because this if-then-else expression has type `int * _ list`
-//│ ║  l.5:	      if x = []
-//│ ║      	      ^^^^^^^^^
-//│ ║      	      then (0, (carry :: currentSum)) ...
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this tuple literal has type `int * _ list`
-//│ ║  l.6:	      then (0, (carry :: currentSum))
-//│ ╙──    	           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `int * _ list`
-//│ ║  
-//│ ╟── this pattern has type `_ * _`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	          ^^^^^^^^^^^^^^^^^^
-//│ ╟── so this reference has type `_ * _`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	                               ^
-//│ ╟── so this variable has type `_ * _`
-//│ ║  l.3:	    let f a x =
-//│ ║      	          ^
-//│ ╟── TODO No common prov
-//│ ╟── because this let expression has type `int * _ list`
-//│ ║  l.4:	      let (carry,currentSum) = a in
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	      if x = [] ...
-//│ ║      	      ^^^^^^^^^^^^^
-//│ ╟── because this if-then-else expression has type `int * _ list`
-//│ ║  l.5:	      if x = []
-//│ ║      	      ^^^^^^^^^
-//│ ║      	      then (0, (carry :: currentSum)) ...
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this let expression has type `int * _ list`
-//│ ║  l.8:	        (let (toSum1,toSum2) = x in
-//│ ║      	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	         let intermediateValue = (toSum1 + toSum2) + carry in ...
-//│ ║      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this tuple literal has type `int * _ list`
-//│ ║  l.12:	         (carry, (valueToAddToArray :: currentSum))) in
-//│ ╙──     	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ list`
-//│ ║  
-//│ ╟──        (_ * _) ---> (?a) <--- (_ list) 
-//│ ║  
-//│ ╟── (_ * _) comes from this type expression
-//│ ║  builtin:	let List.combine: 'a list -> 'b list -> ('a * 'b) list
-//│ ║          	                                         ^^^^^^^
-//│ ╟── so this variable has type `_ * _` and it flows into `?a`
-//│ ║  l.3:	    let f a x =
-//│ ║      	            ^
-//│ ╟── (?a) is assumed as the type of this reference
-//│ ║  l.5:	      if x = []
-//│ ║      	         ^
-//│ ╟── (_ list) is the type of this reference and it flows into `?a`
-//│ ║  l.5:	      if x = []
-//│ ╙──    	             ^^
 //│ bigAdd: list[int] -> list[int] -> list[int]
+//│ UERR 9 errors
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', α431' <: [[[[α410']]]], α431' <: [α438'], [[[(α432', α433',)]]] <: α438']
+//│ [int ~ [[[([α239'], [α240'],)]]], α233' <: [[[[int]]]], [[α233']] <: α217', [[α233']] <: α217', α233' <: [[[([α239'], [α240'],)]]]]
+//│ [(α432', α433',) ~ [[list['a412']]], [[[(α432', α433',)]]] <: α438', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α406' <: [[[[([α418'], [α419'],)]]]], [[α406']] <: α410', α431' <: [[[[α410']]]], [α431'] <: α438', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [([α239'], [α240'],) ~ [[[int]]], α233' <: [[[([α239'], [α240'],)]]], α233' <: [[α217']], [[α233']] <: α217', [[[int]]] <: α233']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α438' <: [[[[[([α418'], [α419'],)]]]]], [[α438']] <: α406', [[α438']] <: α406', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', α438' <: [[[α410']]], [[α438']] <: α406', [[α438']] <: α406', [[[(α432', α433',)]]] <: α438']
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', [[α406']] <: α410', [[α438']] <: α406', [[[(α432', α433',)]]] <: α438']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α406' <: [[[[([α418'], [α419'],)]]]], [[α406']] <: α410', [[list['a412']]] <: α410']
 
 ////////// file 1948
 
@@ -610,238 +137,6 @@ let rec mulByDigit i l =
     | h::t -> ((h + carry) / 10) :: (mod (h + carry) 10) :: t
     | _ -> [carry / 10; mod carry 10] in
   let base = [] in removeZero (List.fold_left f base (List.rev l));;
-//│ ╔══[ERROR] Type `_ list * _` does not match `_ * _`
-//│ ║  
-//│ ╟──        (_ list * _) ---> (?a) <--- (_ * _) 
-//│ ║  
-//│ ╟── (_ list * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.8:	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│ ║      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.7:	    if (List.length l1) < (List.length l2)
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.9:	    else (l1, l2);;
-//│ ╙──    	         ^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _ list` does not match `_ * _`
-//│ ║  
-//│ ╟──        (_ * _ list) ---> (?a) <--- (_ * _) 
-//│ ║  
-//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.5:	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
-//│ ║      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.4:	  if (List.length l1) > (List.length l2)
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `?a`. However `_ * _` flows into `?a`
-//│ ║  l.7:	    if (List.length l1) < (List.length l2)
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _) is assumed as the type of this tuple literal
-//│ ║  l.9:	    else (l1, l2);;
-//│ ╙──    	         ^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _ list` does not match `_ list * _`
-//│ ║  
-//│ ╟──        (_ * _ list) ---> (?a) <--- (_ list * _) 
-//│ ║  
-//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.5:	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
-//│ ║      	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.4:	  if (List.length l1) > (List.length l2)
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `?a`. However `_ list * _` flows into `?a`
-//│ ║  l.7:	    if (List.length l1) < (List.length l2)
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ list * _) is assumed as the type of this tuple literal
-//│ ║  l.8:	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│ ╙──    	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ list * _`
-//│ ║  
-//│ ╟──        (_ * _) ---> (?a) <--- (_ list * _) 
-//│ ║  
-//│ ╟── (_ * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.9:	    else (l1, l2);;
-//│ ║      	         ^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.7:	    if (List.length l1) < (List.length l2)
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ list * _) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.8:	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│ ╙──    	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `_ * _`
-//│ ║  
-//│ ╟── this tuple literal has type `int * _ list`
-//│ ║  l.20:	    let base = (0, []) in
-//│ ║       	               ^^^^^^^
-//│ ╟── so this reference has type `int * _ list`
-//│ ║  l.22:	    let (carry,res) = List.fold_left f base args in [carry] @ res in
-//│ ║       	                                       ^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this application has type `_ * _`
-//│ ║  l.22:	    let (carry,res) = List.fold_left f base args in [carry] @ res in
-//│ ║       	                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this pattern has type `_ * _`
-//│ ║  l.22:	    let (carry,res) = List.fold_left f base args in [carry] @ res in
-//│ ╙──     	        ^^^^^^^^^^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `_ * _`
-//│ ║  
-//│ ╟── this tuple literal has type `int * _ list`
-//│ ║  l.20:	    let base = (0, []) in
-//│ ║       	               ^^^^^^^
-//│ ╟── so this reference has type `int * _ list`
-//│ ║  l.22:	    let (carry,res) = List.fold_left f base args in [carry] @ res in
-//│ ║       	                                       ^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this variable has type `_ * _`
-//│ ║  l.16:	    let f a x =
-//│ ║       	          ^
-//│ ╟── because this reference has type `_ * _`
-//│ ║  l.18:	      let (carry,res) = a in
-//│ ║       	                        ^
-//│ ╟── because this pattern has type `_ * _`
-//│ ║  l.18:	      let (carry,res) = a in
-//│ ╙──     	          ^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ list * _` does not match `_ * _ list`
-//│ ║  
-//│ ╟──        (_ list * _) ---> (?a) <--- (_ * _ list) 
-//│ ║  
-//│ ╟── (_ list * _) is assumed as the type of this tuple literal
-//│ ║  l.8:	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│ ║      	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this if-then-else expression has type `_ list * _` and it flows into `?a`
-//│ ║  l.7:	    if (List.length l1) < (List.length l2)
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.4:	  if (List.length l1) > (List.length l2)
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.5:	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
-//│ ╙──    	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ * _ list`
-//│ ║  
-//│ ╟──        (_ * _) ---> (?a) <--- (_ * _ list) 
-//│ ║  
-//│ ╟── (_ * _) is assumed as the type of this tuple literal
-//│ ║  l.9:	    else (l1, l2);;
-//│ ║      	         ^^^^^^^^
-//│ ╟── so this if-then-else expression has type `_ * _` and it flows into `?a`
-//│ ║  l.7:	    if (List.length l1) < (List.length l2)
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.4:	  if (List.length l1) > (List.length l2)
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _ list) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.5:	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
-//│ ╙──    	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `int * _ list`
-//│ ║  
-//│ ╟──        (int * _ list) ---> (?a) <--- (int * _ list) 
-//│ ║  
-//│ ╟── (int * _ list) is assumed as the type of this tuple literal
-//│ ║  l.19:	      ((((x1 + x2) + carry) / 10), ((mod ((x1 + x2) + carry) 10) :: res)) in
-//│ ║       	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `int * _ list` and it flows into `?a`
-//│ ║  l.18:	      let (carry,res) = a in
-//│ ║       	      ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	      ((((x1 + x2) + carry) / 10), ((mod ((x1 + x2) + carry) 10) :: res)) in
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this let expression
-//│ ║  l.17:	      let (x1,x2) = x in
-//│ ║       	      ^^^^^^^^^^^^^^^^^^
-//│ ║      	      let (carry,res) = a in ...
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this reference has type `?a`. However `int * _ list` flows into `?a`
-//│ ║  l.22:	    let (carry,res) = List.fold_left f base args in [carry] @ res in
-//│ ║       	                                       ^^^^
-//│ ╟── (int * _ list) is assumed as the type of this tuple literal
-//│ ║  l.20:	    let base = (0, []) in
-//│ ╙──     	               ^^^^^^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `_ * _`
-//│ ║  
-//│ ╟── this tuple literal has type `int * _ list`
-//│ ║  l.19:	      ((((x1 + x2) + carry) / 10), ((mod ((x1 + x2) + carry) 10) :: res)) in
-//│ ║       	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `int * _ list`
-//│ ║  l.18:	      let (carry,res) = a in
-//│ ║       	      ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	      ((((x1 + x2) + carry) / 10), ((mod ((x1 + x2) + carry) 10) :: res)) in
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `int * _ list`
-//│ ║  l.17:	      let (x1,x2) = x in
-//│ ║       	      ^^^^^^^^^^^^^^^^^^
-//│ ║      	      let (carry,res) = a in ...
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this application has type `_ * _`
-//│ ║  l.22:	    let (carry,res) = List.fold_left f base args in [carry] @ res in
-//│ ║       	                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this pattern has type `_ * _`
-//│ ║  l.22:	    let (carry,res) = List.fold_left f base args in [carry] @ res in
-//│ ╙──     	        ^^^^^^^^^^^
-//│ ╔══[ERROR] Type `int * _ list` does not match `_ * _`
-//│ ║  
-//│ ╟── this tuple literal has type `int * _ list`
-//│ ║  l.19:	      ((((x1 + x2) + carry) / 10), ((mod ((x1 + x2) + carry) 10) :: res)) in
-//│ ║       	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `int * _ list`
-//│ ║  l.18:	      let (carry,res) = a in
-//│ ║       	      ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	      ((((x1 + x2) + carry) / 10), ((mod ((x1 + x2) + carry) 10) :: res)) in
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `int * _ list`
-//│ ║  l.17:	      let (x1,x2) = x in
-//│ ║       	      ^^^^^^^^^^^^^^^^^^
-//│ ║      	      let (carry,res) = a in ...
-//│ ║      	      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this variable has type `_ * _`
-//│ ║  l.16:	    let f a x =
-//│ ║       	          ^
-//│ ╟── because this reference has type `_ * _`
-//│ ║  l.18:	      let (carry,res) = a in
-//│ ║       	                        ^
-//│ ╟── because this pattern has type `_ * _`
-//│ ║  l.18:	      let (carry,res) = a in
-//│ ╙──     	          ^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ * _`
-//│ ║  
-//│ ╟──        (_ * _) <--- (?a) ---> (_ * _) 
-//│ ║  
-//│ ╟── (_ * _) is assumed as the type of this pattern
-//│ ║  l.18:	      let (carry,res) = a in
-//│ ║       	          ^^^^^^^^^^^
-//│ ╟── so this reference has type `_ * _`. However `?a` flows into `_ * _`
-//│ ║  l.18:	      let (carry,res) = a in
-//│ ║       	                        ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.16:	    let f a x =
-//│ ║       	          ^
-//│ ╟── so this application has type `?a` and it flows into `_ * _`
-//│ ║  l.22:	    let (carry,res) = List.fold_left f base args in [carry] @ res in
-//│ ║       	                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ * _) is assumed as the type of this pattern
-//│ ║  l.22:	    let (carry,res) = List.fold_left f base args in [carry] @ res in
-//│ ╙──     	        ^^^^^^^^^^^
 //│ helper: int -> int
 //│ clone: 'a -> int -> list['a]
 //│ padZero: (list['a] & 'b) -> (list['c] & 'd) -> (list[int | 'a] | 'b, list[int | 'c] | 'd,)
@@ -849,6 +144,16 @@ let rec mulByDigit i l =
 //│ tenEx: int -> list[int] -> list[int]
 //│ bigAdd: list[int] -> list[int] -> list[int]
 //│ mulByDigit: int -> list[int] -> list[int]
+//│ UERR 9 errors
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', α431' <: [[[[α410']]]], α431' <: [α438'], [[[(α432', α433',)]]] <: α438']
+//│ [int ~ [[[([α239'], [α240'],)]]], α233' <: [[[[int]]]], [[α233']] <: α217', [[α233']] <: α217', α233' <: [[[([α239'], [α240'],)]]]]
+//│ [(α432', α433',) ~ [[list['a412']]], [[[(α432', α433',)]]] <: α438', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α406' <: [[[[([α418'], [α419'],)]]]], [[α406']] <: α410', α431' <: [[[[α410']]]], [α431'] <: α438', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [([α239'], [α240'],) ~ [[[int]]], α233' <: [[[([α239'], [α240'],)]]], α233' <: [[α217']], [[α233']] <: α217', [[[int]]] <: α233']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α438' <: [[[[[([α418'], [α419'],)]]]]], [[α438']] <: α406', [[α438']] <: α406', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', α438' <: [[[α410']]], [[α438']] <: α406', [[α438']] <: α406', [[[(α432', α433',)]]] <: α438']
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', [[α406']] <: α410', [[α438']] <: α406', [[[(α432', α433',)]]] <: α438']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α406' <: [[[[([α418'], [α419'],)]]]], [[α406']] <: α410', [[list['a412']]] <: α410']
 
 // FIXME: no common provs
 :unify
@@ -860,398 +165,66 @@ let bigMul l1 l2 =
   let base = (0, []) in
   let args = l1 (tenEx 0 l2) in
   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ╔══[ERROR] Type `_ * _` does not match `int * _ list`
-//│ ║  
-//│ ╟── this pattern has type `_ * _`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	      ^^^^^^^^^^^
-//│ ╟── so this application has type `_ * _`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this reference has type `int * _ list`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	                                     ^^^^
-//│ ╟── because this tuple literal has type `int * _ list`
-//│ ║  l.6:	  let base = (0, []) in
-//│ ╙──    	             ^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ * _`
-//│ ║  
-//│ ╟──        (_ * _) <--- (?a) ---> (_ * _) 
-//│ ║  
-//│ ╟── (_ * _) is the type of this pattern. However `?a` flows into `_ * _`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	      ^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this application
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this variable has type `?a`
-//│ ║  l.2:	  let f a x =
-//│ ║      	        ^
-//│ ╟── so this reference has type `?a` and it flows into `_ * _`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	                      ^
-//│ ╟── (_ * _) is assumed as the type of this pattern
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ╙──    	        ^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ -> _`
-//│ ║  
-//│ ╟── this pattern has type `_ * _`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	      ^^^^^^^^^^^
-//│ ╟── so this application has type `_ * _`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this let expression has type `_ -> _`
-//│ ║  l.3:	    let (x1,x2) = x in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^
-//│ ║      	    let (carry,res) = a in ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this let expression has type `_ -> _`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this match expression has type `_ -> _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this application has type `_ -> _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this function has type `_ -> _`
-//│ ║  l.-258:	let bigAdd l1 l2 =
-//│ ║         	              ^^^^
-//│ ║      	  let add (l1,l2) = ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ list`
-//│ ║  
-//│ ╟── this pattern has type `_ * _`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	      ^^^^^^^^^^^
-//│ ╟── so this application has type `_ * _`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this let expression has type `_ list`
-//│ ║  l.3:	    let (x1,x2) = x in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^
-//│ ║      	    let (carry,res) = a in ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this let expression has type `_ list`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this match expression has type `_ list`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this reference has type `_ list`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ╙──    	                          ^^
-//│ ╔══[ERROR] Type `_ -> _` does not match `_ list`
-//│ ║  
-//│ ╟──        (_ -> _) <--- (?a) ---> (_ list) 
-//│ ║  
-//│ ╟── (_ -> _) is the type of this reference. However `?a` flows into `_ -> _`
-//│ ║  l.7:	  let args = l1 (tenEx 0 l2) in
-//│ ║      	             ^^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.1:	let bigMul l1 l2 =
-//│ ║      	           ^^
-//│ ╟── so this reference has type `?a`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	                                                             ^^
-//│ ╟── so this variable has type `?a`
-//│ ║  l.-248:	let rec mulByDigit i l =
-//│ ║         	                     ^
-//│ ╟── so this reference has type `?a` and it flows into `_ list`
-//│ ║  l.-242:	  let base = [] in removeZero (List.fold_left f base (List.rev l));;
-//│ ║         	                                                               ^
-//│ ╟── (_ list) is assumed as the type of this applied type reference
-//│ ║  builtin:	let List.rev: 'a list -> 'a list
-//│ ╙──        	              ^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ list`
-//│ ║  
-//│ ╟── this tuple literal has type `_ * _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this variable has type `_ * _`
-//│ ║  l.-258:	let bigAdd l1 l2 =
-//│ ║         	           ^^
-//│ ╟── so this reference has type `_ * _`
-//│ ║  l.-249:	  removeZero (add (padZero l1 l2));;
-//│ ║         	                           ^^
-//│ ╟── so this variable has type `_ * _`. However it flows into `_ list`
-//│ ║  l.-269:	let padZero l1 l2 =
-//│ ║         	            ^^
-//│ ╟── because this reference has type `_ list`
-//│ ║  l.-263:	    else (l1, l2);;
-//│ ║         	          ^^
-//│ ╟── because this variable has type `_ list`
-//│ ║  l.-257:	  let add (l1,l2) =
-//│ ║         	           ^^
-//│ ╟── because this reference has type `_ list`
-//│ ║  l.-251:	    let args = List.rev (List.combine l1 l2) in
-//│ ║         	                                      ^^
-//│ ╟── because `_ list` comes from this type expression
-//│ ║  builtin:	let List.combine: 'a list -> 'b list -> ('a * 'b) list
-//│ ╙──        	                  ^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ list`
-//│ ║  
-//│ ╟── this tuple literal has type `_ * _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this variable has type `_ * _`
-//│ ║  l.-258:	let bigAdd l1 l2 =
-//│ ║         	           ^^
-//│ ╟── so this reference has type `_ * _`
-//│ ║  l.-249:	  removeZero (add (padZero l1 l2));;
-//│ ║         	                           ^^
-//│ ╟── so this variable has type `_ * _`. However it flows into `_ list`
-//│ ║  l.-269:	let padZero l1 l2 =
-//│ ║         	            ^^
-//│ ╟── because this reference has type `_ list`
-//│ ║  l.-264:	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│ ║         	                                                     ^^
-//│ ╟── because `_ list` comes from this type expression
-//│ ║  builtin:	let List.length: 'a list -> int
-//│ ╙──        	                 ^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ list`
-//│ ║  
-//│ ╟── this tuple literal has type `_ * _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this variable has type `_ * _`
-//│ ║  l.-258:	let bigAdd l1 l2 =
-//│ ║         	           ^^
-//│ ╟── so this reference has type `_ * _`
-//│ ║  l.-249:	  removeZero (add (padZero l1 l2));;
-//│ ║         	                           ^^
-//│ ╟── so this variable has type `_ * _`. However it flows into `_ list`
-//│ ║  l.-269:	let padZero l1 l2 =
-//│ ║         	            ^^
-//│ ╟── because this reference has type `_ list`
-//│ ║  l.-267:	  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
-//│ ║         	                                    ^^
-//│ ╟── because `_ list` comes from this type expression
-//│ ║  builtin:	let List.length: 'a list -> int
-//│ ╙──        	                 ^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `int * _ list`
-//│ ║  
-//│ ╟── this pattern has type `_ * _`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	        ^^^^^^^^^^^
-//│ ╟── so this reference has type `_ * _`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	                      ^
-//│ ╟── so this variable has type `_ * _`
-//│ ║  l.2:	  let f a x =
-//│ ║      	        ^
-//│ ╟── TODO No common prov
-//│ ╟── because this reference has type `int * _ list`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	                                     ^^^^
-//│ ╟── because this tuple literal has type `int * _ list`
-//│ ║  l.6:	  let base = (0, []) in
-//│ ╙──    	             ^^^^^^^
-//│ ╔══[ERROR] Type `_ * _` does not match `_ list`
-//│ ║  
-//│ ╟── this pattern has type `_ * _`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	        ^^^^^^^^^^^
-//│ ╟── so this reference has type `_ * _`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	                      ^
-//│ ╟── so this variable has type `_ * _`
-//│ ║  l.2:	  let f a x =
-//│ ║      	        ^
-//│ ╟── TODO No common prov
-//│ ╟── because this let expression has type `_ list`
-//│ ║  l.3:	    let (x1,x2) = x in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^
-//│ ║      	    let (carry,res) = a in ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this let expression has type `_ list`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this match expression has type `_ list`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── because this reference has type `_ list`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ╙──    	                          ^^
-//│ ╔══[ERROR] Type `_ -> _` does not match `int * _ list`
-//│ ║  
-//│ ╟──        (_ -> _) ---> (?a) <--- (int * _ list) 
-//│ ║  
-//│ ╟── (_ -> _) is assumed as the type of this function
-//│ ║  l.-258:	let bigAdd l1 l2 =
-//│ ║         	              ^^^^
-//│ ║      	  let add (l1,l2) = ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this application has type `_ -> _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this match expression has type `_ -> _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `_ -> _` and it flows into `?a`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this let expression
-//│ ║  l.3:	    let (x1,x2) = x in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^
-//│ ║      	    let (carry,res) = a in ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this reference has type `?a`. However `int * _ list` flows into `?a`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	                                     ^^^^
-//│ ╟── (int * _ list) is assumed as the type of this tuple literal
-//│ ║  l.6:	  let base = (0, []) in
-//│ ╙──    	             ^^^^^^^
-//│ ╔══[ERROR] Type `_ -> _` does not match `_ * _`
-//│ ║  
-//│ ╟── this function has type `_ -> _`
-//│ ║  l.-258:	let bigAdd l1 l2 =
-//│ ║         	              ^^^^
-//│ ║      	  let add (l1,l2) = ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this application has type `_ -> _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this match expression has type `_ -> _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `_ -> _`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `_ -> _`
-//│ ║  l.3:	    let (x1,x2) = x in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^
-//│ ║      	    let (carry,res) = a in ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── TODO No common prov
-//│ ╟── because this variable has type `_ * _`
-//│ ║  l.2:	  let f a x =
-//│ ║      	        ^
-//│ ╟── because this reference has type `_ * _`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	                      ^
-//│ ╟── because this pattern has type `_ * _`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ╙──    	        ^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ -> _` does not match `_ list`
-//│ ║  
-//│ ╟──        (_ -> _) ---> (?a) <--- (_ list) 
-//│ ║  
-//│ ╟── (_ -> _) is assumed as the type of this function
-//│ ║  l.-258:	let bigAdd l1 l2 =
-//│ ║         	              ^^^^
-//│ ║      	  let add (l1,l2) = ...
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this application has type `_ -> _` and it flows into `?a`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this match expression
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (_ list) is the type of this reference and it flows into `?a`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ╙──    	                          ^^
-//│ ╔══[ERROR] Type `_ list` does not match `int * _ list`
-//│ ║  
-//│ ╟──        (_ list) ---> (?a) <--- (int * _ list) 
-//│ ║  
-//│ ╟── (_ list) is assumed as the type of this reference
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	                          ^^
-//│ ╟── so this match expression has type `_ list`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this let expression has type `_ list` and it flows into `?a`
-//│ ║  l.4:	    let (carry,res) = a in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^
-//│ ║      	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this let expression
-//│ ║  l.3:	    let (x1,x2) = x in
-//│ ║      	    ^^^^^^^^^^^^^^^^^^
-//│ ║      	    let (carry,res) = a in ...
-//│ ║      	    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── so this reference has type `?a`. However `int * _ list` flows into `?a`
-//│ ║  l.8:	  let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ ║      	                                     ^^^^
-//│ ╟── (int * _ list) is assumed as the type of this tuple literal
-//│ ║  l.6:	  let base = (0, []) in
-//│ ╙──    	             ^^^^^^^
-//│ ╔══[ERROR] Type `_ list` does not match `_ * _`
-//│ ║  
-//│ ╟── `_ list` comes from this type expression
-//│ ║  builtin:	let (@): 'a list -> 'a list -> 'a list
-//│ ║          	                    ^^^^^^^
-//│ ╟── so this reference has type `_ list`
-//│ ║  l.-264:	    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│ ║         	                                                             ^^
-//│ ╟── so this variable has type `_ list`. However it flows into `_ * _`
-//│ ║  l.-269:	let padZero l1 l2 =
-//│ ║         	            ^^
-//│ ╟── because this reference has type `_ * _`
-//│ ║  l.-249:	  removeZero (add (padZero l1 l2));;
-//│ ║         	                           ^^
-//│ ╟── because this variable has type `_ * _`
-//│ ║  l.-258:	let bigAdd l1 l2 =
-//│ ║         	           ^^
-//│ ╟── because this tuple literal has type `_ * _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ╙──    	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ list` does not match `_ * _`
-//│ ║  
-//│ ╟── `_ list` comes from this type expression
-//│ ║  builtin:	let List.length: 'a list -> int
-//│ ║          	                 ^^^^^^^
-//│ ╟── so this reference has type `_ list`
-//│ ║  l.-265:	    if (List.length l1) < (List.length l2)
-//│ ║         	                    ^^
-//│ ╟── so this variable has type `_ list`. However it flows into `_ * _`
-//│ ║  l.-269:	let padZero l1 l2 =
-//│ ║         	            ^^
-//│ ╟── because this reference has type `_ * _`
-//│ ║  l.-249:	  removeZero (add (padZero l1 l2));;
-//│ ║         	                           ^^
-//│ ╟── because this variable has type `_ * _`
-//│ ║  l.-258:	let bigAdd l1 l2 =
-//│ ║         	           ^^
-//│ ╟── because this tuple literal has type `_ * _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ╙──    	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ list` does not match `_ * _`
-//│ ║  
-//│ ╟── `_ list` comes from this type expression
-//│ ║  builtin:	let List.length: 'a list -> int
-//│ ║          	                 ^^^^^^^
-//│ ╟── so this reference has type `_ list`
-//│ ║  l.-268:	  if (List.length l1) > (List.length l2)
-//│ ║         	                  ^^
-//│ ╟── so this variable has type `_ list`. However it flows into `_ * _`
-//│ ║  l.-269:	let padZero l1 l2 =
-//│ ║         	            ^^
-//│ ╟── because this reference has type `_ * _`
-//│ ║  l.-249:	  removeZero (add (padZero l1 l2));;
-//│ ║         	                           ^^
-//│ ╟── because this variable has type `_ * _`
-//│ ║  l.-258:	let bigAdd l1 l2 =
-//│ ║         	           ^^
-//│ ╟── because this tuple literal has type `_ * _`
-//│ ║  l.5:	    match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ ╙──    	                                              ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ bigMul: nothing -> list[int] -> list[int]
+//│ UERR 58 errors
+//│ [(α901' -> α914') ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[(α901' -> α914')]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [int ~ [[[([α239'], [α240'],)]]], α233' <: [[[[int]]]], [[α233']] <: α217', [[α233']] <: α217', α233' <: [[[([α239'], [α240'],)]]]]
+//│ [list['a887'] ~ [[[[(int, [list['a954']],)]]]], [[[[[[list['a887']]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[α877']]]]]], [[[[(int, [list['a954']],)]]]] <: α877']
+//│ [([α883'], [α884'],) ~ [[[[[[list['a887']]]]]]], α974' <: [[[[[([α883'], [α884'],)]]]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[list['a887']]]]]]] <: α974']
+//│ [(α901' -> α914') ~ [[[[[[list['a887']]]]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[[[list['a887']]]]]]] <: α974']
+//│ [list['a887'] ~ [[(int, [list['a954']],)]], [[[[list['a887']]]]] <: α882', [[α885']] <: α882', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [([α239'], [α240'],) ~ [[[int]]], α233' <: [[[([α239'], [α240'],)]]], α233' <: [[α217']], [[α233']] <: α217', [[[int]]] <: α233']
+//│ [(α952', [[α884']],) ~ [[[[[[[[list[α889']]]]]]]]], [[[[[[[(α952', [[α884']],)]]]]]]] <: α895', α888' <: [[[[[[α895']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', α888' <: [[[[[[[[list[α889']]]]]]]]]]
+//│ [([α980'], [α981'],) ~ [[[[list['a887']]]]], α974' <: [[[([α980'], [α981'],)]]], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[list['a887']]]]] <: α882']
+//│ [list[α900'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α900']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [(α901' -> α914') ~ [[[[[list['a887']]]]]], [[[[[(α901' -> α914')]]]]] <: α879', [[[[[list['a887']]]]]] <: α879']
+//│ [(α901' -> α914') ~ [[(int, [list['a954']],)]], [[[[(α901' -> α914')]]]] <: α882', [[α885']] <: α882', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [list['a887'] ~ [[[(α901' -> α914')]]], [[[list['a887']]]] <: α885', [[[(α901' -> α914')]]] <: α885']
+//│ [(α952', [[α884']],) ~ [[[[[list[α890']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α890']]]]]]]
+//│ [list['a887'] ~ [[(int, [list['a954']],)]], [[[[[[[[list['a887']]]]]]]]] <: α877', [[α974']] <: α877', [[(int, [list['a954']],)]] <: α974']
+//│ [(α901' -> α914') ~ [[(int, [list['a954']],)]], [[[[[(α901' -> α914')]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [list['a887'] ~ [[(int, [list['a954']],)]], [[[[[list['a887']]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [([α883'], [α884'],) ~ [[[[list['a887']]]]], α877' <: [[[[([α883'], [α884'],)]]]], α974' <: [[α877']], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[list['a887']]]]] <: α882']
+//│ [(α901' -> α914') ~ [[(int, [list['a954']],)]], [[[[[[[[(α901' -> α914')]]]]]]]] <: α877', [[α974']] <: α877', [[(int, [list['a954']],)]] <: α974']
+//│ [(α432', α433',) ~ [[list['a412']]], [[[(α432', α433',)]]] <: α438', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [(α952', [[α884']],) ~ [[[[[list[α900']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α900']]]]]]]
+//│ [(int, [list['a954']],) ~ [[[[(α901' -> α914')]]]], [[(int, [list['a954']],)]] <: α974', α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[(α901' -> α914')]]]] <: α882']
+//│ [([α883'], [α884'],) ~ [[[[(α901' -> α914')]]]], α877' <: [[[[([α883'], [α884'],)]]]], α974' <: [[α877']], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[(α901' -> α914')]]]] <: α882']
+//│ [list['a887'] ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[[list['a887']]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [list['a887'] ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[list['a887']]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [list['a887'] ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[[list['a887']]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [(α952', [[α884']],) ~ [[[[[list[α897']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α897']]]]]]]
+//│ [list[α897'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α897']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α406' <: [[[[([α418'], [α419'],)]]]], [[α406']] <: α410', α431' <: [[[[α410']]]], [α431'] <: α438', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [list['a887'] ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[list['a887']]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α438' <: [[[[[([α418'], [α419'],)]]]]], [[α438']] <: α406', [[α438']] <: α406', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [(α901' -> α914') ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[(α901' -> α914')]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [([α883'], [α884'],) ~ [[[[[[(α901' -> α914')]]]]]], α974' <: [[[[[([α883'], [α884'],)]]]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[(α901' -> α914')]]]]]] <: α974']
+//│ [(α952', [[α884']],) ~ [[[[[list[α898']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α898']]]]]]]
+//│ [([α980'], [α981'],) ~ [[[[[[(α901' -> α914')]]]]]], α974' <: [[[([α980'], [α981'],)]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[(α901' -> α914')]]]]]] <: α974']
+//│ [(α952', [[α884']],) ~ [[[[[list[α899']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α899']]]]]]]
+//│ [list['a887'] ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[list['a887']]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [list['a887'] ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[list['a887']]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [(α901' -> α914') ~ [[[[(int, [list['a954']],)]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[α877']]]]]], [[[[(int, [list['a954']],)]]]] <: α877']
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', [[α406']] <: α410', [[α438']] <: α406', [[[(α432', α433',)]]] <: α438']
+//│ [list[α898'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α898']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [(α901' -> α914') ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[(α901' -> α914')]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', α431' <: [[[[α410']]]], α431' <: [α438'], [[[(α432', α433',)]]] <: α438']
+//│ [(int, [list['a954']],) ~ [[[[list['a887']]]]], [[(int, [list['a954']],)]] <: α974', α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[list['a887']]]]] <: α882']
+//│ [([α980'], [α981'],) ~ [[[[(α901' -> α914')]]]], α974' <: [[[([α980'], [α981'],)]]], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[(α901' -> α914')]]]] <: α882']
+//│ [(α901' -> α914') ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [(α901' -> α914') ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[(α901' -> α914')]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [list[α931'] ~ [[[(α971' -> α973')]]], α875' <: [[[[[[list[α931']]]]]]], [[[[α875']]]] <: α930', [[[[α875']]]] <: α930', α875' <: [[[(α971' -> α973')]]]]
+//│ [(α901' -> α914') ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', α438' <: [[[α410']]], [[α438']] <: α406', [[α438']] <: α406', [[[(α432', α433',)]]] <: α438']
+//│ [list[α889'] ~ [[(α952', [[α884']],)]], α895' <: [[[list[α889']]]], α888' <: [[[[[[α895']]]]]], α888' <: [[[α896']]], [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [(α901' -> α914') ~ [[[[[[list['a887']]]]]]], [[[[[[[[(α901' -> α914')]]]]]]]] <: α877', [[α974']] <: α877', [[[[[[list['a887']]]]]]] <: α974']
+//│ [(α901' -> α914') ~ [[[[list['a887']]]]], [[[[(α901' -> α914')]]]] <: α882', [[[[list['a887']]]]] <: α882']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α406' <: [[[[([α418'], [α419'],)]]]], [[α406']] <: α410', [[list['a412']]] <: α410']
+//│ [(α952', [[α884']],) ~ [[[[[[[[list[α889']]]]]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[[[[list[α889']]]]]]]]]]
+//│ [list[α890'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α890']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [([α980'], [α981'],) ~ [[[[[[list['a887']]]]]]], α974' <: [[[([α980'], [α981'],)]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[list['a887']]]]]]] <: α974']
+//│ [list[α899'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α899']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
 
 ////////// file 2361
 
@@ -1270,28 +243,129 @@ let digits n = digitsOfInt (abs n);;
 //│ digitsOfInt: int -> list[int]
 //│ addNumbs: list[int] -> int
 //│ digits: int -> list[int]
+//│ UERR 58 errors
+//│ [(α901' -> α914') ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[(α901' -> α914')]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [int ~ [[[([α239'], [α240'],)]]], α233' <: [[[[int]]]], [[α233']] <: α217', [[α233']] <: α217', α233' <: [[[([α239'], [α240'],)]]]]
+//│ [list['a887'] ~ [[[[(int, [list['a954']],)]]]], [[[[[[list['a887']]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[α877']]]]]], [[[[(int, [list['a954']],)]]]] <: α877']
+//│ [([α883'], [α884'],) ~ [[[[[[list['a887']]]]]]], α974' <: [[[[[([α883'], [α884'],)]]]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[list['a887']]]]]]] <: α974']
+//│ [(α901' -> α914') ~ [[[[[[list['a887']]]]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[[[list['a887']]]]]]] <: α974']
+//│ [list['a887'] ~ [[(int, [list['a954']],)]], [[[[list['a887']]]]] <: α882', [[α885']] <: α882', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [([α239'], [α240'],) ~ [[[int]]], α233' <: [[[([α239'], [α240'],)]]], α233' <: [[α217']], [[α233']] <: α217', [[[int]]] <: α233']
+//│ [(α952', [[α884']],) ~ [[[[[[[[list[α889']]]]]]]]], [[[[[[[(α952', [[α884']],)]]]]]]] <: α895', α888' <: [[[[[[α895']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', α888' <: [[[[[[[[list[α889']]]]]]]]]]
+//│ [([α980'], [α981'],) ~ [[[[list['a887']]]]], α974' <: [[[([α980'], [α981'],)]]], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[list['a887']]]]] <: α882']
+//│ [list[α900'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α900']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [(α901' -> α914') ~ [[[[[list['a887']]]]]], [[[[[(α901' -> α914')]]]]] <: α879', [[[[[list['a887']]]]]] <: α879']
+//│ [(α901' -> α914') ~ [[(int, [list['a954']],)]], [[[[(α901' -> α914')]]]] <: α882', [[α885']] <: α882', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [list['a887'] ~ [[[(α901' -> α914')]]], [[[list['a887']]]] <: α885', [[[(α901' -> α914')]]] <: α885']
+//│ [(α952', [[α884']],) ~ [[[[[list[α890']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α890']]]]]]]
+//│ [list['a887'] ~ [[(int, [list['a954']],)]], [[[[[[[[list['a887']]]]]]]]] <: α877', [[α974']] <: α877', [[(int, [list['a954']],)]] <: α974']
+//│ [(α901' -> α914') ~ [[(int, [list['a954']],)]], [[[[[(α901' -> α914')]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [list['a887'] ~ [[(int, [list['a954']],)]], [[[[[list['a887']]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [([α883'], [α884'],) ~ [[[[list['a887']]]]], α877' <: [[[[([α883'], [α884'],)]]]], α974' <: [[α877']], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[list['a887']]]]] <: α882']
+//│ [(α901' -> α914') ~ [[(int, [list['a954']],)]], [[[[[[[[(α901' -> α914')]]]]]]]] <: α877', [[α974']] <: α877', [[(int, [list['a954']],)]] <: α974']
+//│ [(α432', α433',) ~ [[list['a412']]], [[[(α432', α433',)]]] <: α438', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [(α952', [[α884']],) ~ [[[[[list[α900']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α900']]]]]]]
+//│ [(int, [list['a954']],) ~ [[[[(α901' -> α914')]]]], [[(int, [list['a954']],)]] <: α974', α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[(α901' -> α914')]]]] <: α882']
+//│ [([α883'], [α884'],) ~ [[[[(α901' -> α914')]]]], α877' <: [[[[([α883'], [α884'],)]]]], α974' <: [[α877']], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[(α901' -> α914')]]]] <: α882']
+//│ [list['a887'] ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[[list['a887']]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [list['a887'] ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[list['a887']]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [list['a887'] ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[[list['a887']]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [(α952', [[α884']],) ~ [[[[[list[α897']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α897']]]]]]]
+//│ [list[α897'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α897']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α406' <: [[[[([α418'], [α419'],)]]]], [[α406']] <: α410', α431' <: [[[[α410']]]], [α431'] <: α438', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [list['a887'] ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[list['a887']]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α438' <: [[[[[([α418'], [α419'],)]]]]], [[α438']] <: α406', [[α438']] <: α406', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [(α901' -> α914') ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[(α901' -> α914')]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [([α883'], [α884'],) ~ [[[[[[(α901' -> α914')]]]]]], α974' <: [[[[[([α883'], [α884'],)]]]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[(α901' -> α914')]]]]]] <: α974']
+//│ [(α952', [[α884']],) ~ [[[[[list[α898']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α898']]]]]]]
+//│ [([α980'], [α981'],) ~ [[[[[[(α901' -> α914')]]]]]], α974' <: [[[([α980'], [α981'],)]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[(α901' -> α914')]]]]]] <: α974']
+//│ [(α952', [[α884']],) ~ [[[[[list[α899']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α899']]]]]]]
+//│ [list['a887'] ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[list['a887']]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [list['a887'] ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[list['a887']]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [(α901' -> α914') ~ [[[[(int, [list['a954']],)]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[α877']]]]]], [[[[(int, [list['a954']],)]]]] <: α877']
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', [[α406']] <: α410', [[α438']] <: α406', [[[(α432', α433',)]]] <: α438']
+//│ [list[α898'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α898']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [(α901' -> α914') ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[(α901' -> α914')]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', α431' <: [[[[α410']]]], α431' <: [α438'], [[[(α432', α433',)]]] <: α438']
+//│ [(int, [list['a954']],) ~ [[[[list['a887']]]]], [[(int, [list['a954']],)]] <: α974', α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[list['a887']]]]] <: α882']
+//│ [([α980'], [α981'],) ~ [[[[(α901' -> α914')]]]], α974' <: [[[([α980'], [α981'],)]]], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[(α901' -> α914')]]]] <: α882']
+//│ [(α901' -> α914') ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [(α901' -> α914') ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[(α901' -> α914')]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [list[α931'] ~ [[[(α971' -> α973')]]], α875' <: [[[[[[list[α931']]]]]]], [[[[α875']]]] <: α930', [[[[α875']]]] <: α930', α875' <: [[[(α971' -> α973')]]]]
+//│ [(α901' -> α914') ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', α438' <: [[[α410']]], [[α438']] <: α406', [[α438']] <: α406', [[[(α432', α433',)]]] <: α438']
+//│ [list[α889'] ~ [[(α952', [[α884']],)]], α895' <: [[[list[α889']]]], α888' <: [[[[[[α895']]]]]], α888' <: [[[α896']]], [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [(α901' -> α914') ~ [[[[[[list['a887']]]]]]], [[[[[[[[(α901' -> α914')]]]]]]]] <: α877', [[α974']] <: α877', [[[[[[list['a887']]]]]]] <: α974']
+//│ [(α901' -> α914') ~ [[[[list['a887']]]]], [[[[(α901' -> α914')]]]] <: α882', [[[[list['a887']]]]] <: α882']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α406' <: [[[[([α418'], [α419'],)]]]], [[α406']] <: α410', [[list['a412']]] <: α410']
+//│ [(α952', [[α884']],) ~ [[[[[[[[list[α889']]]]]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[[[[list[α889']]]]]]]]]]
+//│ [list[α890'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α890']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [([α980'], [α981'],) ~ [[[[[[list['a887']]]]]]], α974' <: [[[([α980'], [α981'],)]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[list['a887']]]]]]] <: α974']
+//│ [list[α899'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α899']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
 
 :unify
 let rec additivePersistence n =
   match digits n with
   | [] -> 0
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) ---> (?a) <--- (int) 
-//│ ║  
-//│ ╟── (bool) is assumed as the type of this `else` branch
-//│ ║  l.4:	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
-//│ ║      	                                                         ^^^^
-//│ ╟── so this if-then-else expression has type `bool` and it flows into `?a`
-//│ ║  l.4:	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
-//│ ║      	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this match expression
-//│ ║  l.2:	  match digits n with
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^
-//│ ║      	  | [] -> 0 ...
-//│ ║      	  ^^^^^^^^^^^^^
-//│ ╟── (int) is the type of this integer literal and it flows into `?a`
-//│ ║  l.3:	  | [] -> 0
-//│ ╙──    	          ^
 //│ additivePersistence: int -> (bool | int)
+//│ UERR 59 errors
+//│ [(α901' -> α914') ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[(α901' -> α914')]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [int ~ [[[([α239'], [α240'],)]]], α233' <: [[[[int]]]], [[α233']] <: α217', [[α233']] <: α217', α233' <: [[[([α239'], [α240'],)]]]]
+//│ [list['a887'] ~ [[[[(int, [list['a954']],)]]]], [[[[[[list['a887']]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[α877']]]]]], [[[[(int, [list['a954']],)]]]] <: α877']
+//│ [([α883'], [α884'],) ~ [[[[[[list['a887']]]]]]], α974' <: [[[[[([α883'], [α884'],)]]]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[list['a887']]]]]]] <: α974']
+//│ [(α901' -> α914') ~ [[[[[[list['a887']]]]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[[[list['a887']]]]]]] <: α974']
+//│ [list['a887'] ~ [[(int, [list['a954']],)]], [[[[list['a887']]]]] <: α882', [[α885']] <: α882', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [([α239'], [α240'],) ~ [[[int]]], α233' <: [[[([α239'], [α240'],)]]], α233' <: [[α217']], [[α233']] <: α217', [[[int]]] <: α233']
+//│ [(α952', [[α884']],) ~ [[[[[[[[list[α889']]]]]]]]], [[[[[[[(α952', [[α884']],)]]]]]]] <: α895', α888' <: [[[[[[α895']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', α888' <: [[[[[[[[list[α889']]]]]]]]]]
+//│ [([α980'], [α981'],) ~ [[[[list['a887']]]]], α974' <: [[[([α980'], [α981'],)]]], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[list['a887']]]]] <: α882']
+//│ [list[α900'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α900']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [(α901' -> α914') ~ [[[[[list['a887']]]]]], [[[[[(α901' -> α914')]]]]] <: α879', [[[[[list['a887']]]]]] <: α879']
+//│ [(α901' -> α914') ~ [[(int, [list['a954']],)]], [[[[(α901' -> α914')]]]] <: α882', [[α885']] <: α882', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [list['a887'] ~ [[[(α901' -> α914')]]], [[[list['a887']]]] <: α885', [[[(α901' -> α914')]]] <: α885']
+//│ [(α952', [[α884']],) ~ [[[[[list[α890']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α890']]]]]]]
+//│ [list['a887'] ~ [[(int, [list['a954']],)]], [[[[[[[[list['a887']]]]]]]]] <: α877', [[α974']] <: α877', [[(int, [list['a954']],)]] <: α974']
+//│ [(α901' -> α914') ~ [[(int, [list['a954']],)]], [[[[[(α901' -> α914')]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [list['a887'] ~ [[(int, [list['a954']],)]], [[[[[list['a887']]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[α974']]]], [[(int, [list['a954']],)]] <: α974']
+//│ [([α883'], [α884'],) ~ [[[[list['a887']]]]], α877' <: [[[[([α883'], [α884'],)]]]], α974' <: [[α877']], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[list['a887']]]]] <: α882']
+//│ [(α901' -> α914') ~ [[(int, [list['a954']],)]], [[[[[[[[(α901' -> α914')]]]]]]]] <: α877', [[α974']] <: α877', [[(int, [list['a954']],)]] <: α974']
+//│ [(α432', α433',) ~ [[list['a412']]], [[[(α432', α433',)]]] <: α438', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [(α952', [[α884']],) ~ [[[[[list[α900']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α900']]]]]]]
+//│ [(int, [list['a954']],) ~ [[[[(α901' -> α914')]]]], [[(int, [list['a954']],)]] <: α974', α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[(α901' -> α914')]]]] <: α882']
+//│ [([α883'], [α884'],) ~ [[[[(α901' -> α914')]]]], α877' <: [[[[([α883'], [α884'],)]]]], α974' <: [[α877']], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[(α901' -> α914')]]]] <: α882']
+//│ [list['a887'] ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[[list['a887']]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [list['a887'] ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[list['a887']]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [list['a887'] ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[[list['a887']]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [(α952', [[α884']],) ~ [[[[[list[α897']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α897']]]]]]]
+//│ [list[α897'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α897']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α406' <: [[[[([α418'], [α419'],)]]]], [[α406']] <: α410', α431' <: [[[[α410']]]], [α431'] <: α438', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [list['a887'] ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[list['a887']]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α438' <: [[[[[([α418'], [α419'],)]]]]], [[α438']] <: α406', [[α438']] <: α406', [α431'] <: α438', α431' <: [[[[α410']]]], [[list['a412']]] <: α410']
+//│ [(α901' -> α914') ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[(α901' -> α914')]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [([α883'], [α884'],) ~ [[[[[[(α901' -> α914')]]]]]], α974' <: [[[[[([α883'], [α884'],)]]]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[(α901' -> α914')]]]]]] <: α974']
+//│ [(α952', [[α884']],) ~ [[[[[list[α898']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α898']]]]]]]
+//│ [([α980'], [α981'],) ~ [[[[[[(α901' -> α914')]]]]]], α974' <: [[[([α980'], [α981'],)]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[(α901' -> α914')]]]]]] <: α974']
+//│ [(α952', [[α884']],) ~ [[[[[list[α899']]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[list[α899']]]]]]]
+//│ [int ~ [[[[bool]]]], [[int]] <: α1085', [[[[bool]]]] <: α1085']
+//│ [list['a887'] ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[list['a887']]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [list['a887'] ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[list['a887']]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [(α901' -> α914') ~ [[[[(int, [list['a954']],)]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[α877']]]]]], [[[[(int, [list['a954']],)]]]] <: α877']
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', [[α406']] <: α410', [[α438']] <: α406', [[[(α432', α433',)]]] <: α438']
+//│ [list[α898'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α898']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [(α901' -> α914') ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[(α901' -> α914')]]]] <: α882', [[α885']] <: α882', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', α431' <: [[[[α410']]]], α431' <: [α438'], [[[(α432', α433',)]]] <: α438']
+//│ [(int, [list['a954']],) ~ [[[[list['a887']]]]], [[(int, [list['a954']],)]] <: α974', α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[list['a887']]]]] <: α882']
+//│ [([α980'], [α981'],) ~ [[[[(α901' -> α914')]]]], α974' <: [[[([α980'], [α981'],)]]], α879' <: [[α974']], α885' <: [[[α879']]], α885' <: [[α882']], [[[[(α901' -> α914')]]]] <: α882']
+//│ [(α901' -> α914') ~ [[[[[[[[[([α883'], [α884'],)]]]]]]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[[[([α883'], [α884'],)]]]]]]]]]]
+//│ [(α901' -> α914') ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[(α901' -> α914')]]]]] <: α879', [[[α885']]] <: α879', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [list[α931'] ~ [[[(α971' -> α973')]]], α875' <: [[[[[[list[α931']]]]]]], [[[[α875']]]] <: α930', [[[[α875']]]] <: α930', α875' <: [[[(α971' -> α973')]]]]
+//│ [(α901' -> α914') ~ [[[[[[[([α980'], [α981'],)]]]]]]], [[[[[[(α901' -> α914')]]]]]] <: α974', [[[[α885']]]] <: α974', α885' <: [[[[[[[([α980'], [α981'],)]]]]]]]]
+//│ [list['a412'] ~ [[[(α432', α433',)]]], [[list['a412']]] <: α410', α438' <: [[[α410']]], [[α438']] <: α406', [[α438']] <: α406', [[[(α432', α433',)]]] <: α438']
+//│ [list[α889'] ~ [[(α952', [[α884']],)]], α895' <: [[[list[α889']]]], α888' <: [[[[[[α895']]]]]], α888' <: [[[α896']]], [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [(α901' -> α914') ~ [[[[[[list['a887']]]]]]], [[[[[[[[(α901' -> α914')]]]]]]]] <: α877', [[α974']] <: α877', [[[[[[list['a887']]]]]]] <: α974']
+//│ [(α901' -> α914') ~ [[[[list['a887']]]]], [[[[(α901' -> α914')]]]] <: α882', [[[[list['a887']]]]] <: α882']
+//│ [([α418'], [α419'],) ~ [[list['a412']]], α406' <: [[[[([α418'], [α419'],)]]]], [[α406']] <: α410', [[list['a412']]] <: α410']
+//│ [(α952', [[α884']],) ~ [[[[[[[[list[α889']]]]]]]]], [[[[(α952', [[α884']],)]]]] <: α896', α888' <: [[[α896']]], [[[[[[α888']]]]]] <: α895', [[[[[[α888']]]]]] <: α895', α888' <: [[[[[[[[list[α889']]]]]]]]]]
+//│ [list[α890'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α890']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']
+//│ [([α980'], [α981'],) ~ [[[[[[list['a887']]]]]]], α974' <: [[[([α980'], [α981'],)]]], [[α974']] <: α877', [[α974']] <: α877', [[[[[[list['a887']]]]]]] <: α974']
+//│ [list[α899'] ~ [[(α952', [[α884']],)]], α888' <: [[[[[list[α899']]]]]], [[[α888']]] <: α896', [[[α888']]] <: α896', [[(α952', [[α884']],)]] <: α888']

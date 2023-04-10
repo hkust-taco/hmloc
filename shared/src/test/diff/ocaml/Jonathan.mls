@@ -1,174 +1,130 @@
 
-:e
+
 :unify
 let h y = (not y, (if true then y else 5))
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) <--- (?a) ---> (?b) <--- (int) 
-//│ ║  
-//│ ╟── (bool) comes from this type expression
-//│ ║  builtin:	let not: bool -> bool
-//│ ║          	         ^^^^
-//│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
-//│ ║  l.1:	let h y = (not y, (if true then y else 5))
-//│ ║      	               ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.1:	let h y = (not y, (if true then y else 5))
-//│ ║      	      ^
-//│ ╟── so this `then` branch has type `?a` and it flows into `?b`
-//│ ║  l.1:	let h y = (not y, (if true then y else 5))
-//│ ║      	                                ^
-//│ ╟── (?b) is assumed as the type of this if-then-else expression
-//│ ║  l.1:	let h y = (not y, (if true then y else 5))
-//│ ║      	                  ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (int) is the type of this `else` branch and it flows into `?b`
-//│ ║  l.1:	let h y = (not y, (if true then y else 5))
-//│ ╙──    	                                       ^
 //│ h: (bool & 'a) -> (bool, int | 'a,)
+//│ UERR 2 errors
+//│ [bool ~ [[int]], α67' <: [[[bool]]], [[[α67']]] <: α69', [[int]] <: α69']
+//│ [[[int]] ~ bool, [[int]] <: α69', α67' <: [[[α69']]], α67' <: [[[bool]]]]
 
 
 
 
 
-:e
+
 :unify
 let h y = (not y, (if true then y else 5))
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) <--- (?a) ---> (?b) <--- (int) 
-//│ ║  
-//│ ╟── (bool) comes from this type expression
-//│ ║  builtin:	let not: bool -> bool
-//│ ║          	         ^^^^
-//│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
-//│ ║  l.1:	let h y = (not y, (if true then y else 5))
-//│ ║      	               ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.1:	let h y = (not y, (if true then y else 5))
-//│ ║      	      ^
-//│ ╟── so this `then` branch has type `?a` and it flows into `?b`
-//│ ║  l.1:	let h y = (not y, (if true then y else 5))
-//│ ║      	                                ^
-//│ ╟── (?b) is assumed as the type of this if-then-else expression
-//│ ║  l.1:	let h y = (not y, (if true then y else 5))
-//│ ║      	                  ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (int) is the type of this `else` branch and it flows into `?b`
-//│ ║  l.1:	let h y = (not y, (if true then y else 5))
-//│ ╙──    	                                       ^
 //│ h: (bool & 'a) -> (bool, int | 'a,)
+//│ UERR 4 errors
+//│ [bool ~ [[int]], α67' <: [[[bool]]], [[[α67']]] <: α69', [[int]] <: α69']
+//│ [[[int]] ~ bool, [[int]] <: α69', α67' <: [[[α69']]], α67' <: [[[bool]]]]
+//│ [bool ~ [[int]], α74' <: [[[bool]]], [[[α74']]] <: α76', [[int]] <: α76']
+//│ [[[int]] ~ bool, [[int]] <: α76', α74' <: [[[α76']]], α74' <: [[[bool]]]]
 
 
 
-:e
+
 :unify
 let confluence z = if true then z else 5
 confluence true
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) ---> (?a) <--- (int) 
-//│ ║  
-//│ ╟── (bool) is assumed as the type of this reference
-//│ ║  l.2:	confluence true
-//│ ║      	           ^^^^
-//│ ╟── so this variable has type `bool`
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ║      	               ^
-//│ ╟── so this `then` branch has type `bool` and it flows into `?a`
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ║      	                                ^
-//│ ╟── (?a) is assumed as the type of this if-then-else expression
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ║      	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (int) is the type of this `else` branch and it flows into `?a`
-//│ ║  l.1:	let confluence z = if true then z else 5
-//│ ╙──    	                                       ^
 //│ confluence: 'a -> (int | 'a)
 //│ res: bool | int
+//│ UERR 5 errors
+//│ [bool ~ [[int]], α67' <: [[[bool]]], [[[α67']]] <: α69', [[int]] <: α69']
+//│ [int ~ [[[bool]]], [[int]] <: α88, [[[α87]]] <: α88, [[[bool]]] <: α87]
+//│ [[[int]] ~ bool, [[int]] <: α69', α67' <: [[[α69']]], α67' <: [[[bool]]]]
+//│ [bool ~ [[int]], α74' <: [[[bool]]], [[[α74']]] <: α76', [[int]] <: α76']
+//│ [[[int]] ~ bool, [[int]] <: α76', α74' <: [[[α76']]], α74' <: [[[bool]]]]
 
 
 let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) <--- (?a) ---> (?b) <--- (int) 
-//│ ║  
-//│ ╟── (bool) comes from this type expression
-//│ ║  builtin:	let not: bool -> bool
-//│ ║          	         ^^^^
-//│ ╟── so this reference has type `bool`. However `?a` flows into `bool`
-//│ ║  l.2:	let conflict x = mkpair (not x) x
-//│ ║      	                             ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.2:	let conflict x = mkpair (not x) x
-//│ ║      	             ^
-//│ ╟── so this reference has type `?a`
-//│ ║  l.2:	let conflict x = mkpair (not x) x
-//│ ║      	                                ^
-//│ ╟── so this variable has type `?a`
-//│ ║  l.1:	let mkpair x y = (x, confluence y)
-//│ ║      	             ^
-//│ ╟── so this reference has type `?a`
-//│ ║  l.1:	let mkpair x y = (x, confluence y)
-//│ ║      	                                ^
-//│ ╟── so this variable has type `?a`
-//│ ║  l.-24:	let confluence z = if true then z else 5
-//│ ║        	               ^
-//│ ╟── so this `then` branch has type `?a` and it flows into `?b`
-//│ ║  l.-24:	let confluence z = if true then z else 5
-//│ ║        	                                ^
-//│ ╟── (?b) is assumed as the type of this if-then-else expression
-//│ ║  l.-24:	let confluence z = if true then z else 5
-//│ ║        	                   ^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (int) is the type of this `else` branch and it flows into `?b`
-//│ ║  l.-24:	let confluence z = if true then z else 5
-//│ ╙──      	                                       ^
 //│ mkpair: 'a -> 'b -> ('a, int | 'b,)
 //│ conflict: (bool & 'a) -> (bool, int | 'a,)
+//│ UERR 8 errors
+//│ [bool ~ [[int]], α67' <: [[[bool]]], [[[α67']]] <: α69', [[int]] <: α69']
+//│ [bool ~ [[int]], α105' <: [[[bool]]], [[[α105']]] <: α107', [[[α105']]] <: α107', α105' <: [[[[[[[α108']]]]]]], [[int]] <: α108']
+//│ [int ~ [[[bool]]], [[int]] <: α108', α107' <: [[[[[α108']]]]], [[[α107']]] <: α109', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α108', [[[α109']]] <: α108', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α88, [[[α87]]] <: α88, [[[bool]]] <: α87]
+//│ [[[int]] ~ bool, [[int]] <: α69', α67' <: [[[α69']]], α67' <: [[[bool]]]]
+//│ [bool ~ [[int]], α74' <: [[[bool]]], [[[α74']]] <: α76', [[int]] <: α76']
+//│ [[[int]] ~ bool, [[int]] <: α76', α74' <: [[[α76']]], α74' <: [[[bool]]]]
 
 
 
 // TODO show nested unification error
-// :e
+
 let rec digitsOfInt n =
   if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
 //│ digitsOfInt: int -> list[int]
+//│ UERR 8 errors
+//│ [bool ~ [[int]], α67' <: [[[bool]]], [[[α67']]] <: α69', [[int]] <: α69']
+//│ [bool ~ [[int]], α105' <: [[[bool]]], [[[α105']]] <: α107', [[[α105']]] <: α107', α105' <: [[[[[[[α108']]]]]]], [[int]] <: α108']
+//│ [int ~ [[[bool]]], [[int]] <: α108', α107' <: [[[[[α108']]]]], [[[α107']]] <: α109', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α108', [[[α109']]] <: α108', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α88, [[[α87]]] <: α88, [[[bool]]] <: α87]
+//│ [[[int]] ~ bool, [[int]] <: α69', α67' <: [[[α69']]], α67' <: [[[bool]]]]
+//│ [bool ~ [[int]], α74' <: [[[bool]]], [[[α74']]] <: α76', [[int]] <: α76']
+//│ [[[int]] ~ bool, [[int]] <: α76', α74' <: [[[α76']]], α74' <: [[[bool]]]]
 
 let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
 //│ addNumbs: list[int] -> int
+//│ UERR 8 errors
+//│ [bool ~ [[int]], α67' <: [[[bool]]], [[[α67']]] <: α69', [[int]] <: α69']
+//│ [bool ~ [[int]], α105' <: [[[bool]]], [[[α105']]] <: α107', [[[α105']]] <: α107', α105' <: [[[[[[[α108']]]]]]], [[int]] <: α108']
+//│ [int ~ [[[bool]]], [[int]] <: α108', α107' <: [[[[[α108']]]]], [[[α107']]] <: α109', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α108', [[[α109']]] <: α108', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α88, [[[α87]]] <: α88, [[[bool]]] <: α87]
+//│ [[[int]] ~ bool, [[int]] <: α69', α67' <: [[[α69']]], α67' <: [[[bool]]]]
+//│ [bool ~ [[int]], α74' <: [[[bool]]], [[[α74']]] <: α76', [[int]] <: α76']
+//│ [[[int]] ~ bool, [[int]] <: α76', α74' <: [[[α76']]], α74' <: [[[bool]]]]
 
 // show nested unification error
 // :e
 // :tex
 let digits n = digitsOfInt (abs n)
 //│ digits: int -> list[int]
+//│ UERR 8 errors
+//│ [bool ~ [[int]], α67' <: [[[bool]]], [[[α67']]] <: α69', [[int]] <: α69']
+//│ [bool ~ [[int]], α105' <: [[[bool]]], [[[α105']]] <: α107', [[[α105']]] <: α107', α105' <: [[[[[[[α108']]]]]]], [[int]] <: α108']
+//│ [int ~ [[[bool]]], [[int]] <: α108', α107' <: [[[[[α108']]]]], [[[α107']]] <: α109', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α108', [[[α109']]] <: α108', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α88, [[[α87]]] <: α88, [[[bool]]] <: α87]
+//│ [[[int]] ~ bool, [[int]] <: α69', α67' <: [[[α69']]], α67' <: [[[bool]]]]
+//│ [bool ~ [[int]], α74' <: [[[bool]]], [[[α74']]] <: α76', [[int]] <: α76']
+//│ [[[int]] ~ bool, [[int]] <: α76', α74' <: [[[α76']]], α74' <: [[[bool]]]]
 
-:e
+
 let rec additivePersistence n =
   match digits n with
   | [] -> 0
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
-//│ ╔══[ERROR] Type `bool` does not match `int`
-//│ ║  
-//│ ╟──        (bool) ---> (?a) <--- (int) 
-//│ ║  
-//│ ╟── (bool) is assumed as the type of this `else` branch
-//│ ║  l.4:	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
-//│ ║      	                                                         ^^^^^
-//│ ╟── so this if-then-else expression has type `bool` and it flows into `?a`
-//│ ║  l.4:	  | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
-//│ ║      	            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this match expression
-//│ ║  l.2:	  match digits n with
-//│ ║      	  ^^^^^^^^^^^^^^^^^^^
-//│ ║      	  | [] -> 0 ...
-//│ ║      	  ^^^^^^^^^^^^^
-//│ ╟── (int) is the type of this integer literal and it flows into `?a`
-//│ ║  l.3:	  | [] -> 0
-//│ ╙──    	          ^
 //│ additivePersistence: int -> (bool | int)
+//│ UERR 9 errors
+//│ [bool ~ [[int]], α67' <: [[[bool]]], [[[α67']]] <: α69', [[int]] <: α69']
+//│ [bool ~ [[int]], α105' <: [[[bool]]], [[[α105']]] <: α107', [[[α105']]] <: α107', α105' <: [[[[[[[α108']]]]]]], [[int]] <: α108']
+//│ [int ~ [[[[bool]]]], [[int]] <: α190', [[[[bool]]]] <: α190']
+//│ [int ~ [[[bool]]], [[int]] <: α108', α107' <: [[[[[α108']]]]], [[[α107']]] <: α109', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α108', [[[α109']]] <: α108', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α88, [[[α87]]] <: α88, [[[bool]]] <: α87]
+//│ [[[int]] ~ bool, [[int]] <: α69', α67' <: [[[α69']]], α67' <: [[[bool]]]]
+//│ [bool ~ [[int]], α74' <: [[[bool]]], [[[α74']]] <: α76', [[int]] <: α76']
+//│ [[[int]] ~ bool, [[int]] <: α76', α74' <: [[[α76']]], α74' <: [[[bool]]]]
 
 
 let y x = [x]
 let k a = if a then [2] else y true
 //│ y: 'a -> list['a]
 //│ k: bool -> list[bool | int]
+//│ UERR 10 errors
+//│ [bool ~ [[int]], α67' <: [[[bool]]], [[[α67']]] <: α69', [[int]] <: α69']
+//│ [bool ~ [[int]], α105' <: [[[bool]]], [[[α105']]] <: α107', [[[α105']]] <: α107', α105' <: [[[[[[[α108']]]]]]], [[int]] <: α108']
+//│ [int ~ [[[[bool]]]], [[int]] <: α190', [[[[bool]]]] <: α190']
+//│ [int ~ [[[bool]]], [[int]] <: α108', α107' <: [[[[[α108']]]]], [[[α107']]] <: α109', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: 'a221', ['a221' - list['a221'] ~ list['a225'] - 'a225', [[[list['a221']]]] <: α220', [[[[list['a225']]]]] <: α220'], [[[α224']]] <: 'a225', [[[bool]]] <: α224']
+//│ [int ~ [[[bool]]], [[int]] <: α108', [[[α109']]] <: α108', [[[α107']]] <: α109', [[[α105']]] <: α107', α105' <: [[[bool]]]]
+//│ [int ~ [[[bool]]], [[int]] <: α88, [[[α87]]] <: α88, [[[bool]]] <: α87]
+//│ [[[int]] ~ bool, [[int]] <: α69', α67' <: [[[α69']]], α67' <: [[[bool]]]]
+//│ [bool ~ [[int]], α74' <: [[[bool]]], [[[α74']]] <: α76', [[int]] <: α76']
+//│ [[[int]] ~ bool, [[int]] <: α76', α74' <: [[[α76']]], α74' <: [[[bool]]]]

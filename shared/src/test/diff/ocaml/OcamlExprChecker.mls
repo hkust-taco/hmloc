@@ -113,6 +113,9 @@ raise AlreadyDone
 //│ AlreadyDone: anything
 //│ res: nothing
 //│ res: nothing
+//│ UERR 2 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
 
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
@@ -122,6 +125,9 @@ type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
 //│ Defined type alias heap
 //│ HeapInt: int -> heapVar
 //│ Heap: heap -> heapVar
+//│ UERR 2 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
 
 type exp = Int of int | Var of string | Plus of exp * exp | Times of exp * exp
 //│ Defined type alias exp
@@ -133,6 +139,9 @@ type exp = Int of int | Var of string | Plus of exp * exp | Times of exp * exp
 //│ Var: string -> exp
 //│ Plus: (exp, exp,) -> exp
 //│ Times: (exp, exp,) -> exp
+//│ UERR 2 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
 
 type stmt = Skip | Assign of string * exp
          | Seq of stmt * stmt 
@@ -155,6 +164,9 @@ type stmt = Skip | Assign of string * exp
 //│ While: (exp, stmt,) -> stmt
 //│ SaveHeap: string -> stmt
 //│ RestoreHeap: string -> stmt
+//│ UERR 2 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
 
 // parameterized type definitions
 type 'a heapA = HeapA of 'a
@@ -173,6 +185,9 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│ HeapB: ('a, 'b,) -> heapB['a, 'b]
 //│ HeapC: list[('a, 'b,)] -> heapC['a, 'b]
 //│ HeapD: ('a, list['b],) -> heapD['a, 'b]
+//│ UERR 2 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
 
 (("hi", 1) :: Nil)
 (("hi", 1) :: Nil):heap
@@ -180,9 +195,15 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│ res: list[(string, int,)]
 //│ res: heap
 //│ res: heap
+//│ UERR 2 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
 
 let update h str i = (str,i)::h
 //│ update: list['a] -> 'b -> 'c -> list['a | ('b, 'c,)]
+//│ UERR 2 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
 
 /// FIXME
 // define lambdas using fun
@@ -192,23 +213,30 @@ let interp2 = (fun (env:env) opt ->
      None -> 0)
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.189:	fun (env: env) _ -> []
+//│ ║  l.210:	fun (env: env) _ -> []
 //│ ╙──      	    ^^^^^^^^^^^^
 //│ res: error -> list[nothing]
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.190:	let interp2 = (fun (env:env) opt ->
+//│ ║  l.211:	let interp2 = (fun (env:env) opt ->
 //│ ╙──      	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
 //│ ║  
-//│ ║  l.191:	  match opt with
+//│ ║  l.212:	  match opt with
 //│ ╙──      	        ^^^
 //│ interp2: error -> int
+//│ UERR 2 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
 
 let head xs = match xs with
   Cons(x, xs) -> x
   | _ -> raise Error
 //│ head: list['a] -> 'a
+//│ UERR 3 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
 
 
 :s
@@ -216,6 +244,11 @@ let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
 //│ head: list['a] -> 'a
+//│ UERR 4 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
 
 type ('a) bigHeap =
   NoHeap of 'a list
@@ -230,6 +263,11 @@ type ('a) bigHeap =
 //│ NoHeap: list['a] -> bigHeap['a]
 //│ NonHeap: otherList -> bigHeap[nothing]
 //│ NonsHeap: list[(otherList, 'a,)] -> bigHeap['a]
+//│ UERR 4 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
 
 :dp
 type biglist = int option list
@@ -244,78 +282,62 @@ type ('a, 'b) paramlist = (('a * int) list * 'b) list
 //│ Defined type alias listoflists
 //│ Defined type alias stringintlist
 //│ Defined type alias paramlist[+'a, +'b]
+//│ UERR 4 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
 
 
 // FIXME: nested type unification
 let check (v: ((int, int))) =
   match v with
    ((c, d)) -> c + d
-//│ ╔══[ERROR] Type `int * int` does not match `_ * _`
-//│ ║  
-//│ ╟──        (int * int) <--- (?a) ---> (_ * _) 
-//│ ║  
-//│ ╟── (int * int) comes from this type expression. However `?a` flows into `int * int`
-//│ ║  l.1:	let check (v: ((int, int))) =
-//│ ║      	              ^^^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.1:	let check (v: ((int, int))) =
-//│ ║      	           ^
-//│ ╟── so this reference has type `?a` and it flows into `_ * _`
-//│ ║  l.2:	  match v with
-//│ ║      	        ^
-//│ ╟── (_ * _) is assumed as the type of this pattern
-//│ ║  l.3:	   ((c, d)) -> c + d
-//│ ╙──    	   ^^^^^^^^
 //│ check: (int, int,) -> int
+//│ UERR 4 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
 
 // FIXME: nested match case not working right now
 let checkagain (v: (int, int, (int, int))) =
   match v with
    (a, b, (k, d)) -> a + b + k + d
-//│ ╔══[ERROR] Type `error * error` does not match `int * int`
-//│ ║  
-//│ ╟── this 2 element of tuple has type `error * error`. However it flows into `int * int`
-//│ ║  l.3:	   (a, b, (k, d)) -> a + b + k + d
-//│ ║      	           ^^^^
-//│ ╟── because `int * int` comes from this type expression
-//│ ║  l.1:	let checkagain (v: (int, int, (int, int))) =
-//│ ╙──    	                              ^^^^^^^^^^
-//│ ╔══[ERROR] Type `_ * _ * _` does not match `int * int * (int * int)`
-//│ ║  
-//│ ╟──        (_ * _ * _) <--- (?a) ---> (int * int * (int * int)) 
-//│ ║  
-//│ ╟── (_ * _ * _) is assumed as the type of this pattern
-//│ ║  l.3:	   (a, b, (k, d)) -> a + b + k + d
-//│ ║      	   ^^^^^^^^^^^^^^
-//│ ╟── so this reference has type `_ * _ * _`. However `?a` flows into `_ * _ * _`
-//│ ║  l.2:	  match v with
-//│ ║      	        ^
-//│ ╟── (?a) is assumed as the type of this variable
-//│ ║  l.1:	let checkagain (v: (int, int, (int, int))) =
-//│ ║      	                ^
-//│ ╟── (?a) comes from this type expression and it flows into `int * int * (int * int)`
-//│ ║  l.1:	let checkagain (v: (int, int, (int, int))) =
-//│ ╙──    	                   ^^^^^^^^^^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: k
 //│ ║  
-//│ ║  l.274:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.306:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	           ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.274:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.306:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	              ^
 //│ ╔══[ERROR] identifier not found: k
 //│ ║  
-//│ ║  l.274:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.306:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	                             ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.274:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.306:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	                                 ^
 //│ checkagain: (int, int, (int, int,),) -> int
+//│ UERR 6 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
 
 let (<): 'a -> 'a -> bool
 //│ <: anything -> anything -> bool
+//│ UERR 6 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
 
 :dp
 let temp n = 
@@ -324,6 +346,13 @@ let temp n =
     | false  -> 1
 //│ Parsed: Def(false, temp, Lam(Var(n), If(App(App(Var(<), Var(n)), IntLit(0)), List(IfThen(Var(true), IntLit(0), IfThen(Var(false), IntLit(1)))), true)
 //│ temp: anything -> int
+//│ UERR 6 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
 
 let (-): int -> int -> int
 let (+): int -> int -> int
@@ -331,14 +360,35 @@ let ( * ): int -> int -> int
 //│ -: int -> int -> int
 //│ +: int -> int -> int
 //│ *: int -> int -> int
+//│ UERR 6 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
 
 let check a b =
   let (sum, sub) = (a + b, a - b) in sum * sub
 //│ check: int -> int -> int
+//│ UERR 6 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
 
 let d x =
   let (hd :: tl) = x in hd
 //│ d: list['a] -> 'a
+//│ UERR 6 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
 
 let mod: int -> int -> int
 10 mod 4
@@ -346,6 +396,13 @@ let mod: int -> int -> int
 //│ mod: int -> int -> int
 //│ res: int
 //│ res: int
+//│ UERR 6 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
 
 // tuples
 0, fun x -> x
@@ -358,19 +415,25 @@ let g x = x, if true then x else x
 //│ res: list[(int, int,)]
 //│ res: list[int]
 //│ res: list[(int, int,)]
+//│ UERR 6 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
 
 [0, 1; 2, 3, 4]
-//│ ╔══[ERROR] Type `int * int * int` does not match `int * int`
-//│ ║  
-//│ ╟──        (int * int * int) ---> (?a) <--- (int * int) 
-//│ ║  
-//│ ╟── (int * int * int) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.1:	[0, 1; 2, 3, 4]
-//│ ║      	       ^^^^^^^
-//│ ╟── (int * int) is the type of this tuple literal and it flows into `?a`
-//│ ║  l.1:	[0, 1; 2, 3, 4]
-//│ ╙──    	 ^^^^
 //│ res: list[Array[int] & {_1: int, _2: int}]
+//│ UERR 8 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [(int, int,) ~ [[(int, int, int,)]], [[(int, int,)]] <: 'a464, 'a466 <: [['a464]], 'a466 <: ['a465], [[(int, int, int,)]] <: 'a465]
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [(int, int, int,) ~ [[(int, int,)]], [[(int, int, int,)]] <: 'a465, ['a466] <: 'a465, 'a466 <: [['a464]], [[(int, int,)]] <: 'a464]
 
 let increment x = match x with
   | 0 -> 1
@@ -386,21 +449,27 @@ let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 //│ score: stmt -> int
 //│ test: int -> int
 //│ length: list[?] -> int
+//│ UERR 8 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [(int, int,) ~ [[(int, int, int,)]], [[(int, int,)]] <: 'a464, 'a466 <: [['a464]], 'a466 <: ['a465], [[(int, int, int,)]] <: 'a465]
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [(int, int, int,) ~ [[(int, int,)]], [[(int, int, int,)]] <: 'a465, ['a466] <: 'a465, 'a466 <: [['a464]], [[(int, int,)]] <: 'a464]
 
-:e
+
 let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│ ╔══[ERROR] Type `string` does not match `_ list`
-//│ ║  
-//│ ╟──        (string) <--- (?a) ---> (_ list) 
-//│ ║  
-//│ ╟── (string) is the type of this string literal. However `?a` flows into `string`
-//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│ ║      	                             ^^^^^^^^^^
-//│ ╟── (?a) is assumed as the type of this reference
-//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│ ║      	                   ^^
-//│ ╟── (?a) is the assumed type of this pattern and it flows into `_ list`
-//│ ║  l.1:	let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│ ╙──    	                                               ^^
 //│ len: nothing -> int
+//│ UERR 9 errors
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α201, [[⊤]] <: α201]
+//│ [[error<>] ~ [error<>], [[error<>] - ([error<>], [error<>],) ~ ([error<>], [error<>],) - [error<>], α387' <: [[([error<>], [error<>],)]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α203, [[⊤]] <: α203]
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α342', [[⊤]] <: α342']
+//│ [⊤ ~ [[⊤]], [[⊤]] <: α332', [[⊤]] <: α332']
+//│ [(int, int,) ~ [[(int, int, int,)]], [[(int, int,)]] <: 'a464, 'a466 <: [['a464]], 'a466 <: ['a465], [[(int, int, int,)]] <: 'a465]
+//│ [int ~ [error<>], [int - (int, int,) ~ ([error<>], [error<>],) - [error<>], [(int, int,) - (int, int, (int, int,),) ~ ([α385'], [α386'], [α387'],) - [α387'], α383' <: [[(int, int, (int, int,),)]], α383' <: [[[[([α385'], [α386'], [α387'],)]]]]], α387' <: [[([error<>], [error<>],)]]]]
+//│ [(int, int, int,) ~ [[(int, int,)]], [[(int, int, int,)]] <: 'a465, ['a466] <: 'a465, 'a466 <: [['a464]], [[(int, int,)]] <: 'a464]
+//│ [[[[[list['a506']]]]] ~ string, α504' <: [[[[list['a506']]]]], α504' <: [[[string]]]]
 
