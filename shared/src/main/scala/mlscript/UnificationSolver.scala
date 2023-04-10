@@ -382,14 +382,18 @@ trait UnificationSolver extends TyperDatatypes {
   ) extends Iterator[NewUnification] {
     var stats: (Int, Int) = (0, 0)
     def enqueueUnification(u: NewUnification): Unit = if (!cached(u)) {
+      // TODO: fix this so that recursion can be stopped
+      if (u.level >= 4) {
+        println(s"  | U X $u.a ~ $u.b")
+        return
+      }
+      println(s"  | U Q $u.a ~ $u.b")
       queue += u
       cache(u)
       stats = (math.max(stats._1, queue.length), stats._2 + 1)
     }
-
     def cached(u: NewUnification): Bool =
       cache((u.a.unwrapProvs, u.b.unwrapProvs, u.level)) || cache((u.b.unwrapProvs, u.a.unwrapProvs, u.level))
-
     def cache(u: NewUnification): Unit = cache += ((u.a, u.b, u.level))
     def addError(u: NewUnification): Unit = {
       println(s"UERR $u")
@@ -403,9 +407,7 @@ trait UnificationSolver extends TyperDatatypes {
     }
 
     def reportStats: Str = s"U max: ${stats._1}, total: ${stats._2}"
-
     override def hasNext: Bool = queue.nonEmpty
-
     override def next(): NewUnification = queue.dequeue()
 
     def unify(): Unit = foreach { case u@NewUnification(a, b, flow, level) =>
@@ -426,7 +428,7 @@ trait UnificationSolver extends TyperDatatypes {
         case (_: TupleType, _: TupleType) => addError(u)
         case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
           enqueueUnification(NewUnification(arg1, arg2, Constructor(arg1, arg2, st1, st2, flow), level + 1))
-          enqueueUnification(NewUnification(res1, res2, Constructor(arg1, arg2, st1, st2, flow), level + 1))
+          enqueueUnification(NewUnification(res1, res2, Constructor(res1, res2, st1, st2, flow), level + 1))
         case (_: FunctionType, _: FunctionType) => addError(u)
         case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
           // because bounds are added to both sides any a1 <: a2 and a2 :> a1
