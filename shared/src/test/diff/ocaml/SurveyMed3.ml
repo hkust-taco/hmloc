@@ -13,5 +13,6 @@ let rec additivePersistence n =
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
  
 (* (@): 'a list -> 'a list -> 'a list is a list concatenation operator *)
+//│ U max: 102, total: 300
 //│ UERR 1 errors
-//│ [int ~ [[[[bool]]]], [[int]] <: α137', [[[[bool]]]] <: α137']
+//│ L: 0 [int ~ [[[[bool]]]], [[int]] <: α137', [[[[bool]]]] <: α137']
