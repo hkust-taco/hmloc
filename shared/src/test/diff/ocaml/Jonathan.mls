@@ -2,10 +2,35 @@
 
 :unify
 let h y = (not y, (if true then y else 5))
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│ ◉ (bool) is here
+//│ ▲  - lib. let not: bool -> bool
+//│ │                  ^^^^
+//│ │  - l.1  let h y = (not y, (if true then y else 5))
+//│ │                        ^
+//│ │  - l.1  let h y = (not y, (if true then y else 5))
+//│ │               ^
+//│ │ 
+//│ ◉ ('a) is assumed here
+//│ │  - l.1  let h y = (not y, (if true then y else 5))
+//│ │               ^
+//│ │  - l.1  let h y = (not y, (if true then y else 5))
+//│ │                                         ^
+//│ │  - l.1  let h y = (not y, (if true then y else 5))
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ ('b) is assumed here
+//│ ▲  - l.1  let h y = (not y, (if true then y else 5))
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (int) is here
+//│    - l.1  let h y = (not y, (if true then y else 5))
+//│                                                  ^
 //│ h: (bool & 'a) -> (bool, int | 'a,)
 //│ U max: 5, total: 9
 //│ UERR 1 errors
-//│ L: 0 [bool ~ [[int]], α67' <: [[[bool]]], [[[α67']]] <: α69', [[int]] <: α69']
+//│ L: 0 [bool ~ [[int]], [[[bool]]] :> α67', [[[α67']]] <: α69', α69' :> [[int]]]
 
 
 
@@ -14,10 +39,35 @@ let h y = (not y, (if true then y else 5))
 
 :unify
 let h y = (not y, (if true then y else 5))
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│ ◉ (bool) is here
+//│ ▲  - lib. let not: bool -> bool
+//│ │                  ^^^^
+//│ │  - l.1  let h y = (not y, (if true then y else 5))
+//│ │                        ^
+//│ │  - l.1  let h y = (not y, (if true then y else 5))
+//│ │               ^
+//│ │ 
+//│ ◉ ('a) is assumed here
+//│ │  - l.1  let h y = (not y, (if true then y else 5))
+//│ │               ^
+//│ │  - l.1  let h y = (not y, (if true then y else 5))
+//│ │                                         ^
+//│ │  - l.1  let h y = (not y, (if true then y else 5))
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ ('b) is assumed here
+//│ ▲  - l.1  let h y = (not y, (if true then y else 5))
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (int) is here
+//│    - l.1  let h y = (not y, (if true then y else 5))
+//│                                                  ^
 //│ h: (bool & 'a) -> (bool, int | 'a,)
 //│ U max: 5, total: 9
 //│ UERR 1 errors
-//│ L: 0 [bool ~ [[int]], α74' <: [[[bool]]], [[[α74']]] <: α76', [[int]] <: α76']
+//│ L: 0 [bool ~ [[int]], [[[bool]]] :> α74', [[[α74']]] <: α76', α76' :> [[int]]]
 
 
 
@@ -25,20 +75,72 @@ let h y = (not y, (if true then y else 5))
 :unify
 let confluence z = if true then z else 5
 confluence true
+//│ [ERROR] Type `int` does not match `bool`
+//│ 
+//│ ◉ (int) is here
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                                                ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ ('a) is assumed here
+//│ ▲  - l.1  let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                                         ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                        ^
+//│ │ 
+//│ ◉ (bool) is here
+//│    - l.2  confluence true
+//│                      ^^^^
 //│ confluence: 'a -> (int | 'a)
 //│ res: bool | int
 //│ U max: 8, total: 13
 //│ UERR 1 errors
-//│ L: 0 [int ~ [[[[[bool]]]]], [[int]] <: α88, [[[[[bool]]]]] <: α88]
+//│ L: 0 [int ~ [[[[[bool]]]]], [[int]] <: α88, α88 :> [[[[[bool]]]]]]
 
 
 let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
+//│ [ERROR] Type `int` does not match `bool`
+//│ 
+//│ ◉ (int) is here
+//│ │  - l.-27let confluence z = if true then z else 5
+//│ │                                                ^
+//│ │  - l.-27let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ ('a) is assumed here
+//│ ▲  - l.-27let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-27let confluence z = if true then z else 5
+//│ │                                         ^
+//│ │  - l.-27let confluence z = if true then z else 5
+//│ │                        ^
+//│ │  - l.1  let mkpair x y = (x, confluence y)
+//│ │                                         ^
+//│ │  - l.1  let mkpair x y = (x, confluence y)
+//│ │                      ^
+//│ │  - l.2  let conflict x = mkpair (not x) x
+//│ │                                         ^
+//│ │  - l.2  let conflict x = mkpair (not x) x
+//│ │                      ^
+//│ │ 
+//│ ◉ ('b) is assumed here
+//│ │  - l.2  let conflict x = mkpair (not x) x
+//│ │                      ^
+//│ │  - l.2  let conflict x = mkpair (not x) x
+//│ │                                      ^
+//│ ▼ 
+//│ ◉ (bool) is here
+//│    - lib. let not: bool -> bool
+//│                    ^^^^
 //│ mkpair: 'a -> 'b -> ('a, int | 'b,)
 //│ conflict: (bool & 'a) -> (bool, int | 'a,)
 //│ U max: 16, total: 29
 //│ UERR 1 errors
-//│ L: 0 [int ~ [[[bool]]], [[int]] <: α108', [[[[[[[α105']]]]]]] <: α108', α105' <: [[[bool]]]]
+//│ L: 0 [int ~ [[[bool]]], [[int]] <: α108', α108' :> [[[[[[[α105']]]]]]], α105' <: [[[bool]]]]
 
 
 
@@ -62,16 +164,70 @@ let rec additivePersistence n =
   match digits n with
   | [] -> 0
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ [ERROR] Type `int` does not match `bool`
+//│ 
+//│ ◉ (int) is here
+//│ │  - l.3    | [] -> 0
+//│ │                   ^
+//│ │  - l.2    match digits n with
+//│ │           ^^^^^^^^^^^^^^^^^^^
+//│ │           | [] -> 0 ...
+//│ │           ^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ ('a) is assumed here
+//│ ▲  - l.2    match digits n with
+//│ │           ^^^^^^^^^^^^^^^^^^^
+//│ │           | [] -> 0 ...
+//│ │           ^^^^^^^^^^^^^
+//│ │  - l.4    | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (bool) is here
+//│    - l.4    | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
+//│                                                                    ^^^^^
 //│ additivePersistence: int -> (bool | int)
 //│ U max: 58, total: 157
 //│ UERR 1 errors
-//│ L: 0 [int ~ [[[[bool]]]], [[int]] <: α190', [[[[bool]]]] <: α190']
+//│ L: 0 [int ~ [[[[bool]]]], [[int]] <: α190', α190' :> [[[[bool]]]]]
 
 
 let y x = [x]
 let k a = if a then [2] else y true
+//│ [ERROR] Type `int` does not match `bool`
+//│ 
+//│ ◉ (int) is here
+//│ │  - l.2  let k a = if a then [2] else y true
+//│ │                              ^
+//│ ▼ 
+//│ ◉ ('a) is assumed here
+//│    - l.2  let k a = if a then [2] else y true
+//│                                ^
+//│   ◉ (_ list) is here
+//│   │  - l.2  let k a = if a then [2] else y true
+//│   │                             ^^^
+//│   │  - l.2  let k a = if a then [2] else y true
+//│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ ('b) is assumed here
+//│   ▲  - l.2  let k a = if a then [2] else y true
+//│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.2  let k a = if a then [2] else y true
+//│   │                                      ^^^^^^
+//│   │ 
+//│   ◉ (_ list) is here
+//│      - l.1  let y x = [x]
+//│                       ^^^
+//│ ◉ ('a0) is assumed here
+//│ ▲  - l.1  let y x = [x]
+//│ │                    ^
+//│ │  - l.1  let y x = [x]
+//│ │               ^
+//│ │ 
+//│ ◉ (bool) is here
+//│    - l.2  let k a = if a then [2] else y true
+//│                                          ^^^^
 //│ y: 'a -> list['a]
 //│ k: bool -> list[bool | int]
 //│ U max: 12, total: 29
 //│ UERR 1 errors
-//│ L: 1 [int ~ [[[[[bool]]]]], [[int]] <: 'a221', ['a221' - list['a221'] ~ list['a225'] - 'a225', [[[list['a221']]]] <: α220', [[[[list['a225']]]]] <: α220'], [[[[[bool]]]]] <: 'a225']
+//│ L: 1 [int ~ [[[[[bool]]]]], [[int]] <: 'a221', ['a221' - list['a221'] ~ list['a225'] - 'a225', [[[list['a221']]]] <: α220', α220' :> [[[[list['a225']]]]]], 'a225' :> [[[[[bool]]]]]]

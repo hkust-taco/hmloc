@@ -34,7 +34,43 @@ let bigAdd l1 l2 =
 (* List.fold_left: ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a *)
 (* List.combine: 'a list -> 'b list -> ('a * 'b) list zips two lists together *)
 (* List.rev: 'a list -> 'a list reverses a list *)
+//│ [ERROR] Type `_ list` does not match `_ * _`
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.19       if x = []
+//│ │                      ^^
+//│ ▼ 
+//│ ◉ ('a) is assumed here
+//│ ▲  - l.19       if x = []
+//│ │                  ^
+//│ │  - l.17     let f a x =
+//│ │                     ^
+//│ │ 
+//│ ◉ (_ * _) is here
+//│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
+//│                                                    ^^^^^^^
+//│ [ERROR] Type `_ list` does not match `_ * _`
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.19       if x = []
+//│ │                      ^^
+//│ ▼ 
+//│ ◉ ('a) is assumed here
+//│ ▲  - l.19       if x = []
+//│ │                  ^
+//│ │  - l.17     let f a x =
+//│ │                     ^
+//│ │ 
+//│ ◉ ('b) is assumed here
+//│ │  - l.17     let f a x =
+//│ │                     ^
+//│ │  - l.22         (let (toSum1,toSum2) = x in
+//│ │                                        ^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.22         (let (toSum1,toSum2) = x in
+//│                        ^^^^^^^^^^^^^^^
 //│ U max: 269, total: 913
 //│ UERR 2 errors
-//│ L: 0 [list['a176'] ~ [[[[[[(α196', α197',)]]]]]], [[list['a176']]] <: α174', [[[[[[(α196', α197',)]]]]]] <: α174']
-//│ L: 0 [[[list['a176']]] ~ ([α182'], [α183'],), [[list['a176']]] <: α174', α202' <: [[[α174']]], α202' <: [[[[[([α182'], [α183'],)]]]]]]
+//│ L: 0 [[[list['a176']]] ~ ([α182'], [α183'],), [[list['a176']]] <: α174', [[[α174']]] :> α202', α202' <: [[[[[([α182'], [α183'],)]]]]]]
+//│ L: 0 [list['a176'] ~ [[[[[[(α196', α197',)]]]]]], [[list['a176']]] <: α174', α174' :> [[[[[[(α196', α197',)]]]]]]]

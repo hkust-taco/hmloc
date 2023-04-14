@@ -442,7 +442,8 @@ trait UnificationSolver extends TyperDatatypes {
         case (st, tv: TypeVariable) =>
           tv.lbs.foreach(c => enqueueUnification(NewUnification(st, c.a, flow.addRight(c), level)))
           tv.ubs.foreach(c => enqueueUnification(NewUnification(st, c.b, flow.addRight(c), level)))
-        case _ => addError(u)
+        case (st1, st2) if st1 != st2 => addError(u)
+        case _ => ()
       }
     }
   }
@@ -508,8 +509,8 @@ trait UnificationSolver extends TyperDatatypes {
             }
         case (_: TupleType, _: TupleType) => registerNewUnificationError(u)
         case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
-          newUnifyTypes(NewUnification(arg1, arg2, Constructor(arg1, arg2, st1, st2, flow), level + 1), cache)
-          newUnifyTypes(NewUnification(res1, res2, Constructor(arg1, arg2, st1, st2, flow), level + 1), cache)
+          newUnifyTypes(NewUnification(arg2, arg1, Constructor(arg2, arg1, st2, st1, flow), level + 1), cache)
+          newUnifyTypes(NewUnification(res1, res2, Constructor(res1, res2, st1, st2, flow), level + 1), cache)
         case (_: FunctionType, _: FunctionType) => registerNewUnificationError(u)
         case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
           // because bounds are added to both sides any a1 <: a2 and a2 :> a1
@@ -535,27 +536,122 @@ trait UnificationSolver extends TyperDatatypes {
     }
   }
 
+  def reportNewUnificationErrors(implicit raise: Raise, ctx: Ctx): Unit =
+    uniState.error.iterator.foreach(u => raise(u.createErrorMessage()))
+
   case class NewUnification(a: ST, b: ST, flow: DataFlow, level: Int = 0) {
     override def toString: Str = s"L: $level [$a ~ $b, $flow]"
+
+    def sequenceTVs: Set[TV] = {
+      val tvSet: MutSet[TV] = MutSet()
+      flow.constraintSequence().map { case (Constraint(a, b), _) =>
+        a.unwrapProvs match { case tv: TypeVariable => tvSet += tv case _ => ()}
+        b.unwrapProvs match { case tv: TypeVariable => tvSet += tv case _ => ()}
+      }
+      tvSet.toSet
+    }
+
+    def constraintSequence: Ls[(Constraint, Int)] = flow.constraintSequence()
+
+    def createErrorMessage(level: Int = 0)(implicit ctx: Ctx): UniErrReport = {
+      println(s"UERR REPORT $toString")
+      implicit val showTV: Set[TV] = sequenceTVs
+      val mainMsg = msg"[ERROR] Type `${a.expOcamlTy()(ctx, Set())}` does not match `${b.expOcamlTy()(ctx, Set())}`"
+      def constraintToMessage(c: Constraint, last: Bool = false): Ls[(Message, Ls[Loc], Bool, Int, Bool)] = {
+        val (a, b) = Constraint.unapply(c).get
+        val flow = c.flow
+        val locs = c.getCleanProvs.collect {
+          case TypeProvenance(S(loc), _, _, _) => loc
+        }
+        def msg(a: ST): Message = a.unwrapProvs match {
+          case tv: TV => msg"(${tv.expOcamlTy()}) is assumed here"
+          case st => msg"(${st.expOcamlTy()}) is here"
+        }
+
+        // for the last constraint display both the types
+        // from the sequence of locations show the last one for b
+        if (last) {
+          if (locs.isEmpty) {
+            throw new Exception("No locs for relation")
+          } else if (locs.length == 1) {
+             (msg(a), locs, flow, level, false) :: (msg(b), locs, flow, level, true) :: Nil
+          } else {
+            (msg(a), locs.init, flow, level, false) :: (msg(b), locs.last :: Nil, flow, level, true) :: Nil
+          }
+        } else {
+          (msg(a), locs, flow, level, false) :: Nil
+        }
+      }
+      val report = flow match {
+        case c@Constraint(a, b) => UniErrReport(mainMsg, constraintToMessage(c, true).map(L(_)))
+        case Constructor(a, b, ctora, ctorb, flow) =>
+          NewUnification(ctora, ctorb, flow, level + 1).createErrorMessage(level + 1)(ctx)
+        case Sequence(flow) =>
+          val msgs = flow.iterator.sliding(2).collect {
+            case Seq(c: Constraint) => constraintToMessage(c, true).map(L(_))
+            case Seq(Constructor(_, _, ctora, ctorb, flow)) =>
+              R(NewUnification(ctora, ctorb, flow, level + 1).createErrorMessage(level + 1)(ctx)) :: Nil
+            case Seq(c: Constraint, _: Constraint) => constraintToMessage(c).map(L(_))
+            case Seq(c: Constraint, _: Constructor) => constraintToMessage(c, true).map(L(_))
+            case Seq(Constructor(_, _, ctora, ctorb, flow), _) => R(NewUnification(ctora, ctorb, flow, level + 1).createErrorMessage(level + 1)(ctx)) :: Nil
+          }.flatten.toList ::: (if (flow.length != 1) flow.last match {
+            case c: Constraint => constraintToMessage(c, true).map(L(_))
+            case Constructor(_, _, ctora, ctorb, flow) =>
+              R(NewUnification(ctora, ctorb, flow, level + 1).createErrorMessage(level + 1)(ctx)) :: Nil
+          } else { Nil })
+          UniErrReport(mainMsg, msgs, level)
+      }
+      report
+    }
   }
 
   class DataFlow {
     override def toString: Str = this match {
-      case Constraint(a, b) => s"$a <: $b"
+      case c@Constraint(a, b) => if (c.flow) s"$a <: $b" else s"$a :> $b"
       case Sequence(flow) => flow.mkString(", ")
       case Constructor(a, b, ctora, ctorb, flow) => s"[$a - $ctora ~ $ctorb - $b, $flow]"
     }
+    def getA: ST = this match {
+      case Constraint(a, b) => a
+      case Sequence(flow) => flow.head.getA
+      case Constructor(a, b, ctora, ctorb, flow) => a
+    }
+    def getB: ST = this match {
+      case Constraint(a, b) => b
+      case Sequence(flow) => flow.head.getB
+      case Constructor(a, b, ctora, ctorb, flow) => b
+    }
+    def constraintSequence(level: Int = 0): Ls[(Constraint, Int)] = this match {
+      case c: Constraint => (c -> level) :: Nil
+      case Constructor(a, b, ctora, ctorb, flow) =>
+        flow.addLeft(Constraint(a, ctora))
+        flow.addRight(Constraint(b, ctorb))
+        flow.constraintSequence(level + 1)
+      case Sequence(flow) => flow.iterator.flatMap(_.constraintSequence(level)).toList
+    }
 
     def addLeft(c: Constraint): Sequence = this match {
-      case c1: Constraint => Sequence(MutQueue(c, c1))
-      case Sequence(flow) => Sequence(c +: flow)
-      case c1: Constructor => Sequence(MutQueue(c, c1))
+      case c1: Constraint =>
+        if (c.b.unwrapProvs == c1.getA.unwrapProvs) Sequence(MutQueue(c, c1))
+        else Sequence(MutQueue(c.rev(), c1))
+      case Sequence(flow) =>
+        if (c.b.unwrapProvs == flow.head.getA.unwrapProvs) Sequence(c +: flow)
+        else Sequence(c.rev() +: flow)
+      case c1: Constructor =>
+        if (c.b.unwrapProvs == c1.getA.unwrapProvs) Sequence(MutQueue(c, c1))
+        else Sequence(MutQueue(c.rev(), c1))
     }
 
     def addRight(c: Constraint): Sequence = this match {
-      case c1: Constraint => Sequence(MutQueue(c1, c))
+      case c1: Constraint =>
+        if (c1.getB.unwrapProvs == c.a.unwrapProvs) Sequence(MutQueue(c1, c))
+        else Sequence(MutQueue(c1, c.rev()))
       case Sequence(flow) => Sequence(flow :+ c)
-      case c1: Constructor => Sequence(MutQueue(c1, c))
+        if (flow.last.getB.unwrapProvs == c.a.unwrapProvs) Sequence(flow :+ c)
+        else Sequence(flow :+ c.rev())
+      case c1: Constructor =>
+        if (c1.getB.unwrapProvs == c.a.unwrapProvs) Sequence(MutQueue(c1, c))
+        else Sequence(MutQueue(c1, c.rev()))
     }
 
     def nestingLevel: Int = this match {
@@ -563,9 +659,42 @@ trait UnificationSolver extends TyperDatatypes {
       case Sequence(flow) => flow.map(_.nestingLevel).max
       case ctor: Constructor => 1 + ctor.flow.nestingLevel
     }
+
+    def rev(): DataFlow = this match {
+      case c@Constraint(a, b) =>
+        val c1 = Constraint(b, a)
+        c1.flow = !c.flow
+        c1
+      case Constructor(a, b, ctora, ctorb, flow) =>
+        Constructor(b, a, ctorb, ctora, flow.rev())
+      case Sequence(flow) => Sequence(flow.reverse.map(_.rev()))
+    }
   }
 
-  case class Constraint(a: ST, b: ST) extends DataFlow
+  case class Constraint(a: ST, b: ST) extends DataFlow {
+    // true flow from a to b
+    var flow = true
+    def getCleanProvs: Ls[TP] = {
+      val provs = a.uniqueTypeUseLocations reverse_::: b.uniqueTypeUseLocations
+      if (flow) {
+        // first location binds tighter so only use second prov if it's not same as first
+        provs match {
+          case head :: _ => head :: provs.sliding(2).collect {
+            case Seq(TypeProvenance(S(loc1), _, _, _), tp@TypeProvenance(S(loc2), _, _, _)) if loc1 != loc2 => tp
+          }.toList
+          case _ => provs
+        }
+      } else {
+        // second location binds tighter
+        provs match {
+          case ::(head, _) => head :: provs.sliding(2).collect {
+            case Seq(TypeProvenance(S(loc1), _, _, _), tp@TypeProvenance(S(loc2), _, _, _)) if loc1 != loc2 => tp
+          }.toList
+          case Nil => Nil
+        }
+      }
+    }
+  }
   case class Sequence(flow: MutQueue[DataFlow]) extends DataFlow
   case class Constructor(a: ST, b: ST, ctora: ST, ctorb: ST, flow: DataFlow) extends DataFlow
 }

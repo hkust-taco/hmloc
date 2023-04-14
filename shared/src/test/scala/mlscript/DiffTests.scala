@@ -359,9 +359,91 @@ class DiffTests
             .replaceAll("╟──", "")
             .replaceAll("║  ", "  ")
 
+        def reportUniError(err: UniErrReport, output: Str => Unit, show: Opt[ShowCtx] = N): Unit = {
+          def outputMsg(info: (Message, Ls[Loc], Bool, Int, Bool), sctx: ShowCtx): Unit = {
+            val (msg, locs, dir, level, last) = info
+            val levelOffset = " " * (level * 2)
+            val msgPre = levelOffset ++ "◉ "
+            val msgStr = msgPre ++ msg.showIn(sctx)
+            output(msgStr)
+
+            locs.zipWithIndex.foreach { case (loc, idx) =>
+              var locPre = levelOffset ++ "│ "
+              var termLinePre = levelOffset ++ "│ "
+              if (last) locPre = levelOffset ++ "  "
+              if (last) termLinePre = levelOffset ++ "  "
+
+              val (startLineNum, _, startLineCol) = loc.origin.fph.getLineColAt(loc.spanStart)
+              val (endLineNum, _, endLineCol) = loc.origin.fph.getLineColAt(loc.spanEnd)
+              val lineNum = loc.origin.startLineNum + startLineNum - blockLineNum
+              val lineNumPad = 5
+              var lineNumStr = " " * lineNumPad // about the same space as if it had a 2 digit line number
+              val lineBullet = " - "
+              val truncateStr = " ..."
+
+              // single line location and markers
+              lineNumStr = if (loc.origin.fileName == "builtin") {
+                "lib.".padTo(lineNumPad, ' ')
+              } else {
+                s"l.$lineNum".padTo(lineNumPad, ' ')
+              }
+              val fstLine = loc.origin.fph.lines(startLineNum - 1)
+              if (!dir && idx == 0 && !last) termLinePre = levelOffset ++ "▲ "
+              val linePre = termLinePre ++ lineBullet ++ lineNumStr
+              output(linePre ++ fstLine)
+              val gap = " " * (lineBullet + lineNumStr).length
+              val offset = " " * (startLineCol - 1)
+
+              if (endLineNum == startLineNum) {
+                val markers = "^" * (endLineCol - startLineCol)
+                output(locPre ++ gap ++ offset ++ markers)
+              }
+              // multi line location print first two lines
+              // truncate if message runs past second line
+              else {
+                // markers for first line cover the line for multi line
+                var markers = "^" * (fstLine.length - startLineCol + 1)
+                output(locPre ++ gap ++ offset ++ markers)
+
+                val truncate = endLineNum > (startLineNum + 1)
+                var sndLine = loc.origin.fph.lines(startLineNum)
+                if (truncate) sndLine ++= truncateStr
+                val whitespace = sndLine.takeWhile(_ == ' ').length
+                val linePre = " " * (lineBullet.length + lineNumStr.length)
+                output(locPre ++ linePre ++ sndLine)
+
+                val space = " " * (linePre.length + whitespace)
+                markers = if (truncate) {
+                  "^" * (sndLine.length - whitespace)
+                } else {
+                  "^" * (endLineCol - whitespace)
+                }
+                output(locPre ++ space ++ markers)
+              }
+
+              if (dir && idx == locs.length - 1 && !last) locPre = levelOffset ++ "▼ "
+              if (idx == locs.length - 1 && !last) output(locPre)
+            }
+          }
+          val (mainMsg, msgs, _, _) = UniErrReport.unapply(err).get
+          val sctx = show.getOrElse(Message.mkCtx(err.allMsgs.map(_._1)))
+
+          if (err.level == 0) {
+            output(mainMsg.showIn(sctx))
+            output("")
+          }
+
+          msgs.zipWithIndex.foreach{
+            case (L(msg), i) => outputMsg(msg, sctx)
+            case (R(report), i) => reportUniError(report, output, S(sctx))
+          }
+        }
+
         // report errors and warnings
         def reportBase(diags: Ls[mlscript.Diagnostic], output: Str => Unit): Unit = {
-          diags.foreach { diag =>
+          diags.foreach {
+            case report: UniErrReport => reportUniError(report, output)
+            case diag =>
             var unificationRelativeLineNums = false
             val sctx = Message.mkCtx(diag.allMsgs.iterator.map(_._1), "?")
             val headStr = diag match {
@@ -730,8 +812,9 @@ class DiffTests
               val temp = typer.dbg
               typer.dbg = mode.unifyDbg
               typer.newUnifyTypes()(ctx, raise)
-             val errors = typer.outputUnificationErrors()
-             if (errors.nonEmpty) typingOutputs += L(errors)
+              val errors = typer.outputUnificationErrors()
+              if (errors.nonEmpty) typingOutputs += L(errors)
+              typer.reportNewUnificationErrors(raise, ctx)
 //              if (mode.unifyDbg) typer.reportUnificationDebugInfo()(ctx, raise)
               typer.TypeVariable.clearCollectedTypeVars()
               typer.dbg = temp

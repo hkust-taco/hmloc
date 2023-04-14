@@ -4,6 +4,7 @@ import scala.util.chaining._
 import mlscript.utils._
 import shorthands._
 import Diagnostic._
+import mlscript.Message.MessageContext
 
 import scala.collection.mutable
 
@@ -45,6 +46,14 @@ object WarningReport {
 
 final case class UnificationReport(mainMsg: Str, allMsgs: Ls[Message -> Opt[Loc]], seqStr: Bool, source: Source) extends Diagnostic(mainMsg) {
   val kind: Kind = Error
+}
+
+final case class UniErrReport(mainMsg: Message, msgs: Ls[(Message, Ls[Loc], Bool, Int, Bool) \/ UniErrReport], level: Int = 0, source: Source = Typing) extends Diagnostic (mainMsg.toString) {
+  override val allMsgs: Ls[(Message, Opt[Loc])] = (mainMsg -> N) :: msgs.flatMap {
+    case L((msg, _, _, _, _)) => (msg -> N) :: Nil
+    case R(report) => report.allMsgs
+  }
+  override val kind: Kind = Error
 }
 
 object UnificationReport {

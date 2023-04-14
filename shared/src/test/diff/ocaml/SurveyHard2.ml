@@ -26,6 +26,21 @@ let bigAdd l1 l2 =
 (* List.fold_left: ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a *)
 (* List.combine: 'a list -> 'b list -> ('a * 'b) list zips two lists together *)
 (* List.map: ('a -> 'b) -> 'a list -> 'b list map elements of a list *)
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
+//│ ◉ (int) is here
+//│ │  - lib. let mod: int -> int -> int
+//│ │                                ^^^
+//│ │  - l.11     let f a x = (a + x) mod 10 in
+//│ │                         ^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ ('a) is assumed here
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.14     let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
 //│ U max: 210, total: 1016
 //│ UERR 1 errors
 //│ L: 0 [int ~ [[[([α239'], [α240'],)]]], [[[int]]] <: α233', α233' <: [[[([α239'], [α240'],)]]]]
