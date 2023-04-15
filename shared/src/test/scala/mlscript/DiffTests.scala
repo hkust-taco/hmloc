@@ -429,7 +429,7 @@ class DiffTests
           val sctx = show.getOrElse(Message.mkCtx(err.allMsgs.map(_._1)))
 
           if (err.level == 0) {
-            output(mainMsg.showIn(sctx))
+            output(s"[ERROR] ${mainMsg.showIn(sctx)}")
             output("")
           }
 
@@ -814,8 +814,8 @@ class DiffTests
               typer.newUnifyTypes()(ctx, raise)
               val errors = typer.outputUnificationErrors()
               if (errors.nonEmpty) typingOutputs += L(errors)
-              typer.reportNewUnificationErrors(raise, ctx)
-//              if (mode.unifyDbg) typer.reportUnificationDebugInfo()(ctx, raise)
+              typer.uniState.error.iterator.foreach(u => raise(u.createErrorMessage()(ctx)))
+              if (mode.unifyDbg) typer.reportUnificationDebugInfo()(ctx, raise)
               typer.TypeVariable.clearCollectedTypeVars()
               typer.dbg = temp
             }

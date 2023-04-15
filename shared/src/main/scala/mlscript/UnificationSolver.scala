@@ -536,7 +536,7 @@ trait UnificationSolver extends TyperDatatypes {
     }
   }
 
-  def reportNewUnificationErrors(implicit raise: Raise, ctx: Ctx): Unit =
+  def reportNewUnificationErrors(implicit ctx: Ctx, raise: Raise): Unit =
     uniState.error.iterator.foreach(u => raise(u.createErrorMessage()))
 
   case class NewUnification(a: ST, b: ST, flow: DataFlow, level: Int = 0) {
@@ -556,7 +556,7 @@ trait UnificationSolver extends TyperDatatypes {
     def createErrorMessage(level: Int = 0)(implicit ctx: Ctx): UniErrReport = {
       println(s"UERR REPORT $toString")
       implicit val showTV: Set[TV] = sequenceTVs
-      val mainMsg = msg"[ERROR] Type `${a.expOcamlTy()(ctx, Set())}` does not match `${b.expOcamlTy()(ctx, Set())}`"
+      val mainMsg = msg"Type `${a.expOcamlTy()(ctx, Set())}` does not match `${b.expOcamlTy()(ctx, Set())}`"
       def constraintToMessage(c: Constraint, last: Bool = false): Ls[(Message, Ls[Loc], Bool, Int, Bool)] = {
         val (a, b) = Constraint.unapply(c).get
         val flow = c.flow

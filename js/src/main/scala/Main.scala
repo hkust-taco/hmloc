@@ -234,7 +234,104 @@ object Main {
     var outputMarker = ""
     val blockLineNum = 0
     val showRelativeLineNums = false
-    
+
+    def reportUniError(err: UniErrReport,
+                       sb: collection.mutable.StringBuilder = new collection.mutable.StringBuilder(),
+                       show: Option[ShowCtx] = None
+                      ): Str = {
+      def output(s: Str): Unit = {
+        sb ++= outputMarker
+        sb ++= s
+        sb ++ "\n"
+        ()
+      }
+      def outputMsg(info: (Message, Ls[Loc], Bool, Int, Bool), sctx: ShowCtx): Unit = {
+        val (msg, locs, dir, level, last) = info
+        val levelOffset = " " * (level * 2)
+        val msgPre = levelOffset ++ "◉ "
+        val msgStr = msgPre ++ msg.showIn(sctx)
+        output(msgStr)
+
+        locs.zipWithIndex.foreach { case (loc, idx) =>
+          var locPre = levelOffset ++ "│ "
+          var termLinePre = levelOffset ++ "│ "
+          if (last) locPre = levelOffset ++ "  "
+          if (last) termLinePre = levelOffset ++ "  "
+
+          val (startLineNum, _, startLineCol) = loc.origin.fph.getLineColAt(loc.spanStart)
+          val (endLineNum, _, endLineCol) = loc.origin.fph.getLineColAt(loc.spanEnd)
+          val lineNum = loc.origin.startLineNum + startLineNum - blockLineNum
+          val lineNumPad = 5
+          var lineNumStr = " " * lineNumPad // about the same space as if it had a 2 digit line number
+          val lineBullet = " - "
+          val truncateStr = " ..."
+
+          // single line location and markers
+          lineNumStr = if (loc.origin.fileName == "builtin") {
+            "lib.".padTo(lineNumPad, ' ')
+          } else {
+            s"l.$lineNum".padTo(lineNumPad, ' ')
+          }
+          val fstLine = loc.origin.fph.lines(startLineNum - 1)
+          if (!dir && idx == 0 && !last) termLinePre = levelOffset ++ "▲ "
+          val linePre = termLinePre ++ lineBullet ++ lineNumStr
+          output(linePre ++ fstLine)
+          val gap = " " * (lineBullet + lineNumStr).length
+          val offset = " " * (startLineCol - 1)
+
+          if (endLineNum == startLineNum) {
+            val markers = "^" * (endLineCol - startLineCol)
+            output(locPre ++ gap ++ offset ++ markers)
+          }
+          // multi line location print first two lines
+          // truncate if message runs past second line
+          else {
+            // markers for first line cover the line for multi line
+            var markers = "^" * (fstLine.length - startLineCol + 1)
+            output(locPre ++ gap ++ offset ++ markers)
+
+            val truncate = endLineNum > (startLineNum + 1)
+            var sndLine = loc.origin.fph.lines(startLineNum)
+            if (truncate) sndLine ++= truncateStr
+            val whitespace = sndLine.takeWhile(_ == ' ').length
+            val linePre = " " * (lineBullet.length + lineNumStr.length)
+            output(locPre ++ linePre ++ sndLine)
+
+            val space = " " * (linePre.length + whitespace)
+            markers = if (truncate) {
+              "^" * (sndLine.length - whitespace)
+            } else {
+              "^" * (endLineCol - whitespace)
+            }
+            output(locPre ++ space ++ markers)
+          }
+
+          if (dir && idx == locs.length - 1 && !last) locPre = levelOffset ++ "▼ "
+          if (idx == locs.length - 1 && !last) output(locPre)
+        }
+      }
+      val (mainMsg, msgs, _, _) = UniErrReport.unapply(err).get
+      val sctx = show.getOrElse(Message.mkCtx(err.allMsgs.map(_._1)))
+
+      if (err.level == 0) {
+        output(mainMsg.showIn(sctx))
+        output("")
+      }
+
+      msgs.zipWithIndex.foreach{
+        case (L(msg), i) => outputMsg(msg, sctx)
+        case (R(report), i) => reportUniError(report, sb, S(sctx))
+      }
+
+      // show is empty if it's the first call here we should
+      // return the string from the string builder
+      if (show.isEmpty) {
+        sb.toString
+      } else {
+        ""
+      }
+    }
+
     def report(diag: Diagnostic): Str = {
       var sb = new collection.mutable.StringBuilder
       def output(s: Str): Unit = {
@@ -301,14 +398,19 @@ object Main {
     
     def htmlize(str: Str): Str =
       str.replace("\n", "<br/>").replace("  ", "&emsp;")
-    
+
+    // clear existing type variables so that only type variables
+    // created while typing the current block are retained
+    typer.TypeVariable.clearCollectedTypeVars()
+    typer.TypeVariable.collectTypeVars = true
+
     var decls = stmts
     while (decls.nonEmpty) {
       val d = decls.head
       decls = decls.tail
       try d match {
         case d @ Def(isrec, nme, L(rhs), _) =>
-          val ty_sch = typeLetRhs(isrec, nme.name, rhs)(ctx, raise)
+          val ty_sch = typeLetRhs(isrec, nme, rhs)(ctx, raise)
           val inst = ty_sch.instantiate(0)
           println(s"Typed `$nme` as: $inst")
           println(s" where: ${inst.showBounds}")
@@ -365,7 +467,13 @@ object Main {
           errorOccurred = true
       }
     }
-    
+
+
+    // generate unification for the type variables created in the current typing unit.
+    typer.newUnifyTypes()(ctx, raise)
+    typer.uniState.error.iterator
+      .foreach(u => res ++= reportUniError(u.createErrorMessage()(ctx)))
+
     // results.toList -> (if (errorOccurred) S(res.toString) else N)
     results.toList -> S(res.toString)
   }
@@ -423,7 +531,7 @@ object Helpers {
 
             // statement is defined and has a body/definition
             case d @ Def(isrec, nme, L(rhs), isByname) =>
-              val ty_sch = typer.typeLetRhs(isrec, nme.name, rhs)(ctx, raise)
+              val ty_sch = typer.typeLetRhs(isrec, nme, rhs)(ctx, raise)
               // statement does not have a declared type for the body
               // the inferred type must be used and stored for lookup
               declared.get(nme.name) match {
