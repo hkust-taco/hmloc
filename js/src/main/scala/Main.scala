@@ -12,7 +12,7 @@ import scala.collection.immutable
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val source = document.querySelector("#mlscript-input")
+    val source = document.querySelector("#system-input")
     update(source.textContent)
     source.addEventListener("input", typecheck)
   }
@@ -26,7 +26,7 @@ object Main {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   def update(str: String): Unit = {
     // println(s"Input: $str")
-    val target = document.querySelector("#mlscript-output")
+    val target = document.querySelector("#system-output")
     val tryRes = Try[Str] {
       import fastparse._
       import fastparse.Parsed.{Success, Failure}
