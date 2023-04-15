@@ -157,7 +157,7 @@ object Main {
     }
   }
   
-  private val htmlLineBreak = "<br />"
+  private val htmlLineBreak = "<br/>"
   private val htmlWhiteSpace = "&nbsp;"
   private val splitLeadingSpaces: Regex = "^( +)(.+)$".r
   
@@ -242,27 +242,29 @@ object Main {
       def output(s: Str): Unit = {
         sb ++= outputMarker
         sb ++= s
-        sb ++ htmlLineBreak
+        sb ++= htmlLineBreak
         ()
       }
+
       def outputMsg(info: (Message, Ls[Loc], Bool, Int, Bool), sctx: ShowCtx): Unit = {
-        val (msg, locs, dir, level, last) = info
-        val levelOffset = " " * (level * 2)
+        val (msg, locs, dir, level, lastMsg) = info
+        val levelOffset = htmlWhiteSpace * (level * 2)
         val msgPre = levelOffset ++ "◉ "
         val msgStr = msgPre ++ msg.showIn(sctx)
+        var locPre = levelOffset ++ "│" ++ htmlWhiteSpace
         output(msgStr)
 
         locs.zipWithIndex.foreach { case (loc, idx) =>
-          var locPre = levelOffset ++ "│ "
-          var termLinePre = levelOffset ++ "│ "
-          if (last) locPre = levelOffset ++ "  "
-          if (last) termLinePre = levelOffset ++ "  "
+          var termLinePre = levelOffset ++ "│" ++ htmlWhiteSpace
+          val lastLoc = idx == locs.length - 1
+          if (lastMsg) locPre = levelOffset ++ htmlWhiteSpace * 2
+          if (lastMsg) termLinePre = levelOffset ++ htmlWhiteSpace * 2
 
           val (startLineNum, _, startLineCol) = loc.origin.fph.getLineColAt(loc.spanStart)
           val (endLineNum, _, endLineCol) = loc.origin.fph.getLineColAt(loc.spanEnd)
           val lineNum = loc.origin.startLineNum + startLineNum - blockLineNum
           val lineNumPad = 5
-          var lineNumStr = " " * lineNumPad // about the same space as if it had a 2 digit line number
+          var lineNumStr = htmlWhiteSpace * lineNumPad // about the same space as if it had a 2 digit line number
           val lineBullet = " - "
           val truncateStr = " ..."
 
@@ -272,54 +274,58 @@ object Main {
           } else {
             s"l.$lineNum".padTo(lineNumPad, ' ')
           }
-          val fstLine = loc.origin.fph.lines(startLineNum - 1)
-          if (!dir && idx == 0 && !last) termLinePre = levelOffset ++ "▲ "
-          val linePre = termLinePre ++ lineBullet ++ lineNumStr
-          output(linePre ++ fstLine)
-          val gap = " " * (lineBullet + lineNumStr).length
-          val offset = " " * (startLineCol - 1)
+          val fstLine: String = loc.origin.fph.lines(startLineNum - 1)
+          if (!dir && idx == 0 && !lastMsg) termLinePre = levelOffset ++ "▲ "
+          var linePre = termLinePre ++ lineBullet ++ lineNumStr
 
           if (endLineNum == startLineNum) {
-            val markers = "^" * (endLineCol - startLineCol)
-            output(locPre ++ gap ++ offset ++ markers)
+            val (begin, rest) = fstLine.splitAt(startLineCol - 1)
+            val (mid, last) = rest.splitAt(endLineCol - startLineCol)
+            val reLine = s"$begin${underline(mid)}$last"
+            output(linePre ++ reLine)
           }
           // multi line location print first two lines
           // truncate if message runs past second line
           else {
             // markers for first line cover the line for multi line
-            var markers = "^" * (fstLine.length - startLineCol + 1)
-            output(locPre ++ gap ++ offset ++ markers)
+            val (start, rest) = fstLine.splitAt(startLineCol - 1)
+            val reLine = s"$start${underline(rest)}"
+            output(linePre ++ reLine)
+            if (!lastLoc) output(locPre)
 
             val truncate = endLineNum > (startLineNum + 1)
-            var sndLine = loc.origin.fph.lines(startLineNum)
+            var sndLine: String = loc.origin.fph.lines(startLineNum)
             if (truncate) sndLine ++= truncateStr
             val whitespace = sndLine.takeWhile(_ == ' ').length
-            val linePre = " " * (lineBullet.length + lineNumStr.length)
-            output(locPre ++ linePre ++ sndLine)
+            linePre = htmlWhiteSpace * (lineBullet.length + lineNumStr.length)
 
-            val space = " " * (linePre.length + whitespace)
-            markers = if (truncate) {
-              "^" * (sndLine.length - whitespace)
+            if (truncate) {
+              val (begin, rest) = sndLine.splitAt(whitespace)
+              val reLine = s"${begin.replaceAll(" ", htmlWhiteSpace)}${underline(rest)}"
+              output(locPre ++ linePre ++ reLine)
             } else {
-              "^" * (endLineCol - whitespace)
+              val (begin, rest) = sndLine.splitAt(whitespace)
+              val (mid, last) = rest.splitAt(endLineCol)
+              val reLine = s"${begin.replaceAll(" ", htmlWhiteSpace)}${underline(mid)}$last"
+              output(locPre ++ linePre ++ reLine)
             }
-            output(locPre ++ space ++ markers)
           }
 
-          if (dir && idx == locs.length - 1 && !last) locPre = levelOffset ++ "▼ "
-          if (idx == locs.length - 1 && !last) output(locPre)
+          if (lastLoc) {
+            if (dir && !lastMsg) locPre = levelOffset ++ "▼ "
+            if (!lastMsg) output(locPre)
+          } else {
+            output(locPre)
+          }
         }
       }
       val (mainMsg, seqStr, msgs, _, _) = UniErrReport.unapply(err).get
       val sctx = show.getOrElse(Message.mkCtx(err.allMsgs.map(_._1)))
 
       if (err.level == 0) {
+        output("")
         val pre = "<strong style=\"color: #E74C3C\">[ERROR]</strong> "
         output(s"$pre${mainMsg.showIn(sctx)}")
-        if (seqStr.nonEmpty) {
-          output(" " * 8 ++ seqStr)
-          output("")
-        }
         output("")
       }
 
