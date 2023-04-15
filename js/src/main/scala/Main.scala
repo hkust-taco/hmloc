@@ -242,7 +242,7 @@ object Main {
       def output(s: Str): Unit = {
         sb ++= outputMarker
         sb ++= s
-        sb ++ "\n"
+        sb ++ htmlLineBreak
         ()
       }
       def outputMsg(info: (Message, Ls[Loc], Bool, Int, Bool), sctx: ShowCtx): Unit = {
