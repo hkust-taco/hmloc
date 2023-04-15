@@ -227,7 +227,7 @@ object Main {
     }
     
     def underline(fragment: Str): Str =
-      s"<u style=\"text-decoration: #E74C3C dashed underline\">$fragment</u>"
+      s"<u class=\"error-underline\">$fragment</u>"
     
     var totalTypeErrors = 0
     var totalWarnings = 0
@@ -490,7 +490,7 @@ object Main {
   }
   
   private def underline(fragment: Str): Str =
-    s"<u style=\"text-decoration: #E74C3C dashed underline\">$fragment</u>"
+    s"<u class=\"error-underline\">$fragment</u>"
 }
 
 object Helpers {
