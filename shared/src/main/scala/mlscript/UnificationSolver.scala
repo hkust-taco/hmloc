@@ -4,7 +4,8 @@ import mlscript.Message.MessageContext
 import mlscript.utils._
 import mlscript.utils.shorthands._
 
-import scala.collection.mutable.{Set => MutSet, Map => MutMap, Queue => MutQueue}
+import scala.collection.mutable
+import scala.collection.mutable.{Map => MutMap, Queue => MutQueue, Set => MutSet}
 
 trait UnificationSolver extends TyperDatatypes {
   self: Typer =>
@@ -553,10 +554,45 @@ trait UnificationSolver extends TyperDatatypes {
 
     def constraintSequence: Ls[(Constraint, Int)] = flow.constraintSequence()
 
+    def createSequenceString(level: Int = 0)(implicit ctx: Ctx): Str = {
+      def  constraintToSequence(c: Constraint, last: Bool = false): Ls[(ST, Opt[Bool])] = {
+        val (a, b) = Constraint.unapply(c).get
+        val flow = c.flow
+        // for the last constraint display both the types
+        // don't show arrow for last type
+        if (last) {
+          (a, S(flow)) :: (b, N) :: Nil
+        } else {
+          (a, S(flow)) :: Nil
+        }
+      }
+
+      val sequence = flow match {
+        case c: Constraint => constraintToSequence(c)
+        case Sequence(flow) => flow.iterator.zipWithIndex.collect {
+          case (c: Constraint, idx) => constraintToSequence(c, idx == flow.length - 1)
+        }.flatten.toList
+        case _ => Nil
+      }
+
+      implicit val showTV: Set[TV] = sequenceTVs
+      val sequenceMessage = sequence.map{
+        case (st, S(true)) => msg"(${st.expOcamlTy()(ctx, showTV)}) ---> "
+        case (st, S(false)) => msg"(${st.expOcamlTy()(ctx, showTV)}) <--- "
+        case (st, N) => msg"(${st.expOcamlTy()(ctx, showTV)})"
+      }
+
+      val sctx = Message.mkCtx(sequenceMessage, "?")
+      val sb = new mutable.StringBuilder();
+      sequenceMessage.foreach(msg => sb ++= msg.showIn(sctx))
+      sb.toString()
+    }
+
     def createErrorMessage(level: Int = 0)(implicit ctx: Ctx): UniErrReport = {
       println(s"UERR REPORT $toString")
       implicit val showTV: Set[TV] = sequenceTVs
       val mainMsg = msg"Type `${a.expOcamlTy()(ctx, Set())}` does not match `${b.expOcamlTy()(ctx, Set())}`"
+      val seqString = createSequenceString()
       def constraintToMessage(c: Constraint, last: Bool = false): Ls[(Message, Ls[Loc], Bool, Int, Bool)] = {
         val (a, b) = Constraint.unapply(c).get
         val flow = c.flow
@@ -583,7 +619,7 @@ trait UnificationSolver extends TyperDatatypes {
         }
       }
       val report = flow match {
-        case c@Constraint(a, b) => UniErrReport(mainMsg, constraintToMessage(c, true).map(L(_)))
+        case c@Constraint(a, b) => UniErrReport(mainMsg, "", constraintToMessage(c, true).map(L(_)))
         case Constructor(a, b, ctora, ctorb, flow) =>
           NewUnification(ctora, ctorb, flow, level + 1).createErrorMessage(level + 1)(ctx)
         case Sequence(flow) =>
@@ -599,7 +635,7 @@ trait UnificationSolver extends TyperDatatypes {
             case Constructor(_, _, ctora, ctorb, flow) =>
               R(NewUnification(ctora, ctorb, flow, level + 1).createErrorMessage(level + 1)(ctx)) :: Nil
           } else { Nil })
-          UniErrReport(mainMsg, msgs, level)
+          UniErrReport(mainMsg, seqString, msgs, level)
       }
       report
     }

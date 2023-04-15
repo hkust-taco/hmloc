@@ -425,11 +425,16 @@ class DiffTests
               if (idx == locs.length - 1 && !last) output(locPre)
             }
           }
-          val (mainMsg, msgs, _, _) = UniErrReport.unapply(err).get
-          val sctx = show.getOrElse(Message.mkCtx(err.allMsgs.map(_._1)))
+          val (mainMsg, seqStr, msgs, _, _) = UniErrReport.unapply(err).get
+          val sctx = show.getOrElse(Message.mkCtx(err.allMsgs.map(_._1), "?"))
 
           if (err.level == 0) {
-            output(s"[ERROR] ${mainMsg.showIn(sctx)}")
+            val mainPre = "[ERROR] "
+            output(s"$mainPre${mainMsg.showIn(sctx)}")
+            if (seqStr.nonEmpty) {
+              output("")
+              output(" " * mainPre.length ++ seqStr)
+            }
             output("")
           }
 

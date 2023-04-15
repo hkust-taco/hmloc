@@ -310,11 +310,16 @@ object Main {
           if (idx == locs.length - 1 && !last) output(locPre)
         }
       }
-      val (mainMsg, msgs, _, _) = UniErrReport.unapply(err).get
+      val (mainMsg, seqStr, msgs, _, _) = UniErrReport.unapply(err).get
       val sctx = show.getOrElse(Message.mkCtx(err.allMsgs.map(_._1)))
 
       if (err.level == 0) {
-        output(mainMsg.showIn(sctx))
+        val pre = "<strong style=\"color: #E74C3C\">[ERROR]</strong> "
+        output(s"$pre${mainMsg.showIn(sctx)}")
+        if (seqStr.nonEmpty) {
+          output(" " * 8 ++ seqStr)
+          output("")
+        }
         output("")
       }
 
