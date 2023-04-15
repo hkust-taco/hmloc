@@ -6,6 +6,8 @@ let increment result = match result with
 (* Remember Left and Right are the constructors of the either type *)
 //│ [ERROR] Type `int` does not match `string`
 //│ 
+//│         (int) ---> (?a) <--- (string)
+//│ 
 //│ ◉ (int) is here
 //│ │  - lib. let (+): int -> int -> int
 //│ │                                ^^^
@@ -16,7 +18,7 @@ let increment result = match result with
 //│ │          | Left n -> n + 1 ...
 //│ │          ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.1  let increment result = match result with
 //│ │                                ^^^^^^^^^^^^^^^^^
 //│ │          | Left n -> n + 1 ...

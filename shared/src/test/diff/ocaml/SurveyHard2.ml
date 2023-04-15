@@ -28,13 +28,15 @@ let bigAdd l1 l2 =
 (* List.map: ('a -> 'b) -> 'a list -> 'b list map elements of a list *)
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
+//│         (int) ---> (?a) ---> (_ * _)
+//│ 
 //│ ◉ (int) is here
 //│ │  - lib. let mod: int -> int -> int
 //│ │                                ^^^
 //│ │  - l.11     let f a x = (a + x) mod 10 in
 //│ │                         ^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.14     let (_,res) = List.fold_left f base args in res in
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 

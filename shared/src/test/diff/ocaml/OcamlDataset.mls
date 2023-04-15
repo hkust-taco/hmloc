@@ -20,6 +20,8 @@ let bigAdd l1 l2 =
   removeZero (add (padZero l1 l2));;
 //│ [ERROR] Type `(_ * _) list` does not match `_ * _`
 //│ 
+//│         ((_ * _) list) ---> (?a) ---> (_ * _)
+//│ 
 //│ ◉ ((_ * _) list) is here
 //│ │  - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│ │                                                  ^^^^^^^^^^^^^
@@ -28,7 +30,7 @@ let bigAdd l1 l2 =
 //│ │  - l.16     let (_,res) = List.fold_left f base args in res in
 //│ │                                            ^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.16     let (_,res) = List.fold_left f base args in res in
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -36,6 +38,8 @@ let bigAdd l1 l2 =
 //│    - l.16     let (_,res) = List.fold_left f base args in res in
 //│                   ^^^^^^^
 //│ [ERROR] Type `_ * _ list` does not match `(_ * _) list`
+//│ 
+//│         (_ * _ list) ---> (?a) <--- ((_ * _) list)
 //│ 
 //│ ◉ (_ * _ list) is here
 //│ │  - l.8    else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
@@ -49,7 +53,7 @@ let bigAdd l1 l2 =
 //│ │  - l.13     let f a x = padZero l1 l2 in
 //│ │                         ^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.16     let (_,res) = List.fold_left f base args in res in
 //│ │                                            ^^^^
 //│ │  - l.14     let base = List.combine l1 l2 in
@@ -59,6 +63,8 @@ let bigAdd l1 l2 =
 //│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│                                                    ^^^^^^^^^^^^^
 //│ [ERROR] Type `_ list * _` does not match `(_ * _) list`
+//│ 
+//│         (_ list * _) ---> (?a) <--- ((_ * _) list)
 //│ 
 //│ ◉ (_ list * _) is here
 //│ │  - l.7    then (((clone 0 (-1 * diff)) @ l1), l2)
@@ -70,7 +76,7 @@ let bigAdd l1 l2 =
 //│ │  - l.13     let f a x = padZero l1 l2 in
 //│ │                         ^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.16     let (_,res) = List.fold_left f base args in res in
 //│ │                                            ^^^^
 //│ │  - l.14     let base = List.combine l1 l2 in
@@ -80,6 +86,8 @@ let bigAdd l1 l2 =
 //│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│                                                    ^^^^^^^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `(_ * _) list`
+//│ 
+//│         (_ * _) ---> (?a) <--- ((_ * _) list)
 //│ 
 //│ ◉ (_ * _) is here
 //│ │  - l.8    else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
@@ -93,7 +101,7 @@ let bigAdd l1 l2 =
 //│ │  - l.13     let f a x = padZero l1 l2 in
 //│ │                         ^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.16     let (_,res) = List.fold_left f base args in res in
 //│ │                                            ^^^^
 //│ │  - l.14     let base = List.combine l1 l2 in
@@ -183,13 +191,15 @@ let sqsum xs =
   let base = List.hd xs in List.fold_left f base xs;;
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
+//│         (_ list) <--- (?a) ---> (?b) <--- (int)
+//│ 
 //│ ◉ (_ list) is here
 //│ ▲  - l.2    let f a x = match x with | [] -> 0 | h::t -> 1 in
 //│ │                                                ^^^^
 //│ │  - l.2    let f a x = match x with | [] -> 0 | h::t -> 1 in
 //│ │                             ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.2    let f a x = match x with | [] -> 0 | h::t -> 1 in
 //│                     ^
 //│   ◉ (_ list) is here
@@ -200,7 +210,7 @@ let sqsum xs =
 //│   │  - l.1  let sqsum xs =
 //│   │                   ^^
 //│   │ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.1  let sqsum xs =
 //│   │                   ^^
 //│   │  - l.3    let base = List.hd xs in List.fold_left f base xs;;
@@ -209,13 +219,13 @@ let sqsum xs =
 //│   ◉ (_ list) is here
 //│      - lib. let List.hd: 'a list -> 'a
 //│                          ^^^^^^^
-//│ ◉ ('c) is assumed here
+//│ ◉ (?c) is assumed here
 //│ │  - l.3    let base = List.hd xs in List.fold_left f base xs;;
 //│ │                      ^^^^^^^^^^
 //│ │  - l.3    let base = List.hd xs in List.fold_left f base xs;;
 //│ │                                                     ^^^^
 //│ ▼ 
-//│ ◉ ('d) is assumed here
+//│ ◉ (?d) is assumed here
 //│ ▲  - l.2    let f a x = match x with | [] -> 0 | h::t -> 1 in
 //│ │                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -238,11 +248,13 @@ let rec sepConcat sep sl =
 let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│ [ERROR] Type `string` does not match `(_ * _) -> _`
 //│ 
+//│         (string) ---> (?a) ---> ((_ * _) -> _)
+//│ 
 //│ ◉ (string) is here
 //│ │  - l.3    | [] -> ""
 //│ │                   ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.2    match sl with
 //│             ^^^^^^^^^^^^^
 //│             | [] -> "" ...
@@ -255,14 +267,14 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│   │  - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│   │                                        ^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│   │                                        ^^^^^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (((_ -> _) -> _ list -> _ list) -> _) is here
 //│      - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│                                            ^^^^^^^^^^^^^^
-//│ ◉ ('c) is assumed here
+//│ ◉ (?c) is assumed here
 //│ │  - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│ │                                        ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -270,6 +282,8 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│    - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│                                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `string` does not match `(_ * _) -> _`
+//│ 
+//│         (string) ---> (?a) ---> ((_ * _) -> _)
 //│ 
 //│ ◉ (string) is here
 //│ │  - lib. let (^): string -> string -> string
@@ -285,7 +299,7 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│ │  - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│ │                                        ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│ │                                        ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -294,11 +308,13 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│                                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `string` does not match `(_ * _) -> _`
 //│ 
+//│         (string) ---> (?a) ---> ((_ * _) -> _)
+//│ 
 //│ ◉ (string) is here
 //│ │  - l.3    | [] -> ""
 //│ │                   ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.2    match sl with
 //│             ^^^^^^^^^^^^^
 //│             | [] -> "" ...
@@ -311,21 +327,21 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│     │  - l.1  let rec sepConcat sep sl =
 //│     │                 ^^^^^^^^^
 //│     ▼ 
-//│     ◉ ('sepConcat) is assumed here
+//│     ◉ (?sepConcat) is assumed here
 //│     │  - l.1  let rec sepConcat sep sl =
 //│     │                 ^^^^^^^^^
 //│     ▼ 
 //│     ◉ (string -> _) is here
 //│        - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│                                              ^^^^^^^^^
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│   │                                        ^^^^^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (((_ -> _) -> _ list -> _ list) -> _) is here
 //│      - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│                                            ^^^^^^^^^^^^^^
-//│ ◉ ('c) is assumed here
+//│ ◉ (?c) is assumed here
 //│ │  - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│ │                                        ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -334,13 +350,15 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│                                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `(_ -> _) -> _ list -> _ list`
 //│ 
+//│         (_ list) <--- 
+//│ 
 //│ ◉ (_ list) is here
 //│ ▲  - l.3    | [] -> ""
 //│ │             ^^
 //│ │  - l.2    match sl with
 //│ │                 ^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.1  let rec sepConcat sep sl =
 //│                                 ^^
 //│     ◉ (_ -> _ -> _) is here
@@ -351,14 +369,14 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│     │  - l.1  let rec sepConcat sep sl =
 //│     │                 ^^^^^^^^^
 //│     ▼ 
-//│     ◉ ('sepConcat) is assumed here
+//│     ◉ (?sepConcat) is assumed here
 //│     │  - l.1  let rec sepConcat sep sl =
 //│     │                 ^^^^^^^^^
 //│     ▼ 
 //│     ◉ (string -> _) is here
 //│        - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│                                              ^^^^^^^^^
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│   │                                        ^^^^^^^^^^^^^^
 //│   ▼ 
@@ -367,13 +385,15 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│                                            ^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `(_ -> _) -> _ list -> _ list`
 //│ 
+//│         (_ list) <--- 
+//│ 
 //│ ◉ (_ list) is here
 //│ ▲  - l.3    | [] -> ""
 //│ │             ^^
 //│ │  - l.2    match sl with
 //│ │                 ^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.1  let rec sepConcat sep sl =
 //│                                 ^^
 //│   ◉ (_ -> _) is here
@@ -384,7 +404,7 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│   │  - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│   │                                        ^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│   │                                        ^^^^^^^^^^^^^^
 //│   ▼ 
@@ -392,6 +412,8 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│      - l.7  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│                                            ^^^^^^^^^^^^^^
 //│ [ERROR] Type `(_ -> _) -> _ list -> _ list` does not match `_ list`
+//│ 
+//│         ((_ -> _) -> _ list -> _ list) ---> (?a) ---> (_ list)
 //│ 
 //│ ◉ ((_ -> _) -> _ list -> _ list) is here
 //│ │  - lib. let List.map: ('a -> 'b) -> 'a list -> 'b list
@@ -401,7 +423,7 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]");;
 //│ │  - l.1  let rec sepConcat sep sl =
 //│ │                               ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let rec sepConcat sep sl =
 //│ │                               ^^
 //│ │  - l.2    match sl with
@@ -440,9 +462,11 @@ let palindrome w =
   match explode w with
   | [] -> true
   | h::t -> matchHeads (explode w) (listReverse (explode w));;
-//│ [ERROR] Type `'_ | undefined` does not match `'_0 | undefined`
+//│ [ERROR] Type `?_ | undefined` does not match `?_0 | undefined`
 //│ 
-//│ ◉ ('_ | undefined) is here
+//│         (?_ | undefined) ---> (?a) <--- (?_0 | undefined)
+//│ 
+//│ ◉ (?_ | undefined) is here
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                                                           ^
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
@@ -450,7 +474,7 @@ let palindrome w =
 //│ │  - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│ │                  ^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│ │                                ^^^^^^^^^^^
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
@@ -458,10 +482,12 @@ let palindrome w =
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                                                           ^
 //│ │ 
-//│ ◉ ('_0 | undefined) is here
+//│ ◉ (?_0 | undefined) is here
 //│    - l.4    match l with | [] -> [] | h::t -> (listReverse t) @ [h];;
 //│                                                                  ^
-//│ [ERROR] Type `_ list` does not match `'_0 | undefined`
+//│ [ERROR] Type `_ list` does not match `?_0 | undefined`
+//│ 
+//│         (_ list) ---> (?a) <--- (?_0 | undefined)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
@@ -469,22 +495,24 @@ let palindrome w =
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                                                           ^
 //│ │ 
-//│ ◉ ('_0 | undefined) is here
+//│ ◉ (?_0 | undefined) is here
 //│    - l.4    match l with | [] -> [] | h::t -> (listReverse t) @ [h];;
 //│                                                                  ^
-//│ [ERROR] Type `'_ | undefined` does not match `_ list`
+//│ [ERROR] Type `?_ | undefined` does not match `_ list`
 //│ 
-//│ ◉ ('_ | undefined) is here
+//│         (?_ | undefined) ---> (?a) ---> (?b) <--- (_ list)
+//│ 
+//│ ◉ (?_ | undefined) is here
 //│ │  - l.4    match l with | [] -> [] | h::t -> (listReverse t) @ [h];;
 //│ │                                                                ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.4    match l with | [] -> [] | h::t -> (listReverse t) @ [h];;
 //│                                                                  ^
 //│   ◉ (_ list) is here
@@ -495,7 +523,7 @@ let palindrome w =
 //│   │  - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│   │                                                              ^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│      - l.5  let rec matchHeads x y =
 //│                                  ^
 //│       ◉ (_ -> _ -> _) is here
@@ -506,47 +534,49 @@ let palindrome w =
 //│       │  - l.5  let rec matchHeads x y =
 //│       │                 ^^^^^^^^^^
 //│       ▼ 
-//│       ◉ ('matchHeads) is assumed here
+//│       ◉ (?matchHeads) is assumed here
 //│       │  - l.5  let rec matchHeads x y =
 //│       │                 ^^^^^^^^^^
 //│       ▼ 
 //│       ◉ (_ list -> _) is here
 //│          - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│                                                         ^^^^^^^^^^
-//│     ◉ ('c) is assumed here
+//│     ◉ (?c) is assumed here
 //│     │  - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│     │                                                 ^^^^^^^^^^^^
 //│     ▼ 
 //│     ◉ (_ -> _) is here
 //│        - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│                                                       ^^^^^^^^^^^^
-//│   ◉ ('d) is assumed here
+//│   ◉ (?d) is assumed here
 //│   ▲  - l.2  let getTail t = match t with | [] -> [] | h::t -> t;;
 //│   │                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
 //│   ◉ (_ list) is here
 //│      - l.2  let getTail t = match t with | [] -> [] | h::t -> t;;
 //│                                                  ^^
-//│ ◉ ('a0) is assumed here
+//│ ◉ (?a0) is assumed here
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                                                           ^
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('e) is assumed here
+//│ ◉ (?e) is assumed here
 //│ ▲  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
 //│ ◉ (_ list) is here
 //│    - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│                                                ^^
-//│ [ERROR] Type `'_ | undefined` does not match `'_0 | undefined`
+//│ [ERROR] Type `?_ | undefined` does not match `?_0 | undefined`
 //│ 
-//│ ◉ ('_ | undefined) is here
+//│         (?_ | undefined) ---> (?a) ---> (?b) <--- (?_0 | undefined)
+//│ 
+//│ ◉ (?_ | undefined) is here
 //│ │  - l.4    match l with | [] -> [] | h::t -> (listReverse t) @ [h];;
 //│ │                                                                ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.4    match l with | [] -> [] | h::t -> (listReverse t) @ [h];;
 //│                                                                  ^
 //│   ◉ (_ list) is here
@@ -557,7 +587,7 @@ let palindrome w =
 //│   │  - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│   │                                                              ^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│      - l.5  let rec matchHeads x y =
 //│                                  ^
 //│       ◉ (_ -> _ -> _) is here
@@ -568,28 +598,28 @@ let palindrome w =
 //│       │  - l.5  let rec matchHeads x y =
 //│       │                 ^^^^^^^^^^
 //│       ▼ 
-//│       ◉ ('matchHeads) is assumed here
+//│       ◉ (?matchHeads) is assumed here
 //│       │  - l.5  let rec matchHeads x y =
 //│       │                 ^^^^^^^^^^
 //│       ▼ 
 //│       ◉ (_ list -> _) is here
 //│          - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│                                                         ^^^^^^^^^^
-//│     ◉ ('c) is assumed here
+//│     ◉ (?c) is assumed here
 //│     │  - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│     │                                                 ^^^^^^^^^^^^
 //│     ▼ 
 //│     ◉ (_ -> _) is here
 //│        - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│                                                       ^^^^^^^^^^^^
-//│   ◉ ('d) is assumed here
+//│   ◉ (?d) is assumed here
 //│   ▲  - l.2  let getTail t = match t with | [] -> [] | h::t -> t;;
 //│   │                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
 //│   ◉ (_ list) is here
 //│      - l.2  let getTail t = match t with | [] -> [] | h::t -> t;;
 //│                                                  ^^
-//│ ◉ ('a0) is assumed here
+//│ ◉ (?a0) is assumed here
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                                                           ^
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
@@ -597,16 +627,18 @@ let palindrome w =
 //│ │  - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│ │                                ^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('e) is assumed here
+//│ ◉ (?e) is assumed here
 //│ ▲  - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│ │                  ^^^^^^^^^^^
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ ('_0 | undefined) is here
+//│ ◉ (?_0 | undefined) is here
 //│    - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│                                                             ^
-//│ [ERROR] Type `_ list` does not match `'_0 | undefined`
+//│ [ERROR] Type `_ list` does not match `?_0 | undefined`
+//│ 
+//│         (_ list) ---> (?a) <--- (?_0 | undefined)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
@@ -616,7 +648,7 @@ let palindrome w =
 //│ │  - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│ │                  ^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.9        if (getHead x) = (getHead y) then matchHeads t (getTail y) else false;;
 //│ │                                ^^^^^^^^^^^
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
@@ -624,7 +656,7 @@ let palindrome w =
 //│ │  - l.1  let getHead h = match h with | [] -> [] | h::t -> h;;
 //│ │                                                           ^
 //│ │ 
-//│ ◉ ('_0 | undefined) is here
+//│ ◉ (?_0 | undefined) is here
 //│    - l.4    match l with | [] -> [] | h::t -> (listReverse t) @ [h];;
 //│                                                                  ^
 //│ /!!!\ Uncaught error: java.lang.Exception: No locs for relation
@@ -642,6 +674,8 @@ let rec sumList xs = sumListHelper 0 xs;;
 let rec additivePersistence n = sumList digitsOfInt n;;
 //│ [ERROR] Type `int` does not match `_ -> _`
 //│ 
+//│         (int) ---> (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (int) is here
 //│ │  - l.8  let rec sumList xs = sumListHelper 0 xs;;
 //│ │                                            ^
@@ -656,7 +690,7 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│ │  - l.2    match xs with | [] -> total | hd::tail -> sumListHelper (total + hd) tail;;
 //│ │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.8  let rec sumList xs = sumListHelper 0 xs;;
 //│                                ^^^^^^^^^^^^^^^^^^
 //│   ◉ (_ -> _) is here
@@ -665,14 +699,14 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│   │  - l.8  let rec sumList xs = sumListHelper 0 xs;;
 //│   │                 ^^^^^^^
 //│   ▼ 
-//│   ◉ ('sumList) is assumed here
+//│   ◉ (?sumList) is assumed here
 //│   │  - l.8  let rec sumList xs = sumListHelper 0 xs;;
 //│   │                 ^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.9  let rec additivePersistence n = sumList digitsOfInt n;;
 //│                                             ^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.9  let rec additivePersistence n = sumList digitsOfInt n;;
 //│ │                                         ^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -680,6 +714,8 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│    - l.9  let rec additivePersistence n = sumList digitsOfInt n;;
 //│                                           ^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `int` does not match `_ -> _`
+//│ 
+//│         (int) ---> (?a) ---> (_ -> _)
 //│ 
 //│ ◉ (int) is here
 //│ │  - l.8  let rec sumList xs = sumListHelper 0 xs;;
@@ -699,7 +735,7 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│ │  - l.9  let rec additivePersistence n = sumList digitsOfInt n;;
 //│ │                                         ^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.9  let rec additivePersistence n = sumList digitsOfInt n;;
 //│ │                                         ^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -707,6 +743,8 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│    - l.9  let rec additivePersistence n = sumList digitsOfInt n;;
 //│                                           ^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
+//│ 
+//│         (_ -> _) ---> (?digitsOfInt) ---> (_ list)
 //│ 
 //│ ◉ (_ -> _) is here
 //│ │  - l.7  let rec digitsOfInt n = digitsOfIntHelper n;;
@@ -716,7 +754,7 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│ │  - l.9  let rec additivePersistence n = sumList digitsOfInt n;;
 //│ │                                                 ^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.8  let rec sumList xs = sumListHelper 0 xs;;
 //│                           ^^
 //│   ◉ (_ -> _) is here
@@ -725,14 +763,14 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│   │  - l.8  let rec sumList xs = sumListHelper 0 xs;;
 //│   │                 ^^^^^^^
 //│   ▼ 
-//│   ◉ ('sumList) is assumed here
+//│   ◉ (?sumList) is assumed here
 //│   │  - l.8  let rec sumList xs = sumListHelper 0 xs;;
 //│   │                 ^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.9  let rec additivePersistence n = sumList digitsOfInt n;;
 //│                                             ^^^^^^^
-//│ ◉ ('digitsOfInt) is assumed here
+//│ ◉ (?digitsOfInt) is assumed here
 //│ │  - l.7  let rec digitsOfInt n = digitsOfIntHelper n;;
 //│ │                 ^^^^^^^^^^^
 //│ │  - l.9  let rec additivePersistence n = sumList digitsOfInt n;;
@@ -751,13 +789,15 @@ let rec additivePersistence n = sumList digitsOfInt n;;
 //│                                           ^^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
 //│ 
+//│         (_ -> _) ---> (?digitsOfInt) ---> (_ list)
+//│ 
 //│ ◉ (_ -> _) is here
 //│ │  - l.7  let rec digitsOfInt n = digitsOfIntHelper n;;
 //│ │                             ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.7  let rec digitsOfInt n = digitsOfIntHelper n;;
 //│ │                 ^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('digitsOfInt) is assumed here
+//│ ◉ (?digitsOfInt) is assumed here
 //│ │  - l.7  let rec digitsOfInt n = digitsOfIntHelper n;;
 //│ │                 ^^^^^^^^^^^
 //│ │  - l.9  let rec additivePersistence n = sumList digitsOfInt n;;
@@ -803,6 +843,8 @@ let rec matchHeads x =
       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ [ERROR] Type `_ list` does not match `string`
 //│ 
+//│         (_ list) ---> (?a) ---> (string)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                                                           ^^
@@ -811,7 +853,7 @@ let rec matchHeads x =
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ │                                                          ^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.5  let rec matchHeads x =
 //│                              ^
 //│   ◉ (_ -> _) is here
@@ -822,14 +864,14 @@ let rec matchHeads x =
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('matchHeads) is assumed here
+//│   ◉ (?matchHeads) is assumed here
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│                                                   ^^^^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -838,15 +880,17 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                     ^
 //│ ▼ 
 //│ ◉ (string) is here
 //│    - lib. let String_length: string -> int
 //│                              ^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ Array`
+//│ 
+//│         (_ list) ---> (?a) ---> (_ Array)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
@@ -856,7 +900,7 @@ let rec matchHeads x =
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ │                                                          ^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.5  let rec matchHeads x =
 //│                              ^
 //│   ◉ (_ -> _) is here
@@ -867,14 +911,14 @@ let rec matchHeads x =
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('matchHeads) is assumed here
+//│   ◉ (?matchHeads) is assumed here
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│                                                   ^^^^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -883,15 +927,17 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.6    match explode x with
 //│ │                         ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ Array`
+//│ 
+//│         (_ list) ---> (?a) ---> (_ Array)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
@@ -899,7 +945,7 @@ let rec matchHeads x =
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -908,22 +954,24 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.6    match explode x with
 //│ │                         ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ [ERROR] Type `_ Array` does not match `_ Array`
 //│ 
+//│         (_ Array) <--- (?a) ---> (_ Array)
+//│ 
 //│ ◉ (_ Array) is here
-//│ ▲  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ ▲  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                     ^^^^^^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
 //│ │  - l.6    match explode x with
 //│ │                         ^
@@ -934,7 +982,7 @@ let rec matchHeads x =
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -943,15 +991,17 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ [ERROR] Type `_ list` does not match `string`
+//│ 
+//│         (_ list) ---> (?a) ---> (string)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
@@ -959,7 +1009,7 @@ let rec matchHeads x =
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -968,9 +1018,9 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                     ^
 //│ ▼ 
 //│ ◉ (string) is here
@@ -978,17 +1028,19 @@ let rec matchHeads x =
 //│                              ^^^^^^
 //│ [ERROR] Type `_ Array` does not match `_ Array`
 //│ 
+//│         (_ Array) <--- (?a) ---> (_ Array)
+//│ 
 //│ ◉ (_ Array) is here
-//│ ▲  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ ▲  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                     ^^^^^^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
 //│ │  - l.6    match explode x with
 //│ │                         ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.5  let rec matchHeads x =
 //│                              ^
 //│   ◉ (_ -> _) is here
@@ -999,14 +1051,14 @@ let rec matchHeads x =
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('matchHeads) is assumed here
+//│   ◉ (?matchHeads) is assumed here
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│                                                   ^^^^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1015,15 +1067,17 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ Array`
+//│ 
+//│         (_ list) ---> (?a) ---> (_ Array)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
@@ -1031,7 +1085,7 @@ let rec matchHeads x =
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1040,22 +1094,24 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ [ERROR] Type `_ Array` does not match `string`
 //│ 
+//│         (_ Array) <--- (?a) ---> (string)
+//│ 
 //│ ◉ (_ Array) is here
-//│ ▲  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ ▲  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                     ^^^^^^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
@@ -1066,7 +1122,7 @@ let rec matchHeads x =
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1075,9 +1131,9 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                     ^
 //│ ▼ 
 //│ ◉ (string) is here
@@ -1085,6 +1141,8 @@ let rec matchHeads x =
 //│                              ^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ Array`
 //│ 
+//│         (_ list) ---> (?a) ---> (_ Array)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                                                           ^^
@@ -1093,7 +1151,7 @@ let rec matchHeads x =
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ │                                                          ^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.5  let rec matchHeads x =
 //│                              ^
 //│   ◉ (_ -> _) is here
@@ -1104,14 +1162,14 @@ let rec matchHeads x =
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('matchHeads) is assumed here
+//│   ◉ (?matchHeads) is assumed here
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│                                                   ^^^^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1120,15 +1178,17 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.6    match explode x with
 //│ │                         ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ [ERROR] Type `_ list` does not match `string`
+//│ 
+//│         (_ list) ---> (?a) ---> (string)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
@@ -1138,7 +1198,7 @@ let rec matchHeads x =
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ │                                                          ^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.5  let rec matchHeads x =
 //│                              ^
 //│   ◉ (_ -> _) is here
@@ -1149,14 +1209,14 @@ let rec matchHeads x =
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('matchHeads) is assumed here
+//│   ◉ (?matchHeads) is assumed here
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│                                                   ^^^^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1165,9 +1225,9 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                     ^
 //│ ▼ 
 //│ ◉ (string) is here
@@ -1175,12 +1235,14 @@ let rec matchHeads x =
 //│                              ^^^^^^
 //│ [ERROR] Type `_ Array` does not match `string`
 //│ 
+//│         (_ Array) <--- (?a) ---> (string)
+//│ 
 //│ ◉ (_ Array) is here
-//│ ▲  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ ▲  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                     ^^^^^^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
 //│ │  - l.6    match explode x with
 //│ │                         ^
@@ -1191,7 +1253,7 @@ let rec matchHeads x =
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1200,9 +1262,9 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                     ^
 //│ ▼ 
 //│ ◉ (string) is here
@@ -1210,17 +1272,19 @@ let rec matchHeads x =
 //│                              ^^^^^^
 //│ [ERROR] Type `_ Array` does not match `string`
 //│ 
+//│         (_ Array) <--- (?a) ---> (string)
+//│ 
 //│ ◉ (_ Array) is here
-//│ ▲  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ ▲  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                     ^^^^^^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
 //│ │  - l.6    match explode x with
 //│ │                         ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.5  let rec matchHeads x =
 //│                              ^
 //│   ◉ (_ -> _) is here
@@ -1231,14 +1295,14 @@ let rec matchHeads x =
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('matchHeads) is assumed here
+//│   ◉ (?matchHeads) is assumed here
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│                                                   ^^^^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1247,9 +1311,9 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                     ^
 //│ ▼ 
 //│ ◉ (string) is here
@@ -1257,13 +1321,15 @@ let rec matchHeads x =
 //│                              ^^^^^^
 //│ [ERROR] Type `_ list` does not match `string`
 //│ 
+//│         (_ list) ---> (?a) ---> (string)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                                                           ^^
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1272,9 +1338,9 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                     ^
 //│ ▼ 
 //│ ◉ (string) is here
@@ -1282,17 +1348,19 @@ let rec matchHeads x =
 //│                              ^^^^^^
 //│ [ERROR] Type `string` does not match `_ Array`
 //│ 
+//│         (string) <--- (?a) ---> (_ Array)
+//│ 
 //│ ◉ (string) is here
 //│ ▲  - lib. let String_length: string -> int
 //│ │                            ^^^^^^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
 //│ │  - l.6    match explode x with
 //│ │                         ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.5  let rec matchHeads x =
 //│                              ^
 //│   ◉ (_ -> _) is here
@@ -1303,14 +1371,14 @@ let rec matchHeads x =
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('matchHeads) is assumed here
+//│   ◉ (?matchHeads) is assumed here
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│                                                   ^^^^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1319,15 +1387,17 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ Array`
+//│ 
+//│         (_ list) ---> (?a) ---> (_ Array)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
@@ -1335,7 +1405,7 @@ let rec matchHeads x =
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1344,15 +1414,17 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.6    match explode x with
 //│ │                         ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ Array`
+//│ 
+//│         (_ list) ---> (?a) ---> (_ Array)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
@@ -1360,7 +1432,7 @@ let rec matchHeads x =
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1369,15 +1441,17 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ Array`
+//│ 
+//│         (_ list) ---> (?a) ---> (_ Array)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
@@ -1387,7 +1461,7 @@ let rec matchHeads x =
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ │                                                          ^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.5  let rec matchHeads x =
 //│                              ^
 //│   ◉ (_ -> _) is here
@@ -1398,14 +1472,14 @@ let rec matchHeads x =
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('matchHeads) is assumed here
+//│   ◉ (?matchHeads) is assumed here
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│                                                   ^^^^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1414,15 +1488,17 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ Array`
+//│ 
+//│         (_ list) ---> (?a) ---> (_ Array)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
@@ -1432,7 +1508,7 @@ let rec matchHeads x =
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│ │                                                          ^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.5  let rec matchHeads x =
 //│                              ^
 //│   ◉ (_ -> _) is here
@@ -1443,14 +1519,14 @@ let rec matchHeads x =
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('matchHeads) is assumed here
+//│   ◉ (?matchHeads) is assumed here
 //│   │  - l.5  let rec matchHeads x =
 //│   │                 ^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
 //│                                                   ^^^^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let loseTail z = match listReverse z with | [] -> [] | h::t -> t;;
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.10       else if [h] = (getHeads t) then matchHeads (loseTail t) else false;;
@@ -1459,13 +1535,13 @@ let rec matchHeads x =
 //│ │                            ^
 //│ │  - l.8        if (getHeads (explode x)) = []
 //│ │                                     ^
-//│ │  - l.-358let explode s =
+//│ │  - l.-376let explode s =
 //│ │                      ^
-//│ │  - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│ │  - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│ │                                                      ^
 //│ ▼ 
 //│ ◉ (_ Array) is here
-//│    - l.-356    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
+//│    - l.-374    if i >= (String_length s) then [] else (s[i]) :: (go (i + 1)) in
 //│                                                       ^^^^^^
 //│ listReverse: list['a] -> list['a]
 //│ getHeads: list['a] -> list['a]
@@ -1499,11 +1575,13 @@ let explode s =
   go 0;;
 //│ [ERROR] Type `error` does not match `int`
 //│ 
+//│         (error) ---> (?a) <--- (int)
+//│ 
 //│ ◉ (error) is here
 //│ │  - l.3      if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
 //│ │                     ^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.3      if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
 //│ │                ^
 //│ │  - l.2    let rec go i =
@@ -1516,15 +1594,17 @@ let explode s =
 //│                                  ^^^
 //│ [ERROR] Type `error` does not match `int`
 //│ 
+//│         (error) ---> (?a) <--- 
+//│ 
 //│ ◉ (error) is here
 //│ │  - l.3      if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
 //│ │                     ^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.3      if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
 //│ │                ^
 //│ │ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│    - l.2    let rec go i =
 //│                        ^
 //│   ◉ (_ -> _) is here
@@ -1533,7 +1613,7 @@ let explode s =
 //│   │             if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('go) is assumed here
+//│   ◉ (?go) is assumed here
 //│   │  - l.3      if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
 //│   │                                                                ^^
 //│   ▼ 
@@ -1542,11 +1622,11 @@ let explode s =
 //│                                                                    ^^
 //│ ╔══[ERROR] identifier not found: String.length
 //│ ║  
-//│ ║  l.1498:	    if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
+//│ ║  l.1574:	    if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
 //│ ╙──       	             ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: s.
 //│ ║  
-//│ ║  l.1498:	    if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
+//│ ║  l.1574:	    if i >= (String.length s) then [] else (s.[i]) :: (go (i + 1)) in
 //│ ╙──       	                                            ^^
 //│ explode: error -> list[undefined]
 //│ U max: 23, total: 73
@@ -1568,7 +1648,7 @@ let rec digitalRoot n =
   if (n / 10) <> 0
   then (print_int n; print_endline " "; digitalRoot)
   else digits;;
-//│ /!\ Parse error: Expected ")":4:29, found "; (digitsO" at l.1562:29:   then ((n mod 10) :: return; (digitsOfInt (n / 10)) @ return)
+//│ /!\ Parse error: Expected ")":4:29, found "; (digitsO" at l.1642:29:   then ((n mod 10) :: return; (digitsOfInt (n / 10)) @ return)
 
 // file 2361
 let rec digitsOfInt n =
@@ -1581,6 +1661,8 @@ let rec additivePersistence n =
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
+//│         (int) ---> (?a) <--- (bool)
+//│ 
 //│ ◉ (int) is here
 //│ │  - l.7    | [] -> 0
 //│ │                   ^
@@ -1589,7 +1671,7 @@ let rec additivePersistence n =
 //│ │           | [] -> 0 ...
 //│ │           ^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.6    match digits n with
 //│ │           ^^^^^^^^^^^^^^^^^^^
 //│ │           | [] -> 0 ...
@@ -1625,6 +1707,8 @@ let rec build (rand,depth) =
       else buildCosine build (rand, (d - 1));;
 //│ [ERROR] Type `(_ * _) -> _` does not match `expr`
 //│ 
+//│         ((_ * _) -> _) ---> (?a) ---> (expr)
+//│ 
 //│ ◉ ((_ * _) -> _) is here
 //│ │  - l.5  let rec build (rand,depth) =
 //│ │                       ^^^^^^^^^^^^^^
@@ -1637,14 +1721,14 @@ let rec build (rand,depth) =
 //│ │  - l.1  let buildCosine e = Cosine e;;
 //│ │                         ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let buildCosine e = Cosine e;;
 //│ │                         ^
 //│ │  - l.1  let buildCosine e = Cosine e;;
 //│ │                                    ^
 //│ ▼ 
 //│ ◉ (expr) is here
-//│    - l.-1476  | Cosine of expr
+//│    - l.-1550  | Cosine of expr
 //│                           ^^^^
 //│ buildCosine: expr -> expr
 //│ buildSine: expr -> expr
@@ -1667,6 +1751,8 @@ let rec mulByDigit i l =
   | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
+//│         (_ list) ---> (?a) ---> (int)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.3  let y = [1, 2, 3];;
 //│ │                 ^^^^^^^^^
@@ -1675,7 +1761,7 @@ let rec mulByDigit i l =
 //│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
 //│ │                         ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
 //│ │                         ^
 //│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
@@ -1686,6 +1772,8 @@ let rec mulByDigit i l =
 //│                             ^^^
 //│ [ERROR] Type `_ -> _ list -> _ list` does not match `int`
 //│ 
+//│         (_ -> _ list -> _ list) ---> (?a) ---> (int)
+//│ 
 //│ ◉ (_ -> _ list -> _ list) is here
 //│ │  - l.2  let x l = List.map string_of_int;;
 //│ │               ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1694,7 +1782,7 @@ let rec mulByDigit i l =
 //│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
 //│ │                       ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
 //│ │                       ^
 //│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
@@ -1722,11 +1810,13 @@ let padZero l1 l2 =
   else (clone 0 (padLength l1 l2)) l2;;
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
+//│         (_ list) ---> (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│ │                                                                       ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ◉ (_ -> _) is here
@@ -1735,14 +1825,14 @@ let padZero l1 l2 =
 //│   │  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│   │                 ^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│   │                 ^^^^^^^
 //│   ▼ 
 //│   ◉ (int -> _) is here
 //│      - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│                     ^^^^^^^
-//│ ◉ ('c) is assumed here
+//│ ◉ (?c) is assumed here
 //│ │  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -1750,6 +1840,8 @@ let padZero l1 l2 =
 //│    - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
+//│ 
+//│         (_ list) ---> (?a) ---> (_ -> _)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
@@ -1759,7 +1851,7 @@ let padZero l1 l2 =
 //│ │  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -1768,11 +1860,13 @@ let padZero l1 l2 =
 //│                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
+//│         (_ list) ---> (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│ │                                           ^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ◉ (_ -> _) is here
@@ -1781,14 +1875,14 @@ let padZero l1 l2 =
 //│   │  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│   │                 ^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│   │                 ^^^^^^^
 //│   ▼ 
 //│   ◉ (int -> _) is here
 //│      - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│                     ^^^^^^^
-//│ ◉ ('c) is assumed here
+//│ ◉ (?c) is assumed here
 //│ │  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -1796,6 +1890,8 @@ let padZero l1 l2 =
 //│    - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
+//│ 
+//│         (_ list) ---> (?a) ---> (_ -> _)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
@@ -1805,7 +1901,7 @@ let padZero l1 l2 =
 //│ │  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -1814,11 +1910,13 @@ let padZero l1 l2 =
 //│                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
 //│ 
+//│         (_ -> _) <--- (?a) <--- (_ list)
+//│ 
 //│ ◉ (_ -> _) is here
 //│ ▲  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> _ -> _) is here
@@ -1827,21 +1925,21 @@ let padZero l1 l2 =
 //│     │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│     │                 ^^^^^
 //│     ▼ 
-//│     ◉ ('clone) is assumed here
+//│     ◉ (?clone) is assumed here
 //│     │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│     │                 ^^^^^
 //│     ▼ 
 //│     ◉ (_ -> _) is here
 //│        - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│                                                       ^^^^^
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│   │                                                 ^^^^^^^
 //│   ▼ 
 //│   ◉ (int -> _) is here
 //│      - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│                                                     ^^^^^^^
-//│ ◉ ('c) is assumed here
+//│ ◉ (?c) is assumed here
 //│ ▲  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│ │                                                ^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
@@ -1852,11 +1950,13 @@ let padZero l1 l2 =
 //│                                                                         ^^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
 //│ 
+//│         (_ -> _) <--- (?a) <--- (_ list)
+//│ 
 //│ ◉ (_ -> _) is here
 //│ ▲  - l.6    else (clone 0 (padLength l1 l2)) l2;;
 //│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> _ -> _) is here
@@ -1865,21 +1965,21 @@ let padZero l1 l2 =
 //│     │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│     │                 ^^^^^
 //│     ▼ 
-//│     ◉ ('clone) is assumed here
+//│     ◉ (?clone) is assumed here
 //│     │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│     │                 ^^^^^
 //│     ▼ 
 //│     ◉ (_ -> _) is here
 //│        - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│                                                       ^^^^^
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│   │                                                 ^^^^^^^
 //│   ▼ 
 //│   ◉ (int -> _) is here
 //│      - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│                                                     ^^^^^^^
-//│ ◉ ('c) is assumed here
+//│ ◉ (?c) is assumed here
 //│ ▲  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
 //│ │                                                ^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let rec clone x n = if n > 0 then x :: (clone x (n - 1)) else [];;
@@ -1929,6 +2029,8 @@ let bigMul l1 l2 =
   let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
+//│         (_ list) ---> (?a) ---> (_ * _)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │                                   ^^
@@ -1943,7 +2045,7 @@ let bigMul l1 l2 =
 //│ │             let (carry,res) = a in ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.5    let f a x =
 //│ │                 ^
 //│ │  - l.7      let (carry,res) = a in
@@ -1954,8 +2056,10 @@ let bigMul l1 l2 =
 //│                   ^^^^^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
 //│ 
+//│         (_ -> _) ---> (?a) <--- (_ list)
+//│ 
 //│ ◉ (_ -> _) is here
-//│ │  - l.-1904let bigAdd l1 l2 =
+//│ │  - l.-2004let bigAdd l1 l2 =
 //│ │                         ^^^^
 //│ │             let add (l1,l2) = ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^
@@ -1972,7 +2076,7 @@ let bigMul l1 l2 =
 //│ │             let (carry,res) = a in ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.6      let (x1,x2) = x in
 //│ │             ^^^^^^^^^^^^^^^^^^
 //│ │             let (carry,res) = a in ...
@@ -1989,29 +2093,31 @@ let bigMul l1 l2 =
 //│                                     ^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
+//│         (_ list) ---> (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (_ list) is here
-//│ │  - l.-251  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ │  - l.-267  | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│ │                                                      ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
-//│    - l.-254let rec mulByDigit i l =
+//│ ◉ (?a) is assumed here
+//│    - l.-270let rec mulByDigit i l =
 //│                                 ^
 //│   ◉ (_ -> _) is here
-//│   │  - l.-254let rec mulByDigit i l =
+//│   │  - l.-270let rec mulByDigit i l =
 //│   │                               ^^^
 //│   │            match List.rev l with ...
 //│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│   │                                                         ^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│   │                                                         ^^^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│                                                             ^^^^^^^^^^^^
-//│ ◉ ('c) is assumed here
+//│ ◉ (?c) is assumed here
 //│ │  - l.4  let bigMul l1 l2 =
 //│ │                    ^^
 //│ ▼ 
@@ -2020,31 +2126,33 @@ let bigMul l1 l2 =
 //│                        ^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
+//│         (_ list) <--- (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (_ list) is here
 //│ ▲  - lib. let List.rev: 'a list -> 'a list
 //│ │                       ^^^^^^^
-//│ │  - l.-253  match List.rev l with
+//│ │  - l.-269  match List.rev l with
 //│ │                           ^
 //│ │ 
-//│ ◉ ('a) is assumed here
-//│    - l.-254let rec mulByDigit i l =
+//│ ◉ (?a) is assumed here
+//│    - l.-270let rec mulByDigit i l =
 //│                                 ^
 //│   ◉ (_ -> _) is here
-//│   │  - l.-254let rec mulByDigit i l =
+//│   │  - l.-270let rec mulByDigit i l =
 //│   │                               ^^^
 //│   │            match List.rev l with ...
 //│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│   │                                                         ^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│   │                                                         ^^^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│                                                             ^^^^^^^^^^^^
-//│ ◉ ('c) is assumed here
+//│ ◉ (?c) is assumed here
 //│ │  - l.4  let bigMul l1 l2 =
 //│ │                    ^^
 //│ ▼ 
@@ -2053,24 +2161,26 @@ let bigMul l1 l2 =
 //│                        ^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
+//│         (_ list) ---> (?a) <--- (_ * _)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - lib. let (@): 'a list -> 'a list -> 'a list
 //│ │                                        ^^^^^^^
-//│ │  - l.-1908  then (((clone 0 (-1 * diff)) @ l1), l2)
+//│ │  - l.-2008  then (((clone 0 (-1 * diff)) @ l1), l2)
 //│ │                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-1903  let add (l1,l2) =
+//│ │  - l.-2003  let add (l1,l2) =
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
-//│ ▲  - l.-1903  let add (l1,l2) =
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.-2003  let add (l1,l2) =
 //│ │                      ^^
-//│ │  - l.-1907  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│ │  - l.-2007  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
 //│ │                                                                     ^^
-//│ │  - l.-1911let padZero l1 l2 =
+//│ │  - l.-2011let padZero l1 l2 =
 //│ │                       ^^
-//│ │  - l.-1898  removeZero (add (padZero l1 l2));;
+//│ │  - l.-1998  removeZero (add (padZero l1 l2));;
 //│ │                                      ^^
-//│ │  - l.-1904let bigAdd l1 l2 =
+//│ │  - l.-2004let bigAdd l1 l2 =
 //│ │                      ^^
 //│ │ 
 //│ ◉ (_ * _) is here
@@ -2078,20 +2188,22 @@ let bigMul l1 l2 =
 //│                                                         ^^^^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
 //│ 
+//│         (_ -> _) <--- (?a) ---> (_ list)
+//│ 
 //│ ◉ (_ -> _) is here
 //│ ▲  - l.10   let args = l1 (tenEx 0 l2) in
 //│ │                      ^^
 //│ │  - l.4  let bigMul l1 l2 =
 //│ │                    ^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let bigMul l1 l2 =
 //│ │                    ^^
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │                                                                      ^^
-//│ │  - l.-254let rec mulByDigit i l =
+//│ │  - l.-270let rec mulByDigit i l =
 //│ │                               ^
-//│ │  - l.-253  match List.rev l with
+//│ │  - l.-269  match List.rev l with
 //│ │                           ^
 //│ ▼ 
 //│ ◉ (_ list) is here
@@ -2099,8 +2211,10 @@ let bigMul l1 l2 =
 //│                         ^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ * _`
 //│ 
+//│         (_ -> _) ---> (?a) ---> (_ * _)
+//│ 
 //│ ◉ (_ -> _) is here
-//│ │  - l.-1904let bigAdd l1 l2 =
+//│ │  - l.-2004let bigAdd l1 l2 =
 //│ │                         ^^^^
 //│ │             let add (l1,l2) = ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^
@@ -2117,7 +2231,7 @@ let bigMul l1 l2 =
 //│ │             let (carry,res) = a in ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.5    let f a x =
 //│ │                 ^
 //│ │  - l.7      let (carry,res) = a in
@@ -2128,8 +2242,10 @@ let bigMul l1 l2 =
 //│                   ^^^^^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `int * _ list`
 //│ 
+//│         (_ -> _) ---> (?a) <--- (int * _ list)
+//│ 
 //│ ◉ (_ -> _) is here
-//│ │  - l.-1904let bigAdd l1 l2 =
+//│ │  - l.-2004let bigAdd l1 l2 =
 //│ │                         ^^^^
 //│ │             let add (l1,l2) = ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^
@@ -2146,7 +2262,7 @@ let bigMul l1 l2 =
 //│ │             let (carry,res) = a in ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ │                                              ^^^^
 //│ │ 
@@ -2155,6 +2271,8 @@ let bigMul l1 l2 =
 //│                        ^^^^^^^
 //│ [ERROR] Type `_ list` does not match `int * _ list`
 //│ 
+//│         (_ list) ---> (?a) <--- (int * _ list)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │                                   ^^
@@ -2169,7 +2287,7 @@ let bigMul l1 l2 =
 //│ │             let (carry,res) = a in ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ │                                              ^^^^
 //│ │ 
@@ -2178,28 +2296,30 @@ let bigMul l1 l2 =
 //│                        ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
+//│         (_ * _) ---> (?a) ---> (_ list)
+//│ 
 //│ ◉ (_ * _) is here
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-1904let bigAdd l1 l2 =
+//│ │  - l.-2004let bigAdd l1 l2 =
 //│ │                      ^^
-//│ │  - l.-1898  removeZero (add (padZero l1 l2));;
+//│ │  - l.-1998  removeZero (add (padZero l1 l2));;
 //│ │                                      ^^
-//│ │  - l.-1911let padZero l1 l2 =
+//│ │  - l.-2011let padZero l1 l2 =
 //│ │                       ^^
-//│ │  - l.-1907  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│ │  - l.-2007  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
 //│ │                                                                     ^^
-//│ │  - l.-1903  let add (l1,l2) =
+//│ │  - l.-2003  let add (l1,l2) =
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
-//│ │  - l.-1903  let add (l1,l2) =
+//│ ◉ (?a) is assumed here
+//│ │  - l.-2003  let add (l1,l2) =
 //│ │                      ^^
-//│ │  - l.-1902    let f a x = padZero l1 l2 in
+//│ │  - l.-2002    let f a x = padZero l1 l2 in
 //│ │                                   ^^
-//│ │  - l.-1911let padZero l1 l2 =
+//│ │  - l.-2011let padZero l1 l2 =
 //│ │                       ^^
-//│ │  - l.-1910  let diff = (List.length l1) - (List.length l2) in
+//│ │  - l.-2010  let diff = (List.length l1) - (List.length l2) in
 //│ │                                     ^^
 //│ ▼ 
 //│ ◉ (_ list) is here
@@ -2207,21 +2327,23 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
+//│         (_ list) ---> (?a) <--- (?b) ---> (_ -> _)
+//│ 
 //│ ◉ (_ list) is here
-//│ │  - l.-251  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ │  - l.-267  | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│ │                                                      ^
-//│ │  - l.-254let rec mulByDigit i l =
+//│ │  - l.-270let rec mulByDigit i l =
 //│ │                               ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
-//│ ▲  - l.-254let rec mulByDigit i l =
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.-270let rec mulByDigit i l =
 //│ │                               ^
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │                                                                      ^^
 //│ │  - l.4  let bigMul l1 l2 =
 //│ │                    ^^
 //│ │ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let bigMul l1 l2 =
 //│ │                    ^^
 //│ ▼ 
@@ -2230,8 +2352,10 @@ let bigMul l1 l2 =
 //│                        ^^
 //│ [ERROR] Type `_ -> _` does not match `_ * _`
 //│ 
+//│         (_ -> _) ---> (?a) ---> (_ * _)
+//│ 
 //│ ◉ (_ -> _) is here
-//│ │  - l.-1904let bigAdd l1 l2 =
+//│ │  - l.-2004let bigAdd l1 l2 =
 //│ │                         ^^^^
 //│ │             let add (l1,l2) = ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^
@@ -2248,7 +2372,7 @@ let bigMul l1 l2 =
 //│ │             let (carry,res) = a in ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -2257,59 +2381,63 @@ let bigMul l1 l2 =
 //│                 ^^^^^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
 //│ 
+//│         (_ -> _) <--- (?a) ---> 
+//│ 
 //│ ◉ (_ -> _) is here
 //│ ▲  - l.10   let args = l1 (tenEx 0 l2) in
 //│ │                      ^^
 //│ │  - l.4  let bigMul l1 l2 =
 //│ │                    ^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.4  let bigMul l1 l2 =
 //│ │                    ^^
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │                                                                      ^^
 //│ ▼ 
-//│ ◉ ('b) is assumed here
-//│    - l.-254let rec mulByDigit i l =
+//│ ◉ (?b) is assumed here
+//│    - l.-270let rec mulByDigit i l =
 //│                                 ^
 //│     ◉ (_ -> _ -> _) is here
-//│     │  - l.-254let rec mulByDigit i l =
+//│     │  - l.-270let rec mulByDigit i l =
 //│     │                             ^^^^^
 //│     │            match List.rev l with ...
 //│     │            ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.-254let rec mulByDigit i l =
+//│     │  - l.-270let rec mulByDigit i l =
 //│     │                  ^^^^^^^^^^
 //│     ▼ 
-//│     ◉ ('mulByDigit) is assumed here
-//│     │  - l.-254let rec mulByDigit i l =
+//│     ◉ (?mulByDigit) is assumed here
+//│     │  - l.-270let rec mulByDigit i l =
 //│     │                  ^^^^^^^^^^
 //│     ▼ 
 //│     ◉ (_ -> _) is here
-//│        - l.-251  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│        - l.-267  | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│                                               ^^^^^^^^^^
-//│   ◉ ('c) is assumed here
-//│   │  - l.-251  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│   ◉ (?c) is assumed here
+//│   │  - l.-267  | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│   │                                         ^^^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ list -> _) is here
-//│      - l.-251  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│      - l.-267  | h::t -> [remainder x y] @ (mulByDigit i t);;
 //│                                             ^^^^^^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) is here
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-1904let bigAdd l1 l2 =
+//│ │  - l.-2004let bigAdd l1 l2 =
 //│ │                      ^^
-//│ │  - l.-1898  removeZero (add (padZero l1 l2));;
+//│ │  - l.-1998  removeZero (add (padZero l1 l2));;
 //│ │                                      ^^
-//│ │  - l.-1911let padZero l1 l2 =
+//│ │  - l.-2011let padZero l1 l2 =
 //│ │                       ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
-//│ │  - l.-1911let padZero l1 l2 =
+//│ ◉ (?a) is assumed here
+//│ │  - l.-2011let padZero l1 l2 =
 //│ │                       ^^
-//│ │  - l.-1910  let diff = (List.length l1) - (List.length l2) in
+//│ │  - l.-2010  let diff = (List.length l1) - (List.length l2) in
 //│ │                                     ^^
 //│ ▼ 
 //│ ◉ (_ list) is here
@@ -2317,38 +2445,40 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
+//│         (_ list) <--- (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (_ list) is here
 //│ ▲  - lib. let List.rev: 'a list -> 'a list
 //│ │                       ^^^^^^^
-//│ │  - l.-253  match List.rev l with
+//│ │  - l.-269  match List.rev l with
 //│ │                           ^
 //│ │ 
-//│ ◉ ('a) is assumed here
-//│    - l.-254let rec mulByDigit i l =
+//│ ◉ (?a) is assumed here
+//│    - l.-270let rec mulByDigit i l =
 //│                                 ^
 //│     ◉ (_ -> _ -> _) is here
-//│     │  - l.-254let rec mulByDigit i l =
+//│     │  - l.-270let rec mulByDigit i l =
 //│     │                             ^^^^^
 //│     │            match List.rev l with ...
 //│     │            ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.-254let rec mulByDigit i l =
+//│     │  - l.-270let rec mulByDigit i l =
 //│     │                  ^^^^^^^^^^
 //│     ▼ 
-//│     ◉ ('mulByDigit) is assumed here
-//│     │  - l.-254let rec mulByDigit i l =
+//│     ◉ (?mulByDigit) is assumed here
+//│     │  - l.-270let rec mulByDigit i l =
 //│     │                  ^^^^^^^^^^
 //│     ▼ 
 //│     ◉ (_ -> _) is here
 //│        - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│                                                               ^^^^^^^^^^
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│   │                                                         ^^^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│                                                             ^^^^^^^^^^^^
-//│ ◉ ('c) is assumed here
+//│ ◉ (?c) is assumed here
 //│ │  - l.4  let bigMul l1 l2 =
 //│ │                    ^^
 //│ ▼ 
@@ -2357,28 +2487,30 @@ let bigMul l1 l2 =
 //│                        ^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
+//│         (_ * _) ---> (?a) ---> (_ list)
+//│ 
 //│ ◉ (_ * _) is here
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-1904let bigAdd l1 l2 =
+//│ │  - l.-2004let bigAdd l1 l2 =
 //│ │                      ^^
-//│ │  - l.-1898  removeZero (add (padZero l1 l2));;
+//│ │  - l.-1998  removeZero (add (padZero l1 l2));;
 //│ │                                      ^^
-//│ │  - l.-1911let padZero l1 l2 =
+//│ │  - l.-2011let padZero l1 l2 =
 //│ │                       ^^
-//│ │  - l.-1907  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│ │  - l.-2007  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
 //│ │                                                                     ^^
-//│ │  - l.-1903  let add (l1,l2) =
+//│ │  - l.-2003  let add (l1,l2) =
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
-//│ │  - l.-1903  let add (l1,l2) =
+//│ ◉ (?a) is assumed here
+//│ │  - l.-2003  let add (l1,l2) =
 //│ │                      ^^
-//│ │  - l.-1902    let f a x = padZero l1 l2 in
+//│ │  - l.-2002    let f a x = padZero l1 l2 in
 //│ │                                   ^^
-//│ │  - l.-1911let padZero l1 l2 =
+//│ │  - l.-2011let padZero l1 l2 =
 //│ │                       ^^
-//│ │  - l.-1908  then (((clone 0 (-1 * diff)) @ l1), l2)
+//│ │  - l.-2008  then (((clone 0 (-1 * diff)) @ l1), l2)
 //│ │                                            ^^
 //│ ▼ 
 //│ ◉ (_ list) is here
@@ -2386,30 +2518,34 @@ let bigMul l1 l2 =
 //│                               ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
+//│         (_ * _) ---> (?a) ---> (_ list)
+//│ 
 //│ ◉ (_ * _) is here
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-1904let bigAdd l1 l2 =
+//│ │  - l.-2004let bigAdd l1 l2 =
 //│ │                      ^^
-//│ │  - l.-1898  removeZero (add (padZero l1 l2));;
+//│ │  - l.-1998  removeZero (add (padZero l1 l2));;
 //│ │                                      ^^
-//│ │  - l.-1911let padZero l1 l2 =
+//│ │  - l.-2011let padZero l1 l2 =
 //│ │                       ^^
-//│ │  - l.-1907  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│ │  - l.-2007  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
 //│ │                                                                     ^^
-//│ │  - l.-1903  let add (l1,l2) =
+//│ │  - l.-2003  let add (l1,l2) =
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
-//│ │  - l.-1903  let add (l1,l2) =
+//│ ◉ (?a) is assumed here
+//│ │  - l.-2003  let add (l1,l2) =
 //│ │                      ^^
-//│ │  - l.-1901    let base = List.combine l1 l2 in
+//│ │  - l.-2001    let base = List.combine l1 l2 in
 //│ │                                       ^^
 //│ ▼ 
 //│ ◉ (_ list) is here
 //│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│                             ^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
+//│ 
+//│         (_ list) ---> (?a) ---> (_ * _)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -2425,7 +2561,7 @@ let bigMul l1 l2 =
 //│ │             let (carry,res) = a in ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -2464,6 +2600,8 @@ let rec wwhile (f,b) =
 let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│ [ERROR] Type `_ * bool` does not match `_ -> _`
 //│ 
+//│         (_ * bool) ---> (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (_ * bool) is here
 //│ │  - l.2    match f with | (num,expr) -> if expr then (num, true) else (num, false);;
 //│ │                                                                      ^^^^^^^^^^^^
@@ -2474,7 +2612,7 @@ let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│ │  - l.5  let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│ │                                      ^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.3  let rec wwhile (f,b) =
 //│                           ^
 //│     ◉ ((_ * _) -> _) is here
@@ -2485,14 +2623,14 @@ let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│     │  - l.3  let rec wwhile (f,b) =
 //│     │                 ^^^^^^
 //│     ▼ 
-//│     ◉ ('wwhile) is assumed here
+//│     ◉ (?wwhile) is assumed here
 //│     │  - l.3  let rec wwhile (f,b) =
 //│     │                 ^^^^^^
 //│     ▼ 
 //│     ◉ ((_ * _) -> _) is here
 //│        - l.5  let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│                                    ^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.2    match f with | (num,expr) -> if expr then (num, true) else (num, false);;
 //│ │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.5  let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
@@ -2505,13 +2643,15 @@ let fixpoint (f,b) = wwhile ((fixpointHelper f), b);;
 //│                   ^
 //│ [ERROR] Type `_ * bool` does not match `_ -> _`
 //│ 
+//│         (_ * bool) ---> (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (_ * bool) is here
 //│ │  - l.2    match f with | (num,expr) -> if expr then (num, true) else (num, false);;
 //│ │                                                     ^^^^^^^^^^^
 //│ │  - l.2    match f with | (num,expr) -> if expr then (num, true) else (num, false);;
 //│ │                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.2    match f with | (num,expr) -> if expr then (num, true) else (num, false);;
 //│ │                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.2    match f with | (num,expr) -> if expr then (num, true) else (num, false);;
@@ -2569,11 +2709,13 @@ let bigAdd l1 l2 =
   removeZero (add (padZero l1 l2));;
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
+//│         (_ list) ---> (?a) <--- (_ * _)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.16       if x = []
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.16       if x = []
 //│ │                  ^
 //│ │  - l.14     let f a x =
@@ -2584,17 +2726,19 @@ let bigAdd l1 l2 =
 //│                                                    ^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
+//│         (_ list) ---> (?a) <--- (?b) ---> (_ * _)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.16       if x = []
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.16       if x = []
 //│ │                  ^
 //│ │  - l.14     let f a x =
 //│ │                     ^
 //│ │ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.14     let f a x =
 //│ │                     ^
 //│ │  - l.19         (let (toSum1,toSum2) = x in
@@ -2636,13 +2780,15 @@ let bigAdd l1 l2 =
   removeZero (add (padZero l1 l2));;
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
+//│         (int) ---> (?a) ---> (_ * _)
+//│ 
 //│ ◉ (int) is here
 //│ │  - lib. let mod: int -> int -> int
 //│ │                                ^^^
 //│ │  - l.14     let f a x = (a + x) mod 10 in
 //│ │                         ^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.17     let (_,res) = List.fold_left f base args in res in
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -2667,69 +2813,75 @@ let rec wwhile (f,b) =
   match f b with | (b',c') -> if c' then wwhile (f, b') else b';;
 //│ [ERROR] Type `_ -> (_ * bool)` does not match `_ * _`
 //│ 
+//│         (_ -> (_ * bool)) ---> (?a) ---> (_ * _)
+//│ 
 //│ ◉ (_ -> (_ * bool)) is here
 //│ │  - l.1  let intboolf f x = ((f x), ((f x) < 1));;
 //│ │                        ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-200  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ │  - l.-210  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ │                  ^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
-//│ │  - l.-200  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ◉ (?a) is assumed here
+//│ │  - l.-210  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ │                  ^^^
 //│ ▼ 
 //│ ◉ (_ * _) is here
-//│    - l.-200  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│    - l.-210  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│                               ^^^^^^^^^^
 //│ [ERROR] Type `_ -> (_ * bool)` does not match `_ * _`
+//│ 
+//│         (?a) ---> (_ * _)
 //│ 
 //│   ◉ (_ -> _ -> (_ * bool)) is here
 //│   │  - l.1  let intboolf f x = ((f x), ((f x) < 1));;
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.2  let fixpoint (f,b) = wwhile (intboolf, b);;
 //│   │                                      ^^^^^^^^
-//│   │  - l.-201let rec wwhile (f,b) =
+//│   │  - l.-211let rec wwhile (f,b) =
 //│   │                          ^
 //│   ▼ 
-//│   ◉ ('a) is assumed here
-//│   │  - l.-201let rec wwhile (f,b) =
+//│   ◉ (?a) is assumed here
+//│   │  - l.-211let rec wwhile (f,b) =
 //│   │                          ^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
-//│      - l.-200  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│      - l.-210  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│                      ^
-//│ ◉ ('b) is assumed here
-//│ │  - l.-200  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ◉ (?b) is assumed here
+//│ │  - l.-210  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ │                  ^^^
 //│ ▼ 
 //│ ◉ (_ * _) is here
-//│    - l.-200  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│    - l.-210  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│                               ^^^^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ -> (_ * bool)`
 //│ 
+//│         (_ * _) <--- 
+//│ 
 //│ ◉ (_ * _) is here
-//│ ▲  - l.-200  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ▲  - l.-210  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│ │                             ^^^^^^^^^^
 //│ │ 
-//│ ◉ ('a) is assumed here
-//│    - l.-200  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│ ◉ (?a) is assumed here
+//│    - l.-210  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│                    ^^^
 //│   ◉ (_ -> _) is here
-//│   ▲  - l.-200  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
+//│   ▲  - l.-210  match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│   │                  ^
 //│   │ 
-//│   ◉ ('b) is assumed here
-//│      - l.-201let rec wwhile (f,b) =
+//│   ◉ (?b) is assumed here
+//│      - l.-211let rec wwhile (f,b) =
 //│                              ^
 //│       ◉ ((_ * _) -> _) is here
-//│       │  - l.-201let rec wwhile (f,b) =
+//│       │  - l.-211let rec wwhile (f,b) =
 //│       │                         ^^^^^^^
 //│       │            match f b with | (num,expr) -> if expr then wwhile (f, num) else num;;
 //│       │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│       │  - l.-201let rec wwhile (f,b) =
+//│       │  - l.-211let rec wwhile (f,b) =
 //│       │                  ^^^^^^
 //│       ▼ 
-//│       ◉ ('wwhile) is assumed here
-//│       │  - l.-201let rec wwhile (f,b) =
+//│       ◉ (?wwhile) is assumed here
+//│       │  - l.-211let rec wwhile (f,b) =
 //│       │                  ^^^^^^
 //│       ▼ 
 //│       ◉ ((_ -> _ -> (_ * bool) * _) -> _) is here
@@ -2783,6 +2935,8 @@ let rec additivePersistence n =
      | n -> let x_ = digitsOfInt n in sumList x_ additivePersistence n);;
 //│ [ERROR] Type `int` does not match `_ -> _`
 //│ 
+//│         (int) ---> (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (int) is here
 //│ │  - lib. let (+): int -> int -> int
 //│ │                                ^^^
@@ -2793,7 +2947,7 @@ let rec additivePersistence n =
 //│ │  - l.13      | n -> let x_ = digitsOfInt n in sumList x_ additivePersistence n);;
 //│ │                                               ^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.13      | n -> let x_ = digitsOfInt n in sumList x_ additivePersistence n);;
 //│ │                                               ^^^^^^^^^^
 //│ ▼ 
@@ -2802,11 +2956,13 @@ let rec additivePersistence n =
 //│                                                 ^^^^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `int`
 //│ 
+//│         (_ -> _) <--- (?a) <--- (int)
+//│ 
 //│ ◉ (_ -> _) is here
 //│ ▲  - l.13      | n -> let x_ = digitsOfInt n in sumList x_ additivePersistence n);;
 //│ │                                               ^^^^^^^^^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.7  let rec sumList xs = match xs with | [] -> 0 | h::t -> h + (sumList t);;
 //│                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ◉ (_ -> _) is here
@@ -2815,14 +2971,14 @@ let rec additivePersistence n =
 //│   │  - l.7  let rec sumList xs = match xs with | [] -> 0 | h::t -> h + (sumList t);;
 //│   │                 ^^^^^^^
 //│   ▼ 
-//│   ◉ ('sumList) is assumed here
+//│   ◉ (?sumList) is assumed here
 //│   │  - l.7  let rec sumList xs = match xs with | [] -> 0 | h::t -> h + (sumList t);;
 //│   │                 ^^^^^^^
 //│   ▼ 
 //│   ◉ (_ list -> _) is here
 //│      - l.7  let rec sumList xs = match xs with | [] -> 0 | h::t -> h + (sumList t);;
 //│                                                                         ^^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ ▲  - l.7  let rec sumList xs = match xs with | [] -> 0 | h::t -> h + (sumList t);;
 //│ │                                                                    ^^^^^^^^^^^
 //│ │  - l.7  let rec sumList xs = match xs with | [] -> 0 | h::t -> h + (sumList t);;
@@ -2860,11 +3016,13 @@ let removeDuplicates l =
   List.rev (helper ([], l));;
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
+//│         (_ list) <--- (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (_ list) is here
 //│ ▲  - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ │                                  ^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│                                    ^^^^^^^^^^^^^^
 //│   ◉ (_ -> _) is here
@@ -2873,14 +3031,14 @@ let removeDuplicates l =
 //│   │  - l.1  let rec filter l a =
 //│   │                 ^^^^^^
 //│   │ 
-//│   ◉ ('filter) is assumed here
+//│   ◉ (?filter) is assumed here
 //│   │  - l.1  let rec filter l a =
 //│   │                 ^^^^^^
 //│   ▼ 
 //│   ◉ (_ list -> _) is here
 //│      - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
 //│                                                             ^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
 //│ │                                                         ^^^^^^^^
 //│ ▼ 
@@ -2889,11 +3047,13 @@ let removeDuplicates l =
 //│                                                           ^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
+//│         (_ list) <--- (?a) ---> (_ -> _)
+//│ 
 //│ ◉ (_ list) is here
 //│ ▲  - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ │                                  ^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│                                    ^^^^^^^^^^^^^^
 //│   ◉ (_ -> _) is here
@@ -2902,14 +3062,14 @@ let removeDuplicates l =
 //│   │  - l.1  let rec filter l a =
 //│   │                 ^^^^^^
 //│   │ 
-//│   ◉ ('filter) is assumed here
+//│   ◉ (?filter) is assumed here
 //│   │  - l.1  let rec filter l a =
 //│   │                 ^^^^^^
 //│   ▼ 
 //│   ◉ (_ list -> _) is here
 //│      - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
 //│                                       ^^^^^^
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
 //│ │                                   ^^^^^^^^
 //│ ▼ 
@@ -2917,6 +3077,8 @@ let removeDuplicates l =
 //│    - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
 //│                                     ^^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
+//│ 
+//│         (?a) ---> (_ list)
 //│ 
 //│   ◉ (_ -> _ -> _) is here
 //│   │  - l.1  let rec filter l a =
@@ -2926,14 +3088,14 @@ let removeDuplicates l =
 //│   │  - l.1  let rec filter l a =
 //│   │                 ^^^^^^
 //│   ▼ 
-//│   ◉ ('filter) is assumed here
+//│   ◉ (?filter) is assumed here
 //│   │  - l.1  let rec filter l a =
 //│   │                 ^^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│                                       ^^^^^^
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ │                                  ^^^^^^^^^^^^^^
 //│ ▼ 
@@ -2941,6 +3103,8 @@ let removeDuplicates l =
 //│    - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│                                    ^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
+//│ 
+//│         (_ -> _) ---> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ -> _) is here
 //│ │  - l.1  let rec filter l a =
@@ -2950,7 +3114,7 @@ let removeDuplicates l =
 //│ │  - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ │                                  ^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│ │                                  ^^^^^^^^^^^^^^
 //│ ▼ 
@@ -2997,6 +3161,8 @@ let rec assoc (d,k,l) =
   | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
 //│ [ERROR] Type `_ -> _` does not match `_ * _ * _`
 //│ 
+//│         (_ -> _) <--- (?a) ---> (?a * _ * _)
+//│ 
 //│ ◉ (_ -> _) is here
 //│ ▲  - l.4    | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
 //│ │                                                             ^^^^^^^
@@ -3009,16 +3175,18 @@ let rec assoc (d,k,l) =
 //│ │  - l.1  let rec assoc (d,k,l) =
 //│ │                        ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let rec assoc (d,k,l) =
 //│ │                        ^
 //│ │  - l.4    | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
 //│ │                                                                   ^
 //│ ▼ 
-//│ ◉ ('a * _ * _) is here
+//│ ◉ (?a * _ * _) is here
 //│    - l.1  let rec assoc (d,k,l) =
 //│                         ^^^^^^^
 //│ [ERROR] Type `_ * _ * _` does not match `_ -> _`
+//│ 
+//│         (?a) ---> (_ -> _)
 //│ 
 //│   ◉ ((_ * _ * _) -> _) is here
 //│   │  - l.1  let rec assoc (d,k,l) =
@@ -3028,14 +3196,14 @@ let rec assoc (d,k,l) =
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                 ^^^^^
 //│   ▼ 
-//│   ◉ ('assoc) is assumed here
+//│   ◉ (?assoc) is assumed here
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                 ^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.4    | h::t -> let (f,s) = h in if k = f then s h else assoc d k t;;
 //│                                                                 ^^^^^
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let rec assoc (d,k,l) =
 //│ │                        ^
 //│ │  - l.3    | [] -> d

@@ -9,6 +9,8 @@ let check result condition =
 (* Remember Left and Right are the constructors of the either type *)
 //│ [ERROR] Type `string` does not match `(_, _) either`
 //│ 
+//│         (string) ---> (?a) <--- (?b) ---> ((_, _) either)
+//│ 
 //│ ◉ (string) is here
 //│ │  - lib. let (^): string -> string -> string
 //│ │                                      ^^^^^^
@@ -23,7 +25,7 @@ let check result condition =
 //│ │            match result with ...
 //│ │            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.2   if condition then
 //│ │          ^^^^^^^^^^^^^^^^^
 //│ │            match result with ...
@@ -33,7 +35,7 @@ let check result condition =
 //│ │  - l.1  let check result condition =
 //│ │                   ^^^^^^
 //│ │ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.1  let check result condition =
 //│ │                   ^^^^^^
 //│ │  - l.3     match result with

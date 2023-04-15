@@ -4,6 +4,8 @@
 let h y = (not y, (if true then y else 5))
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
+//│         (bool) <--- (?a) ---> (?b) <--- (int)
+//│ 
 //│ ◉ (bool) is here
 //│ ▲  - lib. let not: bool -> bool
 //│ │                  ^^^^
@@ -12,7 +14,7 @@ let h y = (not y, (if true then y else 5))
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │               ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │               ^
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
@@ -20,7 +22,7 @@ let h y = (not y, (if true then y else 5))
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ ▲  - l.1  let h y = (not y, (if true then y else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -41,6 +43,8 @@ let h y = (not y, (if true then y else 5))
 let h y = (not y, (if true then y else 5))
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
+//│         (bool) <--- (?a) ---> (?b) <--- (int)
+//│ 
 //│ ◉ (bool) is here
 //│ ▲  - lib. let not: bool -> bool
 //│ │                  ^^^^
@@ -49,7 +53,7 @@ let h y = (not y, (if true then y else 5))
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │               ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │               ^
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
@@ -57,7 +61,7 @@ let h y = (not y, (if true then y else 5))
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ ▲  - l.1  let h y = (not y, (if true then y else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -77,13 +81,15 @@ let confluence z = if true then z else 5
 confluence true
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
+//│         (int) ---> (?a) <--- (bool)
+//│ 
 //│ ◉ (int) is here
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                                                ^
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.1  let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let confluence z = if true then z else 5
@@ -105,18 +111,20 @@ let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
+//│         (int) ---> (?a) <--- (?b) ---> (bool)
+//│ 
 //│ ◉ (int) is here
-//│ │  - l.-27let confluence z = if true then z else 5
+//│ │  - l.-29let confluence z = if true then z else 5
 //│ │                                                ^
-//│ │  - l.-27let confluence z = if true then z else 5
+//│ │  - l.-29let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
-//│ ▲  - l.-27let confluence z = if true then z else 5
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.-29let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-27let confluence z = if true then z else 5
+//│ │  - l.-29let confluence z = if true then z else 5
 //│ │                                         ^
-//│ │  - l.-27let confluence z = if true then z else 5
+//│ │  - l.-29let confluence z = if true then z else 5
 //│ │                        ^
 //│ │  - l.1  let mkpair x y = (x, confluence y)
 //│ │                                         ^
@@ -127,7 +135,7 @@ let conflict x = mkpair (not x) x
 //│ │  - l.2  let conflict x = mkpair (not x) x
 //│ │                      ^
 //│ │ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.2  let conflict x = mkpair (not x) x
 //│ │                      ^
 //│ │  - l.2  let conflict x = mkpair (not x) x
@@ -166,6 +174,8 @@ let rec additivePersistence n =
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
+//│         (int) ---> (?a) <--- (bool)
+//│ 
 //│ ◉ (int) is here
 //│ │  - l.3    | [] -> 0
 //│ │                   ^
@@ -174,7 +184,7 @@ let rec additivePersistence n =
 //│ │           | [] -> 0 ...
 //│ │           ^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.2    match digits n with
 //│ │           ^^^^^^^^^^^^^^^^^^^
 //│ │           | [] -> 0 ...
@@ -195,11 +205,13 @@ let y x = [x]
 let k a = if a then [2] else y true
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
+//│         (int) ---> (?a) <--- (bool)
+//│ 
 //│ ◉ (int) is here
 //│ │  - l.2  let k a = if a then [2] else y true
 //│ │                              ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.2  let k a = if a then [2] else y true
 //│                                ^
 //│   ◉ (_ list) is here
@@ -208,7 +220,7 @@ let k a = if a then [2] else y true
 //│   │  - l.2  let k a = if a then [2] else y true
 //│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   ▲  - l.2  let k a = if a then [2] else y true
 //│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.2  let k a = if a then [2] else y true
@@ -217,7 +229,7 @@ let k a = if a then [2] else y true
 //│   ◉ (_ list) is here
 //│      - l.1  let y x = [x]
 //│                       ^^^
-//│ ◉ ('a0) is assumed here
+//│ ◉ (?a0) is assumed here
 //│ ▲  - l.1  let y x = [x]
 //│ │                    ^
 //│ │  - l.1  let y x = [x]

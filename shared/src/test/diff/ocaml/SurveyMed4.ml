@@ -4,6 +4,8 @@ let rec assoc (d,k,l) =
   | h::t -> let (f,s) = h in if k = f then s else assoc d k t
 //│ [ERROR] Type `_ * _ * _` does not match `_ -> _`
 //│ 
+//│         (?a) ---> (_ -> _)
+//│ 
 //│   ◉ ((_ * _ * _) -> _) is here
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                       ^^^^^^^^^
@@ -12,14 +14,14 @@ let rec assoc (d,k,l) =
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                 ^^^^^
 //│   ▼ 
-//│   ◉ ('assoc) is assumed here
+//│   ◉ (?assoc) is assumed here
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                 ^^^^^
 //│   ▼ 
 //│   ◉ (_ -> _) is here
 //│      - l.4    | h::t -> let (f,s) = h in if k = f then s else assoc d k t
 //│                                                               ^^^^^
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let rec assoc (d,k,l) =
 //│ │                        ^
 //│ │  - l.3    | [] -> d
@@ -34,6 +36,8 @@ let rec assoc (d,k,l) =
 //│                                                             ^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ * _ * _`
 //│ 
+//│         (_ -> _) <--- (?a) ---> (?a * _ * _)
+//│ 
 //│ ◉ (_ -> _) is here
 //│ ▲  - l.4    | h::t -> let (f,s) = h in if k = f then s else assoc d k t
 //│ │                                                           ^^^^^^^
@@ -46,13 +50,13 @@ let rec assoc (d,k,l) =
 //│ │  - l.1  let rec assoc (d,k,l) =
 //│ │                        ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let rec assoc (d,k,l) =
 //│ │                        ^
 //│ │  - l.4    | h::t -> let (f,s) = h in if k = f then s else assoc d k t
 //│ │                                                                 ^
 //│ ▼ 
-//│ ◉ ('a * _ * _) is here
+//│ ◉ (?a * _ * _) is here
 //│    - l.1  let rec assoc (d,k,l) =
 //│                         ^^^^^^^
 //│ U max: 31, total: 90

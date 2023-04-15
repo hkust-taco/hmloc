@@ -36,11 +36,13 @@ let bigAdd l1 l2 =
 (* List.rev: 'a list -> 'a list reverses a list *)
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
+//│         (_ list) ---> (?a) <--- (_ * _)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.19       if x = []
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.19       if x = []
 //│ │                  ^
 //│ │  - l.17     let f a x =
@@ -51,17 +53,19 @@ let bigAdd l1 l2 =
 //│                                                    ^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
+//│         (_ list) ---> (?a) <--- (?b) ---> (_ * _)
+//│ 
 //│ ◉ (_ list) is here
 //│ │  - l.19       if x = []
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.19       if x = []
 //│ │                  ^
 //│ │  - l.17     let f a x =
 //│ │                     ^
 //│ │ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.17     let f a x =
 //│ │                     ^
 //│ │  - l.22         (let (toSum1,toSum2) = x in

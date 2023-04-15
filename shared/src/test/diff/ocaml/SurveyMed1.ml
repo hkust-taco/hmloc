@@ -8,13 +8,15 @@ let rec check cond =
  test (if cond then false else check (not cond)) cond
 //│ [ERROR] Type `bool` does not match `_ list`
 //│ 
+//│         (bool) ---> (?a) <--- (?a0 list)
+//│ 
 //│ ◉ (bool) is here
 //│ │  - l.5   else wrap true
 //│ │                    ^^^^
 //│ │  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.1  let wrap x = x :: []
 //│                        ^
 //│   ◉ (_ list) is here
@@ -31,7 +33,7 @@ let rec check cond =
 //│   │  - l.8   test (if cond then false else check (not cond)) cond
 //│   │                                        ^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│   │                                        ^^^^^^^^^^^^^^^^
 //│   │  - l.8   test (if cond then false else check (not cond)) cond
@@ -46,7 +48,7 @@ let rec check cond =
 //│   ◉ (_ list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ ('a0) is assumed here
+//│ ◉ (?a0) is assumed here
 //│ ▲  - l.1  let wrap x = x :: []
 //│ │                      ^
 //│ │  - l.1  let wrap x = x :: []
@@ -68,10 +70,12 @@ let rec check cond =
 //│ │  - l.5   else wrap true
 //│ │               ^^^^^^^^^
 //│ │ 
-//│ ◉ ('a list) is here
+//│ ◉ (?a list) is here
 //│    - l.1  let wrap x = x :: []
 //│                        ^^^^^^^
 //│ [ERROR] Type `bool` does not match `_ list`
+//│ 
+//│         (bool) ---> (?a) <--- (_ list)
 //│ 
 //│ ◉ (bool) is here
 //│ │  - l.8   test (if cond then false else check (not cond)) cond
@@ -79,7 +83,7 @@ let rec check cond =
 //│ │  - l.8   test (if cond then false else check (not cond)) cond
 //│ │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│ │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.8   test (if cond then false else check (not cond)) cond
@@ -98,13 +102,15 @@ let rec check cond =
 //│                        ^^^^^^^
 //│ [ERROR] Type `bool` does not match `_ list`
 //│ 
+//│         (bool) ---> (?a) <--- (?a list)
+//│ 
 //│ ◉ (bool) is here
 //│ │  - l.5   else wrap true
 //│ │                    ^^^^
 //│ │  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.1  let wrap x = x :: []
 //│                        ^
 //│   ◉ (_ list) is here
@@ -121,7 +127,7 @@ let rec check cond =
 //│   │  - l.8   test (if cond then false else check (not cond)) cond
 //│   │                                        ^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│   ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│   │                                        ^^^^^^^^^^^^^^^^
 //│   │  - l.8   test (if cond then false else check (not cond)) cond
@@ -136,7 +142,7 @@ let rec check cond =
 //│   ◉ (_ list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ ('a0) is assumed here
+//│ ◉ (?a0) is assumed here
 //│ ▲  - l.1  let wrap x = x :: []
 //│ │                      ^
 //│ │  - l.1  let wrap x = x :: []
@@ -158,10 +164,12 @@ let rec check cond =
 //│ │  - l.4   then wrap z
 //│ │               ^^^^^^
 //│ │ 
-//│ ◉ ('a0 list) is here
+//│ ◉ (?a0 list) is here
 //│    - l.1  let wrap x = x :: []
 //│                        ^^^^^^^
 //│ [ERROR] Type `bool` does not match `_ list`
+//│ 
+//│         (bool) ---> (?a) <--- (_ list)
 //│ 
 //│ ◉ (bool) is here
 //│ │  - l.8   test (if cond then false else check (not cond)) cond
@@ -169,7 +177,7 @@ let rec check cond =
 //│ │  - l.8   test (if cond then false else check (not cond)) cond
 //│ │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│ │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.8   test (if cond then false else check (not cond)) cond
@@ -188,7 +196,9 @@ let rec check cond =
 //│                        ^^^^^^^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
-//│ ◉ ('a list) is here
+//│         (?a list) ---> (?a0) <--- (bool)
+//│ 
+//│ ◉ (?a list) is here
 //│ │  - l.1  let wrap x = x :: []
 //│ │                      ^^^^^^^
 //│ │  - l.4   then wrap z
@@ -210,7 +220,7 @@ let rec check cond =
 //│ │  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.1  let wrap x = x :: []
 //│                        ^
 //│   ◉ (_ list) is here
@@ -219,7 +229,7 @@ let rec check cond =
 //│   │  - l.4   then wrap z
 //│   │               ^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│      - l.3  let test z cond = if cond
 //│                               ^^^^^^^
 //│              then wrap z ...
@@ -232,14 +242,14 @@ let rec check cond =
 //│     │  - l.7  let rec check cond =
 //│     │                 ^^^^^
 //│     ▼ 
-//│     ◉ ('check) is assumed here
+//│     ◉ (?check) is assumed here
 //│     │  - l.7  let rec check cond =
 //│     │                 ^^^^^
 //│     ▼ 
 //│     ◉ (bool -> _) is here
 //│        - l.8   test (if cond then false else check (not cond)) cond
 //│                                              ^^^^^
-//│   ◉ ('c) is assumed here
+//│   ◉ (?c) is assumed here
 //│   ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│   │                                        ^^^^^^^^^^^^^^^^
 //│   │  - l.8   test (if cond then false else check (not cond)) cond
@@ -254,7 +264,7 @@ let rec check cond =
 //│   ◉ (_ list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ ('a0) is assumed here
+//│ ◉ (?a0) is assumed here
 //│ ▲  - l.1  let wrap x = x :: []
 //│ │                      ^
 //│ │  - l.1  let wrap x = x :: []
@@ -265,7 +275,9 @@ let rec check cond =
 //│                      ^^^^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
-//│ ◉ ('a list) is here
+//│         (?a list) ---> (?a) <--- (bool)
+//│ 
+//│ ◉ (?a list) is here
 //│ │  - l.1  let wrap x = x :: []
 //│ │                      ^^^^^^^
 //│ │  - l.5   else wrap true
@@ -287,7 +299,7 @@ let rec check cond =
 //│ │  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ ▼ 
-//│ ◉ ('a0) is assumed here
+//│ ◉ (?a0) is assumed here
 //│    - l.1  let wrap x = x :: []
 //│                        ^
 //│   ◉ (_ list) is here
@@ -296,7 +308,7 @@ let rec check cond =
 //│   │  - l.4   then wrap z
 //│   │               ^^^^^^
 //│   ▼ 
-//│   ◉ ('b) is assumed here
+//│   ◉ (?b) is assumed here
 //│      - l.3  let test z cond = if cond
 //│                               ^^^^^^^
 //│              then wrap z ...
@@ -309,14 +321,14 @@ let rec check cond =
 //│     │  - l.7  let rec check cond =
 //│     │                 ^^^^^
 //│     ▼ 
-//│     ◉ ('check) is assumed here
+//│     ◉ (?check) is assumed here
 //│     │  - l.7  let rec check cond =
 //│     │                 ^^^^^
 //│     ▼ 
 //│     ◉ (bool -> _) is here
 //│        - l.8   test (if cond then false else check (not cond)) cond
 //│                                              ^^^^^
-//│   ◉ ('c) is assumed here
+//│   ◉ (?c) is assumed here
 //│   ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│   │                                        ^^^^^^^^^^^^^^^^
 //│   │  - l.8   test (if cond then false else check (not cond)) cond
@@ -331,7 +343,7 @@ let rec check cond =
 //│   ◉ (_ list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.1  let wrap x = x :: []
 //│ │                      ^
 //│ │  - l.1  let wrap x = x :: []

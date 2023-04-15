@@ -3,13 +3,15 @@
 let boolToInt x = if x then "0" else 1
 //│ [ERROR] Type `string` does not match `int`
 //│ 
+//│         (string) ---> (?a) <--- (int)
+//│ 
 //│ ◉ (string) is here
 //│ │  - l.1  let boolToInt x = if x then "0" else 1
 //│ │                                     ^^^
 //│ │  - l.1  let boolToInt x = if x then "0" else 1
 //│ │                           ^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.1  let boolToInt x = if x then "0" else 1
 //│ │                           ^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -29,6 +31,8 @@ let destructEither x = match x with
  | Right r -> r && true
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
+//│         (int) ---> (?a) <--- (bool)
+//│ 
 //│ ◉ (int) is here
 //│ │  - lib. let (+): int -> int -> int
 //│ │                                ^^^
@@ -39,7 +43,7 @@ let destructEither x = match x with
 //│ │          | Left l -> l + 1 ...
 //│ │          ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.1  let destructEither x = match x with
 //│ │                                ^^^^^^^^^^^^
 //│ │          | Left l -> l + 1 ...
@@ -63,6 +67,8 @@ let destructEither x = if x then
   else x
 //│ [ERROR] Type `int` does not match `(_, _) either`
 //│ 
+//│         (int) ---> (?a) <--- (?b) ---> ((_, _) either)
+//│ 
 //│ ◉ (int) is here
 //│ │  - lib. let (+): int -> int -> int
 //│ │                                ^^^
@@ -77,7 +83,7 @@ let destructEither x = if x then
 //│ │           match x with ...
 //│ │           ^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.1  let destructEither x = if x then
 //│ │                                ^^^^^^^^^
 //│ │           match x with ...
@@ -87,7 +93,7 @@ let destructEither x = if x then
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
 //│ │ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
 //│ │  - l.2    match x with
@@ -98,6 +104,8 @@ let destructEither x = if x then
 //│                ^^^^^^
 //│ [ERROR] Type `(_, _) either` does not match `bool`
 //│ 
+//│         ((_, _) either) <--- (?a) ---> (bool)
+//│ 
 //│ ◉ ((_, _) either) is here
 //│ ▲  - l.3     | Left l -> l + 1
 //│ │              ^^^^^^
@@ -106,7 +114,7 @@ let destructEither x = if x then
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
 //│ ▼ 
@@ -114,6 +122,8 @@ let destructEither x = if x then
 //│    - l.1  let destructEither x = if x then
 //│                                     ^
 //│ [ERROR] Type `int` does not match `bool`
+//│ 
+//│         (int) ---> (?a) <--- (bool)
 //│ 
 //│ ◉ (int) is here
 //│ │  - lib. let (+): int -> int -> int
@@ -125,7 +135,7 @@ let destructEither x = if x then
 //│ │            | Left l -> l + 1 ...
 //│ │            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.2    match x with
 //│ │           ^^^^^^^^^^^^
 //│ │            | Left l -> l + 1 ...
@@ -149,6 +159,8 @@ let test2 x = match x with
  | true -> succ x
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
+//│         (int) <--- (?a) ---> (bool)
+//│ 
 //│ ◉ (int) is here
 //│ ▲  - l.1  let succ: int -> int
 //│ │                   ^^^
@@ -157,7 +169,7 @@ let test2 x = match x with
 //│ │  - l.3  let test2 x = match x with
 //│ │                   ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.3  let test2 x = match x with
 //│ │                   ^
 //│ │  - l.3  let test2 x = match x with
@@ -175,6 +187,8 @@ let test2 x = match x with
 let g x = (not x, (if true then x else 5))
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
+//│         (bool) <--- (?a) ---> (?b) <--- (int)
+//│ 
 //│ ◉ (bool) is here
 //│ ▲  - lib. let not: bool -> bool
 //│ │                  ^^^^
@@ -183,7 +197,7 @@ let g x = (not x, (if true then x else 5))
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │               ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │               ^
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
@@ -191,7 +205,7 @@ let g x = (not x, (if true then x else 5))
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ ▲  - l.1  let g x = (not x, (if true then x else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -210,13 +224,15 @@ let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
+//│         (int) ---> (?a) <--- (?b) ---> (bool)
+//│ 
 //│ ◉ (int) is here
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                                                ^
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.1  let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let confluence z = if true then z else 5
@@ -232,7 +248,7 @@ let conflict x = mkpair (not x) x
 //│ │  - l.4  let conflict x = mkpair (not x) x
 //│ │                      ^
 //│ │ 
-//│ ◉ ('b) is assumed here
+//│ ◉ (?b) is assumed here
 //│ │  - l.4  let conflict x = mkpair (not x) x
 //│ │                      ^
 //│ │  - l.4  let conflict x = mkpair (not x) x
@@ -253,13 +269,15 @@ let test =
   (f 1, f true)
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
+//│         (int) ---> (?a) <--- (bool)
+//│ 
 //│ ◉ (int) is here
 //│ │  - l.3    (f 1, f true)
 //│ │              ^
 //│ │  - l.2    let f x = x in
 //│ │                 ^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.2    let f x = x in
 //│ │                 ^
 //│ │ 
@@ -277,13 +295,15 @@ let wrap x = x :: []
 let rec t = wrap (if true then 1 else t)
 //│ [ERROR] Type `int` does not match `_ list`
 //│ 
+//│         (int) ---> (?a) <--- (_ list)
+//│ 
 //│ ◉ (int) is here
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                                        ^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
@@ -308,6 +328,8 @@ let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 let weird x = (x + 1, length x)
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
+//│         (_ list) <--- (?a) ---> (int)
+//│ 
 //│ ◉ (_ list) is here
 //│ ▲  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 //│ │                                                                         ^^
@@ -320,7 +342,7 @@ let weird x = (x + 1, length x)
 //│ │  - l.2  let weird x = (x + 1, length x)
 //│ │                   ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.2  let weird x = (x + 1, length x)
 //│ │                   ^
 //│ │  - l.2  let weird x = (x + 1, length x)
@@ -331,13 +353,15 @@ let weird x = (x + 1, length x)
 //│                    ^^^
 //│ [ERROR] Type `int` does not match `_ list`
 //│ 
+//│         (int) <--- 
+//│ 
 //│ ◉ (int) is here
 //│ ▲  - lib. let (+): int -> int -> int
 //│ │                  ^^^
 //│ │  - l.2  let weird x = (x + 1, length x)
 //│ │                        ^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│    - l.2  let weird x = (x + 1, length x)
 //│                     ^
 //│   ◉ (_ -> _) is here
@@ -346,7 +370,7 @@ let weird x = (x + 1, length x)
 //│   │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 //│   │                 ^^^^^^
 //│   │ 
-//│   ◉ ('length) is assumed here
+//│   ◉ (?length) is assumed here
 //│   │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 //│   │                 ^^^^^^
 //│   ▼ 
@@ -364,6 +388,8 @@ let weird x = (x + 1, length x)
 let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ [ERROR] Type `_ list` does not match `string`
 //│ 
+//│         (_ list) <--- (?a) ---> (string)
+//│ 
 //│ ◉ (_ list) is here
 //│ ▲  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                                                        ^^
@@ -372,7 +398,7 @@ let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                 ^^
 //│ │ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                 ^^
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0

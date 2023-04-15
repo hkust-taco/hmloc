@@ -15,6 +15,8 @@ let rec additivePersistence n =
 (* (@): 'a list -> 'a list -> 'a list is a list concatenation operator *)
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
+//│         (int) ---> (?a) <--- (bool)
+//│ 
 //│ ◉ (int) is here
 //│ │  - l.12   | [] -> 0
 //│ │                   ^
@@ -23,7 +25,7 @@ let rec additivePersistence n =
 //│ │           | [] -> 0 ...
 //│ │           ^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ ('a) is assumed here
+//│ ◉ (?a) is assumed here
 //│ ▲  - l.11   match digits n with
 //│ │           ^^^^^^^^^^^^^^^^^^^
 //│ │           | [] -> 0 ...
