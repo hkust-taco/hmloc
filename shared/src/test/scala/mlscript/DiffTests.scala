@@ -820,7 +820,6 @@ class DiffTests
               val errors = typer.outputUnificationErrors()
               if (errors.nonEmpty) typingOutputs += L(errors)
               typer.uniState.error.iterator.foreach(u => raise(u.createErrorMessage()(ctx)))
-              if (mode.unifyDbg) typer.reportUnificationDebugInfo()(ctx, raise)
               typer.TypeVariable.clearCollectedTypeVars()
               typer.dbg = temp
             }
