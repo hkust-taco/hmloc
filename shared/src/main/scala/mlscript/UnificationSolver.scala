@@ -4,8 +4,9 @@ import mlscript.Message.MessageContext
 import mlscript.utils._
 import mlscript.utils.shorthands._
 
+import scala.collection.immutable.Queue
 import scala.collection.mutable
-import scala.collection.mutable.{Map => MutMap, Queue => MutQueue, Set => MutSet}
+import scala.collection.mutable.{StringBuilder, Queue => MutQueue, Set => MutSet}
 
 trait UnificationSolver extends TyperDatatypes {
   self: Typer =>
@@ -28,10 +29,10 @@ trait UnificationSolver extends TyperDatatypes {
     def enqueueUnification(u: NewUnification): Unit = if (!cached(u)) {
       // TODO: fix this so that recursion can be stopped
       if (u.level >= 4) {
-        println(s"  | U X $u.a ~ $u.b")
+        println(s"  | U X ${u.a} ~ ${u.b}")
         return
       }
-      println(s"  | U Q $u.a ~ $u.b")
+      println(s"  | U Q ${u.a} ~ ${u.b}")
       queue += u
       cache(u)
       stats = (math.max(stats._1, queue.length), stats._2 + 1)
@@ -54,25 +55,25 @@ trait UnificationSolver extends TyperDatatypes {
     override def hasNext: Bool = queue.nonEmpty
     override def next(): NewUnification = queue.dequeue()
 
-    def unify(): Unit = foreach { case u@NewUnification(a, b, flow, level) =>
-      println(s"U $u")
-      val st1 = a.unwrapProvs
-      val st2 = b.unwrapProvs
+    def unify(): Unit = foreach { case u@NewUnification(_, level) =>
+      println(s"U $u with Q $queue")
+      val st1 = u.a.unwrapProvs
+      val st2 = u.b.unwrapProvs
 
       (st1, st2) match {
         case (tr1: TypeRef, tr2: TypeRef) if tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length =>
           tr1.targs.zip(tr2.targs).foreach { case (arg1, arg2) =>
-            enqueueUnification(NewUnification(arg1, arg2, Constructor(arg1, arg2, tr1, tr2, flow), level + 1))
+            enqueueUnification(NewUnification(Queue(Constructor(arg1, arg2, tr1, tr2, u)), level + 1))
           }
         case (_: TypeRef, _: TypeRef) => addError(u)
         case (tup1: TupleType, tup2: TupleType) if tup1.fields.length === tup2.fields.length =>
             tup1.fields.map(_._2.ub).zip(tup2.fields.map(_._2.ub)).foreach {
-              case (arg1, arg2) => enqueueUnification(NewUnification(arg1, arg2, Constructor(arg1, arg2, tup1, tup2, flow), level + 1))
+              case (arg1, arg2) => enqueueUnification(NewUnification(Queue(Constructor(arg1, arg2, tup1, tup2, u)), level + 1))
             }
         case (_: TupleType, _: TupleType) => addError(u)
         case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
-          enqueueUnification(NewUnification(arg1, arg2, Constructor(arg1, arg2, st1, st2, flow), level + 1))
-          enqueueUnification(NewUnification(res1, res2, Constructor(res1, res2, st1, st2, flow), level + 1))
+          enqueueUnification(NewUnification(Queue(Constructor(arg1, arg2, st1, st2, u)), level + 1))
+          enqueueUnification(NewUnification(Queue(Constructor(res1, res2, st1, st2, u)), level + 1))
         case (_: FunctionType, _: FunctionType) => addError(u)
         case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
           // because bounds are added to both sides any a1 <: a2 and a2 :> a1
@@ -80,12 +81,12 @@ trait UnificationSolver extends TyperDatatypes {
           // TODO: find a way to not catch those or catch recursive types differently
           // registerUnificationError(u)
           ()
-        case (tv: TypeVariable, st) =>
-          tv.lbs.foreach(c => enqueueUnification(NewUnification(c.a, st, flow.addLeft(c), level)))
-          tv.ubs.foreach(c => enqueueUnification(NewUnification(c.b, st, flow.addLeft(c), level)))
-        case (st, tv: TypeVariable) =>
-          tv.lbs.foreach(c => enqueueUnification(NewUnification(st, c.a, flow.addRight(c), level)))
-          tv.ubs.foreach(c => enqueueUnification(NewUnification(st, c.b, flow.addRight(c), level)))
+        case (tv: TypeVariable, _) =>
+          tv.lbs.foreach(c => enqueueUnification(u.addLeft(c)))
+          tv.ubs.foreach(c => enqueueUnification(u.addLeft(c)))
+        case (_, tv: TypeVariable) =>
+          tv.lbs.foreach(c => enqueueUnification(u.addRight(c)))
+          tv.ubs.foreach(c => enqueueUnification(u.addRight(c)))
         case (st1, st2) if st1 != st2 => addError(u)
         case _ => ()
       }
@@ -107,64 +108,13 @@ trait UnificationSolver extends TyperDatatypes {
     })
 
     TypeVariable.createdTypeVars.foreach(tv => {
-      tv.lbs.foreach{ case c@Constraint(a, b) => uniState.enqueueUnification(NewUnification(a, b, c))}
-      tv.ubs.foreach{ case c@Constraint(a, b) => uniState.enqueueUnification(NewUnification(a, b, c))}
+      tv.lbs.foreach{ c => uniState.enqueueUnification(NewUnification(Queue(c), 0))}
+      tv.ubs.foreach{ c => uniState.enqueueUnification(NewUnification(Queue(c), 0))}
     })
 
     uniState.unify()
     cache.clear()
   }
-
-  def newUnifyTypes(u: NewUnification, cache: MutSet[(ST, ST)]): Unit =
-    trace(s"U $u") {
-      val (a, b, flow, level) = NewUnification.unapply(u).get
-
-      val st1 = a.unwrapProvs
-      val st2 = b.unwrapProvs
-
-      // unification doesn't have an ordering
-      /** Cache unified types and their nesting level. Nesting level is needed because
-        * the type arguments are directly constrained but we also want to unify them
-        * through constructor data flow. So we need to consider the level in cache.
-        */
-      if (cache((st1, st2)) || cache(st2, st1)) {
-        println(s"U Cached $st1 = $st2")
-        return
-      }
-
-      cache += ((a, b))
-      cache += ((b, a))
-
-      (st1, st2) match {
-        case (tr1: TypeRef, tr2: TypeRef) if tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length =>
-          tr1.targs.zip(tr2.targs).foreach { case (arg1, arg2) =>
-            newUnifyTypes(NewUnification(arg1, arg2, Constructor(arg1, arg2, tr1, tr2, flow), level + 1), cache)
-          }
-        case (_: TypeRef, _: TypeRef) => registerNewUnificationError(u)
-        case (tup1: TupleType, tup2: TupleType) if tup1.fields.length === tup2.fields.length =>
-            tup1.fields.map(_._2.ub).zip(tup2.fields.map(_._2.ub)).foreach {
-              case (arg1, arg2) => newUnifyTypes(NewUnification(arg1, arg2, Constructor(arg1, arg2, tup1, tup2, flow), level + 1), cache)
-            }
-        case (_: TupleType, _: TupleType) => registerNewUnificationError(u)
-        case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
-          newUnifyTypes(NewUnification(arg2, arg1, Constructor(arg2, arg1, st2, st1, flow), level + 1), cache)
-          newUnifyTypes(NewUnification(res1, res2, Constructor(res1, res2, st1, st2, flow), level + 1), cache)
-        case (_: FunctionType, _: FunctionType) => registerNewUnificationError(u)
-        case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
-          // because bounds are added to both sides any a1 <: a2 and a2 :> a1
-          // all type variables will become equal to each other
-          // TODO: find a way to not catch those or catch recursive types differently
-          // registerUnificationError(u)
-          ()
-        case (tv: TypeVariable, st) =>
-          tv.lbs.foreach(c => newUnifyTypes(NewUnification(c.a, st, flow.addLeft(c), level), cache))
-          tv.ubs.foreach(c => newUnifyTypes(NewUnification(c.b, st, flow.addLeft(c), level), cache))
-        case (st, tv: TypeVariable) =>
-          tv.lbs.foreach(c => newUnifyTypes(NewUnification(st, c.a, flow.addRight(c), level), cache))
-          tv.ubs.foreach(c => newUnifyTypes(NewUnification(st, c.b, flow.addRight(c), level), cache))
-        case _ => registerNewUnificationError(u)
-      }
-    }()
 
   def outputUnificationErrors(): Ls[Str] = {
     if (uniState.error.nonEmpty) {
@@ -177,24 +127,31 @@ trait UnificationSolver extends TyperDatatypes {
   def reportNewUnificationErrors(implicit ctx: Ctx, raise: Raise): Unit =
     uniState.error.iterator.foreach(u => raise(u.createErrorMessage()))
 
-  case class NewUnification(a: ST, b: ST, flow: DataFlow, level: Int = 0) {
-    override def toString: Str = s"L: $level [$a ~ $b, $flow]"
+  case class NewUnification(flow: Queue[DataFlow], level: Int) {
+    lazy val a: ST = flow.head.getStart
+    lazy val b: ST = flow.last.getEnd
+
+    override def toString: Str = s"L: $level [${a.unwrapProvs} ~ ${b.unwrapProvs}, ${flow.mkString(", ")}]"
 
     def sequenceTVs: Set[TV] = {
       val tvSet: MutSet[TV] = MutSet()
-      flow.constraintSequence().map { case (Constraint(a, b), _) =>
+      constraintSequence.map { case (Constraint(a, b), _) =>
         a.unwrapProvs match { case tv: TypeVariable => tvSet += tv case _ => ()}
         b.unwrapProvs match { case tv: TypeVariable => tvSet += tv case _ => ()}
       }
       tvSet.toSet
     }
 
-    def constraintSequence: Ls[(Constraint, Int)] = flow.constraintSequence()
+    lazy val constraintSequence: Ls[(Constraint, Int)] = flow.iterator.flatMap {
+      case c: Constraint => (c, level) :: Nil
+      case Constructor(a, b, ctora, ctorb, uni) =>
+        uni.addLeft(Constraint(a, ctora)).addRight(Constraint(b, ctorb)).constraintSequence
+    }.toList
 
-    def createSequenceString(level: Int = 0)(implicit ctx: Ctx): Str = {
+    def createSequenceString(implicit ctx: Ctx): Str = {
       def  constraintToSequence(c: Constraint, last: Bool = false): Ls[(ST, Opt[Bool])] = {
         val (a, b) = Constraint.unapply(c).get
-        val flow = c.flow
+        val flow = c.dir
         // for the last constraint display both the types
         // don't show arrow for last type
         if (last) {
@@ -204,21 +161,31 @@ trait UnificationSolver extends TyperDatatypes {
         }
       }
 
-      val sequence = flow match {
-        case c: Constraint => constraintToSequence(c)
-        case Sequence(flow) => flow.iterator.zipWithIndex.collect {
-          case (c: Constraint, idx) => constraintToSequence(c, idx == flow.length - 1)
-        }.flatten.toList
+      def arrowString(c: Constraint): String = if (c.dir) " ---> " else " <--- "
+
+      // Currently only show type sequence for types at currentl level of nesting
+      val sequence: Ls[(ST, String)] = constraintSequence.iterator.zipWithIndex.sliding(2).collect {
+        // ignore constraints of higher levels
+        case Seq(((_, l1), _), ((_, l2), _)) if l1 < level && l2 < level => Nil
+        // constraint before changing level should show both types and end with unification symbols
+        case Seq(((c@Constraint(a, b), l1), _), ((Constraint(_, _), l2), _)) if l1 > l2 => (a, arrowString(c)) :: (b, " ~~~~ ") :: Nil
+        // constraint after changing level should show both types if the next constraint is the last constraint
+        case Seq(((Constraint(_, _), l1), _), ((c@Constraint(a, b), l2), idx))
+          if l1 < l2 && idx == constraintSequence.length - 1 => (a, arrowString(c)) :: (b, "") :: Nil
+        // constraint after changing level
+        case Seq(((Constraint(_, _), l1), _), ((c@Constraint(a, _), l2), _)) if l1 < l2 => (a, arrowString(c)) :: Nil
+        // if next constraint is last constraint show three types
+        case Seq(((c@Constraint(a, _), _), _), ((c1@Constraint(b, d), _), idx)) if idx == constraintSequence.length - 1 =>
+          (a, arrowString(c)) :: (b, arrowString(c1)) :: (d, "") :: Nil
+        // if next constraint is not last constraint show only current constraints type
+        case Seq(((c@Constraint(a, _), _), _), _) => (a, arrowString(c)) :: Nil
+        // single constraint should show both types
+        case Seq(((c@Constraint(a, b), _), _)) => (a, arrowString(c)) :: (b, "") :: Nil
         case _ => Nil
-      }
+      }.flatten.toList
 
       implicit val showTV: Set[TV] = sequenceTVs
-      val sequenceMessage = sequence.map{
-        case (st, S(true)) => msg"(${st.expOcamlTy()(ctx, showTV)}) ---> "
-        case (st, S(false)) => msg"(${st.expOcamlTy()(ctx, showTV)}) <--- "
-        case (st, N) => msg"(${st.expOcamlTy()(ctx, showTV)})"
-      }
-
+      val sequenceMessage = sequence.map { case (st, arrowString) => msg"(${st.expOcamlTy()(ctx, showTV)})${arrowString}" }
       val sctx = Message.mkCtx(sequenceMessage, "?")
       val sb = new mutable.StringBuilder();
       sequenceMessage.foreach(msg => sb ++= msg.showIn(sctx))
@@ -229,10 +196,10 @@ trait UnificationSolver extends TyperDatatypes {
       println(s"UERR REPORT $toString")
       implicit val showTV: Set[TV] = sequenceTVs
       val mainMsg = msg"Type `${a.expOcamlTy()(ctx, Set())}` does not match `${b.expOcamlTy()(ctx, Set())}`"
-      val seqString = createSequenceString()
+      val seqString = createSequenceString
       def constraintToMessage(c: Constraint, last: Bool = false): Ls[(Message, Ls[Loc], Bool, Int, Bool)] = {
         val (a, b) = Constraint.unapply(c).get
-        val flow = c.flow
+        val flow = c.dir
         val locs = c.getCleanProvs.collect {
           case TypeProvenance(S(loc), _, _, _) => loc
         }
@@ -255,101 +222,75 @@ trait UnificationSolver extends TyperDatatypes {
           (msg(a), locs, flow, level, false) :: Nil
         }
       }
-      val report = flow match {
-        case c@Constraint(a, b) => UniErrReport(mainMsg, "", constraintToMessage(c, true).map(L(_)))
-        case Constructor(a, b, ctora, ctorb, flow) =>
-          NewUnification(ctora, ctorb, flow, level + 1).createErrorMessage(level + 1)(ctx)
-        case Sequence(flow) =>
-          val msgs = flow.iterator.sliding(2).collect {
-            case Seq(c: Constraint) => constraintToMessage(c, true).map(L(_))
-            case Seq(Constructor(_, _, ctora, ctorb, flow)) =>
-              R(NewUnification(ctora, ctorb, flow, level + 1).createErrorMessage(level + 1)(ctx)) :: Nil
-            case Seq(c: Constraint, _: Constraint) => constraintToMessage(c).map(L(_))
-            case Seq(c: Constraint, _: Constructor) => constraintToMessage(c, true).map(L(_))
-            case Seq(Constructor(_, _, ctora, ctorb, flow), _) => R(NewUnification(ctora, ctorb, flow, level + 1).createErrorMessage(level + 1)(ctx)) :: Nil
-          }.flatten.toList ::: (if (flow.length != 1) flow.last match {
-            case c: Constraint => constraintToMessage(c, true).map(L(_))
-            case Constructor(_, _, ctora, ctorb, flow) =>
-              R(NewUnification(ctora, ctorb, flow, level + 1).createErrorMessage(level + 1)(ctx)) :: Nil
-          } else { Nil })
-          UniErrReport(mainMsg, seqString, msgs, level)
+
+      val report = {
+        val msgs = flow.iterator.sliding(2).collect {
+          case Seq(c: Constraint) => constraintToMessage(c, true).map(L(_))
+          case Seq(Constructor(_, _, _, _, uni)) =>
+            R(NewUnification(uni.flow, level + 1).createErrorMessage(level + 1)(ctx)) :: Nil
+          case Seq(c: Constraint, _: Constraint) => constraintToMessage(c).map(L(_))
+          case Seq(c: Constraint, _: Constructor) => constraintToMessage(c, true).map(L(_))
+          case Seq(Constructor(_, _, _, _, uni), _) => R(NewUnification(uni.flow, level + 1).createErrorMessage(level + 1)(ctx)) :: Nil
+        }.flatten.toList ::: (if (flow.length != 1) flow.last match {
+          case c: Constraint => constraintToMessage(c, true).map(L(_))
+          case Constructor(_, _, _, _, uni) =>
+            R(NewUnification(uni.flow, level + 1).createErrorMessage(level + 1)(ctx)) :: Nil
+        } else { Nil })
+        UniErrReport(mainMsg, seqString, msgs, level)
       }
       report
     }
+
+    def addLeft(c: Constraint): NewUnification = {
+        if (c.b.unwrapProvs == flow.head.getStart.unwrapProvs) NewUnification(c +: flow, level)
+        else NewUnification(c.rev +: flow, level)
+    }
+
+    def addRight(c: Constraint): NewUnification = {
+        if (flow.last.getEnd.unwrapProvs == c.a.unwrapProvs) NewUnification(flow :+ c, level)
+        else NewUnification(flow :+ c.rev, level)
+    }
+
+    def nestingLevel: Int = flow.map {
+      case _: Constraint => 0
+      case ctor: Constructor => 1 + ctor.uni.nestingLevel
+    }.max
+
+    def rev: NewUnification = NewUnification(flow.map(_.rev).reverse, level)
   }
 
   class DataFlow {
-    override def toString: Str = this match {
-      case c@Constraint(a, b) => if (c.flow) s"$a <: $b" else s"$a :> $b"
-      case Sequence(flow) => flow.mkString(", ")
-      case Constructor(a, b, ctora, ctorb, flow) => s"[$a - $ctora ~ $ctorb - $b, $flow]"
-    }
-    def getA: ST = this match {
-      case Constraint(a, b) => a
-      case Sequence(flow) => flow.head.getA
-      case Constructor(a, b, ctora, ctorb, flow) => a
-    }
-    def getB: ST = this match {
-      case Constraint(a, b) => b
-      case Sequence(flow) => flow.head.getB
-      case Constructor(a, b, ctora, ctorb, flow) => b
-    }
-    def constraintSequence(level: Int = 0): Ls[(Constraint, Int)] = this match {
-      case c: Constraint => (c -> level) :: Nil
-      case Constructor(a, b, ctora, ctorb, flow) =>
-        flow.addLeft(Constraint(a, ctora))
-        flow.addRight(Constraint(b, ctorb))
-        flow.constraintSequence(level + 1)
-      case Sequence(flow) => flow.iterator.flatMap(_.constraintSequence(level)).toList
+    def getStart: ST = this match {
+      case c: Constraint => c.a
+      case c: Constructor => c.a
     }
 
-    def addLeft(c: Constraint): Sequence = this match {
-      case c1: Constraint =>
-        if (c.b.unwrapProvs == c1.getA.unwrapProvs) Sequence(MutQueue(c, c1))
-        else Sequence(MutQueue(c.rev(), c1))
-      case Sequence(flow) =>
-        if (c.b.unwrapProvs == flow.head.getA.unwrapProvs) Sequence(c +: flow)
-        else Sequence(c.rev() +: flow)
-      case c1: Constructor =>
-        if (c.b.unwrapProvs == c1.getA.unwrapProvs) Sequence(MutQueue(c, c1))
-        else Sequence(MutQueue(c.rev(), c1))
+    def getEnd: ST = this match {
+      case c: Constraint => c.b
+      case c: Constructor => c.b
     }
 
-    def addRight(c: Constraint): Sequence = this match {
-      case c1: Constraint =>
-        if (c1.getB.unwrapProvs == c.a.unwrapProvs) Sequence(MutQueue(c1, c))
-        else Sequence(MutQueue(c1, c.rev()))
-      case Sequence(flow) => Sequence(flow :+ c)
-        if (flow.last.getB.unwrapProvs == c.a.unwrapProvs) Sequence(flow :+ c)
-        else Sequence(flow :+ c.rev())
-      case c1: Constructor =>
-        if (c1.getB.unwrapProvs == c.a.unwrapProvs) Sequence(MutQueue(c1, c))
-        else Sequence(MutQueue(c1, c.rev()))
-    }
-
-    def nestingLevel: Int = this match {
-      case c: Constraint => 0
-      case Sequence(flow) => flow.map(_.nestingLevel).max
-      case ctor: Constructor => 1 + ctor.flow.nestingLevel
-    }
-
-    def rev(): DataFlow = this match {
+    def rev: DataFlow = this match {
       case c@Constraint(a, b) =>
         val c1 = Constraint(b, a)
-        c1.flow = !c.flow
+        c1.dir = !c.dir
         c1
       case Constructor(a, b, ctora, ctorb, flow) =>
-        Constructor(b, a, ctorb, ctora, flow.rev())
-      case Sequence(flow) => Sequence(flow.reverse.map(_.rev()))
+        Constructor(b, a, ctorb, ctora, flow.rev)
+    }
+
+    override def toString: Str = this match {
+      case c@Constraint(a, b) => if (c.dir) s"${a.unwrapProvs} <: ${b.unwrapProvs}" else s"${a.unwrapProvs} :> ${b.unwrapProvs}"
+      case Constructor(a, b, ctora, ctorb, flow) => s"[${a.unwrapProvs} - ${ctora.unwrapProvs} ~ ${ctorb.unwrapProvs} - ${b.unwrapProvs}, $flow]"
     }
   }
 
   case class Constraint(a: ST, b: ST) extends DataFlow {
     // true flow from a to b
-    var flow = true
+    var dir = true
     def getCleanProvs: Ls[TP] = {
       val provs = a.uniqueTypeUseLocations reverse_::: b.uniqueTypeUseLocations
-      if (flow) {
+      if (dir) {
         // first location binds tighter so only use second prov if it's not same as first
         provs match {
           case head :: _ => head :: provs.sliding(2).collect {
@@ -368,6 +309,5 @@ trait UnificationSolver extends TyperDatatypes {
       }
     }
   }
-  case class Sequence(flow: MutQueue[DataFlow]) extends DataFlow
-  case class Constructor(a: ST, b: ST, ctora: ST, ctorb: ST, flow: DataFlow) extends DataFlow
+  case class Constructor(a: ST, b: ST, ctora: ST, ctorb: ST, uni: NewUnification) extends DataFlow
 }

@@ -46,4 +46,4 @@ let check result condition =
 //│                 ^^^^^^
 //│ U max: 7, total: 17
 //│ UERR 1 errors
-//│ L: 0 [string ~ [[[[either['a71','b72']]]]], [[[[string]]]] <: α69', α69' :> [[[α67']]], α67' <: [[[[either['a71','b72']]]]]]
+//│ L: 0 [string ~ either['a71','b72'], string <: α69', α69' :> α67', α67' <: either['a71','b72']]

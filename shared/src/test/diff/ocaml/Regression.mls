@@ -25,7 +25,7 @@ let test =
 //│ test: int
 //│ U max: 3, total: 5
 //│ UERR 1 errors
-//│ L: 0 [int ~ [[[bool]]], [[int]] <: α67', α67' :> [[[bool]]]]
+//│ L: 0 [int ~ bool, int <: α67', α67' :> bool]
 
 // TODO: show error
 let test2 = let (a, b) = test in [[b]] + 1
@@ -89,7 +89,7 @@ confluence true
 //│ res: bool | int
 //│ U max: 8, total: 13
 //│ UERR 1 errors
-//│ L: 0 [int ~ [[[[[bool]]]]], [[int]] <: α99, α99 :> [[[[[bool]]]]]]
+//│ L: 0 [int ~ bool, int <: α99, α99 :> bool]
 
 
 let x: int list
@@ -124,6 +124,8 @@ f x
 // ╙──       	       ^^^^^^^^
 // res: list[int | string]
 if true then x else y
+//│ [ERROR] Type `int` does not match `string`
+//│ 
 //│   ◉ (int list) is here
 //│   │  - l.-30let x: int list
 //│   │                ^^^^^^^^
@@ -144,7 +146,7 @@ if true then x else y
 //│ res: list[int | string]
 //│ U max: 3, total: 8
 //│ UERR 1 errors
-//│ L: 1 [int ~ string, [int - list[int] ~ list[string] - string, [[[list[int]]]] <: α104, α104 :> [[[list[string]]]]]]
+//│ L: 1 [int ~ string, [int - list[int] ~ list[string] - string, L: 0 [list[int] ~ list[string], list[int] <: α104, α104 :> list[string]]]]
 
 // TODO: show error
 Left 1 : int
@@ -184,7 +186,7 @@ mkpair 1 "2"
 //│ res: (int, int | string,)
 //│ U max: 17, total: 27
 //│ UERR 1 errors
-//│ L: 0 [int ~ [[[[[[string]]]]]], [[int]] <: α130, α130 :> [[[[[[string]]]]]]]
+//│ L: 0 [int ~ string, int <: α130, α130 :> string]
 
 // TODO nested prov not shown in collision error
 let a = 1
@@ -192,6 +194,23 @@ let b = a
 let f x = if x then true else false
 let g = f
 g b
+//│ [ERROR] Type `string list` does not match `bool`
+//│ 
+//│         (string list) ---> (?a) ---> (bool)
+//│ 
+//│ ◉ (string list) is here
+//│ │  - l.-94let f: string list -> unit
+//│ │                ^^^^^^^^^^^
+//│ │  - l.3  let f x = if x then true else false
+//│ │               ^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.3  let f x = if x then true else false
+//│ │               ^
+//│ ▼ 
+//│ ◉ (bool) is here
+//│    - l.3  let f x = if x then true else false
+//│                        ^
 //│ [ERROR] Type `bool` does not match `unit`
 //│ 
 //│         (bool) ---> (?a) ---> (unit)
@@ -207,25 +226,8 @@ g b
 //│ │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
 //│ ◉ (unit) is here
-//│    - l.-92let f: string list -> unit
+//│    - l.-94let f: string list -> unit
 //│                                 ^^^^
-//│ [ERROR] Type `string list` does not match `bool`
-//│ 
-//│         (string list) ---> (?a) ---> (bool)
-//│ 
-//│ ◉ (string list) is here
-//│ │  - l.-92let f: string list -> unit
-//│ │                ^^^^^^^^^^^
-//│ │  - l.3  let f x = if x then true else false
-//│ │               ^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.3  let f x = if x then true else false
-//│ │               ^
-//│ ▼ 
-//│ ◉ (bool) is here
-//│    - l.3  let f x = if x then true else false
-//│                        ^
 //│ a: int
 //│ b: int
 //│ bool -> bool
@@ -234,8 +236,8 @@ g b
 //│ g: list[string] -> unit
 //│ U max: 8, total: 12
 //│ UERR 2 errors
-//│ L: 0 [list[string] ~ [[[bool]]], [[[list[string]]]] <: α142, α142 <: [[[bool]]]]
-//│ L: 0 [bool ~ [[[unit]]], [[[bool]]] <: α143, α143 <: [[[unit]]]]
+//│ L: 0 [list[string] ~ bool, list[string] <: α142, α142 <: bool]
+//│ L: 0 [bool ~ unit, bool <: α143, α143 <: unit]
 
 let wrap x = x :: []
   
@@ -264,7 +266,7 @@ if true then wrap (if true then 1 else false) else wrap true
 //│                                                  ^^^^^
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
-//│         (int) ---> (?a) <--- (bool)
+//│         (int) ---> (?a) ~~~~ (?a0) <--- (bool)
 //│ 
 //│ ◉ (int) is here
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
@@ -306,8 +308,8 @@ if true then wrap (if true then 1 else false) else wrap true
 //│ res: list[bool | int]
 //│ U max: 16, total: 42
 //│ UERR 2 errors
-//│ L: 0 [int ~ [[[bool]]], [[int]] <: α158, α158 :> [[[bool]]]]
-//│ L: 1 [int ~ [[[[[bool]]]]], [[[[[int]]]]] <: 'a156, ['a156 - list['a156] ~ list['a161] - 'a161, [[[[list['a156]]]]] <: α154, α154 :> [[[[list['a161]]]]]], 'a161 :> [[[[[bool]]]]]]
+//│ L: 0 [int ~ bool, int <: α158, α158 :> bool]
+//│ L: 1 [int ~ bool, int <: 'a156, ['a156 - list['a156] ~ list['a161] - 'a161, L: 0 [list['a156] ~ list['a161], list['a156] <: α154, α154 :> list['a161]]], 'a161 :> bool]
 
 
 let rec t = wrap (if true then 1 else t)
@@ -339,15 +341,69 @@ let rec t = wrap (if true then 1 else t)
 //│     't :> list[int | 't]
 //│ U max: 16, total: 24
 //│ UERR 1 errors
-//│ L: 0 [int ~ [[[[[[list['a174']]]]]]], [[int]] <: α176', α176' :> [[[[[[list['a174']]]]]]]]
+//│ L: 0 [int ~ list['a174'], int <: α176', α176' :> list['a174']]
 
 
 let test z = if true then wrap z else wrap true
  
 let rec m = test (if true then 1 else m)
+//│ [ERROR] Type `int` does not match `_ list`
+//│ 
+//│         (int) ---> (?a) <--- (_ list)
+//│ 
+//│ ◉ (int) is here
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                                        ^
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.3  let rec m = test (if true then 1 else m)
+//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                                               ^
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                 ^
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.1  let test z = if true then wrap z else wrap true
+//│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.1  let test z = if true then wrap z else wrap true
+//│ │                                   ^^^^^^
+//│ │ 
+//│ ◉ (_ list) is here
+//│    - l.-104let wrap x = x :: []
+//│                         ^^^^^^^
+//│ [ERROR] Type `int` does not match `_ list`
+//│ 
+//│         (int) ---> (?a) <--- (_ list)
+//│ 
+//│ ◉ (int) is here
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                                        ^
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.3  let rec m = test (if true then 1 else m)
+//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                                               ^
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                 ^
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.1  let test z = if true then wrap z else wrap true
+//│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.1  let test z = if true then wrap z else wrap true
+//│ │                                               ^^^^^^^^^
+//│ │ 
+//│ ◉ (_ list) is here
+//│    - l.-104let wrap x = x :: []
+//│                         ^^^^^^^
 //│ [ERROR] Type `bool` does not match `_ list`
 //│ 
-//│         (bool) ---> (?a) <--- (?a list)
+//│         (bool) ---> (?a) ~~~~ (?a0) <--- (?a0 list)
 //│ 
 //│ ◉ (bool) is here
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -418,7 +474,7 @@ let rec m = test (if true then 1 else m)
 //│                         ^^^^^^^
 //│ [ERROR] Type `bool` does not match `_ list`
 //│ 
-//│         (bool) ---> (?a) <--- (?a0 list)
+//│         (bool) ---> (?a) ~~~~ (?a0) <--- (?a list)
 //│ 
 //│ ◉ (bool) is here
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -487,63 +543,9 @@ let rec m = test (if true then 1 else m)
 //│ ◉ (?a list) is here
 //│    - l.-104let wrap x = x :: []
 //│                         ^^^^^^^
-//│ [ERROR] Type `int` does not match `_ list`
-//│ 
-//│         (int) ---> (?a) <--- (_ list)
-//│ 
-//│ ◉ (int) is here
-//│ │  - l.3  let rec m = test (if true then 1 else m)
-//│ │                                        ^
-//│ │  - l.3  let rec m = test (if true then 1 else m)
-//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ ▲  - l.3  let rec m = test (if true then 1 else m)
-//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.3  let rec m = test (if true then 1 else m)
-//│ │                                               ^
-//│ │  - l.3  let rec m = test (if true then 1 else m)
-//│ │                 ^
-//│ │  - l.3  let rec m = test (if true then 1 else m)
-//│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.1  let test z = if true then wrap z else wrap true
-//│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.1  let test z = if true then wrap z else wrap true
-//│ │                                   ^^^^^^
-//│ │ 
-//│ ◉ (_ list) is here
-//│    - l.-104let wrap x = x :: []
-//│                         ^^^^^^^
-//│ [ERROR] Type `int` does not match `_ list`
-//│ 
-//│         (int) ---> (?a) <--- (_ list)
-//│ 
-//│ ◉ (int) is here
-//│ │  - l.3  let rec m = test (if true then 1 else m)
-//│ │                                        ^
-//│ │  - l.3  let rec m = test (if true then 1 else m)
-//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ ▲  - l.3  let rec m = test (if true then 1 else m)
-//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.3  let rec m = test (if true then 1 else m)
-//│ │                                               ^
-//│ │  - l.3  let rec m = test (if true then 1 else m)
-//│ │                 ^
-//│ │  - l.3  let rec m = test (if true then 1 else m)
-//│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.1  let test z = if true then wrap z else wrap true
-//│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.1  let test z = if true then wrap z else wrap true
-//│ │                                               ^^^^^^^^^
-//│ │ 
-//│ ◉ (_ list) is here
-//│    - l.-104let wrap x = x :: []
-//│                         ^^^^^^^
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (bool) ---> (?a) <--- (int)
+//│         (bool) ---> (?a) ~~~~ (?a0) <--- (int)
 //│ 
 //│ ◉ (bool) is here
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -608,16 +610,35 @@ let rec m = test (if true then 1 else m)
 //│     'm :> list[int | 'm | bool]
 //│ U max: 51, total: 93
 //│ UERR 5 errors
-//│ L: 1 [bool ~ [[[[[[[[[[[[[list['a212']]]]]]]]]]]]]], [[[[[bool]]]]] <: 'a212', ['a212' - list['a212'] ~ list['a208'] - 'a208', [[[[[[[[list['a212']]]]]]]]] <: α215', α215' :> [[[[[[[[list['a208']]]]]]]]]], 'a208' :> [[[[[[[[[[[[[list['a212']]]]]]]]]]]]]]]
-//│ L: 1 [bool ~ [[[[[[[[[[[[[list['a208']]]]]]]]]]]]]], [[[[[bool]]]]] <: 'a212', ['a212' - list['a212'] ~ list['a208'] - 'a208', [[[[[[[[list['a212']]]]]]]]] <: α215', α215' :> [[[[[[[[list['a208']]]]]]]]]], 'a208' :> [[[[[[[[[[[[[list['a208']]]]]]]]]]]]]]]
-//│ L: 0 [int ~ [[[[[[[[list['a208']]]]]]]]], [[int]] <: α215', α215' :> [[[[[[[[list['a208']]]]]]]]]]
-//│ L: 0 [int ~ [[[[[[[[list['a212']]]]]]]]], [[int]] <: α215', α215' :> [[[[[[[[list['a212']]]]]]]]]]
-//│ L: 1 [bool ~ [[[[[[[int]]]]]]], [[[[[bool]]]]] <: 'a212', ['a212' - list['a212'] ~ list['a208'] - 'a208', [[[[[[[[list['a212']]]]]]]]] <: α215', α215' :> [[[[[[[[list['a208']]]]]]]]]], 'a208' :> [[[[[[[int]]]]]]]]
+//│ L: 1 [bool ~ int, bool <: 'a212', ['a212' - list['a212'] ~ list['a208'] - 'a208', L: 0 [list['a212'] ~ list['a208'], list['a212'] <: α215', α215' :> list['a208']]], 'a208' :> int]
+//│ L: 1 [bool ~ list['a208'], bool <: 'a212', ['a212' - list['a212'] ~ list['a208'] - 'a208', L: 0 [list['a212'] ~ list['a208'], list['a212'] <: α215', α215' :> list['a208']]], 'a208' :> list['a208']]
+//│ L: 0 [int ~ list['a212'], int <: α215', α215' :> list['a212']]
+//│ L: 0 [int ~ list['a208'], int <: α215', α215' :> list['a208']]
+//│ L: 1 [bool ~ list['a212'], bool <: 'a212', ['a212' - list['a212'] ~ list['a208'] - 'a208', L: 0 [list['a212'] ~ list['a208'], list['a212'] <: α215', α215' :> list['a208']]], 'a208' :> list['a212']]
 
 
 // FIXME implementation exception
 let rec digitsOfInt n =
   ((digitsOfInt n) / 10) @ [remainder];;
+//│ [ERROR] Type `_ list` does not match `int`
+//│ 
+//│         (_ list) ---> (?a) ---> (int)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - lib. let (@): 'a list -> 'a list -> 'a list
+//│ │                                        ^^^^^^^
+//│ │  - l.2    ((digitsOfInt n) / 10) @ [remainder];;
+//│ │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.2    ((digitsOfInt n) / 10) @ [remainder];;
+//│ │            ^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.2    ((digitsOfInt n) / 10) @ [remainder];;
+//│ │            ^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (int) is here
+//│    - lib. let ( / ): int -> int -> int
+//│                      ^^^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (?a) ---> (int)
@@ -644,31 +665,12 @@ let rec digitsOfInt n =
 //│ ◉ (int) is here
 //│    - lib. let ( / ): int -> int -> int
 //│                      ^^^
-//│ [ERROR] Type `_ list` does not match `int`
-//│ 
-//│         (_ list) ---> (?a) ---> (int)
-//│ 
-//│ ◉ (_ list) is here
-//│ │  - lib. let (@): 'a list -> 'a list -> 'a list
-//│ │                                        ^^^^^^^
-//│ │  - l.2    ((digitsOfInt n) / 10) @ [remainder];;
-//│ │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.2    ((digitsOfInt n) / 10) @ [remainder];;
-//│ │            ^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.2    ((digitsOfInt n) / 10) @ [remainder];;
-//│ │            ^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (int) is here
-//│    - lib. let ( / ): int -> int -> int
-//│                      ^^^
 //│ ╔══[ERROR] identifier not found: remainder
 //│ ║  
-//│ ║  l.620:	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.622:	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──      	                            ^^^^^^^^^
 //│ digitsOfInt: anything -> list[error]
 //│ U max: 10, total: 26
 //│ UERR 2 errors
-//│ L: 0 [list[α232'] ~ [[int]], [[[[list[α232']]]]] <: α234', α234' <: [[int]]]
-//│ L: 1 [list[α232'] ~ [[int]], [[list[α232']] - (α231' -> [list[α232']]) ~ ([α231'] -> α234') - α234', [[(α231' -> [list[α232']])]] <: digitsOfInt230', digitsOfInt230' <: [[[([α231'] -> α234')]]]], α234' <: [[int]]]
+//│ L: 0 [list[α232'] ~ int, list[α232'] <: α234', α234' <: int]
+//│ L: 1 [list[α232'] ~ int, [list[α232'] - (α231' -> [list[α232']]) ~ ([α231'] -> α234') - α234', L: 0 [(α231' -> [list[α232']]) ~ ([α231'] -> α234'), (α231' -> [list[α232']]) <: digitsOfInt230', digitsOfInt230' <: ([α231'] -> α234')]], α234' <: int]
