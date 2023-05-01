@@ -1,11 +1,11 @@
 let boolToBit x = if x then "0" else 1
-//│ [ERROR] Type `string` does not match `int`
+//│ [ERROR] Type `int` does not match `string`
 //│ 
-//│         (string) ---> (?a) <--- (int)
+//│         (int) ---> (?a) <--- (string)
 //│ 
-//│ ◉ (string) is here
+//│ ◉ (int) is here
 //│ │  - l.1  let boolToBit x = if x then "0" else 1
-//│ │                                     ^^^
+//│ │                                              ^
 //│ │  - l.1  let boolToBit x = if x then "0" else 1
 //│ │                           ^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -13,9 +13,9 @@ let boolToBit x = if x then "0" else 1
 //│ ▲  - l.1  let boolToBit x = if x then "0" else 1
 //│ │                           ^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (string) is here
 //│    - l.1  let boolToBit x = if x then "0" else 1
-//│                                                ^
-//│ U max: 4, total: 7
+//│                                       ^^^
+//│ U max: 3, total: 4
 //│ UERR 1 errors
-//│ L: 0 [string ~ int, string <: α68', α68' :> int]
+//│ L: 0 [int ~ string, int <: α68', α68' :> string]

@@ -320,6 +320,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     lazy val asTypeVar = new TypeVar(L(uid), nameHint)
     var ubs: Ls[Constraint] = Ls()
     var lbs: Ls[Constraint] = Ls()
+    var uni: Ls[NewUnification] = Ls()
     def compare(that: TV): Int = this.uid compare that.uid
     def isRecursive_$(implicit ctx: Ctx) : Bool = (lbRecOccs_$, ubRecOccs_$) match {
       case (S(N | S(true)), _) | (_, S(N | S(false))) => true

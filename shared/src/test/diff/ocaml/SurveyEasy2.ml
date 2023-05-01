@@ -4,15 +4,15 @@ let increment result = match result with
  
 (* (^): string -> string -> string  is a string concatenation operator *)
 (* Remember Left and Right are the constructors of the either type *)
-//│ [ERROR] Type `int` does not match `string`
+//│ [ERROR] Type `string` does not match `int`
 //│ 
-//│         (int) ---> (?a) <--- (string)
+//│         (string) ---> (?a) <--- (int)
 //│ 
-//│ ◉ (int) is here
-//│ │  - lib. let (+): int -> int -> int
-//│ │                                ^^^
-//│ │  - l.2   | Left n -> n + 1
-//│ │                      ^^^^^
+//│ ◉ (string) is here
+//│ │  - lib. let (^): string -> string -> string
+//│ │                                      ^^^^^^
+//│ │  - l.3   | Right msg -> "ERROR: " ^ msg
+//│ │                         ^^^^^^^^^^^^^^^
 //│ │  - l.1  let increment result = match result with
 //│ │                                ^^^^^^^^^^^^^^^^^
 //│ │          | Left n -> n + 1 ...
@@ -23,12 +23,12 @@ let increment result = match result with
 //│ │                                ^^^^^^^^^^^^^^^^^
 //│ │          | Left n -> n + 1 ...
 //│ │          ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.3   | Right msg -> "ERROR: " ^ msg
-//│ │                         ^^^^^^^^^^^^^^^
+//│ │  - l.2   | Left n -> n + 1
+//│ │                      ^^^^^
 //│ │ 
-//│ ◉ (string) is here
-//│    - lib. let (^): string -> string -> string
-//│                                        ^^^^^^
-//│ U max: 5, total: 11
+//│ ◉ (int) is here
+//│    - lib. let (+): int -> int -> int
+//│                                  ^^^
+//│ U max: 7, total: 8
 //│ UERR 1 errors
-//│ L: 0 [int ~ string, int <: α68', α68' :> string]
+//│ L: 0 [string ~ int, string <: α68', α68' :> int]

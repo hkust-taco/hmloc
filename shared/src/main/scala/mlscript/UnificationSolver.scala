@@ -6,18 +6,13 @@ import mlscript.utils.shorthands._
 
 import scala.collection.immutable.Queue
 import scala.collection.mutable
-import scala.collection.mutable.{StringBuilder, Queue => MutQueue, Set => MutSet}
+import scala.collection.mutable.{Queue => MutQueue, Set => MutSet}
 
 trait UnificationSolver extends TyperDatatypes {
   self: Typer =>
 
   val cache: MutSet[(ST, ST)] = MutSet()
   var unifyMode: Bool = false
-
-  def registerNewUnificationError(u: NewUnification): Unit = {
-    println(s"UERR $u")
-    newErrorCache += u
-  }
 
   class UnificationState (
     cache: MutSet[(ST, ST, Int)] = MutSet(),
@@ -56,7 +51,7 @@ trait UnificationSolver extends TyperDatatypes {
     override def next(): NewUnification = queue.dequeue()
 
     def unify(): Unit = foreach { case u@NewUnification(_, level) =>
-      println(s"U $u with Q $queue")
+      println(s"U $u")
       val st1 = u.a.unwrapProvs
       val st2 = u.b.unwrapProvs
 
@@ -82,11 +77,25 @@ trait UnificationSolver extends TyperDatatypes {
           // registerUnificationError(u)
           ()
         case (tv: TypeVariable, _) =>
-          tv.lbs.foreach(c => enqueueUnification(u.addLeft(c)))
-          tv.ubs.foreach(c => enqueueUnification(u.addLeft(c)))
+          // u = tv ---- st2
+          tv.uni.foreach(tvuni => {
+            // tvuni = tv ---- b
+            if (tvuni.a.unwrapProvs == tv) enqueueUnification(tvuni.rev.concat(u))
+            // tvuni = a ---- tv
+            else enqueueUnification(tvuni.concat(u))
+          })
+
+          tv.uni ::= u
         case (_, tv: TypeVariable) =>
-          tv.lbs.foreach(c => enqueueUnification(u.addRight(c)))
-          tv.ubs.foreach(c => enqueueUnification(u.addRight(c)))
+          // u = st1 ---- tv
+          tv.uni.foreach(tvuni => {
+            // tvuni = tv ---- b
+            if (tvuni.a.unwrapProvs == tv) enqueueUnification(u.concat(tvuni))
+            // tvuni = a ---- tv
+            else enqueueUnification(u.concat(tvuni.rev))
+          })
+
+          tv.uni ::= u
         case (st1, st2) if st1 != st2 => addError(u)
         case _ => ()
       }
@@ -98,22 +107,23 @@ trait UnificationSolver extends TyperDatatypes {
 
   // Unify all type variables crated by accessing them from the hook
   def newUnifyTypes()(implicit ctx: Ctx, raise: Raise): Unit = {
-    cache.clear()
-    uniState.clear()
+//    cache.clear()
+//    uniState.clear()
 
-    // register all bounds as unifications
-    TypeVariable.createdTypeVars.foreach(tv => {
-      tv.lowerBounds.foreach(tv.lbs ::= Constraint(_, tv))
-      tv.upperBounds.foreach(tv.ubs ::= Constraint(tv, _))
-    })
-
-    TypeVariable.createdTypeVars.foreach(tv => {
-      tv.lbs.foreach{ c => uniState.enqueueUnification(NewUnification(Queue(c), 0))}
-      tv.ubs.foreach{ c => uniState.enqueueUnification(NewUnification(Queue(c), 0))}
-    })
+//    // register all bounds as unifications
+//    TypeVariable.createdTypeVars.foreach(tv => {
+//      tv.lowerBounds.foreach(tv.lbs ::= Constraint(_, tv))
+//      tv.upperBounds.foreach(tv.ubs ::= Constraint(tv, _))
+//    })
+//
+//    TypeVariable.createdTypeVars.foreach(tv => {
+//      tv.lbs.foreach{ c => uniState.enqueueUnification(NewUnification(Queue(c), 0))}
+//      tv.ubs.foreach{ c => uniState.enqueueUnification(NewUnification(Queue(c), 0))}
+//    })
 
     uniState.unify()
-    cache.clear()
+//    uniState.clear()
+//    cache.clear()
   }
 
   def outputUnificationErrors(): Ls[Str] = {
@@ -192,6 +202,29 @@ trait UnificationSolver extends TyperDatatypes {
       sb.toString()
     }
 
+    def addLeft(c: Constraint): NewUnification = {
+      if (c.b.unwrapProvs == flow.head.getStart.unwrapProvs) NewUnification(c +: flow, level)
+      else NewUnification(c.rev +: flow, level)
+    }
+
+    def addRight(c: Constraint): NewUnification = {
+      if (flow.last.getEnd.unwrapProvs == c.a.unwrapProvs) NewUnification(flow :+ c, level)
+      else NewUnification(flow :+ c.rev, level)
+    }
+
+    def concat(other: NewUnification): NewUnification = {
+      assert(b.unwrapProvs == other.a.unwrapProvs, s"$b != ${other.a}")
+      assert(level == other.level)
+      NewUnification(flow.enqueueAll(other.flow), level)
+    }
+
+    def nestingLevel: Int = flow.map {
+      case _: Constraint => 0
+      case ctor: Constructor => 1 + ctor.uni.nestingLevel
+    }.max
+
+    def rev: NewUnification = NewUnification(flow.map(_.rev).reverse, level)
+
     def createErrorMessage(level: Int = 0)(implicit ctx: Ctx): UniErrReport = {
       println(s"UERR REPORT $toString")
       implicit val showTV: Set[TV] = sequenceTVs
@@ -240,23 +273,10 @@ trait UnificationSolver extends TyperDatatypes {
       }
       report
     }
+  }
 
-    def addLeft(c: Constraint): NewUnification = {
-        if (c.b.unwrapProvs == flow.head.getStart.unwrapProvs) NewUnification(c +: flow, level)
-        else NewUnification(c.rev +: flow, level)
-    }
-
-    def addRight(c: Constraint): NewUnification = {
-        if (flow.last.getEnd.unwrapProvs == c.a.unwrapProvs) NewUnification(flow :+ c, level)
-        else NewUnification(flow :+ c.rev, level)
-    }
-
-    def nestingLevel: Int = flow.map {
-      case _: Constraint => 0
-      case ctor: Constructor => 1 + ctor.uni.nestingLevel
-    }.max
-
-    def rev: NewUnification = NewUnification(flow.map(_.rev).reverse, level)
+  object NewUnification {
+    def fromLhsRhs(lhs: ST, rhs: ST): NewUnification = NewUnification(Queue(Constraint(lhs, rhs)), 0)
   }
 
   class DataFlow {
