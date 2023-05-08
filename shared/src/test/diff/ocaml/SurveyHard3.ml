@@ -36,7 +36,7 @@ let bigAdd l1 l2 =
 (* List.rev: 'a list -> 'a list reverses a list *)
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
-//│         (_ list) ---> (?a) <--- (_ * _)
+//│         (_ list) ---> (?a) ---> (?a) ---> (?a -> _) ~~~~ (?a -> _) ---> (_ -> ?a -> _) ---> (?b -> _) <--- (?b -> _) <--- (?b) ~~~~ (?b) ---> (?b list) <--- (?c list) <--- (?c) ---> (?c list) <--- ((_ * _) list) <--- (_ * _)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.19       if x = []
@@ -45,12 +45,41 @@ let bigAdd l1 l2 =
 //│ ◉ (?a) is assumed here
 //│ ▲  - l.19       if x = []
 //│ │                  ^
-//│ │  - l.17     let f a x =
-//│ │                     ^
 //│ │ 
-//│ ◉ (_ * _) is here
-//│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
-//│                                                    ^^^^^^^
+//│ ◉ (?b) is assumed here
+//│    - l.17     let f a x =
+//│                       ^
+//│     ◉ (_ -> _ -> _) is here
+//│     │  - l.17     let f a x =
+//│     │                   ^^^^^
+//│     │               let (carry,currentSum) = a in ...
+//│     │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.29     let (_,res) = List.fold_left f base args in res in
+//│     │                                          ^
+//│     ▼ 
+//│     ◉ (_ -> _ -> _) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│   ◉ (_ list) is here
+//│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│   │                                                        ^^^^^^^
+//│   │  - l.29     let (_,res) = List.fold_left f base args in res in
+//│   │                                                 ^^^^
+//│   │  - l.28     let args = List.rev (List.combine l1 l2) in
+//│   │                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (_ list) is here
+//│      - lib. let List.rev: 'a list -> 'a list
+//│                                      ^^^^^^^
+//│   ◉ (_ list) is here
+//│   ▲  - lib. let List.rev: 'a list -> 'a list
+//│   │                       ^^^^^^^
+//│   │  - l.28     let args = List.rev (List.combine l1 l2) in
+//│   │                                 ^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ ((_ * _) list) is here
+//│      - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
+//│                                                      ^^^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
 //│         (_ list) ---> (?a) <--- (?b) ---> (_ * _)
@@ -74,7 +103,7 @@ let bigAdd l1 l2 =
 //│ ◉ (_ * _) is here
 //│    - l.22         (let (toSum1,toSum2) = x in
 //│                        ^^^^^^^^^^^^^^^
-//│ U max: 269, total: 913
+//│ U max: 55, total: 154
 //│ UERR 2 errors
-//│ L: 0 [list['a176'] ~ ([α182'], [α183'],), list['a176'] <: α174', α174' :> α202', α202' <: ([α182'], [α183'],)]
-//│ L: 0 [list['a176'] ~ (α196', α197',), list['a176'] <: α174', α174' :> (α196', α197',)]
+//│ L: 0 [list['a176'] ~ (α196', α197',), list['a176'] <: α174', α174' :> α170', [α170' - (α170' -> α171') ~ (α202' -> α201') - α202', L: 1 [(α170' -> α171') ~ (α202' -> α201'), [(α170' -> α171') - (α169' -> (α170' -> α171')) ~ (α201' -> (α202' -> α201')) - (α202' -> α201'), L: 0 [(α169' -> (α170' -> α171')) ~ (α201' -> (α202' -> α201')), (α169' -> (α170' -> α171')) <: (α201' -> (α202' -> α201'))]]]], [α202' - list[α202'] ~ list[α195'] - α195', L: 0 [list[α202'] ~ list[α195'], list[α202'] :> list[α195']]], [α195' - list[α195'] ~ list[(α196', α197',)] - (α196', α197',), L: 0 [list[α195'] ~ list[(α196', α197',)], list[α195'] :> list[(α196', α197',)]]]]
+//│ L: 0 [list['a176'] ~ ([α182'], [α183'],), list['a176'] <: α174', α174' :> α170', α170' <: ([α182'], [α183'],)]

@@ -1,13 +1,13 @@
 :AllowTypeErrors
 
 let boolToInt x = if x then "0" else 1
-//│ [ERROR] Type `string` does not match `int`
+//│ [ERROR] Type `int` does not match `string`
 //│ 
-//│         (string) ---> (?a) <--- (int)
+//│         (int) ---> (?a) <--- (string)
 //│ 
-//│ ◉ (string) is here
+//│ ◉ (int) is here
 //│ │  - l.1  let boolToInt x = if x then "0" else 1
-//│ │                                     ^^^
+//│ │                                              ^
 //│ │  - l.1  let boolToInt x = if x then "0" else 1
 //│ │                           ^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -15,13 +15,13 @@ let boolToInt x = if x then "0" else 1
 //│ ▲  - l.1  let boolToInt x = if x then "0" else 1
 //│ │                           ^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (string) is here
 //│    - l.1  let boolToInt x = if x then "0" else 1
-//│                                                ^
+//│                                       ^^^
 //│ boolToInt: bool -> (int | string)
-//│ U max: 4, total: 7
+//│ U max: 3, total: 4
 //│ UERR 1 errors
-//│ L: 0 [string ~ int, string <: α68', α68' :> int]
+//│ L: 0 [int ~ string, int <: α68', α68' :> string]
 
 
 
@@ -29,15 +29,15 @@ let boolToInt x = if x then "0" else 1
 let destructEither x = match x with
  | Left l -> l + 1
  | Right r -> r && true
-//│ [ERROR] Type `int` does not match `bool`
+//│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (int) ---> (?a) <--- (bool)
+//│         (bool) ---> (?a) <--- (int)
 //│ 
-//│ ◉ (int) is here
-//│ │  - lib. let (+): int -> int -> int
-//│ │                                ^^^
-//│ │  - l.2   | Left l -> l + 1
-//│ │                      ^^^^^
+//│ ◉ (bool) is here
+//│ │  - lib. let (&&): bool -> bool -> bool
+//│ │                                   ^^^^
+//│ │  - l.3   | Right r -> r && true
+//│ │                       ^^^^^^^^^^
 //│ │  - l.1  let destructEither x = match x with
 //│ │                                ^^^^^^^^^^^^
 //│ │          | Left l -> l + 1 ...
@@ -48,16 +48,16 @@ let destructEither x = match x with
 //│ │                                ^^^^^^^^^^^^
 //│ │          | Left l -> l + 1 ...
 //│ │          ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.3   | Right r -> r && true
-//│ │                       ^^^^^^^^^^
+//│ │  - l.2   | Left l -> l + 1
+//│ │                      ^^^^^
 //│ │ 
-//│ ◉ (bool) is here
-//│    - lib. let (&&): bool -> bool -> bool
-//│                                     ^^^^
+//│ ◉ (int) is here
+//│    - lib. let (+): int -> int -> int
+//│                                  ^^^
 //│ destructEither: either[int, bool] -> (bool | int)
-//│ U max: 5, total: 11
+//│ U max: 7, total: 8
 //│ UERR 1 errors
-//│ L: 0 [int ~ bool, int <: α72', α72' :> bool]
+//│ L: 0 [bool ~ int, bool <: α72', α72' :> int]
 
 
 let destructEither x = if x then
@@ -65,9 +65,9 @@ let destructEither x = if x then
    | Left l -> l + 1
    | Right r -> r && true
   else x
-//│ [ERROR] Type `(_, _) either` does not match `bool`
+//│ [ERROR] Type `(_, _) either` does not match `int`
 //│ 
-//│         ((_, _) either) <--- (?a) ---> (bool)
+//│         ((_, _) either) <--- (?a) ---> (?b) <--- (?c) <--- (int)
 //│ 
 //│ ◉ ((_, _) either) is here
 //│ ▲  - l.3     | Left l -> l + 1
@@ -80,19 +80,43 @@ let destructEither x = if x then
 //│ ◉ (?a) is assumed here
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
+//│ │  - l.5    else x
+//│ │                ^^
+//│ │  - l.1  let destructEither x = if x then
+//│ │                                ^^^^^^^^^
+//│ │           match x with ...
+//│ │           ^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (bool) is here
-//│    - l.1  let destructEither x = if x then
-//│                                     ^
-//│ [ERROR] Type `int` does not match `bool`
-//│ 
-//│         (int) ---> (?a) <--- (bool)
-//│ 
-//│ ◉ (int) is here
-//│ │  - lib. let (+): int -> int -> int
-//│ │                                ^^^
+//│ ◉ (?b) is assumed here
+//│ ▲  - l.1  let destructEither x = if x then
+//│ │                                ^^^^^^^^^
+//│ │           match x with ...
+//│ │           ^^^^^^^^^^^^^^^^
+//│ │  - l.2    match x with
+//│ │           ^^^^^^^^^^^^
+//│ │            | Left l -> l + 1 ...
+//│ │            ^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (?c) is assumed here
+//│ ▲  - l.2    match x with
+//│ │           ^^^^^^^^^^^^
+//│ │            | Left l -> l + 1 ...
+//│ │            ^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3     | Left l -> l + 1
 //│ │                        ^^^^^
+//│ │ 
+//│ ◉ (int) is here
+//│    - lib. let (+): int -> int -> int
+//│                                  ^^^
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│         (bool) ---> (?a) <--- (int)
+//│ 
+//│ ◉ (bool) is here
+//│ │  - lib. let (&&): bool -> bool -> bool
+//│ │                                   ^^^^
+//│ │  - l.4     | Right r -> r && true
+//│ │                         ^^^^^^^^^
 //│ │  - l.2    match x with
 //│ │           ^^^^^^^^^^^^
 //│ │            | Left l -> l + 1 ...
@@ -103,41 +127,23 @@ let destructEither x = if x then
 //│ │           ^^^^^^^^^^^^
 //│ │            | Left l -> l + 1 ...
 //│ │            ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.4     | Right r -> r && true
-//│ │                         ^^^^^^^^^
-//│ │ 
-//│ ◉ (bool) is here
-//│    - lib. let (&&): bool -> bool -> bool
-//│                                     ^^^^
-//│ [ERROR] Type `int` does not match `(_, _) either`
-//│ 
-//│         (int) ---> (?a) <--- (?b) ---> ((_, _) either)
-//│ 
-//│ ◉ (int) is here
-//│ │  - lib. let (+): int -> int -> int
-//│ │                                ^^^
 //│ │  - l.3     | Left l -> l + 1
 //│ │                        ^^^^^
-//│ │  - l.2    match x with
-//│ │           ^^^^^^^^^^^^
-//│ │            | Left l -> l + 1 ...
-//│ │            ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.1  let destructEither x = if x then
-//│ │                                ^^^^^^^^^
-//│ │           match x with ...
-//│ │           ^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ │ 
+//│ ◉ (int) is here
+//│    - lib. let (+): int -> int -> int
+//│                                  ^^^
+//│ [ERROR] Type `bool` does not match `(_, _) either`
+//│ 
+//│         (bool) <--- (?a) ---> ((_, _) either)
+//│ 
+//│ ◉ (bool) is here
 //│ ▲  - l.1  let destructEither x = if x then
-//│ │                                ^^^^^^^^^
-//│ │           match x with ...
-//│ │           ^^^^^^^^^^^^^^^^
-//│ │  - l.5    else x
-//│ │                ^^
+//│ │                                   ^
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?a) is assumed here
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
 //│ │  - l.2    match x with
@@ -147,42 +153,42 @@ let destructEither x = if x then
 //│    - l.3     | Left l -> l + 1
 //│                ^^^^^^
 //│ destructEither: bool -> (bool | int)
-//│ U max: 10, total: 22
+//│ U max: 10, total: 16
 //│ UERR 3 errors
-//│ L: 0 [int ~ either['a86','b87'], int <: α84', α84' :> α83', α83' <: either['a86','b87']]
-//│ L: 0 [either['a86','b87'] ~ bool, either['a86','b87'] :> α83', α83' <: bool]
-//│ L: 0 [int ~ bool, int <: α85', α85' :> bool]
+//│ L: 0 [either['a86','b87'] ~ int, either['a86','b87'] :> α83', α83' <: α84', α84' :> α85', α85' :> int]
+//│ L: 0 [bool ~ either['a86','b87'], bool :> α83', α83' <: either['a86','b87']]
+//│ L: 0 [bool ~ int, bool <: α85', α85' :> int]
 
 let succ: int -> int
   
 let test2 x = match x with
  | true -> succ x
-//│ [ERROR] Type `int` does not match `bool`
+//│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (int) <--- (?a) ---> (bool)
+//│         (bool) <--- (?a) ---> (int)
 //│ 
-//│ ◉ (int) is here
-//│ ▲  - l.1  let succ: int -> int
-//│ │                   ^^^
-//│ │  - l.4   | true -> succ x
-//│ │                         ^
+//│ ◉ (bool) is here
+//│ ▲  - l.4   | true -> succ x
+//│ │            ^^^^
+//│ │  - l.3  let test2 x = match x with
+//│ │                             ^
 //│ │  - l.3  let test2 x = match x with
 //│ │                   ^
 //│ │ 
 //│ ◉ (?a) is assumed here
 //│ │  - l.3  let test2 x = match x with
 //│ │                   ^
-//│ │  - l.3  let test2 x = match x with
-//│ │                             ^
+//│ │  - l.4   | true -> succ x
+//│ │                         ^
 //│ ▼ 
-//│ ◉ (bool) is here
-//│    - l.4   | true -> succ x
-//│              ^^^^
+//│ ◉ (int) is here
+//│    - l.1  let succ: int -> int
+//│                     ^^^
 //│ succ: int -> int
 //│ test2: nothing -> int
-//│ U max: 4, total: 6
+//│ U max: 3, total: 4
 //│ UERR 1 errors
-//│ L: 0 [int ~ bool, int :> α97', α97' <: bool]
+//│ L: 0 [bool ~ int, bool :> α97', α97' <: int]
 
 let g x = (not x, (if true then x else 5))
 //│ [ERROR] Type `bool` does not match `int`
@@ -213,7 +219,7 @@ let g x = (not x, (if true then x else 5))
 //│    - l.1  let g x = (not x, (if true then x else 5))
 //│                                                  ^
 //│ g: (bool & 'a) -> (bool, int | 'a,)
-//│ U max: 5, total: 9
+//│ U max: 4, total: 6
 //│ UERR 1 errors
 //│ L: 0 [bool ~ int, bool :> α102', α102' <: α104', α104' :> int]
 
@@ -222,58 +228,20 @@ let confluence z = if true then z else 5
 let mkpair x y = (x, confluence y)
   
 let conflict x = mkpair (not x) x
-//│ [ERROR] Type `int` does not match `bool`
-//│ 
-//│         (int) ---> (?a) <--- (?b) ---> (bool)
-//│ 
-//│ ◉ (int) is here
-//│ │  - l.1  let confluence z = if true then z else 5
-//│ │                                                ^
-//│ │  - l.1  let confluence z = if true then z else 5
-//│ │                            ^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ ▲  - l.1  let confluence z = if true then z else 5
-//│ │                            ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.1  let confluence z = if true then z else 5
-//│ │                                         ^
-//│ │  - l.1  let confluence z = if true then z else 5
-//│ │                        ^
-//│ │  - l.2  let mkpair x y = (x, confluence y)
-//│ │                                         ^
-//│ │  - l.2  let mkpair x y = (x, confluence y)
-//│ │                      ^
-//│ │  - l.4  let conflict x = mkpair (not x) x
-//│ │                                         ^
-//│ │  - l.4  let conflict x = mkpair (not x) x
-//│ │                      ^
-//│ │ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.4  let conflict x = mkpair (not x) x
-//│ │                      ^
-//│ │  - l.4  let conflict x = mkpair (not x) x
-//│ │                                      ^
-//│ ▼ 
-//│ ◉ (bool) is here
-//│    - lib. let not: bool -> bool
-//│                    ^^^^
 //│ confluence: 'a -> (int | 'a)
 //│ mkpair: 'a -> 'b -> ('a, int | 'b,)
 //│ conflict: (bool & 'a) -> (bool, int | 'a,)
-//│ U max: 18, total: 33
-//│ UERR 1 errors
-//│ L: 0 [int ~ bool, int <: α131', α131' :> α128', α128' <: bool]
 
 let test =
   let f x = x in
   (f 1, f true)
-//│ [ERROR] Type `int` does not match `bool`
+//│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (int) ---> (?a) <--- (bool)
+//│         (bool) ---> (?a) <--- (int)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (bool) is here
 //│ │  - l.3    (f 1, f true)
-//│ │              ^
+//│ │                   ^^^^
 //│ │  - l.2    let f x = x in
 //│ │                 ^
 //│ ▼ 
@@ -281,118 +249,37 @@ let test =
 //│ ▲  - l.2    let f x = x in
 //│ │                 ^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (int) is here
 //│    - l.3    (f 1, f true)
-//│                     ^^^^
+//│                ^
 //│ test: (bool | int, bool | int,)
-//│ U max: 3, total: 5
+//│ U max: 2, total: 3
 //│ UERR 1 errors
-//│ L: 0 [int ~ bool, int <: α143', α143' :> bool]
+//│ L: 0 [bool ~ int, bool <: α143', α143' :> int]
 
 
 
 let wrap x = x :: []
 let rec t = wrap (if true then 1 else t)
-//│ [ERROR] Type `int` does not match `_ list`
-//│ 
-//│         (int) ---> (?a) <--- (_ list)
-//│ 
-//│ ◉ (int) is here
-//│ │  - l.2  let rec t = wrap (if true then 1 else t)
-//│ │                                        ^
-//│ │  - l.2  let rec t = wrap (if true then 1 else t)
-//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ ▲  - l.2  let rec t = wrap (if true then 1 else t)
-//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.2  let rec t = wrap (if true then 1 else t)
-//│ │                                               ^
-//│ │  - l.2  let rec t = wrap (if true then 1 else t)
-//│ │                 ^
-//│ │  - l.2  let rec t = wrap (if true then 1 else t)
-//│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │ 
-//│ ◉ (_ list) is here
-//│    - l.1  let wrap x = x :: []
-//│                        ^^^^^^^
 //│ wrap: 'a -> list['a]
 //│ t: 't
 //│   where
 //│     't :> list[int | 't]
-//│ U max: 18, total: 27
-//│ UERR 1 errors
-//│ L: 0 [int ~ list['a158'], int <: α160', α160' :> list['a158']]
 
 let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 let weird x = (x + 1, length x)
-//│ [ERROR] Type `_ list` does not match `int`
-//│ 
-//│         (_ list) <--- (?a) ---> (int)
-//│ 
-//│ ◉ (_ list) is here
-//│ ▲  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
-//│ │                                                                         ^^
-//│ │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
-//│ │                                   ^^
-//│ │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
-//│ │                        ^^
-//│ │  - l.2  let weird x = (x + 1, length x)
-//│ │                                      ^
-//│ │  - l.2  let weird x = (x + 1, length x)
-//│ │                   ^
-//│ │ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.2  let weird x = (x + 1, length x)
-//│ │                   ^
-//│ │  - l.2  let weird x = (x + 1, length x)
-//│ │                        ^
-//│ ▼ 
-//│ ◉ (int) is here
-//│    - lib. let (+): int -> int -> int
-//│                    ^^^
-//│ [ERROR] Type `int` does not match `_ list`
-//│ 
-//│         (int) <--- (?a) ~~~~ 
-//│ 
-//│ ◉ (int) is here
-//│ ▲  - lib. let (+): int -> int -> int
-//│ │                  ^^^
-//│ │  - l.2  let weird x = (x + 1, length x)
-//│ │                        ^
-//│ │ 
-//│ ◉ (?a) is assumed here
-//│    - l.2  let weird x = (x + 1, length x)
-//│                     ^
-//│   ◉ (_ -> _) is here
-//│   ▲  - l.2  let weird x = (x + 1, length x)
-//│   │                               ^^^^^^
-//│   │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
-//│   │                 ^^^^^^
-//│   │ 
-//│   ◉ (?length) is assumed here
-//│   │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
-//│   │                 ^^^^^^
-//│   ▼ 
-//│   ◉ (_ list -> _) is here
-//│      - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
-//│                                                                 ^^^^^^
 //│ length: list[?] -> int
 //│ weird: nothing -> (int, int,)
-//│ U max: 21, total: 66
-//│ UERR 2 errors
-//│ L: 1 [int ~ list['a187'], int :> α182', [α182' - ([α182'] -> α191') ~ ([list['a187']] -> α189') - list['a187'], L: 0 [([α182'] -> α191') ~ ([list['a187']] -> α189'), ([α182'] -> α191') :> length185', length185' <: ([list['a187']] -> α189')]]]
-//│ L: 0 [list['a187'] ~ int, list['a187'] :> α182', α182' <: int]
 
 
 let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│ [ERROR] Type `_ list` does not match `string`
+//│ [ERROR] Type `string` does not match `_ list`
 //│ 
-//│         (_ list) <--- (?a) ---> (string)
+//│         (string) <--- (?a) ---> (_ list)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (string) is here
 //│ ▲  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│ │                                                        ^^
+//│ │                                      ^^^^^^^^^^
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                            ^^
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
@@ -404,10 +291,10 @@ let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                            ^^
 //│ ▼ 
-//│ ◉ (string) is here
+//│ ◉ (_ list) is here
 //│    - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
-//│                                        ^^^^^^^^^^
+//│                                                          ^^
 //│ len: nothing -> int
-//│ U max: 4, total: 8
+//│ U max: 3, total: 4
 //│ UERR 1 errors
-//│ L: 0 [list['a199'] ~ string, list['a199'] :> α197', α197' <: string]
+//│ L: 0 [string ~ list['a199'], string :> α197', α197' <: list['a199']]

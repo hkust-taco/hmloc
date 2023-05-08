@@ -214,7 +214,6 @@ trait UnificationSolver extends TyperDatatypes {
 
     def concat(other: NewUnification): NewUnification = {
       assert(b.unwrapProvs == other.a.unwrapProvs, s"$b != ${other.a}")
-      assert(level == other.level)
       NewUnification(flow.enqueueAll(other.flow), level)
     }
 

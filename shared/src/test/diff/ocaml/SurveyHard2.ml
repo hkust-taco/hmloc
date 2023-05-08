@@ -31,10 +31,10 @@ let bigAdd l1 l2 =
 //│         (int) ---> (?a) ---> (_ * _)
 //│ 
 //│ ◉ (int) is here
-//│ │  - lib. let mod: int -> int -> int
-//│ │                                ^^^
-//│ │  - l.11     let f a x = (a + x) mod 10 in
-//│ │                         ^^^^^^^^^^^^^^
+//│ │  - l.12     let base = 0 in
+//│ │                        ^
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                                            ^^^^
 //│ ▼ 
 //│ ◉ (?a) is assumed here
 //│ │  - l.14     let (_,res) = List.fold_left f base args in res in
@@ -43,7 +43,28 @@ let bigAdd l1 l2 =
 //│ ◉ (_ * _) is here
 //│    - l.14     let (_,res) = List.fold_left f base args in res in
 //│                   ^^^^^^^
-//│ U max: 210, total: 1016
-//│ UERR 1 errors
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
+//│         (?a) ---> (_ * _)
+//│ 
+//│     ◉ (_ -> _ -> int) is here
+//│     │  - l.11     let f a x = (a + x) mod 10 in
+//│     │                   ^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│     │                                          ^
+//│     ▼ 
+//│     ◉ (_ -> _ -> _) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│ ◉ (?a) is assumed here
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.14     let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ U max: 39, total: 108
+//│ UERR 2 errors
+//│ L: 2 [int ~ ([α239'], [α240'],), [int - (α218' -> [int]) ~ (α234' -> α233') - α233', L: 1 [(α218' -> [int]) ~ (α234' -> α233'), [(α218' -> [int]) - (α217' -> (α218' -> [int])) ~ (α233' -> (α234' -> α233')) - (α234' -> α233'), L: 0 [(α217' -> (α218' -> [int])) ~ (α233' -> (α234' -> α233')), (α217' -> (α218' -> [int])) <: (α233' -> (α234' -> α233'))]]]], α233' <: ([α239'], [α240'],)]
 //│ L: 0 [int ~ ([α239'], [α240'],), int <: α233', α233' <: ([α239'], [α240'],)]
 
