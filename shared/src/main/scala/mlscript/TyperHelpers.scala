@@ -151,10 +151,6 @@ abstract class TyperHelpers { Typer: Typer =>
           factors(tv) = factors.getOrElse(tv, 0) + 1
         case tt: TraitTag =>
           factors(tt) = factors.getOrElse(tt, 0) + 1
-        case nv: NegVar =>
-          factors(nv) = factors.getOrElse(nv, 0) + 1
-        case nt: NegTrait =>
-          factors(nt) = factors.getOrElse(nt, 0) + 1
         case _ =>
       }
     }
@@ -184,8 +180,6 @@ abstract class TyperHelpers { Typer: Typer =>
     case FunctionType(lhs, rhs) => FunctionType(f(pol.map(!_), lhs), f(pol, rhs))(bt.prov)
     case TupleType(fields) => TupleType(fields.mapValues(_.update(f(pol.map(!_), _), f(pol, _))))(bt.prov)
     case ArrayType(inner) => ArrayType(inner.update(f(pol.map(!_), _), f(pol, _)))(bt.prov)
-    case wt @ Without(b: ComposedType, ns @ empty()) => Without(b.map(f(pol, _)), ns)(wt.prov) // FIXME very hacky
-    case Without(base, names) => Without(f(pol, base), names)(bt.prov)
     case _: ClassTag => bt
   }
 
@@ -245,10 +239,7 @@ abstract class TyperHelpers { Typer: Typer =>
       case TupleType(fields) => TupleType(fields.mapValues(_.update(f, f)))(prov)
       case ArrayType(inner) => ArrayType(inner.update(f, f))(prov)
       case ComposedType(pol, lhs, rhs) => ComposedType(pol, f(lhs), f(rhs))(prov)
-      case NegType(negated) => NegType(f(negated))(prov)
-      case Without(base, names) => Without(f(base), names)(prov)
       case ProvType(underlying) => ProvType(f(underlying))(prov)
-      case WithType(bse, rcd) => WithType(f(bse), RecordType(rcd.fields.mapValues(_.update(f, f)))(rcd.prov))(prov)
       case ProxyType(underlying) => f(underlying) // TODO different?
       case TypeRef(defn, targs) => TypeRef(defn, targs.map(f(_)))(prov)
       case _: TypeVariable | _: ObjectTag | _: ExtrType => this
@@ -260,16 +251,12 @@ abstract class TyperHelpers { Typer: Typer =>
         if (pol.getOrElse(die)) f(S(true), ub) else f(S(false), lb)
       case TypeBounds(lb, ub) => TypeBounds(f(S(false), lb), f(S(true), ub))(prov)
       case rt: RecordType => Typer.mapPol(rt, pol, smart)(f)
-      case Without(base, names) if smart => f(pol, base).without(names)
       case bt: BaseType => Typer.mapPol(bt, pol, smart)(f)
       case ComposedType(kind, lhs, rhs) if smart =>
         if (kind) f(pol, lhs) | f(pol, rhs)
         else f(pol, lhs) & f(pol, rhs)
       case ComposedType(kind, lhs, rhs) => ComposedType(kind, f(pol, lhs), f(pol, rhs))(prov)
-      case NegType(negated) if smart => f(pol.map(!_), negated).neg(prov)
-      case NegType(negated) => NegType(f(pol.map(!_), negated))(prov)
       case ProvType(underlying) => ProvType(f(pol, underlying))(prov)
-      case WithType(bse, rcd) => WithType(f(pol, bse), RecordType(rcd.fields.mapValues(_.update(f(pol.map(!_), _), f(pol, _))))(rcd.prov))(prov)
       case ProxyType(underlying) => f(pol, underlying) // TODO different?
       case tr@TypeRef(defn, targs) => TypeRef(defn, tr.mapTargs(pol)(f))(prov)
       case _: TypeVariable | _: ObjectTag | _: ExtrType => this
@@ -297,7 +284,6 @@ abstract class TyperHelpers { Typer: Typer =>
         TupleType(tupleUnion(fs0, fs1))(t0.prov)
       case _ if !swapped => that | (this, prov, swapped = true)
       case (`that`, _) => this
-      case (NegType(`that`), _) => TopType
       case _ => ComposedType(true, that, this)(prov)
     }
 
@@ -319,7 +305,6 @@ abstract class TyperHelpers { Typer: Typer =>
           TypeBounds(l0 | l1, u0 & u1)(prov)
         case _ if !swapped => that & (this, prov, swapped = true)
         case (`that`, _) => this
-        case (NegType(`that`), _) => BotType
         case _ => ComposedType(false, that, this)(prov)
       }
 
@@ -327,11 +312,6 @@ abstract class TyperHelpers { Typer: Typer =>
       case ExtrType(b) => ExtrType(!b)(noProv)
       case ComposedType(true, l, r) => l.neg() & r.neg()
       case ComposedType(false, l, r) if force => l.neg() | r.neg()
-      case NegType(n) => n
-      // case _: RecordType => BotType // Only valid in positive positions!
-      // Because Top<:{x:S}|{y:T}, any record type negation neg{x:S}<:{y:T} for any y=/=x,
-      // meaning negated records are basically bottoms.
-      case _ => NegType(this)(prov)
     }
 
     def >:<(that: SimpleType)(implicit ctx: Ctx): Bool =
@@ -377,8 +357,6 @@ abstract class TyperHelpers { Typer: Typer =>
           tmp
         case (ProxyType(und), _) => und <:< that
         case (_, ProxyType(und)) => this <:< und
-        case (_, NegType(und)) => (this & und) <:< BotType
-        case (NegType(und), _) => TopType <:< (that | und)
         case (_, ExtrType(false)) => true
         case (ExtrType(true), _) => true
         case (_, ExtrType(true)) | (ExtrType(false), _) => false // not sure whether LHS <: Bot (or Top <: RHS)
@@ -393,10 +371,6 @@ abstract class TyperHelpers { Typer: Typer =>
           }
         case (_, _: TypeRef) =>
           false // TODO try to expand them (this requires populating the cache because of recursive types)
-        case (_: Without, _) | (_, _: Without)
-             | (_: ArrayBase, _) | (_, _: ArrayBase)
-             | (_: TraitTag, _) | (_, _: TraitTag)
-        => false // don't even try
         case (_: FunctionType, _) | (_, _: FunctionType) => false
         case (_: RecordType, _: ObjectTag) | (_: ObjectTag, _: RecordType) => false
         // case _ => lastWords(s"TODO $this $that ${getClass} ${that.getClass()}")
@@ -407,56 +381,6 @@ abstract class TyperHelpers { Typer: Typer =>
     def isTop: Bool = (TopType <:< this) (Ctx.empty)
 
     def isBot: Bool = (this <:< BotType) (Ctx.empty)
-
-    // * Sometimes, Without types are temporarily pushed to the RHS of constraints,
-    // *  sometimes behind a single negation,
-    // *  just for the time of massaging the constraint through a type variable.
-    // * So it's important we only push and simplify Without types only in _positive_ position!
-    def without(names: SortedSet[Var]): SimpleType = if (names.isEmpty) this else this match {
-      case Without(b, ns) => Without(b, ns ++ names)(this.prov)
-      case _ => Without(this, names)(noProv)
-    }
-
-    def without(name: Var): SimpleType =
-      without(SortedSet.single(name))
-
-    def withoutPos(names: SortedSet[Var]): SimpleType = if (names.isEmpty) this else this match {
-      case Without(b, ns) => Without(b, ns ++ names)(this.prov)
-      case t@FunctionType(l, r) => t
-      case t@ComposedType(true, l, r) => l.without(names) | r.without(names)
-      case t@ComposedType(false, l, r) => l.without(names) & r.without(names)
-      case t@RecordType(fs) => RecordType(fs.filter(nt => !names(nt._1)))(t.prov)
-      case t@TupleType(fs) =>
-        val relevantNames = names.filter(n =>
-          n.name.startsWith("_")
-            && {
-            val t = n.name.tail
-            t.forall(_.isDigit) && {
-              val n = t.toInt
-              1 <= n && n <= fs.length
-            }
-          })
-        if (relevantNames.isEmpty) t
-        else {
-          val rcd = t.toRecord
-          rcd.copy(fields = rcd.fields.filterNot(_._1 |> relevantNames))(rcd.prov)
-        }
-      case t@ArrayType(ar) => t
-      case n@NegType(_: ClassTag | _: FunctionType | _: RecordType) => n
-      case n@NegType(nt) if (nt match {
-        case _: ComposedType | _: ExtrType | _: NegType => true
-        // case c: ComposedType => c.pol
-        // case _: ExtrType | _: NegType => true
-        case _ => false
-      }) => nt.neg(n.prov, force = true).withoutPos(names)
-      case e@ExtrType(_) => e // valid? -> seems we could go both ways, but this way simplifies constraint solving
-      // case e @ ExtrType(false) => e
-      case p@ProvType(und) => ProvType(und.withoutPos(names))(p.prov)
-      case p@ProxyType(und) => und.withoutPos(names)
-      case p: ObjectTag => p
-      case TypeBounds(lo, hi) => hi.withoutPos(names)
-      case _: TypeVariable | _: NegType | _: TypeRef => Without(this, names)(noProv)
-    }
 
     def unwrapAll(implicit ctx: Ctx): SimpleType = unwrapProxies match {
       case tr: TypeRef => tr.expand.unwrapAll
@@ -481,8 +405,6 @@ abstract class TyperHelpers { Typer: Typer =>
     def components(union: Bool): Ls[ST] = this match {
       case ExtrType(`union`) => Nil
       case ComposedType(`union`, l, r) => l.components(union) ::: r.components(union)
-      case NegType(tv: TypeVariable) if !union => NegVar(tv) :: Nil
-      case NegType(tt: TraitTag) if !union => NegTrait(tt) :: Nil
       case ProvType(und) => und.components(union)
       case _ => this :: Nil
     }
@@ -500,12 +422,10 @@ abstract class TyperHelpers { Typer: Typer =>
         case RecordType(fs) => fs.unzip._2.flatMap(childrenPolField)
         case TupleType(fs) => fs.unzip._2.flatMap(childrenPolField)
         case ArrayType(fld) => childrenPolField(fld)
-        case NegType(n) => pol.map(!_) -> n :: Nil
         case ExtrType(_) => Nil
         case ProxyType(und) => pol -> und :: Nil
         case _: ObjectTag => Nil
         case tr: TypeRef => tr.mapTargs(pol)(_ -> _)
-        case Without(b, ns) => pol -> b :: Nil
         case TypeBounds(lb, ub) => S(false) -> lb :: S(true) -> ub :: Nil
       }
     }
@@ -546,12 +466,10 @@ abstract class TyperHelpers { Typer: Typer =>
       case RecordType(fs) => fs.flatMap(f => f._2.lb.toList ::: f._2.ub :: Nil)
       case TupleType(fs) => fs.flatMap(f => f._2.lb.toList ::: f._2.ub :: Nil)
       case ArrayType(inner) => inner.lb.toList ++ (inner.ub :: Nil)
-      case NegType(n) => n :: Nil
       case ExtrType(_) => Nil
       case ProxyType(und) => und :: Nil
       case _: ObjectTag => Nil
       case TypeRef(d, ts) => ts
-      case Without(b, ns) => b :: Nil
       case TypeBounds(lb, ub) => lb :: ub :: Nil
     }
 
@@ -671,12 +589,10 @@ abstract class TyperHelpers { Typer: Typer =>
       case RecordType(fs) => fs.unzip._2.foreach(applyField(pol))
       case TupleType(fs) => fs.unzip._2.foreach(applyField(pol))
       case ArrayType(fld) => applyField(pol)(fld)
-      case NegType(n) => apply(pol.map(!_))(n)
       case ExtrType(_) => ()
       case ProxyType(und) => apply(pol)(und)
       case _: ObjectTag => ()
       case tr: TypeRef => tr.mapTargs(pol)(apply(_)(_)); ()
-      case Without(b, ns) => apply(pol)(b)
       case TypeBounds(lb, ub) => apply(S(false))(lb); apply(S(true))(ub)
     }
     def applyField(pol: Opt[Bool])(fld: FieldType): Unit = {

@@ -50,7 +50,6 @@ trait TypeSimplifier { self: Typer =>
         
       case ComposedType(true, l, r) => process(l, parent) | process(r, parent)
       case ComposedType(false, l, r) => process(l, parent) & process(r, parent)
-      case NegType(ty) => process(ty, parent.map(_.mapFirst(!_))).neg(ty.prov)
 
       case ProvType(ty) if inPlace => ProvType(process(ty, parent))(ty.prov)
       case ProvType(ty) => process(ty, parent)
@@ -151,14 +150,12 @@ trait TypeSimplifier { self: Typer =>
       case tv: TypeVariable => process(tv, pol)
       case _: ObjectTag | ExtrType(_) => ()
       case ct: ComposedType => process(ct, pol)
-      case NegType(und) => analyze2(und, !pol)
       case ProxyType(underlying) => analyze2(underlying, pol)
       case tr @ TypeRef(defn, targs) =>
         val _ = tr.mapTargs(S(pol)) { (pol, ta) =>
           if (pol =/= S(false)) analyze2(ta, true)
           if (pol =/= S(true)) analyze2(ta, false)
         }
-      case Without(base, names) => analyze2(base, pol)
       case TypeBounds(lb, ub) =>
         if (pol) analyze2(ub, true) else analyze2(lb, false)
     }
@@ -452,16 +449,9 @@ trait TypeSimplifier { self: Typer =>
         }
       case ty @ ComposedType(true, l, r) => transform(l, pol, parent) | transform(r, pol, parent)
       case ty @ ComposedType(false, l, r) => transform(l, pol, parent) & transform(r, pol, parent)
-      case NegType(und) => transform(und, pol.map(!_), N).neg()
-      case WithType(base, RecordType(fs)) => WithType(transform(base, pol, N), 
-        RecordType(fs.mapValues(_.update(transform(_, pol.map(!_), N), transform(_, pol, N))))(noProv))(noProv)
       case ProxyType(underlying) => transform(underlying, pol, parent)
       case tr @ TypeRef(defn, targs) =>
         TypeRef(defn, tr.mapTargs(pol)((pol, ty) => transform(ty, pol, N)))(tr.prov)
-      case wo @ Without(base, names) =>
-        if (names.isEmpty) transform(base, pol, N)
-        else if (pol === S(true)) transform(base, pol, N).withoutPos(names)
-        else transform(base, pol, N).without(names)
       case tb @ TypeBounds(lb, ub) =>
         pol.fold[ST](TypeBounds.mk(transform(lb, S(false), parent), transform(ub, S(true), parent), noProv))(pol =>
           if (pol) transform(ub, S(true), parent) else transform(lb, S(false), parent))
@@ -568,13 +558,11 @@ trait TypeSimplifier { self: Typer =>
                       (ty1, ty2) match {
                         case (`tv1`, `tv2`) | (`tv2`, `tv1`) => true
                         case (v1: TypeVariable, v2: TypeVariable) => (v1 is v2) || nope
-                        case (NegType(negated1), NegType(negated2)) => unify(negated1, negated2)
                         case (ClassTag(id1, parents1), ClassTag(id2, parents2)) => id1 === id2 || nope
                         case (ArrayType(inner1), ArrayType(inner2)) => unifyF(inner1, inner2)
                         case (TupleType(fields1), TupleType(fields2)) =>
                           (fields1.size === fields2.size || nope) && fields1.map(_._2).lazyZip(fields2.map(_._2)).forall(unifyF)
                         case (FunctionType(lhs1, rhs1), FunctionType(lhs2, rhs2)) => unify(lhs1, lhs2) && unify(rhs1, rhs2)
-                        case (Without(base1, names1), Without(base2, names2)) => unify(base1, base2) && (names1 === names2 || nope)
                         case (TraitTag(id1), TraitTag(id2)) => id1 === id2 || nope
                         case (ExtrType(pol1), ExtrType(pol2)) => pol1 === pol2 || nope
                         case (TypeBounds(lb1, ub1), TypeBounds(lb2, ub2)) =>
@@ -584,8 +572,6 @@ trait TypeSimplifier { self: Typer =>
                         case (RecordType(fields1), RecordType(fields2)) =>
                           fields1.size === fields2.size && fields1.lazyZip(fields2).forall((f1, f2) =>
                             (f1._1 === f2._1 || nope) && unifyF(f1._2, f2._2))
-                        case (WithType(base1, rcd1), WithType(base2, rcd2)) =>
-                          unify(base1, base2) && unify(rcd1, rcd2)
                         case (ProxyType(underlying1), _) => unify(underlying1, ty2)
                         case (_, ProxyType(underlying2)) => unify(ty1, underlying2)
                         case (TypeRef(defn1, targs1), TypeRef(defn2, targs2)) =>

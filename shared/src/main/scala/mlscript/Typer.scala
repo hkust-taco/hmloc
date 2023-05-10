@@ -206,8 +206,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case Union(lhs, rhs) => (if (simplify) rec(lhs) | (rec(rhs), _: TypeProvenance)
           else ComposedType(true, rec(lhs), rec(rhs)) _
         )(tyTp(ty.toLoc, "union type"))
-      case Neg(t) => NegType(rec(t))(tyTp(ty.toLoc, "type negation"))
-      case Record(fs) => 
+      case Record(fs) =>
         val prov = tyTp(ty.toLoc, "record type")
         fs.groupMap(_._1.name)(_._1).foreach { case s -> fieldNames if fieldNames.sizeIs > 1 => err(
             msg"Multiple declarations of field name ${s} in ${prov.desc}" -> ty.toLoc
@@ -221,11 +220,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             tp(App(nt._1, Var("").withLocOf(nt._2)).toCoveringLoc, "record field"))
         })(prov)
       case Function(lhs, rhs) => FunctionType(rec(lhs), rec(rhs))(tyTp(ty.toLoc, "function type"))
-      case WithExtension(b, r) => WithType(rec(b),
-        RecordType(
-            r.fields.map { case (n, f) => n -> FieldType(N, rec(f))(
-              tyTp(App(n, Var("").withLocOf(f)).toCoveringLoc, "extension field")) }
-          )(tyTp(r.toLoc, "extension record")))(tyTp(ty.toLoc, "extension type"))
       case Literal(lit) => ClassTag(lit, lit.baseClasses)(tyTp(ty.toLoc, "literal type"))
       case TypeName("this") =>
         ctx.env.getOrElse("this", err(msg"undeclared this" -> ty.toLoc :: Nil)) match {
@@ -279,7 +273,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         tv.upperBounds ::= bod
         tv.lowerBounds ::= bod
         tv
-      case Rem(base, fs) => Without(rec(base), fs.toSortedSet)(tyTp(ty.toLoc, "field removal type"))
       case Constrained(base, where) =>
         val res = rec(base)
         where.foreach { case (tv, Bounds(lb, ub)) =>
@@ -924,11 +917,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case RecordType(fs) => Record(fs.mapValues(field))
         case TupleType(fs) => Tuple(fs.map{ case (_, fld) => field(fld)})
         case ArrayType(FieldType(None, ub)) => AppliedType(TypeName("Array"), go(ub) :: Nil)
-        case NegType(t) => Neg(go(t))
         case ExtrType(true) => Bot
         case ExtrType(false) => Top
-        case WithType(base, rcd) =>
-          WithExtension(go(base), Record(rcd.fields.mapValues(field)))
         case ProxyType(und) => go(und)
         case tag: ObjectTag => tag.id match {
           case Var(n) =>
@@ -946,7 +936,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           case (_, ty) => go(ty)
         })
         case TypeBounds(lb, ub) => Bounds(go(lb), go(ub))
-        case Without(base, names) => Rem(go(base), names.toList)
         case _ => ???
     }
     // }(r => s"~> $r")

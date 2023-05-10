@@ -90,10 +90,9 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
         mergeMap(fieldsOf(l, paramTags), fieldsOf(r, paramTags))(_ && _)
       case RecordType(fs) => fs.toMap
       case p: ProxyType => fieldsOf(p.underlying, paramTags)
-      case Without(base, ns) => fieldsOf(base, paramTags).filter(ns contains _._1)
       case TypeBounds(lb, ub) => fieldsOf(ub, paramTags)
       case _: ObjectTag | _: FunctionType | _: ArrayBase | _: TypeVariable
-        | _: NegType | _: ExtrType | _: ComposedType => Map.empty
+        | _: ExtrType | _: ComposedType => Map.empty
     }
   }
   // ()
@@ -163,9 +162,7 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
             false
           case tr @ TypeRef(tn, targs) => checkCycle(tr.expand)(travsersed + L(tn))
           case ComposedType(_, l, r) => checkCycle(l) && checkCycle(r)
-          case NegType(u) => checkCycle(u)
           case p: ProxyType => checkCycle(p.underlying)
-          case Without(base, _) => checkCycle(base)
           case TypeBounds(lb, ub) => checkCycle(lb) && checkCycle(ub)
           case tv: TypeVariable => travsersed(R(tv)) || {
             val t2 = travsersed + R(tv)
@@ -216,17 +213,11 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
               case _: FunctionType =>
                 err(msg"cannot inherit from a function type", prov.loco)
                 false
-              case _: NegType =>
-                err(msg"cannot inherit from a type negation", prov.loco)
-                false
               case _: TupleType =>
                 err(msg"cannot inherit from a tuple type", prov.loco)
                 false
               case _: ArrayType => 
                 err(msg"cannot inherit from a array type", prov.loco)
-                false
-              case _: Without =>
-                err(msg"cannot inherit from a field removal type", prov.loco)
                 false
               case _: TypeBounds =>
                 err(msg"cannot inherit from type bounds", prov.loco)
@@ -365,8 +356,6 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
           case RecordType(fields) => fields.foreach {
             case (_ , fieldTy) => fieldVarianceHelper(fieldTy)
           }
-          case NegType(negated) =>
-            updateVariance(negated, curVariance.flip)
           case TypeRef(defn, targs) =>
             // it's possible that the type definition may not exist in the
             // context because it is malformed or incorrect. Do nothing in
@@ -396,7 +385,6 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
           case FunctionType(lhs, rhs) =>
             updateVariance(lhs, curVariance.flip)
             updateVariance(rhs, curVariance)
-          case Without(base, names) => updateVariance(base, curVariance.flip)
         }
       }()
     }

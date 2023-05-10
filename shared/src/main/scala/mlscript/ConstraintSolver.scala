@@ -175,7 +175,6 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
           case (_, TypeBounds(lb, ub)) => rec(lhs, lb)
           case (p @ ProvType(und), _) => rec(und, rhs)
           case (_, p @ ProvType(und)) => rec(lhs, und)
-          case (NegType(lhs), NegType(rhs)) => rec(rhs, lhs)
           case (lf @ FunctionType(l0, r0), rf @ FunctionType(l1, r1)) =>
             errorSimplifer.updateLevelCount(cctx, N)
             errorSimplifer.reportInfo(S(cctx))
@@ -311,9 +310,6 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
           
           case (ClassTag(ErrTypeId, _), _) => ()
           case (_, ClassTag(ErrTypeId, _)) => ()
-          case (_, w @ Without(b, ns)) => rec(lhs.without(ns), b)
-          case (_, n @ NegType(w @ Without(b, ns))) =>
-            rec(Without(lhs, ns)(w.prov), NegType(b)(n.prov)) // this is weird... TODO check sound
           case _ =>
             reportError()
       }
@@ -511,7 +507,6 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
         TupleType(fs.mapValues(_.update(extrude(_, lvl, !pol), extrude(_, lvl, pol))))(t.prov)
       case t @ ArrayType(ar) =>
         ArrayType(ar.update(extrude(_, lvl, !pol), extrude(_, lvl, pol)))(t.prov)
-      case w @ Without(b, ns) => Without(extrude(b, lvl, pol), ns)(w.prov)
       case tv: TypeVariable => cache.getOrElse(tv -> pol, {
         val nv = freshVar(tv.prov, tv.nameHint)(lvl)
         cache += tv -> pol -> nv
@@ -524,7 +519,6 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
         }
         nv
       })
-      case n @ NegType(neg) => NegType(extrude(neg, lvl, pol))(n.prov)
       case e @ ExtrType(_) => e
       case p @ ProvType(und) => ProvType(extrude(und, lvl, pol))(p.prov)
       case p @ ProxyType(und) => extrude(und, lvl, pol)
@@ -606,12 +600,10 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
       case t @ RecordType(fs) => RecordType(fs.mapValues(_.update(freshen, freshen)))(t.prov)
       case t @ TupleType(fs) => TupleType(fs.mapValues(_.update(freshen, freshen)))(t.prov)
       case t @ ArrayType(ar) => ArrayType(ar.update(freshen, freshen))(t.prov)
-      case n @ NegType(neg) => NegType(freshen(neg))(n.prov)
       case e @ ExtrType(_) => e
       case p @ ProvType(und) => ProvType(freshen(und))(p.prov)
       case p @ ProxyType(und) => freshen(und)
       case _: ClassTag | _: TraitTag => ty
-      case w @ Without(b, ns) => Without(freshen(b), ns)(w.prov)
       case tr @ TypeRef(d, ts) => TypeRef(d, ts.map(freshen(_)))(tr.prov)
     }
     freshen(ty)

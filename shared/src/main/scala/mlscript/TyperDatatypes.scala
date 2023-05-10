@@ -88,20 +88,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   case class RecordType(fields: List[(Var, FieldType)])(val prov: TypeProvenance) extends SimpleType {
     // TODO: assert no repeated fields
     lazy val level: Int = fields.iterator.map(_._2.level).maxOption.getOrElse(0)
-    def toInter: SimpleType =
-      fields.map(f => RecordType(f :: Nil)(prov)).foldLeft(TopType: ST)(((l, r) => ComposedType(false, l, r)(noProv)))
-    def mergeAllFields(fs: Iterable[Var -> FieldType]): RecordType = {
-      val res = mutable.SortedMap.empty[Var, FieldType]
-      fs.foreach(f => res.get(f._1) match {
-        case N => res(f._1) = f._2
-        case S(ty) => res(f._1) = ty && f._2
-      })
-      RecordType(res.toList)(prov)
-    }
-    def addFields(fs: Ls[Var -> FieldType]): RecordType = {
-      val shadowing = fs.iterator.map(_._1).toSet
-      RecordType(fields.filterNot(f => shadowing(f._1)) ++ fs)(prov)
-    }
     def sorted: RecordType = RecordType(fields.sortBy(_._1))(prov)
     override def toString = s"{${fields.map(f => s"${f._1}: ${f._2}").mkString(", ")}}"
   }
@@ -148,16 +134,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def level: Int = lhs.level max rhs.level
     override def toString = s"($lhs ${if (pol) "|" else "&"} $rhs)"
   }
-  case class NegType(negated: SimpleType)(val prov: TypeProvenance) extends SimpleType {
-    def level: Int = negated.level
-    override def toString = s"~(${negated})"
-  }
-
-  /** Represents a type `base` from which we have removed the fields in `names`. */
-  case class Without(base: SimpleType, names: SortedSet[Var])(val prov: TypeProvenance) extends MiscBaseType {
-    def level: Int = base.level
-    override def toString = s"${base}\\${names.mkString("-")}"
-  }
 
   /** A proxy type is a derived type form storing some additional information,
    * but which can always be converted into an underlying simple type. */
@@ -182,13 +158,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     // TOOD override equals/hashCode? — could affect hash consing...
     // override def equals(that: Any): Bool = super.equals(that) || underlying.equals(that)
     // override def equals(that: Any): Bool = unwrapProxies.equals(that)
-  }
-
-  /** A proxy type, `S with {x: T; ...}` is equivalent to `S\x\... & {x: T; ...}`. */
-  case class WithType(base: SimpleType, rcd: RecordType)(val prov: TypeProvenance) extends ProxyType {
-    lazy val underlying: ST =
-      base.without(rcd.fields.iterator.map(_._1).toSortedSet) & rcd
-    override def toString = s"${base} w/ ${rcd}"
   }
 
   type TR = TypeRef
@@ -357,14 +326,4 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     var createdTypeVars: Ls[TypeVariable] = Nil
     def clearCollectedTypeVars(): Unit = createdTypeVars = Nil
   }
-
-  case class NegVar(tv: TV) extends ProxyType with Factorizable {
-    lazy val underlying: SimpleType = tv.neg()
-    val prov = noProv
-  }
-  case class NegTrait(tt: TraitTag) extends ProxyType with Factorizable {
-    lazy val underlying: SimpleType = tt.neg()
-    val prov = noProv
-  }
-
 }
