@@ -30,20 +30,6 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
       k(newStr)
     }
 
-    /** Helper function to constrain Field lower bounds. */
-    def recLb(lhs: FieldType, rhs: FieldType, nestedProv: Option[NestedTypeProvenance] = None)
-      (implicit raise: Raise, cctx: ConCtx): Unit = {
-        (lhs.lb, rhs.lb) match {
-          case (Some(l), Some(r)) => rec(l, r, nestedProv)
-          case (Some(l), None) =>
-            if (lhs.prov.loco.isEmpty || rhs.prov.loco.isEmpty) reportError()
-            else reportError(S(msg"is not mutable"))(
-              (rhs.ub.withProv(rhs.prov) :: l.withProv(lhs.prov) :: Nil, l.withProv(noProv) :: Nil)
-            )
-          case (None, Some(_)) | (None, None) => ()
-        }
-      }
-    
     /**
       * Recursively constrain the given simple types. While constraining
       * keep tracking the provenance of the types in `cctx`. In case of
@@ -228,7 +214,7 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
             rec(lhs, rhs)
           // implicit tuples are function arguments that are wrapped temporarily
           // do not consider them as constructors call rec on their contained types
-          case (ltup @ TupleType((N -> FieldType(N, lt)) :: Nil), rtup @ TupleType((N -> FieldType(N, rt)) :: Nil))
+          case (ltup @ TupleType((N -> lt) :: Nil), rtup @ TupleType((N -> rt) :: Nil))
             if (ltup.implicitTuple || rtup.implicitTuple) =>
               rec(lt, rt)
           case (TupleType(fs0), TupleType(fs1)) if fs0.size === fs1.size => // TODO generalize (coerce compatible tuples)
@@ -242,12 +228,10 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
                   msg"Wrong tuple field name: found '${ln.name}' instead of '${rn.name}'",
                   lhs.prov.loco // TODO better loco
               )}}
-              recLb(r, l, provChain.map(_.updateInfo("tuple lower bound")))
-              rec(l.ub, r.ub, provChain.map(_.updateInfo("tuple upper bound")))
+              rec(l, r, provChain.map(_.updateInfo("tuple upper bound")))
             }
           case (t: ArrayBase, a: ArrayType) =>
-            recLb(a.inner, t.inner, provChain)
-            rec(t.inner.ub, a.inner.ub, provChain)
+            rec(t.inner, a.inner, provChain)
           case (ComposedType(true, l, r), _) =>
             rec(l, rhs) // Q: really propagate the outerProv here?
             rec(r, rhs)
@@ -257,7 +241,7 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
           case (p @ ProxyType(und), _) => rec(und, rhs)
           case (_, p @ ProxyType(und)) => rec(lhs, und)
           case (_, TupleType(f :: Nil)) if funkyTuples =>
-            rec(lhs, f._2.ub) // FIXME actually needs reified coercion! not a true subtyping relationship
+            rec(lhs, f._2) // FIXME actually needs reified coercion! not a true subtyping relationship
           case (err @ ClassTag(ErrTypeId, _), FunctionType(l1, r1)) =>
             rec(l1, err, provChain)
             rec(err, r1, provChain)
@@ -272,16 +256,15 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
               fs0.find(_._1 === n1).fold {
                 reportError()
               } { case (n0, t0) =>
-                recLb(t1, t0, revProvChain.map(_.updateInfo("record field lower bound")))
-                rec(t0.ub, t1.ub, provChain.map(_.updateInfo("record field upper bound")))
+                rec(t0, t1, provChain.map(_.updateInfo("record field upper bound")))
               }
             }
           case (tup: TupleType, _: RecordType) =>
             rec(tup.toRecord, rhs) // Q: really support this? means we'd put names into tuple reprs at runtime
           case (err @ ClassTag(ErrTypeId, _), RecordType(fs1)) =>
-            fs1.foreach(f => rec(err, f._2.ub, provChain))
+            fs1.foreach(f => rec(err, f._2, provChain))
           case (RecordType(fs1), err @ ClassTag(ErrTypeId, _)) =>
-            fs1.foreach(f => rec(f._2.ub, err, provChain))
+            fs1.foreach(f => rec(f._2, err, provChain))
             
           case (tr1: TypeRef, tr2: TypeRef) if tr1.defn.name =/= "Array" && tr1.defn === tr2.defn =>
             if (tr1.defn === tr2.defn) {
@@ -502,11 +485,11 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
       case t @ FunctionType(l, r) => FunctionType(extrude(l, lvl, !pol), extrude(r, lvl, pol))(t.prov)
       case t @ ComposedType(p, l, r) => ComposedType(p, extrude(l, lvl, pol), extrude(r, lvl, pol))(t.prov)
       case t @ RecordType(fs) =>
-        RecordType(fs.mapValues(_.update(extrude(_, lvl, !pol), extrude(_, lvl, pol))))(t.prov)
+        RecordType(fs.mapValues(extrude(_, lvl, pol)))(t.prov)
       case t @ TupleType(fs) =>
-        TupleType(fs.mapValues(_.update(extrude(_, lvl, !pol), extrude(_, lvl, pol))))(t.prov)
+        TupleType(fs.mapValues(extrude(_, lvl, pol)))(t.prov)
       case t @ ArrayType(ar) =>
-        ArrayType(ar.update(extrude(_, lvl, !pol), extrude(_, lvl, pol)))(t.prov)
+        ArrayType(extrude(ar, lvl, pol))(t.prov)
       case tv: TypeVariable => cache.getOrElse(tv -> pol, {
         val nv = freshVar(tv.prov, tv.nameHint)(lvl)
         cache += tv -> pol -> nv
@@ -597,9 +580,9 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
         } else TypeBounds(freshen(lb), freshen(ub))(t.prov)
       case t @ FunctionType(l, r) => FunctionType(freshen(l), freshen(r))(t.prov)
       case t @ ComposedType(p, l, r) => ComposedType(p, freshen(l), freshen(r))(t.prov)
-      case t @ RecordType(fs) => RecordType(fs.mapValues(_.update(freshen, freshen)))(t.prov)
-      case t @ TupleType(fs) => TupleType(fs.mapValues(_.update(freshen, freshen)))(t.prov)
-      case t @ ArrayType(ar) => ArrayType(ar.update(freshen, freshen))(t.prov)
+      case t @ RecordType(fs) => RecordType(fs.mapValues(freshen))(t.prov)
+      case t @ TupleType(fs) => TupleType(fs.mapValues(freshen))(t.prov)
+      case t @ ArrayType(ar) => ArrayType(freshen(ar))(t.prov)
       case e @ ExtrType(_) => e
       case p @ ProvType(und) => ProvType(freshen(und))(p.prov)
       case p @ ProxyType(und) => freshen(und)

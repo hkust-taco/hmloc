@@ -60,7 +60,7 @@ trait TypeSimplifier { self: Typer =>
         // * We make a pass to transform the LB and UB of variant type parameter fields into their exterma
         val prefix = fnme.takeWhile(_ =/= '#')
         val postfix = fnme.drop(prefix.length + 1)
-        lazy val default = fty.update(process(_ , N), process(_ , N))
+        lazy val default = process(fty, N)
         if (postfix.isEmpty) v -> default :: Nil
         else {
           val td = ctx.tyDefs(prefix)
@@ -68,8 +68,9 @@ trait TypeSimplifier { self: Typer =>
             tvv(td.tparamsargs.find(_._1.name === postfix).getOrElse(die)._2) match {
               case VarianceInfo(true, true) => Nil
               case VarianceInfo(co, contra) =>
-                if (co) v -> FieldType(S(BotType), process(fty.ub, N))(fty.prov) :: Nil
-                else if (contra) v -> FieldType(fty.lb.map(process(_, N)), TopType)(fty.prov) :: Nil
+                if (co) v -> process(fty, N).withProv(fty.prov) :: Nil
+//                else if (contra) v -> FieldType(fty.lb.map(process(_, N)), TopType)(fty.prov) :: Nil
+                else if (contra) v -> TopType.withProv(fty.prov) :: Nil
                 else  v -> default :: Nil
             })
         }
@@ -141,11 +142,9 @@ trait TypeSimplifier { self: Typer =>
         // trace(s"analyze2[${printPol(S(pol))}] $st       ${analyzed2}") {
           analyzed2.setAndIfUnset(st -> pol) {
             st match {
-      case RecordType(fs) => fs.foreach { f => f._2.lb.foreach(analyze2(_, !pol)); analyze2(f._2.ub, pol) }
-      case TupleType(fs) => fs.foreach { f => f._2.lb.foreach(analyze2(_, !pol)); analyze2(f._2.ub, pol) }
-      case ArrayType(inner) =>
-        inner.lb.foreach(analyze2(_, !pol))
-        analyze2(inner.ub, pol)
+      case RecordType(fs) => fs.foreach { f => analyze2(f._2, pol) }
+      case TupleType(fs) => fs.foreach { f => analyze2(f._2, pol) }
+      case ArrayType(inner) => analyze2(inner, pol)
       case FunctionType(l, r) => analyze2(l, !pol); analyze2(r, pol)
       case tv: TypeVariable => process(tv, pol)
       case _: ObjectTag | ExtrType(_) => ()
@@ -213,7 +212,6 @@ trait TypeSimplifier { self: Typer =>
     
     // * This will be filled during the processing phase, to guide the transformation phase:
     val varSubst = MutMap.empty[TypeVariable, Option[TypeVariable]]
-    
     // val allVars = st.getVars
     val allVars = analyzed1.iterator.map(_._1).toSortedSet
     
@@ -376,12 +374,7 @@ trait TypeSimplifier { self: Typer =>
     
     def transform(st: SimpleType, pol: Opt[Bool], parent: Opt[TV]): SimpleType =
           trace(s"transform[${printPol(pol)}] $st") {
-        def transformField(f: FieldType): FieldType = f match {
-          case FieldType(S(lb), ub) if lb === ub =>
-            val b = transform(ub, N, N)
-            FieldType(S(b), b)(f.prov)
-          case _ => f.update(transform(_, pol.map(!_), N), transform(_, pol, N))
-        }
+        def transformField(f: ST): ST = transform(f, N, N).withProv(f.prov)
         st match {
       case RecordType(fs) => RecordType(fs.mapValues(_ |> transformField))(st.prov)
       case TupleType(fs) => TupleType(fs.mapValues(_ |> transformField))(st.prov)
@@ -549,12 +542,8 @@ trait TypeSimplifier { self: Typer =>
                       
                       def nope: false = { println(s"Nope(${ty1.getClass.getSimpleName}): $ty1 ~ $ty2"); false }
                       
-                      def unifyF(f1: FieldType, f2: FieldType): Bool = (f1, f2) match {
-                        case (FieldType(S(l1), u1), FieldType(S(l2), u2)) => unify(l1, l2) && unify(u1, u2)
-                        case (FieldType(N, u1), FieldType(N, u2)) => unify(u1, u2)
-                        case _ => nope
-                      }
-                      
+                      def unifyF(f1: ST, f2: ST): Bool = unify(f1, f2)
+
                       (ty1, ty2) match {
                         case (`tv1`, `tv2`) | (`tv2`, `tv1`) => true
                         case (v1: TypeVariable, v2: TypeVariable) => (v1 is v2) || nope

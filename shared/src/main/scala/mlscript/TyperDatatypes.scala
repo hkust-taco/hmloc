@@ -85,7 +85,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     override def toString = s"(${lhs} -> $rhs)"
   }
 
-  case class RecordType(fields: List[(Var, FieldType)])(val prov: TypeProvenance) extends SimpleType {
+  case class RecordType(fields: List[(Var, ST)])(val prov: TypeProvenance) extends SimpleType {
     // TODO: assert no repeated fields
     lazy val level: Int = fields.iterator.map(_._2.level).maxOption.getOrElse(0)
     def sorted: RecordType = RecordType(fields.sortBy(_._1))(prov)
@@ -93,21 +93,21 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   }
   object RecordType {
     def empty: RecordType = RecordType(Nil)(noProv)
-    def mk(fields: List[(Var, FieldType)])(prov: TypeProvenance = noProv): SimpleType =
+    def mk(fields: List[(Var, ST)])(prov: TypeProvenance = noProv): SimpleType =
       if (fields.isEmpty) ExtrType(false)(prov) else RecordType(fields)(prov)
   }
 
   sealed abstract class ArrayBase extends MiscBaseType {
-    def inner: FieldType
+    def inner: ST
   }
 
-  case class ArrayType(val inner: FieldType)(val prov: TypeProvenance) extends ArrayBase {
+  case class ArrayType(val inner: ST)(val prov: TypeProvenance) extends ArrayBase {
     def level: Int = inner.level
     override def toString = s"Array‹$inner›"
   }
 
-  case class TupleType(fields: List[Opt[Var] -> FieldType])(val prov: TypeProvenance) extends ArrayBase {
-    lazy val inner: FieldType = fields.map(_._2).reduceLeftOption(_ || _).getOrElse(BotType.toUpper(noProv))
+  case class TupleType(fields: List[Opt[Var] -> ST])(val prov: TypeProvenance) extends ArrayBase {
+    lazy val inner: ST = fields.map(_._2).reduceLeftOption(_ | _).getOrElse(BotType)
     lazy val level: Int = fields.iterator.map(_._2.level).maxOption.getOrElse(0)
     lazy val toArray: ArrayType = ArrayType(inner)(prov)  // upcast to array
     var implicitTuple: Bool = false
@@ -177,9 +177,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       lazy val tparamTags =
         if (paramTags) RecordType.mk(td.tparamsargs.map { case (tp, tv) =>
             val tvv = td.getVariancesOrDefault
-            tparamField(defn, tp) -> FieldType(
-              Some(if (tvv(tv).isCovariant) BotType else tv),
-              if (tvv(tv).isContravariant) TopType else tv)(prov)
+            tparamField(defn, tp) -> tv
           })(noProv)
         else TopType
       // substitute the arguments of type def
@@ -263,20 +261,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       }
   }
 
-  case class FieldType(lb: Option[SimpleType], ub: SimpleType)(val prov: TypeProvenance) {
-    def level: Int = lb.map(_.level).getOrElse(ub.level) max ub.level
-    def <:< (that: FieldType)(implicit ctx: Ctx, cache: MutMap[ST -> ST, Bool] = MutMap.empty): Bool =
-      (that.lb.getOrElse(BotType) <:< this.lb.getOrElse(BotType)) && (this.ub <:< that.ub)
-    def && (that: FieldType, prov: TypeProvenance = noProv): FieldType =
-      FieldType(lb.fold(that.lb)(l => Some(that.lb.fold(l)(l | _))), ub & that.ub)(prov)
-    def || (that: FieldType, prov: TypeProvenance = noProv): FieldType =
-      FieldType(for {l <- lb; r <- that.lb} yield (l & r), ub | that.ub)(prov)
-    def update(lb: SimpleType => SimpleType, ub: SimpleType => SimpleType): FieldType =
-      FieldType(this.lb.map(lb), ub(this.ub))(prov)
-    override def toString =
-      lb.fold(s"$ub")(lb => s"mut ${if (lb === BotType) "" else lb}..$ub")
-  }
-
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
     * Invariant: Types appearing in the bounds never have a level higher than this variable's `level`. */
   final class TypeVariable(
@@ -299,9 +283,9 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       * Note that if we have something like 'a :> Bot <: 'a -> Top, 'a is not truly recursive
       *   and its bounds can actually be inlined. */
     private final def lbRecOccs_$(implicit ctx: Ctx): Opt[Opt[Bool]] =
-      TupleType(lowerBounds.map(N -> _.toUpper(noProv)))(noProv).getVarsPol(S(true)).get(this)
+      TupleType(lowerBounds.map(N -> _))(noProv).getVarsPol(S(true)).get(this)
     private final def ubRecOccs_$(implicit ctx: Ctx): Opt[Opt[Bool]] =
-      TupleType(upperBounds.map(N -> _.toUpper(noProv)))(noProv).getVarsPol(S(false)).get(this)
+      TupleType(upperBounds.map(N -> _))(noProv).getVarsPol(S(false)).get(this)
 
     override def toString: String = showProvOver(false)(nameHint.getOrElse("α") + uid + "'" * level)
   }

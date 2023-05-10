@@ -62,7 +62,7 @@ trait UnificationSolver extends TyperDatatypes {
           }
         case (_: TypeRef, _: TypeRef) => addError(u)
         case (tup1: TupleType, tup2: TupleType) if tup1.fields.length === tup2.fields.length =>
-            tup1.fields.map(_._2.ub).zip(tup2.fields.map(_._2.ub)).foreach {
+            tup1.fields.map(_._2).zip(tup2.fields.map(_._2)).foreach {
               case (arg1, arg2) => enqueueUnification(NewUnification(Queue(Constructor(arg1, arg2, tup1, tup2, u)), level + 1))
             }
         case (_: TupleType, _: TupleType) => addError(u)

@@ -80,14 +80,14 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
   /** Only supports getting the fields of a valid base class type.
    * Notably, does not traverse type variables. 
    * Note: this does not retrieve the positional fields implicitly defined by tuples */
-  def fieldsOf(ty: SimpleType, paramTags: Bool)(implicit ctx: Ctx): Map[Var, FieldType] =
+  def fieldsOf(ty: SimpleType, paramTags: Bool)(implicit ctx: Ctx): Map[Var, ST] =
   // trace(s"Fields of $ty {${travsersed.mkString(",")}}")
   {
     ty match {
       case tr @ TypeRef(td, targs) =>
         fieldsOf(tr.expandWith(paramTags), paramTags)
       case ComposedType(false, l, r) =>
-        mergeMap(fieldsOf(l, paramTags), fieldsOf(r, paramTags))(_ && _)
+        mergeMap(fieldsOf(l, paramTags), fieldsOf(r, paramTags))(_ & _)
       case RecordType(fs) => fs.toMap
       case p: ProxyType => fieldsOf(p.underlying, paramTags)
       case TypeBounds(lb, ub) => fieldsOf(ub, paramTags)
@@ -95,7 +95,6 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
         | _: ExtrType | _: ComposedType => Map.empty
     }
   }
-  // ()
 
   /** Add type definitions to context. Raises error if a type defintion
     * has already been defined or it is malformed.
@@ -228,7 +227,7 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
 
             val fields = fieldsOf(td.bodyTy, paramTags = true)
             val tparamTags = td.tparamsargs.map { case (tp, tv) =>
-              tparamField(td.nme, tp) -> FieldType(Some(tv), tv)(tv.prov)
+              tparamField(td.nme, tp) -> tv
             }
             val ctor = k match {
               case Cls =>
@@ -238,11 +237,8 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
                   else {
                     val fv = freshVar(noProv,
                       S(f._1.name.drop(f._1.name.indexOf('#') + 1)) // strip any "...#" prefix
-                    )(1).tap(_.upperBounds ::= f._2.ub)
-                    f._1 -> (
-                      if (f._2.lb.isDefined) FieldType(Some(fv), fv)(f._2.prov)
-                      else fv.toUpper(f._2.prov)
-                      )
+                    )(1).tap(_.upperBounds ::= f._2)
+                    f._1 -> fv.withProv(f._2.prov)
                   }).toList
                 PolymorphicType(0, FunctionType(
                   RecordType.mk(fieldsRefined.filterNot(_._1.name.isCapitalized))(noProv),
@@ -325,11 +321,8 @@ class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
       *   both if invariant position visit
       */
     def updateVariance(ty: SimpleType, curVariance: VarianceInfo)(implicit tyDef: TypeDef, visited: MutSet[Bool -> TypeVariable]): Unit = {
-      def fieldVarianceHelper(fieldTy: FieldType): Unit = {
-          fieldTy.lb.foreach(lb => updateVariance(lb, curVariance.flip))
-          updateVariance(fieldTy.ub, curVariance)
-      }
-      
+      def fieldVarianceHelper(fieldTy: ST): Unit = updateVariance(fieldTy, curVariance)
+
       trace(s"upd[$curVariance] $ty") {
         ty match {
           case ProxyType(underlying) => updateVariance(underlying, curVariance)
