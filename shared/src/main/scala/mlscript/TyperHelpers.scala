@@ -126,57 +126,6 @@ abstract class TyperHelpers { Typer: Typer =>
     }
   }
   
-  def factorize(cs: Ls[Conjunct], sort: Bool): Ls[ST] = {
-    val factors = MutMap.empty[Factorizable, Int]
-    cs.foreach { c =>
-      c.vars.foreach { v =>
-        factors(v) = factors.getOrElse(v, 0) + 1
-      }
-      c.nvars.foreach { v =>
-        val nv = NegVar(v)
-        factors(nv) = factors.getOrElse(nv, 0) + 1
-      }
-      c.lnf match {
-        case LhsTop => ()
-        case LhsRefined(_, ttags, _, _) =>
-          ttags.foreach { ttg =>
-            factors(ttg) = factors.getOrElse(ttg, 0) + 1
-          }
-      }
-      c.rnf match {
-        case RhsBot | _: RhsField => ()
-        case RhsBases(ps, _, _) =>
-          ps.foreach {
-            case ttg: TraitTag =>
-              val nt = NegTrait(ttg)
-              factors(nt) = factors.getOrElse(nt, 0) + 1
-            case _ => ()
-          }
-      }
-    }
-    factors.maxByOption(_._2) match {
-      // case S((fact, n)) =>  // Very strangely, this seems to improve some StressTrait tests slightly...
-      case S((fact, n)) if n > 1 =>
-        val (factored, rest) = fact match {
-          case v: TV =>
-            cs.partitionMap(c => if (c.vars(v)) L(c) else R(c))
-          case NegVar(v) =>
-            cs.partitionMap(c => if (c.nvars(v)) L(c) else R(c))
-          case ttg: TraitTag =>
-            cs.partitionMap(c => if (c.lnf.hasTag(ttg)) L(c) else R(c))
-          case NegTrait(ttg) =>
-            cs.partitionMap(c => if (c.rnf.hasTag(ttg)) L(c) else R(c))
-        }
-        (fact & factorize(factored.map(_ - fact), sort).reduce(_ | _)) :: (
-          if (factors.sizeCompare(1) > 0 && factors.exists(f => (f._1 isnt fact) && f._2 > 1))
-            factorize(rest, sort)
-          else rest.map(_.toType(sort))
-        )
-      case _ =>
-        cs.map(_.toType(sort))
-    }
-  }
-  
   private def cleanupUnion(tys: Ls[ST])(implicit ctx: Ctx): Ls[ST] = {
     var res: Ls[ST] = Nil
     tys.reverseIterator.foreach { ty =>
@@ -514,41 +463,7 @@ abstract class TyperHelpers { Typer: Typer =>
       case u => u
     }
 
-    def negNormPos(f: SimpleType => SimpleType, p: TypeProvenance)
-                  (implicit ctx: Ctx, ptr: PreserveTypeRefs): SimpleType = (if (preserveTypeRefs) this else unwrapAll) match {
-      case ExtrType(b) => ExtrType(!b)(noProv)
-      case ComposedType(true, l, r) => l.negNormPos(f, p) & r.negNormPos(f, p)
-      case ComposedType(false, l, r) => l.negNormPos(f, p) | r.negNormPos(f, p)
-      case NegType(n) => f(n).withProv(p)
-      case tr: TypeRef if !preserveTypeRefs => tr.expand.negNormPos(f, p)
-      case _: RecordType | _: FunctionType => BotType // Only valid in positive positions!
-      // Because Top<:{x:S}|{y:T}, any record type negation neg{x:S}<:{y:T} for any y=/=x,
-      // meaning negated records are basically bottoms.
-      case rw => NegType(f(rw))(p)
-    }
-
-    def withProvOf(ty: SimpleType): ST = withProv(ty.prov)
-
     def withProv(p: TypeProvenance): ST = mkProxy(this, p)
-
-    def pushPosWithout(implicit ctx: Ctx, ptr: PreserveTypeRefs): SimpleType = this match {
-      case NegType(n) => n.negNormPos(_.pushPosWithout, prov)
-      case Without(b, ns) => if (ns.isEmpty) b.pushPosWithout else (if (preserveTypeRefs) b.unwrapProxies else b.unwrapAll).withoutPos(ns) match {
-        case Without(c@ComposedType(pol, l, r), ns) => ComposedType(pol, l.withoutPos(ns), r.withoutPos(ns))(c.prov)
-        case Without(NegType(nt), ns) => nt.negNormPos(_.pushPosWithout, nt.prov).withoutPos(ns) match {
-          case rw@Without(NegType(nt), ns) =>
-            nt match {
-              case _: TypeVariable | _: ClassTag | _: RecordType => rw
-              case _ => if (preserveTypeRefs) rw else lastWords(s"$this  $rw  (${nt.getClass})")
-            }
-          case rw => rw
-        }
-        case rw => rw
-      }
-      case _ => this
-    }
-
-    def normalize(pol: Bool)(implicit ctx: Ctx): ST = DNF.mk(this, pol = pol).toType()
 
     def abs(that: SimpleType)(prov: TypeProvenance): SimpleType =
       FunctionType(this, that)(prov)

@@ -29,7 +29,7 @@ let h y = (not y, (if true then y else 5))
 //│ ◉ (int) is here
 //│    - l.1  let h y = (not y, (if true then y else 5))
 //│                                                  ^
-//│ h: (bool & 'a) -> (bool, int | 'a,)
+//│ h: ('a & bool) -> (bool, int | 'a,)
 //│ U max: 4, total: 6
 //│ UERR 1 errors
 //│ L: 0 [bool ~ int, bool :> α67', α67' <: α69', α69' :> int]
@@ -68,7 +68,7 @@ let h y = (not y, (if true then y else 5))
 //│ ◉ (int) is here
 //│    - l.1  let h y = (not y, (if true then y else 5))
 //│                                                  ^
-//│ h: (bool & 'a) -> (bool, int | 'a,)
+//│ h: ('a & bool) -> (bool, int | 'a,)
 //│ U max: 4, total: 6
 //│ UERR 1 errors
 //│ L: 0 [bool ~ int, bool :> α74', α74' <: α76', α76' :> int]
@@ -86,7 +86,7 @@ confluence true
 let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
 //│ mkpair: 'a -> 'b -> ('a, int | 'b,)
-//│ conflict: (bool & 'a) -> (bool, int | 'a,)
+//│ conflict: ('a & bool) -> (bool, int | 'a,)
 
 
 
@@ -94,7 +94,7 @@ let conflict x = mkpair (not x) x
 
 let rec digitsOfInt n =
   if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
-//│ digitsOfInt: int -> list[int]
+//│ digitsOfInt: int -> (list[int] | list[nothing])
 
 let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
 //│ addNumbs: list[int] -> int
@@ -103,7 +103,7 @@ let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
 // :e
 // :tex
 let digits n = digitsOfInt (abs n)
-//│ digits: int -> list[int]
+//│ digits: int -> (list[int] | list[nothing])
 
 
 let rec additivePersistence n =
@@ -146,4 +146,4 @@ let rec additivePersistence n =
 let y x = [x]
 let k a = if a then [2] else y true
 //│ y: 'a -> list['a]
-//│ k: bool -> list[bool | int]
+//│ k: bool -> (list[bool] | list[int])

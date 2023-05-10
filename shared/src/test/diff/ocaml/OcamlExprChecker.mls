@@ -208,7 +208,7 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│ L: 0 [list['a304] ~ heap, list['a304] <: heap]
 
 let update h str i = (str,i)::h
-//│ update: list['a] -> 'b -> 'c -> list['a | ('b, 'c,)]
+//│ update: list['a] -> 'b -> 'c -> list[('b, 'c,) | 'a]
 
 /// FIXME
 // define lambdas using fun
@@ -248,14 +248,14 @@ let interp2 = (fun (env:env) opt ->
 let head xs = match xs with
   Cons(x, xs) -> x
   | _ -> raise Error
-//│ head: list['a] -> 'a
+//│ head: list['a] -> (nothing | 'a)
 
 
 :s
 let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
-//│ head: list['a] -> 'a
+//│ head: list['a] -> (nothing | 'a)
 
 type ('a) bigHeap =
   NoHeap of 'a list
@@ -424,7 +424,7 @@ let g x = x, if true then x else x
 //│   ◉ ((int * int) * _ list) is here
 //│      - l.1  [0, 1; 2, 3, 4]
 //│              ^^^^^^^^^^^^^
-//│ res: list[Array[int] & {_1: int, _2: int}]
+//│ res: list[(int, int, int,) | (int, int,)]
 //│ U max: 4, total: 10
 //│ UERR 1 errors
 //│ L: 1 [(int, int, int,) ~ (int, int,), [(int, int, int,) - ((int, int, int,), [list['a466]],) ~ ('a465, list['a465],) - 'a465, L: 0 [((int, int, int,), [list['a466]],) ~ ('a465, list['a465],), ((int, int, int,), [list['a466]],) <: ('a465, list['a465],)]], ['a465 - list['a465] ~ list['a464] - 'a464, L: 1 [list['a465] ~ list['a464], [list['a465] - ((int, int,), [list['a465]],) ~ ('a464, list['a464],) - list['a464], L: 0 [((int, int,), [list['a465]],) ~ ('a464, list['a464],), ((int, int,), [list['a465]],) <: ('a464, list['a464],)]]]], ['a464 - ('a464, list['a464],) ~ ((int, int,), [list['a465]],) - (int, int,), L: 0 [('a464, list['a464],) ~ ((int, int,), [list['a465]],), ('a464, list['a464],) :> ((int, int,), [list['a465]],)]]]
@@ -467,7 +467,7 @@ let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ ◉ (_ list) is here
 //│    - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│                                                          ^^
-//│ len: nothing -> int
+//│ len: (list[?] & string) -> int
 //│ U max: 3, total: 4
 //│ UERR 1 errors
 //│ L: 0 [string ~ list['a506'], string :> α504', α504' <: list['a506']]

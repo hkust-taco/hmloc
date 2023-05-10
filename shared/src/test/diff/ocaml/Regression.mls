@@ -198,7 +198,7 @@ if true then x else y
 //│   ◉ (int list) is here
 //│      - l.-44let x: int list
 //│                    ^^^^^^^^
-//│ res: list[int | string]
+//│ res: list[string] | list[int]
 //│ U max: 3, total: 5
 //│ UERR 1 errors
 //│ L: 1 [string ~ int, [string - list[string] ~ list[int] - int, L: 0 [list[string] ~ list[int], list[string] <: α104, α104 :> list[int]]]]
@@ -229,7 +229,7 @@ let mkpair x y = (x, confluence y)
 mkpair 1 "2"
 //│ confluence: 'a -> (int | 'a)
 //│ mkpair: 'a -> 'b -> ('a, int | 'b,)
-//│ res: (int, int | string,)
+//│ res: (int, string | int,)
 
 // TODO nested prov not shown in collision error
 let a = 1
@@ -287,7 +287,7 @@ if true then wrap (if true then 1 else false) else wrap true
 //│ ◉ (int) is here
 //│    - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│                                           ^
-//│ res: list[bool | int]
+//│ res: list[bool] | list[bool | int]
 //│ U max: 7, total: 12
 //│ UERR 1 errors
 //│ L: 0 [bool ~ int, bool <: α158, α158 :> int]
@@ -296,16 +296,17 @@ if true then wrap (if true then 1 else false) else wrap true
 let rec t = wrap (if true then 1 else t)
 //│ t: 't
 //│   where
-//│     't :> list[int | 't]
+//│     't :> list['t | int]
 
 
 let test z = if true then wrap z else wrap true
  
 let rec m = test (if true then 1 else m)
-//│ test: 'a -> list[bool | 'a]
+//│ test: 'a -> (list[bool] | list['a])
 //│ m: 'm
 //│   where
-//│     'm :> list[int | 'm | bool]
+//│     'm :> list[bool] | list['a]
+//│     'a :> 'm | int
 
 
 // FIXME implementation exception
@@ -326,9 +327,9 @@ let rec digitsOfInt n =
 //│                    ^^^^^^^
 //│ ╔══[ERROR] identifier not found: remainder
 //│ ║  
-//│ ║  l.313:	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.314:	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──      	                            ^^^^^^^^^
 //│ digitsOfInt: anything -> list[error]
 //│ U max: 6, total: 11
 //│ UERR 1 errors
-//│ L: 0 [int ~ list[α232'], int <: list[α232']]
+//│ L: 0 [int ~ list[α233'], int <: list[α233']]
