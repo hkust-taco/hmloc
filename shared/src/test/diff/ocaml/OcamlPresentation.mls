@@ -228,9 +228,55 @@ let confluence z = if true then z else 5
 let mkpair x y = (x, confluence y)
   
 let conflict x = mkpair (not x) x
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│         (bool) <--- (?a) ---> (?b) ---> (?c) ---> (?d) <--- (int)
+//│ 
+//│ ◉ (bool) is here
+//│ ▲  - lib. let not: bool -> bool
+//│ │                  ^^^^
+//│ │  - l.4  let conflict x = mkpair (not x) x
+//│ │                                      ^
+//│ │  - l.4  let conflict x = mkpair (not x) x
+//│ │                      ^
+//│ │ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.4  let conflict x = mkpair (not x) x
+//│ │                      ^
+//│ │  - l.4  let conflict x = mkpair (not x) x
+//│ │                                         ^
+//│ │  - l.2  let mkpair x y = (x, confluence y)
+//│ │                      ^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.2  let mkpair x y = (x, confluence y)
+//│ │                      ^
+//│ │  - l.2  let mkpair x y = (x, confluence y)
+//│ │                                         ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                        ^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                        ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                                         ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?d) is assumed here
+//│ ▲  - l.1  let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (int) is here
+//│    - l.1  let confluence z = if true then z else 5
+//│                                                  ^
 //│ confluence: 'a -> (int | 'a)
 //│ mkpair: 'a -> anything -> ('a, anything,)
 //│ conflict: ('a & bool) -> (anything, 'a,)
+//│ U max: 3, total: 11
+//│ UERR 1 errors
+//│ L: 0 [bool ~ int, bool :> α127', α127' <: α129', α129' <: α131', α131' <: α130', α130' :> int]
 
 let test =
   let f x = x in
@@ -266,10 +312,40 @@ let rec t = wrap (if true then 1 else t)
 //│   where
 //│     't :> list['t | int]
 
+// TODO weird unification error investigate
 let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 let weird x = (x + 1, length x)
+//│ [ERROR] Type `_ list` does not match `int`
+//│ 
+//│         (?a) ---> (int)
+//│ 
+//│   ◉ (_ list -> _) is here
+//│   ▲  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
+//│   │                                                             ^^^^^^
+//│   │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
+//│   │                 ^^^^^^
+//│   │ 
+//│   ◉ (?length) is assumed here
+//│   │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
+//│   │                 ^^^^^^
+//│   ▼ 
+//│   ◉ (_ -> _) is here
+//│      - l.2  let weird x = (x + 1, length x)
+//│                                   ^^^^^^
+//│ ◉ (?a) is assumed here
+//│ │  - l.2  let weird x = (x + 1, length x)
+//│ │                   ^
+//│ │  - l.2  let weird x = (x + 1, length x)
+//│ │                        ^
+//│ ▼ 
+//│ ◉ (int) is here
+//│    - lib. let (+): int -> int -> int
+//│                    ^^^
 //│ length: list[?] -> int
 //│ weird: (list[?] & int) -> (anything, anything,)
+//│ U max: 5, total: 12
+//│ UERR 1 errors
+//│ L: 1 [list['a186'] ~ int, [list['a186'] - ([list['a186']] -> α188') ~ ([α181'] -> α190') - α181', L: 0 [([list['a186']] -> α188') ~ ([α181'] -> α190'), ([list['a186']] -> α188') :> length184', length184' <: ([α181'] -> α190')]], α181' <: int]
 
 
 let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0

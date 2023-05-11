@@ -403,7 +403,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   
   /** Infer the type of a term. */
   def typeTerm(term: Term, desc: String = "")(implicit ctx: Ctx, raise: Raise, vars: Map[Str, SimpleType] = Map.empty): SimpleType
-        = trace(s"$lvl. Typing ${if (ctx.inPattern) "pattern" else "term"} $term") {
+        = trace(s"$lvl. Typing ${if (ctx.inPattern) "pattern" else "term"} $term ${term.getClass.getSimpleName}") {
     // implicit val prov: TypeProvenance = ttp(term)
     implicit def prov(implicit file: FileName, line: Line): TypeProvenance = ttp(term, desc)
     

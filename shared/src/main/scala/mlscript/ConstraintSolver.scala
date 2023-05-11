@@ -534,6 +534,15 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
   // Note: maybe this and `extrude` should be merged?
   def freshenAbove(lim: Int, ty: SimpleType, rigidify: Bool = false)(implicit lvl: Int): SimpleType = {
     val freshened = MutMap.empty[TV, SimpleType]
+    def freshenDataFlow(df: DataFlow): DataFlow = df match {
+      case c@Constraint(a, b) =>
+        val c1 = Constraint(freshen(a), freshen(b))
+        c1.dir = c.dir
+        c1
+      case Constructor(a, b, ctora, ctorb, uni) =>
+        Constructor(freshen(a), freshen(b), freshen(ctora), freshen(ctorb), freshenUnification(uni))
+    }
+    def freshenUnification(u: NewUnification): NewUnification = u.copy(flow = u.flow.map(freshenDataFlow))
     def freshen(ty: SimpleType): SimpleType =
       if (!rigidify // Rigidification now also substitutes TypeBound-s with fresh vars;
                     // since these have the level of their bounds, when rigidifying
@@ -559,6 +568,11 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
             //    but through the indirection of a type variable tv2:
             tv2.lowerBounds ::= tv.lowerBounds.map(freshen).foldLeft(rv: ST)(_ & _)
             tv2.upperBounds ::= tv.upperBounds.map(freshen).foldLeft(rv: ST)(_ | _)
+            // freshen all the unifications for the type variable
+            // without this unification cannot detect errors because
+            // when a type scheme is instantiated it won't have the
+            // types it's been previously unified with
+            tv2.uni = tv.uni.map(freshenUnification)
             tv2
           } else {
             freshened += tv -> rv
@@ -569,6 +583,11 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
           freshened += tv -> v
           v.lowerBounds = tv.lowerBounds.mapConserve(freshen)
           v.upperBounds = tv.upperBounds.mapConserve(freshen)
+          // freshen all the unifications for the type variable
+          // without this unification cannot detect errors because
+          // when a type scheme is instantiated it won't have the
+          // types it's been previously unified with
+          v.uni = tv.uni.map(freshenUnification)
           v
       }
       case t @ TypeBounds(lb, ub) =>

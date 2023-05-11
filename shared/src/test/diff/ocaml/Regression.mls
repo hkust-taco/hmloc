@@ -81,7 +81,7 @@ not (f 1)
 //│                    ^^^^
 //│ f: int -> int
 //│ res: bool
-//│ U max: 4, total: 4
+//│ U max: 2, total: 4
 //│ UERR 1 errors
 //│ L: 0 [int ~ bool, int <: bool]
 
@@ -89,14 +89,14 @@ not (f 1)
 :d
 let a = 1
 not a
-//│ 1. Typing term 1
+//│ 1. Typing term 1 IntLit
 //│ 1. : int
 //│ ⬤ Typed as: int
 //│  where: 
-//│ 0. Typing term not a
-//│ | 0. Typing term not
+//│ 0. Typing term not a App
+//│ | 0. Typing term not Var
 //│ | 0. : [(bool -> bool)]
-//│ | 0. Typing term a
+//│ | 0. Typing term a Var
 //│ | 0. : [int]
 //│ | CONSTRAIN [int] <! bool
 //│ |   where 
@@ -105,6 +105,8 @@ not a
 //│ | | | !! COLLISION ERROR (List(int, [int]),List(bool))
 //│ |   | U Q [int] ~ bool
 //│ 0. : [bool]
+//│ U L: 0 [int ~ bool, int <: bool]
+//│ UERR L: 0 [int ~ bool, int <: bool]
 //│ ⬤ Typed as: [bool]
 //│  where: 
 //│ [ERROR] Type `int` does not match `bool`
@@ -129,8 +131,36 @@ not a
 
 let confluence z = if true then z else 5
 confluence true
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│         (bool) ---> (?a) ---> (?b) <--- (int)
+//│ 
+//│ ◉ (bool) is here
+//│ │  - l.2  confluence true
+//│ │                    ^^^^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                        ^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                        ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                                         ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ ▲  - l.1  let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (int) is here
+//│    - l.1  let confluence z = if true then z else 5
+//│                                                  ^
 //│ confluence: 'a -> (int | 'a)
 //│ res: bool | int
+//│ U max: 3, total: 6
+//│ UERR 1 errors
+//│ L: 0 [bool ~ int, bool <: α98, α98 <: α99, α99 :> int]
 
 
 let x: int list
@@ -227,9 +257,45 @@ Left 1 : int
 let confluence z = if true then z else 5
 let mkpair x y = (x, confluence y)
 mkpair 1 "2"
+//│ [ERROR] Type `string` does not match `int`
+//│ 
+//│         (string) ---> (?a) ---> (?b) ---> (?c) <--- (int)
+//│ 
+//│ ◉ (string) is here
+//│ │  - l.3  mkpair 1 "2"
+//│ │                  ^^^
+//│ │  - l.2  let mkpair x y = (x, confluence y)
+//│ │                      ^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.2  let mkpair x y = (x, confluence y)
+//│ │                      ^
+//│ │  - l.2  let mkpair x y = (x, confluence y)
+//│ │                                         ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                        ^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                        ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                                         ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│ ▲  - l.1  let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (int) is here
+//│    - l.1  let confluence z = if true then z else 5
+//│                                                  ^
 //│ confluence: 'a -> (int | 'a)
 //│ mkpair: 'a -> anything -> ('a, anything,)
 //│ res: (anything, anything,)
+//│ U max: 3, total: 9
+//│ UERR 1 errors
+//│ L: 0 [string ~ int, string <: α128, α128 <: α130, α130 <: α129, α129 :> int]
 
 // TODO nested prov not shown in collision error
 let a = 1
@@ -250,15 +316,15 @@ g b
 //│ │           ^
 //│ ▼ 
 //│ ◉ (string list) is here
-//│    - l.-96let f: string list -> unit
-//│                  ^^^^^^^^^^^
+//│    - l.-132let f: string list -> unit
+//│                   ^^^^^^^^^^^
 //│ a: int
 //│ b: int
 //│ bool -> bool
 //│   <:  f:
 //│ list[string] -> unit
 //│ g: list[string] -> unit
-//│ U max: 3, total: 3
+//│ U max: 2, total: 3
 //│ UERR 1 errors
 //│ L: 0 [int ~ list[string], int <: list[string]]
 
@@ -288,7 +354,7 @@ if true then wrap (if true then 1 else false) else wrap true
 //│    - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│                                           ^
 //│ res: list[bool] | list[bool | int]
-//│ U max: 7, total: 12
+//│ U max: 7, total: 15
 //│ UERR 1 errors
 //│ L: 0 [bool ~ int, bool <: α157, α157 :> int]
 
@@ -302,11 +368,77 @@ let rec t = wrap (if true then 1 else t)
 let test z = if true then wrap z else wrap true
  
 let rec m = test (if true then 1 else m)
+//│ [ERROR] Type `int` does not match `bool`
+//│ 
+//│         (int) ---> (?b) ---> (?c) ---> (?d) ---> (?d * _ list) ---> (?a * ?a list) <--- (?a) ---> (?a list) ---> (?e) <--- (?a0 list) <--- (?a0) ---> (?a0 * ?a0 list) <--- (?f * _ list) <--- (?f) <--- (bool)
+//│ 
+//│ ◉ (int) is here
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                                        ^
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.3  let rec m = test (if true then 1 else m)
+//│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.1  let test z = if true then wrap z else wrap true
+//│ │                  ^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.1  let test z = if true then wrap z else wrap true
+//│ │                  ^
+//│ │  - l.1  let test z = if true then wrap z else wrap true
+//│ │                                        ^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│    - l.-36let wrap x = x :: []
+//│                    ^
+//│   ◉ (_ * _ list) is here
+//│   │  - l.-36let wrap x = x :: []
+//│   │                      ^
+//│   ▼ 
+//│   ◉ (_ * _ list) is here
+//│      - l.-36let wrap x = x :: []
+//│                          ^
+//│   ◉ (_ list) is here
+//│   │  - l.-36let wrap x = x :: []
+//│   │                      ^^^^^^^
+//│   │  - l.1  let test z = if true then wrap z else wrap true
+//│   │                                   ^^^^^^
+//│   │  - l.1  let test z = if true then wrap z else wrap true
+//│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   ▲  - l.1  let test z = if true then wrap z else wrap true
+//│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.1  let test z = if true then wrap z else wrap true
+//│   │                                               ^^^^^^^^^
+//│   │ 
+//│   ◉ (_ list) is here
+//│      - l.-36let wrap x = x :: []
+//│                          ^^^^^^^
+//│   ◉ (_ * _ list) is here
+//│   ▲  - l.-36let wrap x = x :: []
+//│   │                      ^
+//│   │ 
+//│   ◉ (_ * _ list) is here
+//│      - l.-36let wrap x = x :: []
+//│                          ^
+//│ ◉ (?e) is assumed here
+//│ ▲  - l.-36let wrap x = x :: []
+//│ │                  ^
+//│ │ 
+//│ ◉ (bool) is here
+//│    - l.1  let test z = if true then wrap z else wrap true
+//│                                                      ^^^^
 //│ test: 'a -> (list[bool] | list['a])
 //│ m: 'm
 //│   where
 //│     'm :> list[bool] | list['a]
 //│     'a :> 'm | int
+//│ U max: 5, total: 16
+//│ UERR 1 errors
+//│ L: 0 [int ~ bool, int <: α214', α214' <: α206', α206' <: α209', [α209' - ([[α209']], [[list['a208']]],) ~ ('a207', list['a207'],) - 'a207', L: 0 [([[α209']], [[list['a208']]],) ~ ('a207', list['a207'],), ([[α209']], [[list['a208']]],) <: ('a207', list['a207'],)]], ['a207' - list['a207'] ~ list['a211'] - 'a211', L: 0 [list['a207'] ~ list['a211'], list['a207'] <: α213', α213' :> list['a211']]], ['a211' - ('a211', list['a211'],) ~ ([[α210']], [[list['a212']]],) - α210', L: 0 [('a211', list['a211'],) ~ ([[α210']], [[list['a212']]],), ('a211', list['a211'],) :> ([[α210']], [[list['a212']]],)]], α210' :> bool]
 
 
 // FIXME implementation exception
@@ -327,7 +459,7 @@ let rec digitsOfInt n =
 //│                    ^^^^^^^
 //│ ╔══[ERROR] identifier not found: remainder
 //│ ║  
-//│ ║  l.314:	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.446:	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──      	                            ^^^^^^^^^
 //│ digitsOfInt: anything -> list[error]
 //│ U max: 6, total: 11

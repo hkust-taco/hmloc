@@ -79,14 +79,88 @@ let h y = (not y, (if true then y else 5))
 :unify
 let confluence z = if true then z else 5
 confluence true
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│         (bool) ---> (?a) ---> (?b) <--- (int)
+//│ 
+//│ ◉ (bool) is here
+//│ │  - l.2  confluence true
+//│ │                    ^^^^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                        ^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                        ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                                         ^
+//│ │  - l.1  let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ ▲  - l.1  let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (int) is here
+//│    - l.1  let confluence z = if true then z else 5
+//│                                                  ^
 //│ confluence: 'a -> (int | 'a)
 //│ res: bool | int
+//│ U max: 3, total: 6
+//│ UERR 1 errors
+//│ L: 0 [bool ~ int, bool <: α87, α87 <: α88, α88 :> int]
 
 
 let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│         (bool) <--- (?a) ---> (?b) ---> (?c) ---> (?d) <--- (int)
+//│ 
+//│ ◉ (bool) is here
+//│ ▲  - lib. let not: bool -> bool
+//│ │                  ^^^^
+//│ │  - l.2  let conflict x = mkpair (not x) x
+//│ │                                      ^
+//│ │  - l.2  let conflict x = mkpair (not x) x
+//│ │                      ^
+//│ │ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.2  let conflict x = mkpair (not x) x
+//│ │                      ^
+//│ │  - l.2  let conflict x = mkpair (not x) x
+//│ │                                         ^
+//│ │  - l.1  let mkpair x y = (x, confluence y)
+//│ │                      ^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.1  let mkpair x y = (x, confluence y)
+//│ │                      ^
+//│ │  - l.1  let mkpair x y = (x, confluence y)
+//│ │                                         ^
+//│ │  - l.-33let confluence z = if true then z else 5
+//│ │                        ^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│ │  - l.-33let confluence z = if true then z else 5
+//│ │                        ^
+//│ │  - l.-33let confluence z = if true then z else 5
+//│ │                                         ^
+//│ │  - l.-33let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?d) is assumed here
+//│ ▲  - l.-33let confluence z = if true then z else 5
+//│ │                            ^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (int) is here
+//│    - l.-33let confluence z = if true then z else 5
+//│                                                  ^
 //│ mkpair: 'a -> anything -> ('a, anything,)
 //│ conflict: ('a & bool) -> (anything, 'a,)
+//│ U max: 3, total: 8
+//│ UERR 1 errors
+//│ L: 0 [bool ~ int, bool :> α104', α104' <: α106', α106' <: α108', α108' <: α107', α107' :> int]
 
 
 
@@ -138,12 +212,55 @@ let rec additivePersistence n =
 //│    - l.3    | [] -> 0
 //│                     ^
 //│ additivePersistence: int -> (bool | int)
-//│ U max: 10, total: 16
+//│ U max: 10, total: 28
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool <: α203', α203' <: α189', α189' :> int]
+//│ L: 0 [bool ~ int, bool <: α206', α206' <: α192', α192' :> int]
 
-
+// TODO: weird unification shown investigate
 let y x = [x]
 let k a = if a then [2] else y true
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│         (bool) ---> (?b) ---> (?b * _ list) ---> (?a * ?a list) <--- (?a) ---> (?a list) ---> (?c) <--- (?a0 list) <--- (?a0) ---> (?a0 * ?a0 list) <--- (int * _ list) <--- (int)
+//│ 
+//│ ◉ (bool) is here
+//│ │  - l.2  let k a = if a then [2] else y true
+//│ │                                        ^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│    - l.1  let y x = [x]
+//│                 ^
+//│   ◉ (_ * _ list) is here
+//│   │  - l.1  let y x = [x]
+//│   │                    ^
+//│   ▼ 
+//│   ◉ (_ * _ list) is here
+//│      - l.1  let y x = [x]
+//│                        ^
+//│   ◉ (_ list) is here
+//│   │  - l.1  let y x = [x]
+//│   │                   ^^^
+//│   │  - l.2  let k a = if a then [2] else y true
+//│   │                                      ^^^^^^
+//│   │  - l.2  let k a = if a then [2] else y true
+//│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?b) is assumed here
+//│   ▲  - l.2  let k a = if a then [2] else y true
+//│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (_ list) is here
+//│      - l.2  let k a = if a then [2] else y true
+//│                                 ^^^
+//│   ◉ (_ * _ list) is here
+//│   ▲  - l.2  let k a = if a then [2] else y true
+//│   │                              ^
+//│   │ 
+//│   ◉ (int * _ list) is here
+//│      - l.2  let k a = if a then [2] else y true
+//│                                  ^
 //│ y: 'a -> list['a]
 //│ k: bool -> (list[bool] | list[int])
+//│ U max: 5, total: 17
+//│ UERR 1 errors
+//│ L: 0 [bool ~ int, bool <: α226', [α226' - ([[α226']], [[list['a228']]],) ~ ('a227', list['a227'],) - 'a227', L: 0 [([[α226']], [[list['a228']]],) ~ ('a227', list['a227'],), ([[α226']], [[list['a228']]],) <: ('a227', list['a227'],)]], ['a227' - list['a227'] ~ list['a223'] - 'a223', L: 0 [list['a227'] ~ list['a223'], list['a227'] <: α222', α222' :> list['a223']]], ['a223' - ('a223', list['a223'],) ~ ([int], [[list['a224']]],) - int, L: 0 [('a223', list['a223'],) ~ ([int], [[list['a224']]],), ('a223', list['a223'],) :> ([int], [[list['a224']]],)]]]

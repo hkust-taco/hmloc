@@ -655,6 +655,9 @@ class DiffTests
               // because it adds many duplicate type variables
               var prevVal = typer.TypeVariable.collectTypeVars
               typer.TypeVariable.collectTypeVars = false
+
+              // unify after evaluating each top level type
+              typer.uniState.unify()
               
               val wty = ty.uninstantiatedBody
               if (mode.isDebugging) output(s"⬤ Typed as: $wty")
