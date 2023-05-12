@@ -437,7 +437,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           errorsCount += 1
         case diag => raise(diag)
       }, prov, ctx)
-      uniState.enqueueUnification(NewUnification.fromLhsRhs(lhs, rhs))
+      uniState.enqueueUnification(Unification.fromLhsRhs(lhs, rhs))
       // also unify types
 //      unifyTypes(lhs, rhs)(MutSet(), ctx, raise)
       res

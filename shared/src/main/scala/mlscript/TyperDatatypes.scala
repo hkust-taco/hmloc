@@ -271,9 +271,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   )(val prov: TypeProvenance) extends SimpleType with CompactTypeOrVariable with Ordered[TypeVariable] with Factorizable {
     private[mlscript] val uid: Int = { freshCount += 1; freshCount - 1 }
     lazy val asTypeVar = new TypeVar(L(uid), nameHint)
-    var ubs: Ls[Constraint] = Ls()
-    var lbs: Ls[Constraint] = Ls()
-    var uni: Ls[NewUnification] = Ls()
+    var uni: Ls[Unification] = Ls()
     def compare(that: TV): Int = this.uid compare that.uid
     def isRecursive_$(implicit ctx: Ctx) : Bool = (lbRecOccs_$, ubRecOccs_$) match {
       case (S(N | S(true)), _) | (_, S(N | S(false))) => true
@@ -292,14 +290,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   type TV = TypeVariable
   private var freshCount = 0
   def freshVar(p: TypeProvenance, nameHint: Opt[Str] = N, lbs: Ls[ST] = Nil, ubs: Ls[ST] = Nil)
-        (implicit lvl: Int): TypeVariable = {
-          val tvar = new TypeVariable(lvl, lbs, ubs, nameHint)(p)
-          // only collect type variables if the flag is activated
-          if (TypeVariable.collectTypeVars) {
-            TypeVariable.createdTypeVars = tvar :: TypeVariable.createdTypeVars
-          }
-          tvar
-        }
+        (implicit lvl: Int): TypeVariable = new TypeVariable(lvl, lbs, ubs, nameHint)(p)
   def resetState(): Unit = {
     freshCount = 0
   }
@@ -307,7 +298,5 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   type PolarVariable = (TypeVariable, Boolean)
   object TypeVariable {
     var collectTypeVars: Bool = false
-    var createdTypeVars: Ls[TypeVariable] = Nil
-    def clearCollectedTypeVars(): Unit = createdTypeVars = Nil
   }
 }

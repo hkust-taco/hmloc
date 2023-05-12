@@ -542,7 +542,7 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
       case Constructor(a, b, ctora, ctorb, uni) =>
         Constructor(freshen(a), freshen(b), freshen(ctora), freshen(ctorb), freshenUnification(uni))
     }
-    def freshenUnification(u: NewUnification): NewUnification = u.copy(flow = u.flow.map(freshenDataFlow))
+    def freshenUnification(u: Unification): Unification = u.copy(flow = u.flow.map(freshenDataFlow))
     def freshen(ty: SimpleType): SimpleType =
       if (!rigidify // Rigidification now also substitutes TypeBound-s with fresh vars;
                     // since these have the level of their bounds, when rigidifying

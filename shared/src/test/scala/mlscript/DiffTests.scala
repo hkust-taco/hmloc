@@ -742,13 +742,6 @@ class DiffTests
               diagLineBuffers.clear()
             }
             
-            // clear existing type variables so that only type variables
-            // created while typing the current block are retained
-            if (mode.unify) {
-              typer.TypeVariable.clearCollectedTypeVars()
-              typer.TypeVariable.collectTypeVars = true
-            }
-            
             // process statements and output mlscript types
             // all `Def`s and `Term`s are processed here
             stmts.foreach {
@@ -822,10 +815,8 @@ class DiffTests
               typer.uniState.unify()
               val errors = typer.outputUnificationErrors()
               if (errors.nonEmpty) typingOutputs += L(errors)
-//              typer.newUnifyTypes()(ctx, raise)
               typer.reportNewUnificationErrors(ctx, raise)
               typer.uniState.clear()
-              typer.TypeVariable.clearCollectedTypeVars()
               typer.dbg = temp
             }
 
