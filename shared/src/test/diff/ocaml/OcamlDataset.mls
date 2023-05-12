@@ -18,35 +18,48 @@ let bigAdd l1 l2 =
     let args = failwith "to be implemented" in
     let (_,res) = List.fold_left f base args in res in
   removeZero (add (padZero l1 l2));;
-//│ [ERROR] Type `_ * _` does not match `(_ * _) list`
+//│ [ERROR] Type `(_ * _) list` does not match `_ * _`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) <--- ((_ * _) list)
+//│         ((_ * _) list) ---> (?a) ---> (_ * _)
 //│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.8    else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│ │                                                                  ^^^^^^^^
-//│ │  - l.8    else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ ((_ * _) list) is here
+//│ │  - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
+//│ │                                                  ^^^^^^^^^^^^^
+//│ │  - l.14     let base = List.combine l1 l2 in
+//│ │                        ^^^^^^^^^^^^^^^^^^
+//│ │  - l.16     let (_,res) = List.fold_left f base args in res in
+//│ │                                            ^^^^
 //│ ▼ 
 //│ ◉ (?a) is assumed here
-//│ │  - l.8    else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.16     let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (_ * _) is here
+//│    - l.16     let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ [ERROR] Type `_ list * _` does not match `(_ * _) list`
+//│ 
+//│         (_ list * _) ---> (?a) ~~~~ (?b) <--- ((_ * _) list)
+//│ 
+//│ ◉ (_ list * _) is here
+//│ │  - l.7    then (((clone 0 (-1 * diff)) @ l1), l2)
+//│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
 //│    - l.6    if diff < 0
 //│             ^^^^^^^^^^^
 //│             then (((clone 0 (-1 * diff)) @ l1), l2) ...
 //│             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> ?b) is here
+//│     ◉ (_ -> _ -> ?a) is here
 //│     │  - l.13     let f a x = padZero l1 l2 in
 //│     │                   ^^^^^^^^^^^^^^^^^^^
 //│     │  - l.16     let (_,res) = List.fold_left f base args in res in
 //│     │                                          ^
 //│     ▼ 
-//│     ◉ (?c -> _ -> ?c) is here
+//│     ◉ (?b -> _ -> ?b) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?b) is assumed here
 //│ ▲  - l.16     let (_,res) = List.fold_left f base args in res in
 //│ │                                            ^^^^
 //│ │  - l.14     let base = List.combine l1 l2 in
@@ -92,29 +105,35 @@ let bigAdd l1 l2 =
 //│ ◉ ((_ * _) list) is here
 //│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│                                                    ^^^^^^^^^^^^^
-//│ [ERROR] Type `_ list * _` does not match `(_ * _) list`
+//│ [ERROR] Type `_ * _` does not match `(_ * _) list`
 //│ 
-//│         (_ list * _) ---> (?a) ~~~~ (?b) <--- ((_ * _) list)
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) <--- ((_ * _) list)
 //│ 
-//│ ◉ (_ list * _) is here
-//│ │  - l.7    then (((clone 0 (-1 * diff)) @ l1), l2)
-//│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (_ * _) is here
+//│ │  - l.8    else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│ │                                                                  ^^^^^^^^
+//│ │  - l.8    else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
 //│ ◉ (?a) is assumed here
+//│ │  - l.8    else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│ │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
 //│    - l.6    if diff < 0
 //│             ^^^^^^^^^^^
 //│             then (((clone 0 (-1 * diff)) @ l1), l2) ...
 //│             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> ?a) is here
+//│     ◉ (_ -> _ -> ?b) is here
 //│     │  - l.13     let f a x = padZero l1 l2 in
 //│     │                   ^^^^^^^^^^^^^^^^^^^
 //│     │  - l.16     let (_,res) = List.fold_left f base args in res in
 //│     │                                          ^
 //│     ▼ 
-//│     ◉ (?b -> _ -> ?b) is here
+//│     ◉ (?c -> _ -> ?c) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│ ◉ (?b) is assumed here
+//│ ◉ (?c) is assumed here
 //│ ▲  - l.16     let (_,res) = List.fold_left f base args in res in
 //│ │                                            ^^^^
 //│ │  - l.14     let base = List.combine l1 l2 in
@@ -123,25 +142,6 @@ let bigAdd l1 l2 =
 //│ ◉ ((_ * _) list) is here
 //│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│                                                    ^^^^^^^^^^^^^
-//│ [ERROR] Type `(_ * _) list` does not match `_ * _`
-//│ 
-//│         ((_ * _) list) ---> (?a) ---> (_ * _)
-//│ 
-//│ ◉ ((_ * _) list) is here
-//│ │  - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
-//│ │                                                  ^^^^^^^^^^^^^
-//│ │  - l.14     let base = List.combine l1 l2 in
-//│ │                        ^^^^^^^^^^^^^^^^^^
-//│ │  - l.16     let (_,res) = List.fold_left f base args in res in
-//│ │                                            ^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.16     let (_,res) = List.fold_left f base args in res in
-//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.16     let (_,res) = List.fold_left f base args in res in
-//│                   ^^^^^^^
 //│ cloneHelper: 'a -> int -> ('b & 'c & list['a]) -> 'b
 //│   where
 //│     'b :> list['a] | 'c
@@ -507,12 +507,12 @@ let rec build (rand,depth) =
 //│ ◉ (expr) is here
 //│ │  - l.-306  | Thresh of expr* expr* expr* expr;;
 //│ │              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.1  let buildCosine e = Cosine e;;
-//│ │                             ^^^^^^^^
+//│ │  - l.2  let buildSine e = Sine e;;
+//│ │                           ^^^^^^
 //│ ▼ 
 //│ ◉ ((_ * int) -> _) is here
-//│    - l.12       else buildCosine build (rand, (d - 1));;
-//│                      ^^^^^^^^^^^^^^^^^
+//│    - l.11       then buildSine build (rand, (d - 1))
+//│                      ^^^^^^^^^^^^^^^
 //│ [ERROR] Type `expr` does not match `(_ * int) -> _`
 //│ 
 //│         (expr) ---> ((_ * int) -> _)
@@ -520,12 +520,12 @@ let rec build (rand,depth) =
 //│ ◉ (expr) is here
 //│ │  - l.-306  | Thresh of expr* expr* expr* expr;;
 //│ │              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.2  let buildSine e = Sine e;;
-//│ │                           ^^^^^^
+//│ │  - l.1  let buildCosine e = Cosine e;;
+//│ │                             ^^^^^^^^
 //│ ▼ 
 //│ ◉ ((_ * int) -> _) is here
-//│    - l.11       then buildSine build (rand, (d - 1))
-//│                      ^^^^^^^^^^^^^^^
+//│    - l.12       else buildCosine build (rand, (d - 1));;
+//│                      ^^^^^^^^^^^^^^^^^
 //│ buildCosine: expr -> expr
 //│ buildSine: expr -> expr
 //│ buildX: () -> expr
@@ -546,27 +546,6 @@ let rec mulByDigit i l =
   match List.rev l with
   | [] -> []
   | h::t -> [remainder x y] @ (mulByDigit i t);;
-//│ [ERROR] Type `_ list` does not match `int`
-//│ 
-//│         (_ list) ---> (?a) ---> (int)
-//│ 
-//│ ◉ (_ list) is here
-//│ │  - l.3  let y = [1, 2, 3];;
-//│ │                 ^^^^^^^^^
-//│ │  - l.7    | h::t -> [remainder x y] @ (mulByDigit i t);;
-//│ │                                  ^
-//│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
-//│ │                         ^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
-//│ │                         ^
-//│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
-//│ │                                     ^
-//│ ▼ 
-//│ ◉ (int) is here
-//│    - lib. let ( * ): int -> int -> int
-//│                             ^^^
 //│ [ERROR] Type `_ -> _ list -> _ list` does not match `int`
 //│ 
 //│         (_ -> _ list -> _ list) ---> (?a) ---> (int)
@@ -588,6 +567,27 @@ let rec mulByDigit i l =
 //│ ◉ (int) is here
 //│    - lib. let ( * ): int -> int -> int
 //│                      ^^^
+//│ [ERROR] Type `_ list` does not match `int`
+//│ 
+//│         (_ list) ---> (?a) ---> (int)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.3  let y = [1, 2, 3];;
+//│ │                 ^^^^^^^^^
+//│ │  - l.7    | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│ │                                  ^
+//│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
+//│ │                         ^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
+//│ │                         ^
+//│ │  - l.1  let remainder x y = if (x * y) > 10 then mod (x * y) 10 else 0;;
+//│ │                                     ^
+//│ ▼ 
+//│ ◉ (int) is here
+//│    - lib. let ( * ): int -> int -> int
+//│                             ^^^
 //│ remainder: int -> int -> int
 //│ x: anything -> list[int] -> list[string]
 //│ y: list[(int, int, int,)]
@@ -684,13 +684,402 @@ let bigMul l1 l2 =
   let base = (0, []) in
   let args = l1 (tenEx 0 l2) in
   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ [ERROR] Type `_ list` does not match `int * _ list`
+//│ [ERROR] Type `_ -> _` does not match `_ list`
 //│ 
-//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) <--- (int * _ list)
+//│         (_ -> _) ---> (?a) <--- (_ list)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ -> _) is here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                        ^^^^
+//│ │            let add (l1,l2) = ...
+//│ │            ^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                   ^^
+//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (_ list) is here
+//│    - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│                                     ^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ │  - l.-655  removeZero (add (padZero l1 l2));;
+//│ │                                     ^^
+//│ │  - l.-668let padZero l1 l2 =
+//│ │                      ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.-668let padZero l1 l2 =
+//│ │                      ^^
+//│ │  - l.-665  then (((clone 0 (-1 * diff)) @ l1), l2)
+//│ │                                           ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let (@): 'a list -> 'a list -> 'a list
+//│                               ^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ │  - l.-655  removeZero (add (padZero l1 l2));;
+//│ │                                     ^^
+//│ │  - l.-668let padZero l1 l2 =
+//│ │                      ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.-668let padZero l1 l2 =
+//│ │                      ^^
+//│ │  - l.-667  let diff = (List.length l1) - (List.length l2) in
+//│ │                                    ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.length: 'a list -> int
+//│                            ^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ │  - l.-655  removeZero (add (padZero l1 l2));;
+//│ │                                     ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-668let padZero l1 l2 =
+//│                        ^^
+//│   ◉ (?b * _) is here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                                                                   ^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   ▲  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (_ list * _) is here
+//│      - l.-665  then (((clone 0 (-1 * diff)) @ l1), l2)
+//│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ │  - l.-655  removeZero (add (padZero l1 l2));;
+//│ │                                     ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-668let padZero l1 l2 =
+//│                        ^^
+//│   ◉ (?b * _ list) is here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-655  removeZero (add (padZero l1 l2));;
+//│   │                            ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-660  let add (l1,l2) =
+//│                        ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│ │  - l.-660  let add (l1,l2) =
+//│ │                     ^^
+//│ │  - l.-658    let base = List.combine l1 l2 in
+//│ │                                      ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
+//│                             ^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ │  - l.-655  removeZero (add (padZero l1 l2));;
+//│ │                                     ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-668let padZero l1 l2 =
+//│                        ^^
+//│   ◉ (?b * _ list) is here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-655  removeZero (add (padZero l1 l2));;
+//│   │                            ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-660  let add (l1,l2) =
+//│                        ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│ │  - l.-660  let add (l1,l2) =
+//│ │                     ^^
+//│ │  - l.-659    let f a x = padZero l1 l2 in
+//│ │                                  ^^
+//│ │  - l.-668let padZero l1 l2 =
+//│ │                      ^^
+//│ ▼ 
+//│ ◉ (?f) is assumed here
+//│ │  - l.-668let padZero l1 l2 =
+//│ │                      ^^
+//│ │  - l.-667  let diff = (List.length l1) - (List.length l2) in
+//│ │                                    ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.length: 'a list -> int
+//│                            ^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ~~~~ (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ │  - l.-655  removeZero (add (padZero l1 l2));;
+//│ │                                     ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-668let padZero l1 l2 =
+//│                        ^^
+//│   ◉ (?b * _ list) is here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-655  removeZero (add (padZero l1 l2));;
+//│   │                            ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-660  let add (l1,l2) =
+//│                        ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│ │  - l.-660  let add (l1,l2) =
+//│ │                     ^^
+//│ │  - l.-659    let f a x = padZero l1 l2 in
+//│ │                                  ^^
+//│ ▼ 
+//│ ◉ (?f) is assumed here
+//│    - l.-668let padZero l1 l2 =
+//│                        ^^
+//│   ◉ (?f * _) is here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                                                                   ^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?g) is assumed here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?h) is assumed here
+//│   ▲  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (_ list * _) is here
+//│      - l.-665  then (((clone 0 (-1 * diff)) @ l1), l2)
+//│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ │  - l.-655  removeZero (add (padZero l1 l2));;
+//│ │                                     ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-668let padZero l1 l2 =
+//│                        ^^
+//│   ◉ (?b * _ list) is here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-655  removeZero (add (padZero l1 l2));;
+//│   │                            ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-660  let add (l1,l2) =
+//│                        ^^^^^^^
+//│   ◉ (?e * _) is here
+//│   ▲  - l.-660  let add (l1,l2) =
+//│   │                    ^^^^^^^
+//│   │  - l.-655  removeZero (add (padZero l1 l2));;
+//│   │                            ^^^^^^^^^^^^^^^
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?d) is assumed here
+//│   ▲  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?c) is assumed here
+//│   ▲  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?b * _ list) is here
+//│      - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (?b) is assumed here
+//│ │  - l.-668let padZero l1 l2 =
+//│ │                      ^^
+//│ │  - l.-667  let diff = (List.length l1) - (List.length l2) in
+//│ │                                    ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.length: 'a list -> int
+//│                            ^^^^^^^
+//│ [ERROR] Type `_ -> _` does not match `int * _ list`
+//│ 
+//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) <--- (int * _ list)
+//│ 
+//│ ◉ (_ -> _) is here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                        ^^^^
+//│ │            let add (l1,l2) = ...
+//│ │            ^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -782,6 +1171,561 @@ let bigMul l1 l2 =
 //│ ◉ (_ * _) is here
 //│    - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│                 ^^^^^^^^^^^
+//│ [ERROR] Type `_ list` does not match `int * _ list`
+//│ 
+//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) <--- (int * _ list)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                   ^^
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│    - l.6      let (x1,x2) = x in
+//│               ^^^^^^^^^^^^^^^^^^
+//│               let (carry,res) = a in ...
+//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     ◉ (_ -> _ -> ?c) is here
+//│     │  - l.5    let f a x =
+//│     │                 ^^^^^
+//│     │             let (x1,x2) = x in ...
+//│     │             ^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     ▼ 
+//│     ◉ (?d -> _ -> ?d) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│ ◉ (?d) is assumed here
+//│ ▲  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ │                                              ^^^^
+//│ │ 
+//│ ◉ (int * _ list) is here
+//│    - l.9    let base = (0, []) in
+//│                        ^^^^^^^
+//│ [ERROR] Type `_ list` does not match `_ * _`
+//│ 
+//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ---> (_ * _)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                   ^^
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│    - l.6      let (x1,x2) = x in
+//│               ^^^^^^^^^^^^^^^^^^
+//│               let (carry,res) = a in ...
+//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     ◉ (_ -> _ -> ?c) is here
+//│     │  - l.5    let f a x =
+//│     │                 ^^^^^
+//│     │             let (x1,x2) = x in ...
+//│     │             ^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     ▼ 
+//│     ◉ (?d -> _ -> ?d) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│ ◉ (?d) is assumed here
+//│ │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│                 ^^^^^^^^^^^
+//│ [ERROR] Type `_ list` does not match `_ -> _`
+//│ 
+//│         (_ list) ~~~~ (?a) ---> (_ -> _)
+//│ 
+//│   ◉ (_ list -> _) is here
+//│   ▲  - l.-127  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│   │                                         ^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?a) is assumed here
+//│      - l.-127  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│                                             ^^^^^^^^^^^^
+//│     ◉ (_ -> ?a) is here
+//│     ▲  - l.-127  | h::t -> [remainder x y] @ (mulByDigit i t);;
+//│     │                                         ^^^^^^^^^^
+//│     │  - l.-130let rec mulByDigit i l =
+//│     │                  ^^^^^^^^^^
+//│     │ 
+//│     ◉ (?mulByDigit) is assumed here
+//│     │  - l.-130let rec mulByDigit i l =
+//│     │                  ^^^^^^^^^^
+//│     ▼ 
+//│     ◉ (_ -> ?b) is here
+//│        - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│                                                               ^^^^^^^^^^
+//│   ◉ (?b) is assumed here
+//│   │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│   │                                                         ^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c -> _) is here
+//│      - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│                                                             ^^^^^^^^^^^^
+//│ ◉ (?c) is assumed here
+//│ │  - l.4  let bigMul l1 l2 =
+//│ │                    ^^
+//│ ▼ 
+//│ ◉ (_ -> _) is here
+//│    - l.10   let args = l1 (tenEx 0 l2) in
+//│                        ^^
+//│ [ERROR] Type `_ -> _` does not match `_ * _`
+//│ 
+//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?e) ---> (_ * _)
+//│ 
+//│ ◉ (_ -> _) is here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                        ^^^^
+//│ │            let add (l1,l2) = ...
+//│ │            ^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│    - l.6      let (x1,x2) = x in
+//│               ^^^^^^^^^^^^^^^^^^
+//│               let (carry,res) = a in ...
+//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     ◉ (?d -> _ -> ?c) is here
+//│     │  - l.5    let f a x =
+//│     │                 ^^^^^
+//│     │             let (x1,x2) = x in ...
+//│     │             ^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     ▼ 
+//│     ◉ (?e -> _ -> ?e) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│   ◉ (?e -> _ -> ?e) is here
+//│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│   │                               ^^^^^^^^^^^^^^
+//│   │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│   │                                            ^
+//│   │ 
+//│   ◉ (?d -> _ -> ?c) is here
+//│      - l.5    let f a x =
+//│                     ^^^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (?d) is assumed here
+//│ │  - l.5    let f a x =
+//│ │                 ^
+//│ │  - l.7      let (carry,res) = a in
+//│ │                               ^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.7      let (carry,res) = a in
+//│                   ^^^^^^^^^^^
+//│ [ERROR] Type `_ list` does not match `_ * _`
+//│ 
+//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?e) ---> (_ * _)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                   ^^
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│    - l.6      let (x1,x2) = x in
+//│               ^^^^^^^^^^^^^^^^^^
+//│               let (carry,res) = a in ...
+//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     ◉ (?d -> _ -> ?c) is here
+//│     │  - l.5    let f a x =
+//│     │                 ^^^^^
+//│     │             let (x1,x2) = x in ...
+//│     │             ^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     ▼ 
+//│     ◉ (?e -> _ -> ?e) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│   ◉ (?e -> _ -> ?e) is here
+//│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│   │                               ^^^^^^^^^^^^^^
+//│   │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│   │                                            ^
+//│   │ 
+//│   ◉ (?d -> _ -> ?c) is here
+//│      - l.5    let f a x =
+//│                     ^^^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (?d) is assumed here
+//│ │  - l.5    let f a x =
+//│ │                 ^
+//│ │  - l.7      let (carry,res) = a in
+//│ │                               ^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.7      let (carry,res) = a in
+//│                   ^^^^^^^^^^^
+//│ [ERROR] Type `_ -> _` does not match `_ list`
+//│ 
+//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?c) <--- (?b) <--- (?a) <--- (_ list)
+//│ 
+//│ ◉ (_ -> _) is here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                        ^^^^
+//│ │            let add (l1,l2) = ...
+//│ │            ^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│    - l.6      let (x1,x2) = x in
+//│               ^^^^^^^^^^^^^^^^^^
+//│               let (carry,res) = a in ...
+//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     ◉ (_ -> _ -> ?c) is here
+//│     │  - l.5    let f a x =
+//│     │                 ^^^^^
+//│     │             let (x1,x2) = x in ...
+//│     │             ^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     ▼ 
+//│     ◉ (?d -> _ -> ?d) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│     ◉ (?d -> _ -> ?d) is here
+//│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│     │                               ^^^^^^^^^^^^^^
+//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     │ 
+//│     ◉ (_ -> _ -> ?c) is here
+//│        - l.5    let f a x =
+//│                       ^^^^^
+//│                   let (x1,x2) = x in ...
+//│                   ^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (?c) is assumed here
+//│ ▲  - l.6      let (x1,x2) = x in
+//│ │             ^^^^^^^^^^^^^^^^^^
+//│ │             let (carry,res) = a in ...
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (?b) is assumed here
+//│ ▲  - l.7      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (_ list) is here
+//│    - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│                                     ^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ~~~~ (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ │  - l.-655  removeZero (add (padZero l1 l2));;
+//│ │                                     ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-668let padZero l1 l2 =
+//│                        ^^
+//│   ◉ (?b * _ list) is here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-655  removeZero (add (padZero l1 l2));;
+//│   │                            ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-660  let add (l1,l2) =
+//│                        ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│ │  - l.-660  let add (l1,l2) =
+//│ │                     ^^
+//│ │  - l.-659    let f a x = padZero l1 l2 in
+//│ │                                  ^^
+//│ ▼ 
+//│ ◉ (?f) is assumed here
+//│    - l.-668let padZero l1 l2 =
+//│                        ^^
+//│   ◉ (?f * _) is here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                                                                   ^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?g) is assumed here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?h) is assumed here
+//│      - l.-666  if diff < 0
+//│                ^^^^^^^^^^^
+//│                then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│       ◉ (_ -> _ -> ?h) is here
+//│       │  - l.-659    let f a x = padZero l1 l2 in
+//│       │                    ^^^^^^^^^^^^^^^^^^^
+//│       │  - l.-656    let (_,res) = List.fold_left f base args in res in
+//│       │                                           ^
+//│       ▼ 
+//│       ◉ (?i -> _ -> ?i) is here
+//│          - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                       ^^^^^^^^^^^^^^
+//│       ◉ (?i -> _ -> ?i) is here
+//│       ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│       │                               ^^^^^^^^^^^^^^
+//│       │  - l.-656    let (_,res) = List.fold_left f base args in res in
+//│       │                                           ^
+//│       │ 
+//│       ◉ (_ -> _ -> ?h) is here
+//│          - l.-659    let f a x = padZero l1 l2 in
+//│                            ^^^^^^^^^^^^^^^^^^^
+//│   ◉ (?h) is assumed here
+//│   ▲  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (_ list * _) is here
+//│      - l.-665  then (((clone 0 (-1 * diff)) @ l1), l2)
+//│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ~~~~ (?e) ~~~~ (?d) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-661let bigAdd l1 l2 =
+//│ │                     ^^
+//│ │  - l.-655  removeZero (add (padZero l1 l2));;
+//│ │                                     ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-668let padZero l1 l2 =
+//│                        ^^
+//│   ◉ (?b * _ list) is here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-655  removeZero (add (padZero l1 l2));;
+//│   │                            ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-660  let add (l1,l2) =
+//│                        ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│ │  - l.-660  let add (l1,l2) =
+//│ │                     ^^
+//│ │  - l.-659    let f a x = padZero l1 l2 in
+//│ │                                  ^^
+//│ ▼ 
+//│ ◉ (?f) is assumed here
+//│    - l.-668let padZero l1 l2 =
+//│                        ^^
+//│   ◉ (?f * _ list) is here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?g) is assumed here
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?h) is assumed here
+//│      - l.-666  if diff < 0
+//│                ^^^^^^^^^^^
+//│                then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│       ◉ (_ -> _ -> ?h) is here
+//│       │  - l.-659    let f a x = padZero l1 l2 in
+//│       │                    ^^^^^^^^^^^^^^^^^^^
+//│       │  - l.-656    let (_,res) = List.fold_left f base args in res in
+//│       │                                           ^
+//│       ▼ 
+//│       ◉ (?i -> _ -> ?i) is here
+//│          - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                       ^^^^^^^^^^^^^^
+//│   ◉ (?i) is assumed here
+//│   │  - l.-656    let (_,res) = List.fold_left f base args in res in
+//│   │                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?j * _) is here
+//│      - l.-656    let (_,res) = List.fold_left f base args in res in
+//│                      ^^^^^^^
+//│   ◉ (?j * _) is here
+//│   ▲  - l.-656    let (_,res) = List.fold_left f base args in res in
+//│   │                  ^^^^^^^
+//│   │ 
+//│   ◉ (?i) is assumed here
+//│      - l.-656    let (_,res) = List.fold_left f base args in res in
+//│                                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│       ◉ (?i -> _ -> ?i) is here
+//│       ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│       │                               ^^^^^^^^^^^^^^
+//│       │  - l.-656    let (_,res) = List.fold_left f base args in res in
+//│       │                                           ^
+//│       │ 
+//│       ◉ (_ -> _ -> ?h) is here
+//│          - l.-659    let f a x = padZero l1 l2 in
+//│                            ^^^^^^^^^^^^^^^^^^^
+//│   ◉ (?h) is assumed here
+//│   ▲  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?g) is assumed here
+//│   ▲  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?f * _ list) is here
+//│      - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (?f) is assumed here
+//│ │  - l.-668let padZero l1 l2 =
+//│ │                      ^^
+//│ │  - l.-667  let diff = (List.length l1) - (List.length l2) in
+//│ │                                    ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.length: 'a list -> int
+//│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
 //│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ~~~~ (?e) ~~~~ (?d) <--- (?c) ---> (_ list)
@@ -914,171 +1858,9 @@ let bigMul l1 l2 =
 //│ ◉ (_ list) is here
 //│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│                             ^^^^^^^
-//│ [ERROR] Type `_ -> _` does not match `_ list`
-//│ 
-//│         (_ -> _) ---> (?a) <--- (_ list)
-//│ 
-//│ ◉ (_ -> _) is here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                        ^^^^
-//│ │            let add (l1,l2) = ...
-//│ │            ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ ▲  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │ 
-//│ ◉ (_ list) is here
-//│    - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│                                     ^^
-//│ [ERROR] Type `_ -> _` does not match `_ list`
-//│ 
-//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?c) <--- (?b) <--- (?a) <--- (_ list)
-//│ 
-//│ ◉ (_ -> _) is here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                        ^^^^
-//│ │            let add (l1,l2) = ...
-//│ │            ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?c) is assumed here
-//│    - l.6      let (x1,x2) = x in
-//│               ^^^^^^^^^^^^^^^^^^
-//│               let (carry,res) = a in ...
-//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> ?c) is here
-//│     │  - l.5    let f a x =
-//│     │                 ^^^^^
-//│     │             let (x1,x2) = x in ...
-//│     │             ^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│     │                                            ^
-//│     ▼ 
-//│     ◉ (?d -> _ -> ?d) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│     ◉ (?d -> _ -> ?d) is here
-//│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│     │                               ^^^^^^^^^^^^^^
-//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│     │                                            ^
-//│     │ 
-//│     ◉ (_ -> _ -> ?c) is here
-//│        - l.5    let f a x =
-//│                       ^^^^^
-//│                   let (x1,x2) = x in ...
-//│                   ^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?c) is assumed here
-//│ ▲  - l.6      let (x1,x2) = x in
-//│ │             ^^^^^^^^^^^^^^^^^^
-//│ │             let (carry,res) = a in ...
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │ 
-//│ ◉ (?b) is assumed here
-//│ ▲  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │ 
-//│ ◉ (?a) is assumed here
-//│ ▲  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │ 
-//│ ◉ (_ list) is here
-//│    - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│                                     ^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ---> (_ list)
-//│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ │  - l.-655  removeZero (add (padZero l1 l2));;
-//│ │                                     ^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│    - l.-668let padZero l1 l2 =
-//│                        ^^
-//│   ◉ (?b * _ list) is here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?c) is assumed here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?d) is assumed here
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-655  removeZero (add (padZero l1 l2));;
-//│   │                            ^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?e * _) is here
-//│      - l.-660  let add (l1,l2) =
-//│                        ^^^^^^^
-//│ ◉ (?e) is assumed here
-//│ │  - l.-660  let add (l1,l2) =
-//│ │                     ^^
-//│ │  - l.-659    let f a x = padZero l1 l2 in
-//│ │                                  ^^
-//│ │  - l.-668let padZero l1 l2 =
-//│ │                      ^^
-//│ ▼ 
-//│ ◉ (?f) is assumed here
-//│ │  - l.-668let padZero l1 l2 =
-//│ │                      ^^
-//│ │  - l.-667  let diff = (List.length l1) - (List.length l2) in
-//│ │                                    ^^
-//│ ▼ 
-//│ ◉ (_ list) is here
-//│    - lib. let List.length: 'a list -> int
-//│                            ^^^^^^^
-//│ [ERROR] Type `_ * _` does not match `_ list`
-//│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ~~~~ (_ list)
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ~~~~ (?e) ~~~~ (?d) <--- (?c) ~~~~ (_ list)
 //│ 
 //│ ◉ (_ * _) is here
 //│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1129,9 +1911,9 @@ let bigMul l1 l2 =
 //│ ◉ (?f) is assumed here
 //│    - l.-668let padZero l1 l2 =
 //│                        ^^
-//│   ◉ (?f * _) is here
+//│   ◉ (?f * _ list) is here
 //│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                                                   ^^^^^^^^
+//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
 //│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
@@ -1153,6 +1935,20 @@ let bigMul l1 l2 =
 //│       ◉ (?i -> _ -> ?i) is here
 //│          - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                       ^^^^^^^^^^^^^^
+//│   ◉ (?i) is assumed here
+//│   │  - l.-656    let (_,res) = List.fold_left f base args in res in
+//│   │                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?j * _) is here
+//│      - l.-656    let (_,res) = List.fold_left f base args in res in
+//│                      ^^^^^^^
+//│   ◉ (?j * _) is here
+//│   ▲  - l.-656    let (_,res) = List.fold_left f base args in res in
+//│   │                  ^^^^^^^
+//│   │ 
+//│   ◉ (?i) is assumed here
+//│      - l.-656    let (_,res) = List.fold_left f base args in res in
+//│                                ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│       ◉ (?i -> _ -> ?i) is here
 //│       ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│       │                               ^^^^^^^^^^^^^^
@@ -1163,6 +1959,40 @@ let bigMul l1 l2 =
 //│          - l.-659    let f a x = padZero l1 l2 in
 //│                            ^^^^^^^^^^^^^^^^^^^
 //│   ◉ (?h) is assumed here
+//│   ▲  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?g) is assumed here
+//│   ▲  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?f * _ list) is here
+//│      - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
+//│                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (?f) is assumed here
+//│ ▲  - l.-668let padZero l1 l2 =
+//│ │                      ^^
+//│ │  - l.-659    let f a x = padZero l1 l2 in
+//│ │                                  ^^
+//│ │ 
+//│ ◉ (?e) is assumed here
+//│    - l.-660  let add (l1,l2) =
+//│                       ^^
+//│   ◉ (?e * _) is here
+//│   ▲  - l.-660  let add (l1,l2) =
+//│   │                    ^^^^^^^
+//│   │  - l.-655  removeZero (add (padZero l1 l2));;
+//│   │                            ^^^^^^^^^^^^^^^
+//│   │  - l.-666  if diff < 0
+//│   │            ^^^^^^^^^^^
+//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
+//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?d) is assumed here
 //│   ▲  - l.-666  if diff < 0
 //│   │            ^^^^^^^^^^^
 //│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
@@ -1329,836 +2159,6 @@ let bigMul l1 l2 =
 //│ ◉ (_ list) is here
 //│    - lib. let List.length: 'a list -> int
 //│                            ^^^^^^^
-//│ [ERROR] Type `_ list` does not match `_ -> _`
-//│ 
-//│         (_ list) ~~~~ (?a) ---> (_ -> _)
-//│ 
-//│   ◉ (_ list -> _) is here
-//│   ▲  - l.-127  | h::t -> [remainder x y] @ (mulByDigit i t);;
-//│   │                                         ^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (?a) is assumed here
-//│      - l.-127  | h::t -> [remainder x y] @ (mulByDigit i t);;
-//│                                             ^^^^^^^^^^^^
-//│     ◉ (_ -> ?a) is here
-//│     ▲  - l.-127  | h::t -> [remainder x y] @ (mulByDigit i t);;
-//│     │                                         ^^^^^^^^^^
-//│     │  - l.-130let rec mulByDigit i l =
-//│     │                  ^^^^^^^^^^
-//│     │ 
-//│     ◉ (?mulByDigit) is assumed here
-//│     │  - l.-130let rec mulByDigit i l =
-//│     │                  ^^^^^^^^^^
-//│     ▼ 
-//│     ◉ (_ -> ?b) is here
-//│        - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│                                                               ^^^^^^^^^^
-//│   ◉ (?b) is assumed here
-//│   │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│   │                                                         ^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?c -> _) is here
-//│      - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│                                                             ^^^^^^^^^^^^
-//│ ◉ (?c) is assumed here
-//│ │  - l.4  let bigMul l1 l2 =
-//│ │                    ^^
-//│ ▼ 
-//│ ◉ (_ -> _) is here
-//│    - l.10   let args = l1 (tenEx 0 l2) in
-//│                        ^^
-//│ [ERROR] Type `_ list` does not match `_ * _`
-//│ 
-//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?e) ---> (_ * _)
-//│ 
-//│ ◉ (_ list) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                   ^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?c) is assumed here
-//│    - l.6      let (x1,x2) = x in
-//│               ^^^^^^^^^^^^^^^^^^
-//│               let (carry,res) = a in ...
-//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (?d -> _ -> ?c) is here
-//│     │  - l.5    let f a x =
-//│     │                 ^^^^^
-//│     │             let (x1,x2) = x in ...
-//│     │             ^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│     │                                            ^
-//│     ▼ 
-//│     ◉ (?e -> _ -> ?e) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│   ◉ (?e -> _ -> ?e) is here
-//│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│   │                               ^^^^^^^^^^^^^^
-//│   │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│   │                                            ^
-//│   │ 
-//│   ◉ (?d -> _ -> ?c) is here
-//│      - l.5    let f a x =
-//│                     ^^^^^
-//│                 let (x1,x2) = x in ...
-//│                 ^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?d) is assumed here
-//│ │  - l.5    let f a x =
-//│ │                 ^
-//│ │  - l.7      let (carry,res) = a in
-//│ │                               ^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.7      let (carry,res) = a in
-//│                   ^^^^^^^^^^^
-//│ [ERROR] Type `_ list` does not match `_ * _`
-//│ 
-//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ---> (_ * _)
-//│ 
-//│ ◉ (_ list) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                   ^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?c) is assumed here
-//│    - l.6      let (x1,x2) = x in
-//│               ^^^^^^^^^^^^^^^^^^
-//│               let (carry,res) = a in ...
-//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> ?c) is here
-//│     │  - l.5    let f a x =
-//│     │                 ^^^^^
-//│     │             let (x1,x2) = x in ...
-//│     │             ^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│     │                                            ^
-//│     ▼ 
-//│     ◉ (?d -> _ -> ?d) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│ ◉ (?d) is assumed here
-//│ │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│                 ^^^^^^^^^^^
-//│ [ERROR] Type `_ * _` does not match `_ list`
-//│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
-//│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ │  - l.-655  removeZero (add (padZero l1 l2));;
-//│ │                                     ^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│    - l.-668let padZero l1 l2 =
-//│                        ^^
-//│   ◉ (?b * _ list) is here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?c) is assumed here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?d) is assumed here
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-655  removeZero (add (padZero l1 l2));;
-//│   │                            ^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?e * _) is here
-//│      - l.-660  let add (l1,l2) =
-//│                        ^^^^^^^
-//│   ◉ (?e * _) is here
-//│   ▲  - l.-660  let add (l1,l2) =
-//│   │                    ^^^^^^^
-//│   │  - l.-655  removeZero (add (padZero l1 l2));;
-//│   │                            ^^^^^^^^^^^^^^^
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (?d) is assumed here
-//│   ▲  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (?c) is assumed here
-//│   ▲  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (?b * _ list) is here
-//│      - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?b) is assumed here
-//│ │  - l.-668let padZero l1 l2 =
-//│ │                      ^^
-//│ │  - l.-667  let diff = (List.length l1) - (List.length l2) in
-//│ │                                    ^^
-//│ ▼ 
-//│ ◉ (_ list) is here
-//│    - lib. let List.length: 'a list -> int
-//│                            ^^^^^^^
-//│ [ERROR] Type `_ -> _` does not match `int * _ list`
-//│ 
-//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) <--- (int * _ list)
-//│ 
-//│ ◉ (_ -> _) is here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                        ^^^^
-//│ │            let add (l1,l2) = ...
-//│ │            ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?c) is assumed here
-//│    - l.6      let (x1,x2) = x in
-//│               ^^^^^^^^^^^^^^^^^^
-//│               let (carry,res) = a in ...
-//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> ?c) is here
-//│     │  - l.5    let f a x =
-//│     │                 ^^^^^
-//│     │             let (x1,x2) = x in ...
-//│     │             ^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│     │                                            ^
-//│     ▼ 
-//│     ◉ (?d -> _ -> ?d) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│ ◉ (?d) is assumed here
-//│ ▲  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ │                                              ^^^^
-//│ │ 
-//│ ◉ (int * _ list) is here
-//│    - l.9    let base = (0, []) in
-//│                        ^^^^^^^
-//│ [ERROR] Type `_ * _` does not match `_ list`
-//│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ~~~~ (_ list)
-//│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ │  - l.-655  removeZero (add (padZero l1 l2));;
-//│ │                                     ^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│    - l.-668let padZero l1 l2 =
-//│                        ^^
-//│   ◉ (?b * _ list) is here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?c) is assumed here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?d) is assumed here
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-655  removeZero (add (padZero l1 l2));;
-//│   │                            ^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?e * _) is here
-//│      - l.-660  let add (l1,l2) =
-//│                        ^^^^^^^
-//│ ◉ (?e) is assumed here
-//│ │  - l.-660  let add (l1,l2) =
-//│ │                     ^^
-//│ │  - l.-659    let f a x = padZero l1 l2 in
-//│ │                                  ^^
-//│ ▼ 
-//│ ◉ (?f) is assumed here
-//│    - l.-668let padZero l1 l2 =
-//│                        ^^
-//│   ◉ (?f * _) is here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                                                   ^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?g) is assumed here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?h) is assumed here
-//│   ▲  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (_ list * _) is here
-//│      - l.-665  then (((clone 0 (-1 * diff)) @ l1), l2)
-//│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ [ERROR] Type `_ * _` does not match `_ list`
-//│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
-//│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ │  - l.-655  removeZero (add (padZero l1 l2));;
-//│ │                                     ^^
-//│ │  - l.-668let padZero l1 l2 =
-//│ │                      ^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.-668let padZero l1 l2 =
-//│ │                      ^^
-//│ │  - l.-667  let diff = (List.length l1) - (List.length l2) in
-//│ │                                    ^^
-//│ ▼ 
-//│ ◉ (_ list) is here
-//│    - lib. let List.length: 'a list -> int
-//│                            ^^^^^^^
-//│ [ERROR] Type `_ * _` does not match `_ list`
-//│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (_ list)
-//│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ │  - l.-655  removeZero (add (padZero l1 l2));;
-//│ │                                     ^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│    - l.-668let padZero l1 l2 =
-//│                        ^^
-//│   ◉ (?b * _) is here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                                                   ^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?c) is assumed here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?d) is assumed here
-//│   ▲  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (_ list * _) is here
-//│      - l.-665  then (((clone 0 (-1 * diff)) @ l1), l2)
-//│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ [ERROR] Type `_ * _` does not match `_ list`
-//│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ~~~~ (?e) ~~~~ (?d) <--- (?c) ~~~~ (_ list)
-//│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ │  - l.-655  removeZero (add (padZero l1 l2));;
-//│ │                                     ^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│    - l.-668let padZero l1 l2 =
-//│                        ^^
-//│   ◉ (?b * _ list) is here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?c) is assumed here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?d) is assumed here
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-655  removeZero (add (padZero l1 l2));;
-//│   │                            ^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?e * _) is here
-//│      - l.-660  let add (l1,l2) =
-//│                        ^^^^^^^
-//│ ◉ (?e) is assumed here
-//│ │  - l.-660  let add (l1,l2) =
-//│ │                     ^^
-//│ │  - l.-659    let f a x = padZero l1 l2 in
-//│ │                                  ^^
-//│ ▼ 
-//│ ◉ (?f) is assumed here
-//│    - l.-668let padZero l1 l2 =
-//│                        ^^
-//│   ◉ (?f * _ list) is here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?g) is assumed here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?h) is assumed here
-//│      - l.-666  if diff < 0
-//│                ^^^^^^^^^^^
-//│                then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│       ◉ (_ -> _ -> ?h) is here
-//│       │  - l.-659    let f a x = padZero l1 l2 in
-//│       │                    ^^^^^^^^^^^^^^^^^^^
-//│       │  - l.-656    let (_,res) = List.fold_left f base args in res in
-//│       │                                           ^
-//│       ▼ 
-//│       ◉ (?i -> _ -> ?i) is here
-//│          - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                       ^^^^^^^^^^^^^^
-//│   ◉ (?i) is assumed here
-//│   │  - l.-656    let (_,res) = List.fold_left f base args in res in
-//│   │                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?j * _) is here
-//│      - l.-656    let (_,res) = List.fold_left f base args in res in
-//│                      ^^^^^^^
-//│   ◉ (?j * _) is here
-//│   ▲  - l.-656    let (_,res) = List.fold_left f base args in res in
-//│   │                  ^^^^^^^
-//│   │ 
-//│   ◉ (?i) is assumed here
-//│      - l.-656    let (_,res) = List.fold_left f base args in res in
-//│                                ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│       ◉ (?i -> _ -> ?i) is here
-//│       ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│       │                               ^^^^^^^^^^^^^^
-//│       │  - l.-656    let (_,res) = List.fold_left f base args in res in
-//│       │                                           ^
-//│       │ 
-//│       ◉ (_ -> _ -> ?h) is here
-//│          - l.-659    let f a x = padZero l1 l2 in
-//│                            ^^^^^^^^^^^^^^^^^^^
-//│   ◉ (?h) is assumed here
-//│   ▲  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (?g) is assumed here
-//│   ▲  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (?f * _ list) is here
-//│      - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?f) is assumed here
-//│ ▲  - l.-668let padZero l1 l2 =
-//│ │                      ^^
-//│ │  - l.-659    let f a x = padZero l1 l2 in
-//│ │                                  ^^
-//│ │ 
-//│ ◉ (?e) is assumed here
-//│    - l.-660  let add (l1,l2) =
-//│                       ^^
-//│   ◉ (?e * _) is here
-//│   ▲  - l.-660  let add (l1,l2) =
-//│   │                    ^^^^^^^
-//│   │  - l.-655  removeZero (add (padZero l1 l2));;
-//│   │                            ^^^^^^^^^^^^^^^
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (?d) is assumed here
-//│   ▲  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (_ list * _) is here
-//│      - l.-665  then (((clone 0 (-1 * diff)) @ l1), l2)
-//│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ [ERROR] Type `_ * _` does not match `_ list`
-//│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (_ list)
-//│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ │  - l.-655  removeZero (add (padZero l1 l2));;
-//│ │                                     ^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│    - l.-668let padZero l1 l2 =
-//│                        ^^
-//│   ◉ (?b * _ list) is here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?c) is assumed here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?d) is assumed here
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-655  removeZero (add (padZero l1 l2));;
-//│   │                            ^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?e * _) is here
-//│      - l.-660  let add (l1,l2) =
-//│                        ^^^^^^^
-//│ ◉ (?e) is assumed here
-//│ │  - l.-660  let add (l1,l2) =
-//│ │                     ^^
-//│ │  - l.-658    let base = List.combine l1 l2 in
-//│ │                                      ^^
-//│ ▼ 
-//│ ◉ (_ list) is here
-//│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
-//│                             ^^^^^^^
-//│ [ERROR] Type `_ * _` does not match `_ list`
-//│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
-//│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ │  - l.-655  removeZero (add (padZero l1 l2));;
-//│ │                                     ^^
-//│ │  - l.-668let padZero l1 l2 =
-//│ │                      ^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.-668let padZero l1 l2 =
-//│ │                      ^^
-//│ │  - l.-665  then (((clone 0 (-1 * diff)) @ l1), l2)
-//│ │                                           ^^
-//│ ▼ 
-//│ ◉ (_ list) is here
-//│    - lib. let (@): 'a list -> 'a list -> 'a list
-//│                               ^^^^^^^
-//│ [ERROR] Type `_ * _` does not match `_ list`
-//│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (?d) ~~~~ (?e) ~~~~ (?d) ---> (_ list)
-//│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                     ^^
-//│ │  - l.-655  removeZero (add (padZero l1 l2));;
-//│ │                                     ^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│    - l.-668let padZero l1 l2 =
-//│                        ^^
-//│   ◉ (?b * _ list) is here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?c) is assumed here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?d) is assumed here
-//│   │  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-655  removeZero (add (padZero l1 l2));;
-//│   │                            ^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?e * _) is here
-//│      - l.-660  let add (l1,l2) =
-//│                        ^^^^^^^
-//│ ◉ (?e) is assumed here
-//│ │  - l.-660  let add (l1,l2) =
-//│ │                     ^^
-//│ │  - l.-659    let f a x = padZero l1 l2 in
-//│ │                                  ^^
-//│ ▼ 
-//│ ◉ (?f) is assumed here
-//│    - l.-668let padZero l1 l2 =
-//│                        ^^
-//│   ◉ (?f * _ list) is here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?g) is assumed here
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?h) is assumed here
-//│      - l.-666  if diff < 0
-//│                ^^^^^^^^^^^
-//│                then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│       ◉ (_ -> _ -> ?h) is here
-//│       │  - l.-659    let f a x = padZero l1 l2 in
-//│       │                    ^^^^^^^^^^^^^^^^^^^
-//│       │  - l.-656    let (_,res) = List.fold_left f base args in res in
-//│       │                                           ^
-//│       ▼ 
-//│       ◉ (?i -> _ -> ?i) is here
-//│          - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                       ^^^^^^^^^^^^^^
-//│   ◉ (?i) is assumed here
-//│   │  - l.-656    let (_,res) = List.fold_left f base args in res in
-//│   │                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?j * _) is here
-//│      - l.-656    let (_,res) = List.fold_left f base args in res in
-//│                      ^^^^^^^
-//│   ◉ (?j * _) is here
-//│   ▲  - l.-656    let (_,res) = List.fold_left f base args in res in
-//│   │                  ^^^^^^^
-//│   │ 
-//│   ◉ (?i) is assumed here
-//│      - l.-656    let (_,res) = List.fold_left f base args in res in
-//│                                ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│       ◉ (?i -> _ -> ?i) is here
-//│       ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│       │                               ^^^^^^^^^^^^^^
-//│       │  - l.-656    let (_,res) = List.fold_left f base args in res in
-//│       │                                           ^
-//│       │ 
-//│       ◉ (_ -> _ -> ?h) is here
-//│          - l.-659    let f a x = padZero l1 l2 in
-//│                            ^^^^^^^^^^^^^^^^^^^
-//│   ◉ (?h) is assumed here
-//│   ▲  - l.-666  if diff < 0
-//│   │            ^^^^^^^^^^^
-//│   │            then (((clone 0 (-1 * diff)) @ l1), l2) ...
-//│   │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (?g) is assumed here
-//│   ▲  - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│   │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (?f * _ list) is here
-//│      - l.-664  else if diff > 0 then (l1, ((clone 0 diff) @ l2)) else (l1, l2);;
-//│                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?f) is assumed here
-//│ │  - l.-668let padZero l1 l2 =
-//│ │                      ^^
-//│ │  - l.-667  let diff = (List.length l1) - (List.length l2) in
-//│ │                                    ^^
-//│ ▼ 
-//│ ◉ (_ list) is here
-//│    - lib. let List.length: 'a list -> int
-//│                            ^^^^^^^
-//│ [ERROR] Type `_ -> _` does not match `_ * _`
-//│ 
-//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?e) ---> (_ * _)
-//│ 
-//│ ◉ (_ -> _) is here
-//│ │  - l.-661let bigAdd l1 l2 =
-//│ │                        ^^^^
-//│ │            let add (l1,l2) = ...
-//│ │            ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.8      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.7      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?c) is assumed here
-//│    - l.6      let (x1,x2) = x in
-//│               ^^^^^^^^^^^^^^^^^^
-//│               let (carry,res) = a in ...
-//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (?d -> _ -> ?c) is here
-//│     │  - l.5    let f a x =
-//│     │                 ^^^^^
-//│     │             let (x1,x2) = x in ...
-//│     │             ^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│     │                                            ^
-//│     ▼ 
-//│     ◉ (?e -> _ -> ?e) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│   ◉ (?e -> _ -> ?e) is here
-//│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│   │                               ^^^^^^^^^^^^^^
-//│   │  - l.11   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│   │                                            ^
-//│   │ 
-//│   ◉ (?d -> _ -> ?c) is here
-//│      - l.5    let f a x =
-//│                     ^^^^^
-//│                 let (x1,x2) = x in ...
-//│                 ^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?d) is assumed here
-//│ │  - l.5    let f a x =
-//│ │                 ^
-//│ │  - l.7      let (carry,res) = a in
-//│ │                               ^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.7      let (carry,res) = a in
-//│                   ^^^^^^^^^^^
 //│ helper: int -> int
 //│ tenEx: int -> list[int] -> (list[int] | list[nothing])
 //│ bigMul: ((list[int] | list[nothing]) -> list[(nothing, nothing,)] & list[?]) -> list[int] -> list[int]
@@ -2290,52 +2290,6 @@ let bigAdd l1 l2 =
 //│                        ^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
-//│         (_ list) ---> (?a) <--- (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ * _)
-//│ 
-//│ ◉ (_ list) is here
-//│ │  - l.16       if x = []
-//│ │                      ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ ▲  - l.16       if x = []
-//│ │                  ^
-//│ │ 
-//│ ◉ (?b) is assumed here
-//│    - l.14     let f a x =
-//│                       ^
-//│     ◉ (_ -> ?b -> _) is here
-//│     │  - l.14     let f a x =
-//│     │                   ^^^^^
-//│     │               let (carry,currentSum) = a in ...
-//│     │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.26     let (_,res) = List.fold_left f base args in res in
-//│     │                                          ^
-//│     ▼ 
-//│     ◉ (_ -> ?c -> _) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│     ◉ (_ -> ?c -> _) is here
-//│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│     │                               ^^^^^^^^^^^^^^
-//│     │  - l.26     let (_,res) = List.fold_left f base args in res in
-//│     │                                          ^
-//│     │ 
-//│     ◉ (_ -> ?b -> _) is here
-//│        - l.14     let f a x =
-//│                         ^^^^^
-//│                     let (carry,currentSum) = a in ...
-//│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?b) is assumed here
-//│ │  - l.14     let f a x =
-//│ │                     ^
-//│ │  - l.19         (let (toSum1,toSum2) = x in
-//│ │                                        ^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.19         (let (toSum1,toSum2) = x in
-//│                        ^^^^^^^^^^^^^^^
-//│ [ERROR] Type `_ list` does not match `_ * _`
-//│ 
 //│         (_ list) ---> (?a) <--- (?b) ~~~~ (?c) ~~~~ (?d) ~~~~ (_ * _)
 //│ 
 //│ ◉ (_ list) is here
@@ -2380,6 +2334,52 @@ let bigAdd l1 l2 =
 //│   ◉ ((_ * _) list) is here
 //│      - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│                                                      ^^^^^^^^^^^^^
+//│ [ERROR] Type `_ list` does not match `_ * _`
+//│ 
+//│         (_ list) ---> (?a) <--- (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ * _)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.16       if x = []
+//│ │                      ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.16       if x = []
+//│ │                  ^
+//│ │ 
+//│ ◉ (?b) is assumed here
+//│    - l.14     let f a x =
+//│                       ^
+//│     ◉ (_ -> ?b -> _) is here
+//│     │  - l.14     let f a x =
+//│     │                   ^^^^^
+//│     │               let (carry,currentSum) = a in ...
+//│     │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.26     let (_,res) = List.fold_left f base args in res in
+//│     │                                          ^
+//│     ▼ 
+//│     ◉ (_ -> ?c -> _) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│     ◉ (_ -> ?c -> _) is here
+//│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│     │                               ^^^^^^^^^^^^^^
+//│     │  - l.26     let (_,res) = List.fold_left f base args in res in
+//│     │                                          ^
+//│     │ 
+//│     ◉ (_ -> ?b -> _) is here
+//│        - l.14     let f a x =
+//│                         ^^^^^
+//│                     let (carry,currentSum) = a in ...
+//│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (?b) is assumed here
+//│ │  - l.14     let f a x =
+//│ │                     ^
+//│ │  - l.19         (let (toSum1,toSum2) = x in
+//│ │                                        ^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.19         (let (toSum1,toSum2) = x in
+//│                        ^^^^^^^^^^^^^^^
 //│ clone: 'a -> int -> (list['a] | list[nothing])
 //│ padZero: (list['a] & list[?]) -> (list['b] & list[?]) -> (list['a] | ?, ? | list['b],)
 //│ removeZero: ('b & 'c & list[int & 'a]) -> 'b
@@ -2414,26 +2414,6 @@ let bigAdd l1 l2 =
     let args = List.map addTuple (List.combine l1 l2) in
     let (_,res) = List.fold_left f base args in res in
   removeZero (add (padZero l1 l2));;
-//│ [ERROR] Type `int` does not match `_ * _`
-//│ 
-//│         (int) ~~~~ (?a) ---> (_ * _)
-//│ 
-//│     ◉ (_ -> _ -> int) is here
-//│     │  - l.14     let f a x = (a + x) mod 10 in
-//│     │                   ^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.17     let (_,res) = List.fold_left f base args in res in
-//│     │                                          ^
-//│     ▼ 
-//│     ◉ (?a -> _ -> ?a) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│ ◉ (?a) is assumed here
-//│ │  - l.17     let (_,res) = List.fold_left f base args in res in
-//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.17     let (_,res) = List.fold_left f base args in res in
-//│                   ^^^^^^^
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
 //│         (int) ---> (?a) ---> (_ * _)
@@ -2474,6 +2454,26 @@ let bigAdd l1 l2 =
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                   ^^^^^^^^^^^^^^
 //│ ◉ (?b) is assumed here
+//│ │  - l.17     let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.17     let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
+//│         (int) ~~~~ (?a) ---> (_ * _)
+//│ 
+//│     ◉ (_ -> _ -> int) is here
+//│     │  - l.14     let f a x = (a + x) mod 10 in
+//│     │                   ^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.17     let (_,res) = List.fold_left f base args in res in
+//│     │                                          ^
+//│     ▼ 
+//│     ◉ (?a -> _ -> ?a) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│ ◉ (?a) is assumed here
 //│ │  - l.17     let (_,res) = List.fold_left f base args in res in
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -2635,6 +2635,37 @@ let removeDuplicates l =
 //│                                             ^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
 //│ 
+//│         (_ -> _) <--- (?a) ~~~~ (?b) ~~~~ (_ list)
+//│ 
+//│ ◉ (_ -> _) is here
+//│ ▲  - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
+//│ │                                                         ^^^^^^^^
+//│ │ 
+//│ ◉ (?a) is assumed here
+//│    - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
+//│                                                           ^^^^^^^^
+//│   ◉ (_ list -> ?a) is here
+//│   ▲  - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
+//│   │                                                         ^^^^^^
+//│   │  - l.1  let rec filter l a =
+//│   │                 ^^^^^^
+//│   │ 
+//│   ◉ (?filter) is assumed here
+//│   │  - l.1  let rec filter l a =
+//│   │                 ^^^^^^
+//│   ▼ 
+//│   ◉ (_ -> ?b) is here
+//│      - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│                                       ^^^^^^
+//│   ◉ (_ * ?b) is here
+//│   │  - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│   │                             ^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (_ * _ list) is here
+//│      - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
+//│                                 ^^^^^^^^^^^^^^^^^^^
+//│ [ERROR] Type `_ -> _` does not match `_ list`
+//│ 
 //│         (_ -> _) <--- (?a) ~~~~ (?b) ~~~~ (?c) ~~~~ (_ list)
 //│ 
 //│ ◉ (_ -> _) is here
@@ -2671,37 +2702,6 @@ let removeDuplicates l =
 //│      - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│                                       ^^^^^^
 //│   ◉ (_ * ?c) is here
-//│   │  - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
-//│   │                             ^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (_ * _ list) is here
-//│      - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
-//│                                 ^^^^^^^^^^^^^^^^^^^
-//│ [ERROR] Type `_ -> _` does not match `_ list`
-//│ 
-//│         (_ -> _) <--- (?a) ~~~~ (?b) ~~~~ (_ list)
-//│ 
-//│ ◉ (_ -> _) is here
-//│ ▲  - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
-//│ │                                                         ^^^^^^^^
-//│ │ 
-//│ ◉ (?a) is assumed here
-//│    - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
-//│                                                           ^^^^^^^^
-//│   ◉ (_ list -> ?a) is here
-//│   ▲  - l.4    | h::t -> if a = h then filter t a else h :: (filter t a);;
-//│   │                                                         ^^^^^^
-//│   │  - l.1  let rec filter l a =
-//│   │                 ^^^^^^
-//│   │ 
-//│   ◉ (?filter) is assumed here
-//│   │  - l.1  let rec filter l a =
-//│   │                 ^^^^^^
-//│   ▼ 
-//│   ◉ (_ -> ?b) is here
-//│      - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
-//│                                       ^^^^^^
-//│   ◉ (_ * ?b) is here
 //│   │  - l.11         let rest' = h :: (filter (t h)) in helper (seen', rest') in
 //│   │                             ^^^^^^^^^^^^^^^^^^^
 //│   ▼ 

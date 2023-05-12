@@ -28,6 +28,23 @@ let bigAdd l1 l2 =
 (* List.map: ('a -> 'b) -> 'a list -> 'b list map elements of a list *)
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
+//│         (int) ---> (?a) ---> (_ * _)
+//│ 
+//│ ◉ (int) is here
+//│ │  - l.12     let base = 0 in
+//│ │                        ^
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                                            ^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.14     let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
 //│         (int) <--- (?a) ~~~~ (?b) ---> (_ * _)
 //│ 
 //│ ◉ (int) is here
@@ -75,26 +92,8 @@ let bigAdd l1 l2 =
 //│ ◉ (_ * _) is here
 //│    - l.14     let (_,res) = List.fold_left f base args in res in
 //│                   ^^^^^^^
-//│ [ERROR] Type `int` does not match `_ * _`
-//│ 
-//│         (int) ---> (?a) ---> (_ * _)
-//│ 
-//│ ◉ (int) is here
-//│ │  - l.12     let base = 0 in
-//│ │                        ^
-//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
-//│ │                                            ^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
-//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.14     let (_,res) = List.fold_left f base args in res in
-//│                   ^^^^^^^
 //│ U max: 32, total: 257
 //│ UERR 3 errors
 //│ L: 0 [int ~ ([α237'], [α238'],), int <: α231', α231' <: ([α237'], [α238'],)]
 //│ L: 1 [int ~ ([α237'], [α238'],), int :> α215', [α215' - (α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')) - α231', L: 0 [(α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')), (α215' -> (α216' -> [int])) <: (α231' -> (α232' -> α231'))]], α231' <: ([α237'], [α238'],)]
 //│ L: 2 [int ~ ([α237'], [α238'],), [int - (α216' -> [int]) ~ (α232' -> α231') - α231', L: 1 [(α216' -> [int]) ~ (α232' -> α231'), [(α216' -> [int]) - (α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')) - (α232' -> α231'), L: 0 [(α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')), (α215' -> (α216' -> [int])) <: (α231' -> (α232' -> α231'))]]]], α231' <: ([α237'], [α238'],)]
-

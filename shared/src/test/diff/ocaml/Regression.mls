@@ -29,17 +29,6 @@ let test =
 
 // TODO: show error
 let test2 = let (a, b) = test in [[b]] + 1
-//│ [ERROR] Type `_ list` does not match `int`
-//│ 
-//│         (_ list) ---> (int)
-//│ 
-//│ ◉ (_ list) is here
-//│ │  - l.1  let test2 = let (a, b) = test in [[b]] + 1
-//│ │                                           ^^^
-//│ ▼ 
-//│ ◉ (int) is here
-//│    - lib. let (+): int -> int -> int
-//│                    ^^^
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
 //│         (int) ---> (_ * _)
@@ -55,6 +44,17 @@ let test2 = let (a, b) = test in [[b]] + 1
 //│ ◉ (_ * _) is here
 //│    - l.1  let test2 = let (a, b) = test in [[b]] + 1
 //│                           ^^^^^^
+//│ [ERROR] Type `_ list` does not match `int`
+//│ 
+//│         (_ list) ---> (int)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.1  let test2 = let (a, b) = test in [[b]] + 1
+//│ │                                           ^^^
+//│ ▼ 
+//│ ◉ (int) is here
+//│    - lib. let (+): int -> int -> int
+//│                    ^^^
 //│ test2: int
 //│ U max: 7, total: 12
 //│ UERR 2 errors
@@ -340,6 +340,23 @@ if true then wrap 1 else wrap true
 
 
 if true then wrap (if true then 1 else false) else wrap true
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│         (bool) ---> (?a) <--- (int)
+//│ 
+//│ ◉ (bool) is here
+//│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
+//│ │                                                ^^^^^
+//│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.1  if true then wrap (if true then 1 else false) else wrap true
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (int) is here
+//│    - l.1  if true then wrap (if true then 1 else false) else wrap true
+//│                                           ^
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
 //│         (int) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (bool)
@@ -384,23 +401,6 @@ if true then wrap (if true then 1 else false) else wrap true
 //│ ◉ (bool) is here
 //│    - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│                                                  ^^^^^
-//│ [ERROR] Type `bool` does not match `int`
-//│ 
-//│         (bool) ---> (?a) <--- (int)
-//│ 
-//│ ◉ (bool) is here
-//│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
-//│ │                                                ^^^^^
-//│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
-//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ ▲  - l.1  if true then wrap (if true then 1 else false) else wrap true
-//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │ 
-//│ ◉ (int) is here
-//│    - l.1  if true then wrap (if true then 1 else false) else wrap true
-//│                                           ^
 //│ res: list[bool] | list[bool | int]
 //│ U max: 7, total: 16
 //│ UERR 2 errors

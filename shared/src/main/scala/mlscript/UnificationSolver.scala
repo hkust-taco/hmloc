@@ -135,12 +135,31 @@ trait UnificationSolver extends TyperDatatypes {
   }
 
   def reportNewUnificationErrors(implicit ctx: Ctx, raise: Raise): Unit =
-    uniState.error.iterator.foreach(u => raise(u.createErrorMessage()(ctx, u.sequenceTVs)))
+    uniState.error.toList.sorted.foreach(u => raise(u.createErrorMessage()(ctx, u.sequenceTVs)))
 
-  case class NewUnification(flow: Queue[DataFlow]) {
+  case class NewUnification(flow: Queue[DataFlow]) extends Ordered[NewUnification] {
     lazy val a: ST = flow.head.getStart
     lazy val b: ST = flow.last.getEnd
     lazy val level: Int = flow.iterator.map(_.level).max
+
+    override def compare(that: NewUnification): Int = {
+      val levelComp = this.level.compare(that.level)
+      if (levelComp != 0) {
+        levelComp
+      } else {
+        val lengthComp = this.constraintSequence.length.compare(that.constraintSequence.length)
+        if (lengthComp != 0) {
+          lengthComp
+        } else {
+          val firstComp = a.ord.compare(a, that.a)
+          if (firstComp == 0) {
+            b.ord.compare(b, that.b)
+          } else {
+            firstComp
+          }
+        }
+      }
+    }
 
     override def toString: Str = s"L: $level [${a.unwrapProvs} ~ ${b.unwrapProvs}, ${flow.mkString(", ")}]"
 
