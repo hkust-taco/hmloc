@@ -65,49 +65,6 @@ let destructEither x = if x then
    | Left l -> l + 1
    | Right r -> r && true
   else x
-//│ [ERROR] Type `(_, _) either` does not match `int`
-//│ 
-//│         ((_, _) either) <--- (?a) ---> (?b) <--- (?c) <--- (int)
-//│ 
-//│ ◉ ((_, _) either) is here
-//│ ▲  - l.3     | Left l -> l + 1
-//│ │              ^^^^^^
-//│ │  - l.2    match x with
-//│ │                 ^
-//│ │  - l.1  let destructEither x = if x then
-//│ │                            ^
-//│ │ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.1  let destructEither x = if x then
-//│ │                            ^
-//│ │  - l.5    else x
-//│ │                ^^
-//│ │  - l.1  let destructEither x = if x then
-//│ │                                ^^^^^^^^^
-//│ │           match x with ...
-//│ │           ^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ ▲  - l.1  let destructEither x = if x then
-//│ │                                ^^^^^^^^^
-//│ │           match x with ...
-//│ │           ^^^^^^^^^^^^^^^^
-//│ │  - l.2    match x with
-//│ │           ^^^^^^^^^^^^
-//│ │            | Left l -> l + 1 ...
-//│ │            ^^^^^^^^^^^^^^^^^^^^^
-//│ │ 
-//│ ◉ (?c) is assumed here
-//│ ▲  - l.2    match x with
-//│ │           ^^^^^^^^^^^^
-//│ │            | Left l -> l + 1 ...
-//│ │            ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.3     | Left l -> l + 1
-//│ │                        ^^^^^
-//│ │ 
-//│ ◉ (int) is here
-//│    - lib. let (+): int -> int -> int
-//│                                  ^^^
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
 //│         (bool) ---> (?a) <--- (int)
@@ -152,6 +109,49 @@ let destructEither x = if x then
 //│ ◉ ((_, _) either) is here
 //│    - l.3     | Left l -> l + 1
 //│                ^^^^^^
+//│ [ERROR] Type `(_, _) either` does not match `int`
+//│ 
+//│         ((_, _) either) <--- (?a) ---> (?b) <--- (?c) <--- (int)
+//│ 
+//│ ◉ ((_, _) either) is here
+//│ ▲  - l.3     | Left l -> l + 1
+//│ │              ^^^^^^
+//│ │  - l.2    match x with
+//│ │                 ^
+//│ │  - l.1  let destructEither x = if x then
+//│ │                            ^
+//│ │ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.1  let destructEither x = if x then
+//│ │                            ^
+//│ │  - l.5    else x
+//│ │                ^^
+//│ │  - l.1  let destructEither x = if x then
+//│ │                                ^^^^^^^^^
+//│ │           match x with ...
+//│ │           ^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ ▲  - l.1  let destructEither x = if x then
+//│ │                                ^^^^^^^^^
+//│ │           match x with ...
+//│ │           ^^^^^^^^^^^^^^^^
+//│ │  - l.2    match x with
+//│ │           ^^^^^^^^^^^^
+//│ │            | Left l -> l + 1 ...
+//│ │            ^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (?c) is assumed here
+//│ ▲  - l.2    match x with
+//│ │           ^^^^^^^^^^^^
+//│ │            | Left l -> l + 1 ...
+//│ │            ^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.3     | Left l -> l + 1
+//│ │                        ^^^^^
+//│ │ 
+//│ ◉ (int) is here
+//│    - lib. let (+): int -> int -> int
+//│                                  ^^^
 //│ destructEither: (either[int, bool] & bool) -> (bool | int)
 //│ U max: 10, total: 16
 //│ UERR 3 errors
@@ -317,7 +317,7 @@ let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 let weird x = (x + 1, length x)
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a) ---> (int)
+//│         (_ list) ~~~~ (?a) ---> (int)
 //│ 
 //│   ◉ (_ list -> _) is here
 //│   ▲  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
@@ -329,7 +329,7 @@ let weird x = (x + 1, length x)
 //│   │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 //│   │                 ^^^^^^
 //│   ▼ 
-//│   ◉ (_ -> _) is here
+//│   ◉ (?a -> _) is here
 //│      - l.2  let weird x = (x + 1, length x)
 //│                                   ^^^^^^
 //│ ◉ (?a) is assumed here

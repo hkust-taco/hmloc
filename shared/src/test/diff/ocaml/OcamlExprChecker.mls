@@ -182,27 +182,27 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│         (_ list) ---> (heap)
 //│ 
 //│ ◉ (_ list) is here
-//│ │  - l.3  (("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (heap) is here
-//│    - l.3  (("hi", 1) :: ("bye", 2) :: Nil):heap
-//│                                            ^^^^
-//│ [ERROR] Type `_ list` does not match `heap`
-//│ 
-//│         (_ list) ---> (heap)
-//│ 
-//│ ◉ (_ list) is here
 //│ │  - l.2  (("hi", 1) :: Nil):heap
 //│ │         ^^^^^^^^^^^^^^^^^^
 //│ ▼ 
 //│ ◉ (heap) is here
 //│    - l.2  (("hi", 1) :: Nil):heap
 //│                              ^^^^
+//│ [ERROR] Type `_ list` does not match `heap`
+//│ 
+//│         (_ list) ---> (heap)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.3  (("hi", 1) :: ("bye", 2) :: Nil):heap
+//│ │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (heap) is here
+//│    - l.3  (("hi", 1) :: ("bye", 2) :: Nil):heap
+//│                                            ^^^^
 //│ res: list[(string, int,)]
 //│ res: heap
 //│ res: heap
-//│ U max: 5, total: 18
+//│ U max: 5, total: 22
 //│ UERR 2 errors
 //│ L: 0 [list['a301] ~ heap, list['a301] <: heap]
 //│ L: 0 [list['a304] ~ heap, list['a304] <: heap]
@@ -296,7 +296,20 @@ let check (v: ((int, int))) =
 let checkagain (v: (int, int, (int, int))) =
   match v with
    (a, b, (k, d)) -> a + b + k + d
+//│ [ERROR] Type `error` does not match `int`
+//│ 
+//│         (error) ---> (int)
+//│ 
+//│ ◉ (error) is here
+//│ │  - l.3     (a, b, (k, d)) -> a + b + k + d
+//│ │                                      ^
+//│ ▼ 
+//│ ◉ (int) is here
+//│    - l.-223let (+): int -> int -> int
+//│                            ^^^
 //│ [ERROR] Type `int` does not match `error`
+//│ 
+//│         (int) ~~~~ (error)
 //│ 
 //│     ◉ (int * int * (int * int)) is here
 //│     ▲  - l.1  let checkagain (v: (int, int, (int, int))) =
@@ -310,7 +323,7 @@ let checkagain (v: (int, int, (int, int))) =
 //│     │  - l.2    match v with
 //│     │                 ^
 //│     ▼ 
-//│     ◉ (_ * _ * _) is here
+//│     ◉ (_ * _ * ?b) is here
 //│        - l.3     (a, b, (k, d)) -> a + b + k + d
 //│                  ^^^^^^^^^^^^^^
 //│   ◉ (?b) is assumed here
@@ -320,17 +333,6 @@ let checkagain (v: (int, int, (int, int))) =
 //│   ◉ (error * error) is here
 //│      - l.3     (a, b, (k, d)) -> a + b + k + d
 //│                        ^^^^
-//│ [ERROR] Type `error` does not match `int`
-//│ 
-//│         (error) ---> (int)
-//│ 
-//│ ◉ (error) is here
-//│ │  - l.3     (a, b, (k, d)) -> a + b + k + d
-//│ │                                      ^
-//│ ▼ 
-//│ ◉ (int) is here
-//│    - l.-223let (+): int -> int -> int
-//│                            ^^^
 //│ ╔══[ERROR] identifier not found: k
 //│ ║  
 //│ ║  l.298:	   (a, b, (k, d)) -> a + b + k + d
@@ -401,33 +403,33 @@ let g x = x, if true then x else x
 [0, 1; 2, 3, 4]
 //│ [ERROR] Type `int * int * int` does not match `int * int`
 //│ 
-//│         (?a) ---> (?a) ---> (?a list) ~~~~ (?a0 list) <--- (?a0 list) <--- (?a0) ~~~~ 
+//│         (int * int * int) ~~~~ (?a) ~~~~ (?a0) ~~~~ (int * int)
 //│ 
 //│   ◉ ((int * int * int) * _ list) is here
 //│   │  - l.1  [0, 1; 2, 3, 4]
 //│   │                ^^^^^^^
 //│   ▼ 
-//│   ◉ (_ * _ list) is here
+//│   ◉ (?a * ?a list) is here
 //│      - l.1  [0, 1; 2, 3, 4]
 //│                    ^^^^^^^
-//│     ◉ ((int * int) * _ list) is here
+//│     ◉ ((int * int) * ?a list) is here
 //│     │  - l.1  [0, 1; 2, 3, 4]
 //│     │          ^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (_ * _ list) is here
+//│     ◉ (?a0 * ?a0 list) is here
 //│        - l.1  [0, 1; 2, 3, 4]
 //│                ^^^^^^^^^^^^^
-//│   ◉ (_ * _ list) is here
+//│   ◉ (?a0 * ?a0 list) is here
 //│   ▲  - l.1  [0, 1; 2, 3, 4]
 //│   │          ^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ ((int * int) * _ list) is here
+//│   ◉ ((int * int) * ?a list) is here
 //│      - l.1  [0, 1; 2, 3, 4]
 //│              ^^^^^^^^^^^^^
 //│ res: list[(int, int, int,) | (int, int,)]
 //│ U max: 4, total: 10
 //│ UERR 1 errors
-//│ L: 1 [([int], [int], [int],) ~ ([int], [int],), [([int], [int], [int],) - ([([int], [int], [int],)], [[list['a466]]],) ~ ('a465, list['a465],) - 'a465, L: 0 [([([int], [int], [int],)], [[list['a466]]],) ~ ('a465, list['a465],), ([([int], [int], [int],)], [[list['a466]]],) <: ('a465, list['a465],)]], ['a465 - list['a465] ~ list['a464] - 'a464, L: 1 [list['a465] ~ list['a464], [list['a465] - ([([int], [int],)], [[list['a465]]],) ~ ('a464, list['a464],) - list['a464], L: 0 [([([int], [int],)], [[list['a465]]],) ~ ('a464, list['a464],), ([([int], [int],)], [[list['a465]]],) <: ('a464, list['a464],)]]]], ['a464 - ('a464, list['a464],) ~ ([([int], [int],)], [[list['a465]]],) - ([int], [int],), L: 0 [('a464, list['a464],) ~ ([([int], [int],)], [[list['a465]]],), ('a464, list['a464],) :> ([([int], [int],)], [[list['a465]]],)]]]
+//│ L: 2 [([int], [int], [int],) ~ ([int], [int],), [([int], [int], [int],) - ([([int], [int], [int],)], [[list['a466]]],) ~ ('a465, list['a465],) - 'a465, L: 0 [([([int], [int], [int],)], [[list['a466]]],) ~ ('a465, list['a465],), ([([int], [int], [int],)], [[list['a466]]],) <: ('a465, list['a465],)]], ['a465 - list['a465] ~ list['a464] - 'a464, L: 1 [list['a465] ~ list['a464], [list['a465] - ([([int], [int],)], [[list['a465]]],) ~ ('a464, list['a464],) - list['a464], L: 0 [([([int], [int],)], [[list['a465]]],) ~ ('a464, list['a464],), ([([int], [int],)], [[list['a465]]],) <: ('a464, list['a464],)]]]], ['a464 - ('a464, list['a464],) ~ ([([int], [int],)], [[list['a465]]],) - ([int], [int],), L: 0 [('a464, list['a464],) ~ ([([int], [int],)], [[list['a465]]],), ('a464, list['a464],) :> ([([int], [int],)], [[list['a465]]],)]]]
 
 let increment x = match x with
   | 0 -> 1

@@ -34,6 +34,55 @@ let bigAdd l1 l2 =
   removeZero (add (padZero l1 l2));;
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
+//│         (int) <--- (?a) ~~~~ (?b) ---> (_ * _)
+//│ 
+//│ ◉ (int) is here
+//│ ▲  - lib. let (+): int -> int -> int
+//│ │                  ^^^
+//│ │  - l.3      let f a x = (a + x) mod 10 in
+//│ │                          ^
+//│ │ 
+//│ ◉ (?a) is assumed here
+//│    - l.3      let f a x = (a + x) mod 10 in
+//│                     ^
+//│   ◉ (?a -> _ -> int) is here
+//│   │  - l.3      let f a x = (a + x) mod 10 in
+//│   │                   ^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.6      let (_,res) = List.fold_left f base args in res in
+//│   │                                          ^
+//│   ▼ 
+//│   ◉ (?b -> _ -> ?b) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                   ^^^^^^^^^^^^^^
+//│ ◉ (?b) is assumed here
+//│ │  - l.6      let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.6      let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
+//│         (int) ~~~~ (?a) ---> (_ * _)
+//│ 
+//│     ◉ (_ -> _ -> int) is here
+//│     │  - l.3      let f a x = (a + x) mod 10 in
+//│     │                   ^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.6      let (_,res) = List.fold_left f base args in res in
+//│     │                                          ^
+//│     ▼ 
+//│     ◉ (?a -> _ -> ?a) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│ ◉ (?a) is assumed here
+//│ │  - l.6      let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.6      let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
 //│         (int) ---> (?a) ---> (_ * _)
 //│ 
 //│ ◉ (int) is here
@@ -49,30 +98,11 @@ let bigAdd l1 l2 =
 //│ ◉ (_ * _) is here
 //│    - l.6      let (_,res) = List.fold_left f base args in res in
 //│                   ^^^^^^^
-//│ [ERROR] Type `int` does not match `_ * _`
-//│ 
-//│         (?a) ---> (_ * _)
-//│ 
-//│     ◉ (_ -> _ -> int) is here
-//│     │  - l.3      let f a x = (a + x) mod 10 in
-//│     │                   ^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.6      let (_,res) = List.fold_left f base args in res in
-//│     │                                          ^
-//│     ▼ 
-//│     ◉ (_ -> _ -> _) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│ ◉ (?a) is assumed here
-//│ │  - l.6      let (_,res) = List.fold_left f base args in res in
-//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.6      let (_,res) = List.fold_left f base args in res in
-//│                   ^^^^^^^
 //│ bigAdd: (list[int] & list[?]) -> (list[int] & list[?]) -> list[nothing]
-//│ U max: 36, total: 144
-//│ UERR 2 errors
+//│ U max: 32, total: 137
+//│ UERR 3 errors
 //│ L: 0 [int ~ ([α237'], [α238'],), int <: α231', α231' <: ([α237'], [α238'],)]
+//│ L: 1 [int ~ ([α237'], [α238'],), int :> α215', [α215' - (α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')) - α231', L: 0 [(α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')), (α215' -> (α216' -> [int])) <: (α231' -> (α232' -> α231'))]], α231' <: ([α237'], [α238'],)]
 //│ L: 2 [int ~ ([α237'], [α238'],), [int - (α216' -> [int]) ~ (α232' -> α231') - α231', L: 1 [(α216' -> [int]) ~ (α232' -> α231'), [(α216' -> [int]) - (α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')) - (α232' -> α231'), L: 0 [(α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')), (α215' -> (α216' -> [int])) <: (α231' -> (α232' -> α231'))]]]], α231' <: ([α237'], [α238'],)]
 
 ////////// file 0003
@@ -124,7 +154,7 @@ let bigAdd l1 l2 =
   removeZero (add (padZero l1 l2));;
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
-//│         (_ list) ---> (?a) ---> (?a) ---> (?a -> _) ~~~~ (?a -> _) ---> (_ -> ?a -> _) ---> (?b -> _) <--- (?b -> _) <--- (?b) ~~~~ (?b) ---> (?b list) <--- (?c list) <--- (?c) ---> (?c list) <--- ((_ * _) list) <--- (_ * _)
+//│         (_ list) ---> (?a) <--- (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ * _)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.5        if x = []
@@ -137,7 +167,7 @@ let bigAdd l1 l2 =
 //│ ◉ (?b) is assumed here
 //│    - l.3      let f a x =
 //│                       ^
-//│     ◉ (_ -> _ -> _) is here
+//│     ◉ (_ -> ?b -> _) is here
 //│     │  - l.3      let f a x =
 //│     │                   ^^^^^
 //│     │               let (carry,currentSum) = a in ...
@@ -145,10 +175,56 @@ let bigAdd l1 l2 =
 //│     │  - l.15     let (_,res) = List.fold_left f base args in res in
 //│     │                                          ^
 //│     ▼ 
-//│     ◉ (_ -> _ -> _) is here
+//│     ◉ (_ -> ?c -> _) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (_ list) is here
+//│     ◉ (_ -> ?c -> _) is here
+//│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│     │                               ^^^^^^^^^^^^^^
+//│     │  - l.15     let (_,res) = List.fold_left f base args in res in
+//│     │                                          ^
+//│     │ 
+//│     ◉ (_ -> ?b -> _) is here
+//│        - l.3      let f a x =
+//│                         ^^^^^
+//│                     let (carry,currentSum) = a in ...
+//│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (?b) is assumed here
+//│ │  - l.3      let f a x =
+//│ │                     ^
+//│ │  - l.8          (let (toSum1,toSum2) = x in
+//│ │                                        ^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.8          (let (toSum1,toSum2) = x in
+//│                        ^^^^^^^^^^^^^^^
+//│ [ERROR] Type `_ list` does not match `_ * _`
+//│ 
+//│         (_ list) ---> (?a) <--- (?b) ~~~~ (?c) ~~~~ (?d) ~~~~ (_ * _)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.5        if x = []
+//│ │                      ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.5        if x = []
+//│ │                  ^
+//│ │ 
+//│ ◉ (?b) is assumed here
+//│    - l.3      let f a x =
+//│                       ^
+//│     ◉ (_ -> ?b -> _) is here
+//│     │  - l.3      let f a x =
+//│     │                   ^^^^^
+//│     │               let (carry,currentSum) = a in ...
+//│     │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.15     let (_,res) = List.fold_left f base args in res in
+//│     │                                          ^
+//│     ▼ 
+//│     ◉ (_ -> ?c -> _) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│   ◉ (?c list) is here
 //│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│   │                                                        ^^^^^^^
 //│   │  - l.15     let (_,res) = List.fold_left f base args in res in
@@ -156,10 +232,10 @@ let bigAdd l1 l2 =
 //│   │  - l.14     let args = List.rev (List.combine l1 l2) in
 //│   │                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (_ list) is here
+//│   ◉ (?d list) is here
 //│      - lib. let List.rev: 'a list -> 'a list
 //│                                      ^^^^^^^
-//│   ◉ (_ list) is here
+//│   ◉ (?d list) is here
 //│   ▲  - lib. let List.rev: 'a list -> 'a list
 //│   │                       ^^^^^^^
 //│   │  - l.14     let args = List.rev (List.combine l1 l2) in
@@ -192,9 +268,10 @@ let bigAdd l1 l2 =
 //│    - l.8          (let (toSum1,toSum2) = x in
 //│                        ^^^^^^^^^^^^^^^
 //│ bigAdd: (list[int] & list[?]) -> (list[int] & list[?]) -> (list[int] | list[nothing])
-//│ U max: 29, total: 173
-//│ UERR 2 errors
-//│ L: 0 [list['a425'] ~ ([α445'], [α446'],), list['a425'] <: α423', α423' :> α419', [α419' - (α419' -> α420') ~ (α451' -> α450') - α451', L: 1 [(α419' -> α420') ~ (α451' -> α450'), [(α419' -> α420') - (α418' -> (α419' -> α420')) ~ (α450' -> (α451' -> α450')) - (α451' -> α450'), L: 0 [(α418' -> (α419' -> α420')) ~ (α450' -> (α451' -> α450')), (α418' -> (α419' -> α420')) <: (α450' -> (α451' -> α450'))]]]], [α451' - list[α451'] ~ list[α444'] - α444', L: 0 [list[α451'] ~ list[α444'], list[α451'] :> list[α444']]], [α444' - list[α444'] ~ list[([α445'], [α446'],)] - ([α445'], [α446'],), L: 0 [list[α444'] ~ list[([α445'], [α446'],)], list[α444'] :> list[([α445'], [α446'],)]]]]
+//│ U max: 34, total: 181
+//│ UERR 3 errors
+//│ L: 2 [list['a425'] ~ ([α445'], [α446'],), list['a425'] <: α423', α423' :> α419', [α419' - (α419' -> α420') ~ (α451' -> α450') - α451', L: 1 [(α419' -> α420') ~ (α451' -> α450'), [(α419' -> α420') - (α418' -> (α419' -> α420')) ~ (α450' -> (α451' -> α450')) - (α451' -> α450'), L: 0 [(α418' -> (α419' -> α420')) ~ (α450' -> (α451' -> α450')), (α418' -> (α419' -> α420')) <: (α450' -> (α451' -> α450'))]]]], [α451' - list[α451'] ~ list[α444'] - α444', L: 0 [list[α451'] ~ list[α444'], list[α451'] :> list[α444']]], [α444' - list[α444'] ~ list[([α445'], [α446'],)] - ([α445'], [α446'],), L: 0 [list[α444'] ~ list[([α445'], [α446'],)], list[α444'] :> list[([α445'], [α446'],)]]]]
+//│ L: 2 [list['a425'] ~ ([α431'], [α432'],), list['a425'] <: α423', α423' :> α419', [α419' - (α419' -> α420') ~ (α451' -> α450') - α451', L: 1 [(α419' -> α420') ~ (α451' -> α450'), [(α419' -> α420') - (α418' -> (α419' -> α420')) ~ (α450' -> (α451' -> α450')) - (α451' -> α450'), L: 0 [(α418' -> (α419' -> α420')) ~ (α450' -> (α451' -> α450')), (α418' -> (α419' -> α420')) <: (α450' -> (α451' -> α450'))]]]], [α451' - (α451' -> α450') ~ (α419' -> α420') - α419', L: 1 [(α451' -> α450') ~ (α419' -> α420'), [(α451' -> α450') - (α450' -> (α451' -> α450')) ~ (α418' -> (α419' -> α420')) - (α419' -> α420'), L: 0 [(α450' -> (α451' -> α450')) ~ (α418' -> (α419' -> α420')), (α450' -> (α451' -> α450')) :> (α418' -> (α419' -> α420'))]]]], α419' <: ([α431'], [α432'],)]
 //│ L: 0 [list['a425'] ~ ([α431'], [α432'],), list['a425'] <: α423', α423' :> α419', α419' <: ([α431'], [α432'],)]
 
 ////////// file 1948
@@ -255,9 +332,9 @@ let bigMul l1 l2 =
   let base = (0, []) in
   let args = l1 (tenEx 0 l2) in
   let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ [ERROR] Type `_ list` does not match `_ * _`
+//│ [ERROR] Type `_ list` does not match `int * _ list`
 //│ 
-//│         (_ list) ---> (?a) ---> (?b) ---> (?b) ---> (_ -> ?b) ~~~~ (_ -> ?b) ---> (?c -> _ -> ?b) ---> (_ -> ?d) <--- (_ -> ?d) <--- (?d) ~~~~ (?d) ---> (?d -> _ -> ?d) <--- (?c -> _ -> ?b) <--- (?c) ---> (_ * _)
+//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) <--- (int * _ list)
 //│ 
 //│ ◉ (_ list) is here
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -284,7 +361,7 @@ let bigMul l1 l2 =
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> _) is here
+//│     ◉ (_ -> _ -> ?c) is here
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
 //│     │             let (x1,x2) = x in ...
@@ -292,56 +369,16 @@ let bigMul l1 l2 =
 //│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│     │                                            ^
 //│     ▼ 
-//│     ◉ (_ -> _ -> _) is here
+//│     ◉ (?d -> _ -> ?d) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (_ -> _ -> _) is here
-//│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│   │                               ^^^^^^^^^^^^^^
-//│   │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│   │                                            ^
-//│   │ 
-//│   ◉ (_ -> _ -> _) is here
-//│      - l.2    let f a x =
-//│                     ^^^^^
-//│                 let (x1,x2) = x in ...
-//│                 ^^^^^^^^^^^^^^^^^^^^^^
 //│ ◉ (?d) is assumed here
-//│ │  - l.2    let f a x =
-//│ │                 ^
-//│ │  - l.4      let (carry,res) = a in
-//│ │                               ^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.4      let (carry,res) = a in
-//│                   ^^^^^^^^^^^
-//│ [ERROR] Type `_ * _` does not match `_ list`
-//│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
-//│ 
-//│ ◉ (_ * _) is here
-//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-26let bigAdd l1 l2 =
-//│ │                    ^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.-26let bigAdd l1 l2 =
-//│ │                    ^^
-//│ │  - l.-17  removeZero (add (padZero l1 l2));;
-//│ │                                    ^^
-//│ │  - l.-37let padZero l1 l2 =
-//│ │                     ^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.-37let padZero l1 l2 =
-//│ │                     ^^
-//│ │  - l.-35  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
-//│ │                                             ^^
-//│ ▼ 
-//│ ◉ (_ list) is here
-//│    - lib. let List.length: 'a list -> int
-//│                            ^^^^^^^
+//│ ▲  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ │                                              ^^^^
+//│ │ 
+//│ ◉ (int * _ list) is here
+//│    - l.6    let base = (0, []) in
+//│                        ^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ list`
 //│ 
 //│         (_ -> _) ---> (?a) <--- (_ list)
@@ -365,7 +402,7 @@ let bigMul l1 l2 =
 //│                                     ^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) is here
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -378,9 +415,68 @@ let bigMul l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
 //│ │                                    ^^
-//│ │  - l.-37let padZero l1 l2 =
-//│ │                     ^^
 //│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-37let padZero l1 l2 =
+//│                       ^^
+//│   ◉ (?b * _) is here
+//│   │  - l.-31    else (l1, l2);;
+//│   │                  ^^^^^^^^
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-17  removeZero (add (padZero l1 l2));;
+//│   │                           ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-25  let add (l1,l2) =
+//│                       ^^^^^^^
+//│   ◉ (?e * _) is here
+//│   ▲  - l.-25  let add (l1,l2) =
+//│   │                   ^^^^^^^
+//│   │  - l.-17  removeZero (add (padZero l1 l2));;
+//│   │                           ^^^^^^^^^^^^^^^
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?d) is assumed here
+//│   ▲  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?c) is assumed here
+//│   ▲  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?b * _) is here
+//│      - l.-31    else (l1, l2);;
+//│                      ^^^^^^^^
 //│ ◉ (?b) is assumed here
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
@@ -390,158 +486,9 @@ let bigMul l1 l2 =
 //│ ◉ (_ list) is here
 //│    - lib. let List.length: 'a list -> int
 //│                            ^^^^^^^
-//│ [ERROR] Type `_ list` does not match `int * _ list`
-//│ 
-//│         (_ list) ---> (?a) ---> (?b) ---> (?b) ---> (_ -> ?b) ~~~~ (_ -> ?b) ---> (_ -> _ -> ?b) ---> (_ -> ?c) <--- (_ -> ?c) <--- (?c) ~~~~ 
-//│ 
-//│ ◉ (_ list) is here
-//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                   ^^
-//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.4      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.4      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?c) is assumed here
-//│    - l.3      let (x1,x2) = x in
-//│               ^^^^^^^^^^^^^^^^^^
-//│               let (carry,res) = a in ...
-//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> _) is here
-//│     │  - l.2    let f a x =
-//│     │                 ^^^^^
-//│     │             let (x1,x2) = x in ...
-//│     │             ^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│     │                                            ^
-//│     ▼ 
-//│     ◉ (_ -> _ -> _) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│ ◉ (?d) is assumed here
-//│ ▲  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ │                                              ^^^^
-//│ │ 
-//│ ◉ (int * _ list) is here
-//│    - l.6    let base = (0, []) in
-//│                        ^^^^^^^
-//│ [ERROR] Type `_ -> _` does not match `int * _ list`
-//│ 
-//│         (_ -> _) ---> (?a) ---> (?b) ---> (?b) ---> (_ -> ?b) ~~~~ (_ -> ?b) ---> (_ -> _ -> ?b) ---> (_ -> ?c) <--- (_ -> ?c) <--- (?c) ~~~~ 
-//│ 
-//│ ◉ (_ -> _) is here
-//│ │  - l.-26let bigAdd l1 l2 =
-//│ │                       ^^^^
-//│ │           let add (l1,l2) = ...
-//│ │           ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.4      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.4      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?c) is assumed here
-//│    - l.3      let (x1,x2) = x in
-//│               ^^^^^^^^^^^^^^^^^^
-//│               let (carry,res) = a in ...
-//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> _) is here
-//│     │  - l.2    let f a x =
-//│     │                 ^^^^^
-//│     │             let (x1,x2) = x in ...
-//│     │             ^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│     │                                            ^
-//│     ▼ 
-//│     ◉ (_ -> _ -> _) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│ ◉ (?d) is assumed here
-//│ ▲  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ │                                              ^^^^
-//│ │ 
-//│ ◉ (int * _ list) is here
-//│    - l.6    let base = (0, []) in
-//│                        ^^^^^^^
-//│ [ERROR] Type `_ -> _` does not match `_ * _`
-//│ 
-//│         (_ -> _) ---> (?a) ---> (?b) ---> (?b) ---> (_ -> ?b) ~~~~ (_ -> ?b) ---> (_ -> _ -> ?b) ---> (_ -> ?c) <--- (_ -> ?c) <--- (?c) ~~~~ 
-//│ 
-//│ ◉ (_ -> _) is here
-//│ │  - l.-26let bigAdd l1 l2 =
-//│ │                       ^^^^
-//│ │           let add (l1,l2) = ...
-//│ │           ^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?a) is assumed here
-//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.4      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?b) is assumed here
-//│ │  - l.4      let (carry,res) = a in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^
-//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (?c) is assumed here
-//│    - l.3      let (x1,x2) = x in
-//│               ^^^^^^^^^^^^^^^^^^
-//│               let (carry,res) = a in ...
-//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> _) is here
-//│     │  - l.2    let f a x =
-//│     │                 ^^^^^
-//│     │             let (x1,x2) = x in ...
-//│     │             ^^^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│     │                                            ^
-//│     ▼ 
-//│     ◉ (_ -> _ -> _) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│ ◉ (?d) is assumed here
-//│ │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│                 ^^^^^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) is here
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -554,9 +501,68 @@ let bigMul l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
 //│ │                                    ^^
-//│ │  - l.-37let padZero l1 l2 =
-//│ │                     ^^
 //│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-37let padZero l1 l2 =
+//│                       ^^
+//│   ◉ (?b * _) is here
+//│   │  - l.-31    else (l1, l2);;
+//│   │                  ^^^^^^^^
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-17  removeZero (add (padZero l1 l2));;
+//│   │                           ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-25  let add (l1,l2) =
+//│                       ^^^^^^^
+//│   ◉ (?e * _) is here
+//│   ▲  - l.-25  let add (l1,l2) =
+//│   │                   ^^^^^^^
+//│   │  - l.-17  removeZero (add (padZero l1 l2));;
+//│   │                           ^^^^^^^^^^^^^^^
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?d) is assumed here
+//│   ▲  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?c) is assumed here
+//│   ▲  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?b * _) is here
+//│      - l.-31    else (l1, l2);;
+//│                      ^^^^^^^^
 //│ ◉ (?b) is assumed here
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
@@ -566,13 +572,246 @@ let bigMul l1 l2 =
 //│ ◉ (_ list) is here
 //│    - lib. let List.length: 'a list -> int
 //│                            ^^^^^^^
-//│ [ERROR] Type `_ list` does not match `_ * _`
+//│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ list) ---> (?a) ---> (?b) ---> (?b) ---> (_ -> ?b) ~~~~ (_ -> ?b) ---> (_ -> _ -> ?b) ---> (_ -> ?c) <--- (_ -> ?c) <--- (?c) ~~~~ 
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ * _) is here
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
-//│ │                                   ^^
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ │  - l.-17  removeZero (add (padZero l1 l2));;
+//│ │                                    ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-37let padZero l1 l2 =
+//│                       ^^
+//│   ◉ (?b * _) is here
+//│   │  - l.-31    else (l1, l2);;
+//│   │                  ^^^^^^^^
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-17  removeZero (add (padZero l1 l2));;
+//│   │                           ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-25  let add (l1,l2) =
+//│                       ^^^^^^^
+//│   ◉ (?e * _) is here
+//│   ▲  - l.-25  let add (l1,l2) =
+//│   │                   ^^^^^^^
+//│   │  - l.-17  removeZero (add (padZero l1 l2));;
+//│   │                           ^^^^^^^^^^^^^^^
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?d) is assumed here
+//│   ▲  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?c) is assumed here
+//│   ▲  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?b * _) is here
+//│      - l.-31    else (l1, l2);;
+//│                      ^^^^^^^^
+//│ ◉ (?b) is assumed here
+//│ │  - l.-37let padZero l1 l2 =
+//│ │                     ^^
+//│ │  - l.-35  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ │                                             ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.length: 'a list -> int
+//│                            ^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ │  - l.-17  removeZero (add (padZero l1 l2));;
+//│ │                                    ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-37let padZero l1 l2 =
+//│                       ^^
+//│   ◉ (?b * _) is here
+//│   │  - l.-31    else (l1, l2);;
+//│   │                  ^^^^^^^^
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-17  removeZero (add (padZero l1 l2));;
+//│   │                           ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-25  let add (l1,l2) =
+//│                       ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│ │  - l.-25  let add (l1,l2) =
+//│ │                    ^^
+//│ │  - l.-19    let args = List.rev (List.combine l1 l2) in
+//│ │                                               ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
+//│                             ^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ │  - l.-17  removeZero (add (padZero l1 l2));;
+//│ │                                    ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-37let padZero l1 l2 =
+//│                       ^^
+//│   ◉ (?b * _) is here
+//│   │  - l.-31    else (l1, l2);;
+//│   │                  ^^^^^^^^
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?d) is assumed here
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-17  removeZero (add (padZero l1 l2));;
+//│   │                           ^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?e * _) is here
+//│      - l.-25  let add (l1,l2) =
+//│                       ^^^^^^^
+//│   ◉ (?e * _) is here
+//│   ▲  - l.-25  let add (l1,l2) =
+//│   │                   ^^^^^^^
+//│   │  - l.-17  removeZero (add (padZero l1 l2));;
+//│   │                           ^^^^^^^^^^^^^^^
+//│   │  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?d) is assumed here
+//│   ▲  - l.-36  if (List.length l1) > (List.length l2)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?c) is assumed here
+//│   ▲  - l.-33    if (List.length l1) < (List.length l2)
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
+//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?b * _) is here
+//│      - l.-31    else (l1, l2);;
+//│                      ^^^^^^^^
+//│ ◉ (?b) is assumed here
+//│ │  - l.-37let padZero l1 l2 =
+//│ │                     ^^
+//│ │  - l.-36  if (List.length l1) > (List.length l2)
+//│ │                           ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.length: 'a list -> int
+//│                            ^^^^^^^
+//│ [ERROR] Type `_ -> _` does not match `int * _ list`
+//│ 
+//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) <--- (int * _ list)
+//│ 
+//│ ◉ (_ -> _) is here
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                       ^^^^
+//│ │           let add (l1,l2) = ...
+//│ │           ^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -595,7 +834,7 @@ let bigMul l1 l2 =
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> _) is here
+//│     ◉ (_ -> _ -> ?c) is here
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
 //│     │             let (x1,x2) = x in ...
@@ -603,16 +842,16 @@ let bigMul l1 l2 =
 //│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│     │                                            ^
 //│     ▼ 
-//│     ◉ (_ -> _ -> _) is here
+//│     ◉ (?d -> _ -> ?d) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
 //│ ◉ (?d) is assumed here
-//│ │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
-//│                 ^^^^^^^^^^^
+//│ ▲  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ │                                              ^^^^
+//│ │ 
+//│ ◉ (int * _ list) is here
+//│    - l.6    let base = (0, []) in
+//│                        ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
 //│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
@@ -642,7 +881,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (?b * _) ---> (?c) <--- (_ list * _) <--- (_ list)
+//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) is here
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -655,30 +894,21 @@ let bigMul l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
 //│ │                                    ^^
+//│ │  - l.-37let padZero l1 l2 =
+//│ │                     ^^
 //│ ▼ 
 //│ ◉ (?b) is assumed here
-//│    - l.-37let padZero l1 l2 =
-//│                       ^^
-//│   ◉ (_ * _) is here
-//│   │  - l.-31    else (l1, l2);;
-//│   │                  ^^^^^^^^
-//│   │  - l.-33    if (List.length l1) < (List.length l2)
-//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?c) is assumed here
-//│   ▲  - l.-33    if (List.length l1) < (List.length l2)
-//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
-//│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ (_ list * _) is here
-//│      - l.-32    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
-//│                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-37let padZero l1 l2 =
+//│ │                     ^^
+//│ │  - l.-32    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ │                                                              ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.length: 'a list -> int
+//│                            ^^^^^^^
 //│ [ERROR] Type `_ -> _` does not match `_ * _`
 //│ 
-//│         (_ -> _) ---> (?a) ---> (?b) ---> (?b) ---> (_ -> ?b) ~~~~ (_ -> ?b) ---> (?c -> _ -> ?b) ---> (_ -> ?d) <--- (_ -> ?d) <--- (?d) ~~~~ (?d) ---> (?d -> _ -> ?d) <--- (?c -> _ -> ?b) <--- (?c) ---> (_ * _)
+//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?e) ---> (_ * _)
 //│ 
 //│ ◉ (_ -> _) is here
 //│ │  - l.-26let bigAdd l1 l2 =
@@ -709,7 +939,7 @@ let bigMul l1 l2 =
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> _) is here
+//│     ◉ (?d -> _ -> ?c) is here
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
 //│     │             let (x1,x2) = x in ...
@@ -717,16 +947,16 @@ let bigMul l1 l2 =
 //│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│     │                                            ^
 //│     ▼ 
-//│     ◉ (_ -> _ -> _) is here
+//│     ◉ (?e -> _ -> ?e) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (_ -> _ -> _) is here
+//│   ◉ (?e -> _ -> ?e) is here
 //│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│   │                               ^^^^^^^^^^^^^^
 //│   │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│   │                                            ^
 //│   │ 
-//│   ◉ (_ -> _ -> _) is here
+//│   ◉ (?d -> _ -> ?c) is here
 //│      - l.2    let f a x =
 //│                     ^^^^^
 //│                 let (x1,x2) = x in ...
@@ -740,9 +970,56 @@ let bigMul l1 l2 =
 //│ ◉ (_ * _) is here
 //│    - l.4      let (carry,res) = a in
 //│                   ^^^^^^^^^^^
+//│ [ERROR] Type `_ list` does not match `_ * _`
+//│ 
+//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ---> (_ * _)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                   ^^
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.4      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.4      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│    - l.3      let (x1,x2) = x in
+//│               ^^^^^^^^^^^^^^^^^^
+//│               let (carry,res) = a in ...
+//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     ◉ (_ -> _ -> ?c) is here
+//│     │  - l.2    let f a x =
+//│     │                 ^^^^^
+//│     │             let (x1,x2) = x in ...
+//│     │             ^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     ▼ 
+//│     ◉ (?d -> _ -> ?d) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│ ◉ (?d) is assumed here
+//│ │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│                 ^^^^^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (?b * _) ---> (?c) ---> (?d) ---> (?e * _) <--- (?e) ---> (_ list)
+//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (_ list)
 //│ 
 //│ ◉ (_ * _) is here
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -759,7 +1036,7 @@ let bigMul l1 l2 =
 //│ ◉ (?b) is assumed here
 //│    - l.-37let padZero l1 l2 =
 //│                       ^^
-//│   ◉ (_ * _) is here
+//│   ◉ (?b * _) is here
 //│   │  - l.-31    else (l1, l2);;
 //│   │                  ^^^^^^^^
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
@@ -768,51 +1045,308 @@ let bigMul l1 l2 =
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
 //│   ◉ (?c) is assumed here
-//│   │  - l.-33    if (List.length l1) < (List.length l2)
+//│   ▲  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-36  if (List.length l1) > (List.length l2)
-//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
-//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (?d) is assumed here
-//│   │  - l.-36  if (List.length l1) > (List.length l2)
-//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │           then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2)) ...
-//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   │  - l.-17  removeZero (add (padZero l1 l2));;
-//│   │                           ^^^^^^^^^^^^^^^
-//│   ▼ 
-//│   ◉ (_ * _) is here
-//│      - l.-25  let add (l1,l2) =
-//│                       ^^^^^^^
-//│ ◉ (?e) is assumed here
-//│ │  - l.-25  let add (l1,l2) =
+//│   │ 
+//│   ◉ (_ list * _) is here
+//│      - l.-32    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
-//│ │  - l.-19    let args = List.rev (List.combine l1 l2) in
-//│ │                                               ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ │  - l.-17  removeZero (add (padZero l1 l2));;
+//│ │                                    ^^
+//│ │  - l.-37let padZero l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.-37let padZero l1 l2 =
+//│ │                     ^^
+//│ │  - l.-32    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│ │                                                                      ^^
 //│ ▼ 
 //│ ◉ (_ list) is here
-//│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
-//│                             ^^^^^^^
+//│    - lib. let (@): 'a list -> 'a list -> 'a list
+//│                               ^^^^^^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ │  - l.-17  removeZero (add (padZero l1 l2));;
+//│ │                                    ^^
+//│ │  - l.-37let padZero l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.-37let padZero l1 l2 =
+//│ │                     ^^
+//│ │  - l.-33    if (List.length l1) < (List.length l2)
+//│ │                             ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.length: 'a list -> int
+//│                            ^^^^^^^
+//│ [ERROR] Type `_ list` does not match `_ * _`
+//│ 
+//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?e) ---> (_ * _)
+//│ 
+//│ ◉ (_ list) is here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                   ^^
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.4      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.4      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│    - l.3      let (x1,x2) = x in
+//│               ^^^^^^^^^^^^^^^^^^
+//│               let (carry,res) = a in ...
+//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     ◉ (?d -> _ -> ?c) is here
+//│     │  - l.2    let f a x =
+//│     │                 ^^^^^
+//│     │             let (x1,x2) = x in ...
+//│     │             ^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     ▼ 
+//│     ◉ (?e -> _ -> ?e) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│   ◉ (?e -> _ -> ?e) is here
+//│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│   │                               ^^^^^^^^^^^^^^
+//│   │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│   │                                            ^
+//│   │ 
+//│   ◉ (?d -> _ -> ?c) is here
+//│      - l.2    let f a x =
+//│                     ^^^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (?d) is assumed here
+//│ │  - l.2    let f a x =
+//│ │                 ^
+//│ │  - l.4      let (carry,res) = a in
+//│ │                               ^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.4      let (carry,res) = a in
+//│                   ^^^^^^^^^^^
+//│ [ERROR] Type `_ -> _` does not match `_ * _`
+//│ 
+//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ---> (_ * _)
+//│ 
+//│ ◉ (_ -> _) is here
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                       ^^^^
+//│ │           let add (l1,l2) = ...
+//│ │           ^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.4      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.4      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│    - l.3      let (x1,x2) = x in
+//│               ^^^^^^^^^^^^^^^^^^
+//│               let (carry,res) = a in ...
+//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     ◉ (_ -> _ -> ?c) is here
+//│     │  - l.2    let f a x =
+//│     │                 ^^^^^
+//│     │             let (x1,x2) = x in ...
+//│     │             ^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     ▼ 
+//│     ◉ (?d -> _ -> ?d) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│ ◉ (?d) is assumed here
+//│ │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│                 ^^^^^^^^^^^
+//│ [ERROR] Type `_ -> _` does not match `_ list`
+//│ 
+//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?c) <--- (?b) <--- (?a) <--- (_ list)
+//│ 
+//│ ◉ (_ -> _) is here
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                       ^^^^
+//│ │           let add (l1,l2) = ...
+//│ │           ^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.4      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.4      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (?c) is assumed here
+//│    - l.3      let (x1,x2) = x in
+//│               ^^^^^^^^^^^^^^^^^^
+//│               let (carry,res) = a in ...
+//│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│     ◉ (_ -> _ -> ?c) is here
+//│     │  - l.2    let f a x =
+//│     │                 ^^^^^
+//│     │             let (x1,x2) = x in ...
+//│     │             ^^^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     ▼ 
+//│     ◉ (?d -> _ -> ?d) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│     ◉ (?d -> _ -> ?d) is here
+//│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│     │                               ^^^^^^^^^^^^^^
+//│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
+//│     │                                            ^
+//│     │ 
+//│     ◉ (_ -> _ -> ?c) is here
+//│        - l.2    let f a x =
+//│                       ^^^^^
+//│                   let (x1,x2) = x in ...
+//│                   ^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (?c) is assumed here
+//│ ▲  - l.3      let (x1,x2) = x in
+//│ │             ^^^^^^^^^^^^^^^^^^
+//│ │             let (carry,res) = a in ...
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.4      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (?b) is assumed here
+//│ ▲  - l.4      let (carry,res) = a in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^
+//│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (?a) is assumed here
+//│ ▲  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │ 
+//│ ◉ (_ list) is here
+//│    - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│                                     ^^
+//│ [ERROR] Type `_ * _` does not match `_ list`
+//│ 
+//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│ 
+//│ ◉ (_ * _) is here
+//│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
+//│ │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.-26let bigAdd l1 l2 =
+//│ │                    ^^
+//│ │  - l.-17  removeZero (add (padZero l1 l2));;
+//│ │                                    ^^
+//│ │  - l.-37let padZero l1 l2 =
+//│ │                     ^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ │  - l.-37let padZero l1 l2 =
+//│ │                     ^^
+//│ │  - l.-35  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+//│ │                                             ^^
+//│ ▼ 
+//│ ◉ (_ list) is here
+//│    - lib. let List.length: 'a list -> int
+//│                            ^^^^^^^
 //│ bigMul: ((list[int] | list[nothing]) -> list[(nothing, nothing,)] & list[int]) -> list[int] -> list[int]
-//│ U max: 21, total: 73
-//│ UERR 13 errors
-//│ L: 0 [(α981' -> α972') ~ ([α918'], [α919'],), (α981' -> α972') <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], [α1049' - (α1049' -> (α1050' -> α1049')) ~ (α912' -> (α913' -> α914')) - α912', L: 0 [(α1049' -> (α1050' -> α1049')) ~ (α912' -> (α913' -> α914')), (α1049' -> (α1050' -> α1049')) :> (α912' -> (α913' -> α914'))]], α912' <: ([α918'], [α919'],)]
-//│ L: 0 [list['a922'] ~ ([α1055'], [α1056'],), list['a922'] <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], α1049' <: ([α1055'], [α1056'],)]
-//│ L: 0 [(α981' -> α972') ~ ([α1055'], [α1056'],), (α981' -> α972') <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], α1049' <: ([α1055'], [α1056'],)]
-//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α989'], ([α1023'], [[[α919']]],) <: α923', α923' <: α984', α984' <: list[α989']]
-//│ L: 0 [(α981' -> α972') ~ list['a922'], (α981' -> α972') <: α920', α920' :> list['a922']]
-//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α985'], ([α1023'], [[[α919']]],) <: α923', α923' <: α984', α984' <: list[α985']]
-//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α925'], ([α1023'], [[[α919']]],) <: α923', α923' <: α984', [α984' - ([[α984']], [[α980']],) ~ ([[list[α925']]], [[α980']],) - list[α925'], L: 0 [([[α984']], [[α980']],) ~ ([[list[α925']]], [[α980']],), ([[α984']], [[α980']],) <: α986', α986' :> ([[list[α925']]], [[α980']],)]]]
-//│ L: 0 [(α981' -> α972') ~ ([int], [[list['a1025']]],), (α981' -> α972') <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], α1049' :> ([int], [[list['a1025']]],)]
-//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α990'], ([α1023'], [[[α919']]],) <: α923', α923' <: α984', α984' <: list[α990']]
-//│ L: 0 [list['a922'] ~ ([α918'], [α919'],), list['a922'] <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], [α1049' - (α1049' -> (α1050' -> α1049')) ~ (α912' -> (α913' -> α914')) - α912', L: 0 [(α1049' -> (α1050' -> α1049')) ~ (α912' -> (α913' -> α914')), (α1049' -> (α1050' -> α1049')) :> (α912' -> (α913' -> α914'))]], α912' <: ([α918'], [α919'],)]
-//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α988'], ([α1023'], [[[α919']]],) <: α923', α923' <: α984', α984' <: list[α988']]
-//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α924'], ([α1023'], [[[α919']]],) <: α923', α923' <: α984', [α984' - ([[α984']], [[α980']],) ~ ([α983'], [α979'],) - α983', L: 0 [([[α984']], [[α980']],) ~ ([α983'], [α979'],), ([[α984']], [[α980']],) <: α986', α986' <: α987', α987' <: ([α983'], [α979'],)]], α983' <: list[α924']]
-//│ L: 0 [list['a922'] ~ ([int], [[list['a1025']]],), list['a922'] <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], α1049' :> ([int], [[list['a1025']]],)]
+//│ U max: 21, total: 91
+//│ UERR 19 errors
+//│ L: 1 [([α1023'], [[[α919']]],) ~ list[α958'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', [α957' - ([[α957']], [[α953']],) ~ ([α956'], [α952'],) - α956', L: 0 [([[α957']], [[α953']],) ~ ([α956'], [α952'],), ([[α957']], [[α953']],) <: α959', α959' <: α960', α960' <: ([α956'], [α952'],)]], [α956' - ([α956'], [α952'],) ~ ([[α957']], [[α953']],) - α957', L: 0 [([α956'], [α952'],) ~ ([[α957']], [[α953']],), ([α956'], [α952'],) :> α960', α960' :> α959', α959' :> ([[α957']], [[α953']],)]], α957' <: list[α958']]
+//│ L: 2 [(α954' -> α987') ~ ([int], [[list['a1025']]],), (α954' -> α987') <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], α1049' :> ([int], [[list['a1025']]],)]
+//│ L: 1 [([α1023'], [[[α919']]],) ~ list[α962'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', [α957' - ([[α957']], [[α953']],) ~ ([α956'], [α952'],) - α956', L: 0 [([[α957']], [[α953']],) ~ ([α956'], [α952'],), ([[α957']], [[α953']],) <: α959', α959' <: α960', α960' <: ([α956'], [α952'],)]], [α956' - ([α956'], [α952'],) ~ ([[α957']], [[α953']],) - α957', L: 0 [([α956'], [α952'],) ~ ([[α957']], [[α953']],), ([α956'], [α952'],) :> α960', α960' :> α959', α959' :> ([[α957']], [[α953']],)]], α957' <: list[α962']]
+//│ L: 2 [list['a922'] ~ ([α918'], [α919'],), list['a922'] <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], [α1049' - (α1049' -> (α1050' -> α1049')) ~ (α912' -> (α913' -> α914')) - α912', L: 0 [(α1049' -> (α1050' -> α1049')) ~ (α912' -> (α913' -> α914')), (α1049' -> (α1050' -> α1049')) :> (α912' -> (α913' -> α914'))]], α912' <: ([α918'], [α919'],)]
+//│ L: 2 [list['a922'] ~ ([α1055'], [α1056'],), list['a922'] <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], α1049' <: ([α1055'], [α1056'],)]
+//│ L: 1 [([α1023'], [[[α919']]],) ~ list[α963'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', [α957' - ([[α957']], [[α953']],) ~ ([α956'], [α952'],) - α956', L: 0 [([[α957']], [[α953']],) ~ ([α956'], [α952'],), ([[α957']], [[α953']],) <: α959', α959' <: α960', α960' <: ([α956'], [α952'],)]], [α956' - ([α956'], [α952'],) ~ ([[α957']], [[α953']],) - α957', L: 0 [([α956'], [α952'],) ~ ([[α957']], [[α953']],), ([α956'], [α952'],) :> α960', α960' :> α959', α959' :> ([[α957']], [[α953']],)]], α957' <: list[α963']]
+//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α958'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', α957' <: list[α958']]
+//│ L: 2 [list['a922'] ~ ([int], [[list['a1025']]],), list['a922'] <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], α1049' :> ([int], [[list['a1025']]],)]
+//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α961'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', α957' <: list[α961']]
+//│ L: 1 [([α1023'], [[[α919']]],) ~ list[α924'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', [α957' - ([[α957']], [[α953']],) ~ ([α956'], [α952'],) - α956', L: 0 [([[α957']], [[α953']],) ~ ([α956'], [α952'],), ([[α957']], [[α953']],) <: α959', α959' <: α960', α960' <: ([α956'], [α952'],)]], α956' <: list[α924']]
+//│ L: 2 [(α954' -> α987') ~ ([α1055'], [α1056'],), (α954' -> α987') <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], α1049' <: ([α1055'], [α1056'],)]
+//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α925'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', α957' <: list[α925']]
+//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α963'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', α957' <: list[α963']]
+//│ L: 0 [(α954' -> α987') ~ list['a922'], (α954' -> α987') <: α920', α920' :> list['a922']]
+//│ L: 2 [(α954' -> α987') ~ list['a922'], (α954' -> α987') <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], [α1049' - (α1050' -> α1049') ~ (α913' -> α914') - α914', L: 1 [(α1050' -> α1049') ~ (α913' -> α914'), [(α1050' -> α1049') - (α1049' -> (α1050' -> α1049')) ~ (α912' -> (α913' -> α914')) - (α913' -> α914'), L: 0 [(α1049' -> (α1050' -> α1049')) ~ (α912' -> (α913' -> α914')), (α1049' -> (α1050' -> α1049')) :> (α912' -> (α913' -> α914'))]]]], α914' :> α917', α917' :> α920', α920' :> list['a922']]
+//│ L: 2 [(α954' -> α987') ~ ([α918'], [α919'],), (α954' -> α987') <: α920', α920' <: α917', α917' <: α914', [α914' - (α913' -> α914') ~ (α1050' -> α1049') - α1049', L: 1 [(α913' -> α914') ~ (α1050' -> α1049'), [(α913' -> α914') - (α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')) - (α1050' -> α1049'), L: 0 [(α912' -> (α913' -> α914')) ~ (α1049' -> (α1050' -> α1049')), (α912' -> (α913' -> α914')) <: (α1049' -> (α1050' -> α1049'))]]]], [α1049' - (α1049' -> (α1050' -> α1049')) ~ (α912' -> (α913' -> α914')) - α912', L: 0 [(α1049' -> (α1050' -> α1049')) ~ (α912' -> (α913' -> α914')), (α1049' -> (α1050' -> α1049')) :> (α912' -> (α913' -> α914'))]], α912' <: ([α918'], [α919'],)]
+//│ L: 1 [([α1023'], [[[α919']]],) ~ list[α961'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', [α957' - ([[α957']], [[α953']],) ~ ([α956'], [α952'],) - α956', L: 0 [([[α957']], [[α953']],) ~ ([α956'], [α952'],), ([[α957']], [[α953']],) <: α959', α959' <: α960', α960' <: ([α956'], [α952'],)]], [α956' - ([α956'], [α952'],) ~ ([[α957']], [[α953']],) - α957', L: 0 [([α956'], [α952'],) ~ ([[α957']], [[α953']],), ([α956'], [α952'],) :> α960', α960' :> α959', α959' :> ([[α957']], [[α953']],)]], α957' <: list[α961']]
+//│ L: 1 [([α1023'], [[[α919']]],) ~ list[α925'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', [α957' - ([[α957']], [[α953']],) ~ ([[list[α925']]], [[α953']],) - list[α925'], L: 0 [([[α957']], [[α953']],) ~ ([[list[α925']]], [[α953']],), ([[α957']], [[α953']],) <: α959', α959' :> ([[list[α925']]], [[α953']],)]]]
+//│ L: 0 [([α1023'], [[[α919']]],) ~ list[α962'], ([α1023'], [[[α919']]],) <: α923', α923' <: α957', α957' <: list[α962']]
 
 ////////// file 2361
 

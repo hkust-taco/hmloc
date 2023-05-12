@@ -28,6 +28,55 @@ let bigAdd l1 l2 =
 (* List.map: ('a -> 'b) -> 'a list -> 'b list map elements of a list *)
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
+//│         (int) <--- (?a) ~~~~ (?b) ---> (_ * _)
+//│ 
+//│ ◉ (int) is here
+//│ ▲  - lib. let (+): int -> int -> int
+//│ │                  ^^^
+//│ │  - l.11     let f a x = (a + x) mod 10 in
+//│ │                          ^
+//│ │ 
+//│ ◉ (?a) is assumed here
+//│    - l.11     let f a x = (a + x) mod 10 in
+//│                     ^
+//│   ◉ (?a -> _ -> int) is here
+//│   │  - l.11     let f a x = (a + x) mod 10 in
+//│   │                   ^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│   │                                          ^
+//│   ▼ 
+//│   ◉ (?b -> _ -> ?b) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                   ^^^^^^^^^^^^^^
+//│ ◉ (?b) is assumed here
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.14     let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
+//│         (int) ~~~~ (?a) ---> (_ * _)
+//│ 
+//│     ◉ (_ -> _ -> int) is here
+//│     │  - l.11     let f a x = (a + x) mod 10 in
+//│     │                   ^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│     │                                          ^
+//│     ▼ 
+//│     ◉ (?a -> _ -> ?a) is here
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│ ◉ (?a) is assumed here
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) is here
+//│    - l.14     let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
 //│         (int) ---> (?a) ---> (_ * _)
 //│ 
 //│ ◉ (int) is here
@@ -43,28 +92,9 @@ let bigAdd l1 l2 =
 //│ ◉ (_ * _) is here
 //│    - l.14     let (_,res) = List.fold_left f base args in res in
 //│                   ^^^^^^^
-//│ [ERROR] Type `int` does not match `_ * _`
-//│ 
-//│         (?a) ---> (_ * _)
-//│ 
-//│     ◉ (_ -> _ -> int) is here
-//│     │  - l.11     let f a x = (a + x) mod 10 in
-//│     │                   ^^^^^^^^^^^^^^^^^^^^
-//│     │  - l.14     let (_,res) = List.fold_left f base args in res in
-//│     │                                          ^
-//│     ▼ 
-//│     ◉ (_ -> _ -> _) is here
-//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
-//│                                     ^^^^^^^^^^^^^^
-//│ ◉ (?a) is assumed here
-//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
-//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (_ * _) is here
-//│    - l.14     let (_,res) = List.fold_left f base args in res in
-//│                   ^^^^^^^
-//│ U max: 36, total: 248
-//│ UERR 2 errors
+//│ U max: 32, total: 257
+//│ UERR 3 errors
 //│ L: 0 [int ~ ([α237'], [α238'],), int <: α231', α231' <: ([α237'], [α238'],)]
+//│ L: 1 [int ~ ([α237'], [α238'],), int :> α215', [α215' - (α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')) - α231', L: 0 [(α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')), (α215' -> (α216' -> [int])) <: (α231' -> (α232' -> α231'))]], α231' <: ([α237'], [α238'],)]
 //│ L: 2 [int ~ ([α237'], [α238'],), [int - (α216' -> [int]) ~ (α232' -> α231') - α231', L: 1 [(α216' -> [int]) ~ (α232' -> α231'), [(α216' -> [int]) - (α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')) - (α232' -> α231'), L: 0 [(α215' -> (α216' -> [int])) ~ (α231' -> (α232' -> α231')), (α215' -> (α216' -> [int])) <: (α231' -> (α232' -> α231'))]]]], α231' <: ([α237'], [α238'],)]
 
