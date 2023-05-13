@@ -7,7 +7,7 @@ let test =
   (f 1 + f true)
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (bool) ---> (?a) <--- (int)
+//│         (bool) ---> (?a) ---> (int)
 //│ 
 //│ ◉ (bool) is here
 //│ │  - l.3    (f 1 + f true)
@@ -16,16 +16,20 @@ let test =
 //│ │                 ^
 //│ ▼ 
 //│ ◉ (?a) is assumed here
-//│ ▲  - l.2    let f x = x in
+//│ │  - l.2    let f x = x in
 //│ │                 ^
-//│ │ 
+//│ │  - l.2    let f x = x in
+//│ │                     ^
+//│ │  - l.3    (f 1 + f true)
+//│ │                  ^^^^^^
+//│ ▼ 
 //│ ◉ (int) is here
-//│    - l.3    (f 1 + f true)
-//│                ^
+//│    - lib. let (+): int -> int -> int
+//│                           ^^^
 //│ test: int
-//│ U max: 2, total: 3
+//│ U max: 3, total: 4
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool <: α67', α67' :> int]
+//│ L: 0 [bool ~ int, bool <: α71', α71' <: int]
 
 // TODO: show error
 let test2 = let (a, b) = test in [[b]] + 1
@@ -36,7 +40,7 @@ let test2 = let (a, b) = test in [[b]] + 1
 //│ ◉ (int) is here
 //│ │  - lib. let (+): int -> int -> int
 //│ │                                ^^^
-//│ │  - l.-23  (f 1 + f true)
+//│ │  - l.-27  (f 1 + f true)
 //│ │           ^^^^^^^^^^^^^^^
 //│ │  - l.1  let test2 = let (a, b) = test in [[b]] + 1
 //│ │                                  ^^^^
@@ -58,8 +62,8 @@ let test2 = let (a, b) = test in [[b]] + 1
 //│ test2: int
 //│ U max: 7, total: 12
 //│ UERR 2 errors
-//│ L: 0 [int ~ ([α73'], [α74'],), int <: ([α73'], [α74'],)]
-//│ L: 0 [list['a75'] ~ int, list['a75'] <: int]
+//│ L: 0 [list['a77'] ~ int, list['a77'] <: int]
+//│ L: 0 [int ~ ([α75'], [α76'],), int <: ([α75'], [α76'],)]
 
 // TODO: show error
 let f x = x + 1
@@ -160,7 +164,7 @@ confluence true
 //│ res: bool | int
 //│ U max: 3, total: 6
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool <: α98, α98 <: α99, α99 :> int]
+//│ L: 0 [bool ~ int, bool <: α100, α100 <: α101, α101 :> int]
 
 
 let x: int list
@@ -235,7 +239,7 @@ if true then x else y
 //│ res: list[string] | list[int]
 //│ U max: 3, total: 5
 //│ UERR 1 errors
-//│ L: 1 [string ~ int, [string - list[string] ~ list[int] - int, L: 0 [list[string] ~ list[int], list[string] <: α104, α104 :> list[int]]]]
+//│ L: 1 [string ~ int, [string - list[string] ~ list[int] - int, L: 0 [list[string] ~ list[int], list[string] <: α106, α106 :> list[int]]]]
 
 // TODO: show error
 Left 1 : int
@@ -255,7 +259,7 @@ Left 1 : int
 //│ res: int
 //│ U max: 2, total: 2
 //│ UERR 1 errors
-//│ L: 0 [either[α106,α107] ~ int, either[α106,α107] <: int]
+//│ L: 0 [either[α108,α109] ~ int, either[α108,α109] <: int]
 
 
 let confluence z = if true then z else 5
@@ -299,7 +303,7 @@ mkpair 1 "2"
 //│ res: (anything, anything,)
 //│ U max: 3, total: 9
 //│ UERR 1 errors
-//│ L: 0 [string ~ int, string <: α128, α128 <: α130, α130 <: α129, α129 :> int]
+//│ L: 0 [string ~ int, string <: α130, α130 <: α132, α132 <: α131, α131 :> int]
 
 // TODO nested prov not shown in collision error
 let a = 1
@@ -404,8 +408,8 @@ if true then wrap (if true then 1 else false) else wrap true
 //│ res: list[bool] | list[bool | int]
 //│ U max: 7, total: 16
 //│ UERR 2 errors
-//│ L: 1 [int ~ bool, int <: α157, α157 <: α154, [α154 - ([[α154]], [[list['a156]]],) ~ ('a155, list['a155],) - 'a155, L: 0 [([[α154]], [[list['a156]]],) ~ ('a155, list['a155],), ([[α154]], [[list['a156]]],) <: ('a155, list['a155],)]], ['a155 - ('a155, list['a155],) ~ ([[α154]], [[list['a156]]],) - α154, L: 0 [('a155, list['a155],) ~ ([[α154]], [[list['a156]]],), ('a155, list['a155],) :> ([[α154]], [[list['a156]]],)]], α154 :> α157, α157 :> bool]
-//│ L: 0 [bool ~ int, bool <: α157, α157 :> int]
+//│ L: 0 [bool ~ int, bool <: α159, α159 :> int]
+//│ L: 1 [int ~ bool, int <: α159, α159 <: α156, [α156 - ([[α156]], [[list['a158]]],) ~ ('a157, list['a157],) - 'a157, L: 0 [([[α156]], [[list['a158]]],) ~ ('a157, list['a157],), ([[α156]], [[list['a158]]],) <: ('a157, list['a157],)]], ['a157 - ('a157, list['a157],) ~ ([[α156]], [[list['a158]]],) - α156, L: 0 [('a157, list['a157],) ~ ([[α156]], [[list['a158]]],), ('a157, list['a157],) :> ([[α156]], [[list['a158]]],)]], α156 :> α159, α159 :> bool]
 
 
 let rec t = wrap (if true then 1 else t)
@@ -487,7 +491,7 @@ let rec m = test (if true then 1 else m)
 //│     'a :> 'm | int
 //│ U max: 5, total: 16
 //│ UERR 1 errors
-//│ L: 1 [int ~ bool, int <: α214', α214' <: α206', α206' <: α209', [α209' - ([[α209']], [[list['a208']]],) ~ ('a207', list['a207'],) - 'a207', L: 0 [([[α209']], [[list['a208']]],) ~ ('a207', list['a207'],), ([[α209']], [[list['a208']]],) <: ('a207', list['a207'],)]], ['a207' - list['a207'] ~ list['a211'] - 'a211', L: 0 [list['a207'] ~ list['a211'], list['a207'] <: α213', α213' :> list['a211']]], ['a211' - ('a211', list['a211'],) ~ ([[α210']], [[list['a212']]],) - α210', L: 0 [('a211', list['a211'],) ~ ([[α210']], [[list['a212']]],), ('a211', list['a211'],) :> ([[α210']], [[list['a212']]],)]], α210' :> bool]
+//│ L: 1 [int ~ bool, int <: α216', α216' <: α208', α208' <: α211', [α211' - ([[α211']], [[list['a210']]],) ~ ('a209', list['a209'],) - 'a209', L: 0 [([[α211']], [[list['a210']]],) ~ ('a209', list['a209'],), ([[α211']], [[list['a210']]],) <: ('a209', list['a209'],)]], ['a209' - list['a209'] ~ list['a213'] - 'a213', L: 0 [list['a209'] ~ list['a213'], list['a209'] <: α215', α215' :> list['a213']]], ['a213' - ('a213', list['a213'],) ~ ([[α212']], [[list['a214']]],) - α212', L: 0 [('a213', list['a213'],) ~ ([[α212']], [[list['a214']]],), ('a213', list['a213'],) :> ([[α212']], [[list['a214']]],)]], α212' :> bool]
 
 
 // FIXME implementation exception
@@ -508,9 +512,9 @@ let rec digitsOfInt n =
 //│                    ^^^^^^^
 //│ ╔══[ERROR] identifier not found: remainder
 //│ ║  
-//│ ║  l.495:	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.499:	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──      	                            ^^^^^^^^^
 //│ digitsOfInt: anything -> list[error]
 //│ U max: 6, total: 11
 //│ UERR 1 errors
-//│ L: 0 [int ~ list[α232'], int <: list[α232']]
+//│ L: 0 [int ~ list[α234'], int <: list[α234']]
