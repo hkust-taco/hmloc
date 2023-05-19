@@ -438,6 +438,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case diag => raise(diag)
       }, prov, ctx)
       uniState.enqueueUnification(Unification.fromLhsRhs(lhs, rhs))
+      uniState.unify()
       // also unify types
 //      unifyTypes(lhs, rhs)(MutSet(), ctx, raise)
       res
@@ -584,7 +585,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         // methods have been removed only field selection works
         rcdSel(obj, fieldName)
       case Let(isrec, nme, rhs, bod) =>
-        val n_ty = typeLetRhs(isrec, nme, rhs)
+        val n_ty = typeLetRhsMono(isrec, nme.name, rhs)
+//        val n_ty = typeLetRhs(isrec, nme, rhs)
         val newCtx = ctx.nest
         newCtx += nme.name -> VarSymbol(n_ty, nme)
         typeTerm(bod)(newCtx, raise)

@@ -13,17 +13,17 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
   def verboseConstraintProvenanceHints: Bool = verbose
   type ConCtx = Ls[ST] -> Ls[ST]
   val errorSimplifer: ErrorSimplifier = ErrorSimplifier()
-  
+
   /** Constrains the types to enforce a subtyping relationship `lhs` <: `rhs`. */
   def constrain(lhs: SimpleType, rhs: SimpleType)(implicit raise: Raise, prov: TypeProvenance, ctx: Ctx): Unit = {
     // We need a cache to remember the subtyping tests in process; we also make the cache remember
     // past subtyping tests for performance reasons (it reduces the complexity of the algoritghm):
     val cache: MutSet[(SimpleType, SimpleType)] = MutSet.empty
-    
+
     println(s"CONSTRAIN $lhs <! $rhs")
     println(s"  where ${FunctionType(lhs, rhs)(noProv).showBounds}")
-    
-    
+
+
     def mkCase[A](str: Str)(k: Str => A)(implicit dbgHelp: Str): A = {
       val newStr = dbgHelp + "." + str
       println(newStr)
@@ -35,7 +35,7 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
       * keep tracking the provenance of the types in `cctx`. In case of
       * a constraining error chain can be used to generate error messages
       * and show the flow of types that lead to the error.
-      * 
+      *
       * @param lhs
       * @param rhs
       * @param nestedProv
@@ -47,7 +47,7 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
       constrainCalls += 1
       var sameLhs = cctx._1.headOption.exists(_.prov is lhs.prov)
       var sameRhs = cctx._2.headOption.exists(_.prov is rhs.prov)
-      
+
       // check if these tuples are implicit
       // don't add them to chain
       (lhs, rhs) match {
@@ -57,9 +57,9 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
             sameRhs = true
         case _ => ()
       }
-      
+
       val newCctx = nestedProv match {
-        case N => 
+        case N =>
           // add new simple type to the chain only if it's provenance
           // is different from current chain head
           ((if (sameLhs) cctx._1 else lhs :: cctx._1)
@@ -71,33 +71,33 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
           // (rhs3, rhs2, rhs1) => (lhs0, lhs1, lhs2) ::: (rhs1, rhs2, rhs3)
           // (if (sameRhs) cctx._2 else cctx._2 ::: (rhs :: Nil)))
           (if (sameRhs) cctx._2 else rhs :: cctx._2))
-        case S(nested) => 
+        case S(nested) =>
           // the provenance chain for the constructor from the previous level
           // connects the provenances of lhs and rhs
           val lhsNested = lhs.withProv(nested)
           println(s"[nested] ${lhsNested.toString}")
           (lhs :: lhsNested :: Nil) -> (rhs :: Nil)
       }
-      
+
       // show provenance chains from both contexts to emphasize the new node added
       if (explainErrors && verbose) {
         def printProv(prov: TP): Message =
             if (prov.isType) msg"type"
             else msg"${prov.desc} of type"
-      
+
         def showNestingLevel(chain: Ls[ST], level: Int): Ls[Message -> Opt[Loc]] = {
           val levelIndicator = s"-${">"*level}"
           chain.flatMap { node =>
             node.prov match {
-              case nestedProv: NestedTypeProvenance => 
+              case nestedProv: NestedTypeProvenance =>
                 msg"$levelIndicator flowing into nested prov with desc: ${node.prov.desc}" -> nestedProv.loco ::
                   showNestingLevel(nestedProv.chain, level + 1)
-              case tprov => 
+              case tprov =>
                 msg"$levelIndicator flowing from ${printProv(tprov)} `${node.toString}` with desc: ${node.prov.desc}" -> tprov.loco :: Nil
             }
           }
         }
-        
+
         val oldProvFlow =
           msg"========= Previous type provenance flow below =========" -> N ::
           showNestingLevel(cctx._1, 1) :::
@@ -113,7 +113,7 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
         // println(s"Rhs and previous rhsChain head are same `cctx._2.headOption.exists(_ is rhs.prov)` ? - ${cctx._2.headOption.exists(_ is rhs.prov)}")
         raise(WarningReport(newProvFlow))
       }
-      
+
       // Thread.sleep(10)  // useful for debugging constraint-solving explosions debugged on stdout
       recImpl(lhs, rhs)(raise, newCctx)
     }
@@ -130,15 +130,15 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
     // trace(s"C $lhs <! $rhs  ${lhs.getClass.getSimpleName}  ${rhs.getClass.getSimpleName}") {
       // println(s"[[ ${cctx._1.map(_.prov).mkString(", ")}  <<  ${cctx._2.map(_.prov).mkString(", ")} ]]")
       // println(s"{{ ${cache.mkString(", ")} }}")
-      
+
       // errorSimplifer.reportInfo(S(cctx), 3)
       lazy val provChain = Some(NestedTypeProvenance(cctx._1 ::: cctx._2))
       lazy val revProvChain = Some(NestedTypeProvenance(cctx._1 ::: cctx._2, NestingInfo().copy(reversed = true)))
 
       if (lhs === rhs) return ()
-      
+
       // if (lhs <:< rhs) return () // * It's not clear that doing this here is worth it
-      
+
       // println(s"  where ${FunctionType(lhs, rhs)(primProv).showBounds}")
       else {
         if (lhs is rhs) return
@@ -265,7 +265,7 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
             fs1.foreach(f => rec(err, f._2, provChain))
           case (RecordType(fs1), err @ ClassTag(ErrTypeId, _)) =>
             fs1.foreach(f => rec(f._2, err, provChain))
-            
+
           case (tr1: TypeRef, tr2: TypeRef) if tr1.defn.name =/= "Array" && tr1.defn === tr2.defn =>
             if (tr1.defn === tr2.defn) {
               assert(tr1.targs.sizeCompare(tr2.targs) === 0)
@@ -290,14 +290,14 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
           // case (_, tr: TypeRef) if ctx.tyDefs(tr.defn.name).kind is Als => rec(lhs, tr.expand)
           case (tr: TypeRef, _) if ctx.tyDefs(tr.defn.name).adtData.isEmpty => rec(tr.expand, rhs)
           case (_, tr: TypeRef) if ctx.tyDefs(tr.defn.name).adtData.isEmpty => rec(lhs, tr.expand)
-          
+
           case (ClassTag(ErrTypeId, _), _) => ()
           case (_, ClassTag(ErrTypeId, _)) => ()
           case _ =>
             reportError()
       }
     }}()
-    
+
     def reportError(failureOpt: Opt[Message] = N)(implicit cctx: ConCtx): Unit = if (reporCollisionErrors) {
       errorSimplifer.addErrorChain(cctx)
       // completes counting current level of chain
@@ -309,20 +309,20 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
       // errorSimplifer.reportInfo(S(cctx))
       errorSimplifer.reportInfo(S(cctx))
       errorSimplifer.reportInfo(S(cctx), 3)
-      
+
       val lhsChain: List[ST] = cctx._1
       val rhsChain: List[ST] = cctx._2
       val lhs = cctx._1.head
       // val rhs = cctx._2.last  // right hand chain is reversed
       val rhs = cctx._2.head
-      
+
       // println(s"context part 1 -\n  $cctx._1\n and part 2 -\n $cctx._2\n")
       // println(s"CONSTRAINT FAILURE: $lhs <: $rhs")
       // println(s"CTX: ${cctx._1.zip(cctx._2).map(lr => s"${lr._1} <: ${lr._2} [${lr._1.prov}] [${lr._2.prov}]")}")
-      
+
       def doesntMatch(ty: SimpleType) = msg"does not match type `${ty.expNeg}`"
       def doesntHaveField(n: Str) = msg"does not have field '$n'"
-      
+
       val failure = failureOpt.getOrElse((lhs.unwrapProvs, rhs.unwrapProvs) match {
         // case (lunw, _) if lunw.isInstanceOf[TV] || lunw.isInstanceOf => doesntMatch(rhs)
         case (_: TV | _: ProxyType, _) => doesntMatch(rhs)
@@ -347,25 +347,25 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
               if (fs.sizeCompare(1) > 0) "s" else ""}: ${fs.map(_._1.name).mkString(", ")})"
         case _ => doesntMatch(rhs)
       })
-      
+
       // The first located provenance coming from the left
       val lhsProv = lhsChain.iterator
         .filterNot(_.prov.isOrigin)
         .find(_.prov.loco.isDefined)
         .map(_.prov).getOrElse(lhs.prov)
-      
+
       // The first located provenance coming from the right
       val rhsProv = rhsChain.iterator
         .filterNot(_.prov.isOrigin)
         .find(_.prov.loco.isDefined)
         .map(_.prov).getOrElse(rhs.prov)
-      
+
       // The last located provenance coming from the right (this is a bit arbitrary)
       val rhsProv2 = rhsChain.reverseIterator
         .filterNot(_.prov.isOrigin)
         .find(_.prov.loco.isDefined)
         .map(_.prov).getOrElse(rhs.prov)
-      
+
       // checks if location of type error is touched by or contains
       // a provenance location from the left chain of the context
       val relevantFailures = lhsChain.collect {
@@ -375,41 +375,41 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
         => st
       }
       val tighestRelevantFailure = relevantFailures.headOption
-      
+
       val shownLocos = MutSet.empty[Loc]
       def show(loco: Opt[Loc]): Opt[Loc] =
         loco.tap(_.foreach(shownLocos.+=))
-      
+
       val originProvList = (lhsChain.headOption ++ rhsChain.lastOption).iterator
         .map(_.prov).collect {
             case tp @ TypeProvenance(loco, desc, S(nme), _) if loco.isDefined => nme -> tp
           }
         .toList.distinctBy(_._2.loco)
-      
+
       def printProv(prov: TP): Message =
         if (prov.isType) msg"type"
         else msg"${prov.desc} of type"
-      
+
       val mismatchMessage =
         msg"Type mismatch in ${prov.desc}:" -> show(prov.loco) :: (
           msg"${printProv(lhsProv)} `${lhs.expPos}` $failure"
         ) -> (if (lhsProv.loco === prov.loco) N else show(lhsProv.loco)) :: Nil
-      
+
       // connects the current type error produced by rhs
       // to the most tight type error location. This is calculated
       // based on it's location intersecting or contained within
       // current error location
-      val flowHint = 
+      val flowHint =
         tighestRelevantFailure.map { l =>
           val expTyMsg = msg" with expected type `${rhs.expNeg}`"
           msg"but it flows into ${l.prov.desc}$expTyMsg" -> show(l.prov.loco) :: Nil
         }.toList.flatten
-      
+
       // if first located provenance coming from right chain is
       // not the same as current error location. and the right chain
       // has a defined end. Then relate the start and end of the rhs
       // chain to show how the constraint arose.
-      val constraintProvenanceHints = 
+      val constraintProvenanceHints =
         if (rhsProv.loco.isDefined && rhsProv2.loco =/= prov.loco)
           msg"Note: constraint arises from ${rhsProv.desc}:" -> show(rhsProv.loco) :: (
             if (rhsProv2.loco.isDefined && rhsProv2.loco =/= rhsProv.loco && rhsProv2.loco =/= prov.loco)
@@ -417,7 +417,7 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
             else Nil
           )
         else Nil
-      
+
       var first = true
       val originProvHints = originProvList.collect {
         case (nme, l) if l.loco.exists(!shownLocos.contains(_)) =>
@@ -426,9 +426,9 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
                   msg"Note: ${l.desc} $nme"
             else  msg"      ${l.desc} $nme"
           first = false
-          msg"${msgHead} is defined at:" -> l.loco 
+          msg"${msgHead} is defined at:" -> l.loco
       }
-      
+
       val detailedContext =
         if (explainErrors)
           msg"========= Additional explanations below =========" -> N ::
@@ -440,7 +440,7 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
             else msg"[info] flowing into ${printProv(rhs.prov)} `${rhs.expNeg}`" -> rhs.prov.loco :: Nil
           }
         else Nil
-      
+
       errorSimplifer.reportInfo(N, 2)
       val msgs = Ls[Ls[Message -> Opt[Loc]]](
         mismatchMessage,
@@ -449,28 +449,28 @@ class ConstraintSolver extends TyperDatatypes { self: Typer =>
         originProvHints,
         detailedContext,
       ).flatten
-      
+
       raise(ErrorReport(msgs))
     } else {
     println(s"!! COLLISION ERROR ${cctx}")
-      
-      /* 
+
+      /*
       val fullCctx = cctx._1 ::: cctx._2.reverse
       val lhs = fullCctx.map(_.prov).foldLeft(cctx._1.head)((acc, p) =>
         acc.withProv(p))
       val rhs = cctx._2.head
-      
+
       // if (!fullCctx.exists(_.unwrapProvs.isInstanceOf[TV]))
       freshVar(noProv, N, lhs :: Nil, rhs :: Nil)
       */
-      
+
       ()
     }
-    
+
     rec(lhs, rhs)(raise, Nil -> Nil)
   }
-  
-  
+
+
   def subsume(ty_sch: PolymorphicType, sign: PolymorphicType)
       (implicit ctx: Ctx, raise: Raise, prov: TypeProvenance): Unit = {
     constrain(ty_sch.instantiate, sign.rigidify)

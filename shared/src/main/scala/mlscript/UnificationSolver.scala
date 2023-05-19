@@ -6,7 +6,7 @@ import mlscript.utils.shorthands._
 
 import scala.collection.immutable.Queue
 import scala.collection.mutable
-import scala.collection.mutable.{Queue => MutQueue, Set => MutSet}
+import scala.collection.mutable.{Queue => MutQueue, Set => MutSet, Map => MutMap}
 
 trait UnificationSolver extends TyperDatatypes {
   self: Typer =>
@@ -24,10 +24,10 @@ trait UnificationSolver extends TyperDatatypes {
     def enqueueUnification(u: Unification): Unit = if (!cached(u)) {
       // TODO: fix this so that recursion can be stopped
       if (u.level >= 4) {
-        println(s"  | U X ${u.a} ~ ${u.b}")
+        println(s"U X ${u.a} ~ ${u.b}")
         return
       }
-      println(s"  | U Q ${u.a} ~ ${u.b}")
+      println(s"U Q ${u.a} ~ ${u.b}")
       queue += u
       cache(u)
       stats = (math.max(stats._1, queue.length), stats._2 + 1)
@@ -100,6 +100,53 @@ trait UnificationSolver extends TyperDatatypes {
         case _ => ()
       }
     }
+    
+    // def extrudeDF(df: DataFlow)(implicit lvl: Int, cache: MutMap[ST, ST]): DataFlow = df match {
+    //   case c@Constraint(a, b) =>
+    //     val c1 = Constraint(extrudeTy(a), extrudeTy(b))
+    //     c1.dir = c.dir
+    //     c1
+    //   case Constructor(a, b, ctora, ctorb, uni) =>
+    //     Constructor(extrudeTy(a), extrudeTy(b), extrudeTy(ctora), extrudeTy(ctorb), extrudeUni(uni))
+    // }
+
+    // def extrudeUni(uni: Unification)(implicit lvl: Int, cache: MutMap[ST, ST]): Unification = uni.copy(flow = uni.flow.map(extrudeDF))
+
+    // def extrudeTy(ty: ST)(implicit lvl: Int, cache: MutMap[ST, ST]): ST = {
+    //   if (ty.level <= lvl) ty else ty match {
+    //     case t @ TypeBounds(lb, ub) => TypeBounds(extrudeTy(lb), extrudeTy(ub))(t.prov)
+    //     case t @ FunctionType(l, r) => FunctionType(extrudeTy(l), extrudeTy(r))(t.prov)
+    //     case t @ ComposedType(p, l, r) => ComposedType(p, extrudeTy(l), extrudeTy(r))(t.prov)
+    //     case t @ RecordType(fs) =>
+    //       RecordType(fs.mapValues(extrudeTy(_)))(t.prov)
+    //     case t @ TupleType(fs) =>
+    //       TupleType(fs.mapValues(extrudeTy(_)))(t.prov)
+    //     case t @ ArrayType(ar) =>
+    //       ArrayType(extrudeTy(ar))(t.prov)
+    //     case tv: TypeVariable => cache.getOrElse(tv -> pol, {
+    //       val nv = freshVar(tv.prov, tv.nameHint)(lvl)
+    //       cache += tv -> pol -> nv
+    //       if (pol) {
+    //         tv.upperBounds ::= nv
+    //         nv.lowerBounds = tv.lowerBounds.map(extrudeTy(_, lvl, pol))
+    //       } else {
+    //         tv.lowerBounds ::= nv
+    //         nv.upperBounds = tv.upperBounds.map(extrudeTy(_, lvl, pol))
+    //       }
+    //       nv
+    //     })
+    //     case e @ ExtrType(_) => e
+    //     case p @ ProvType(und) => ProvType(extrudeTy(und))(p.prov)
+    //     case p @ ProxyType(und) => extrudeTy(und)
+    //     case _: ClassTag | _: TraitTag => ty
+    //     case tr @ TypeRef(d, ts) =>
+    //       TypeRef(d, tr.mapTargs(S(pol)) {
+    //         case (N, targ) =>
+    //           TypeBounds(extrudeTy(targ, lvl, false), extrude(targ, lvl, true))(noProv)
+    //         case (S(pol), targ) => extrude(targ, lvl, pol)
+    //       })(tr.prov)
+    //   }
+    // }
   }
 
   val newErrorCache: MutSet[Unification] = MutSet()
