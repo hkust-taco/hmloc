@@ -264,7 +264,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.
     * Invariant: Types appearing in the bounds never have a level higher than this variable's `level`. */
   final class TypeVariable(
-      val level: Int,
+      var level: Int,
       var lowerBounds: List[SimpleType],
       var upperBounds: List[SimpleType],
       val nameHint: Opt[Str] = N

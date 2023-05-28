@@ -87,21 +87,19 @@ trait UnificationSolver extends TyperDatatypes {
 
           tv.uni ::= u
         // rhs0.level >= tv.level
-        case (tv: TypeVariable, rhs0) =>
-          val extrudeMap: MutMap[ST, ST] = MutMap.empty
-          val rhs = extrudeTy(rhs0)(tv.level, extrudeMap)
-          val newU = extrudeUni(u)(tv.level, extrudeMap)
-          println(s"U EXTR ${rhs0.toString} ~> ${rhs.toString}")
-          println(s"U EXTR ${u.toString} ~> ${newU.toString}")
+        case (tv: TypeVariable, rhs) =>
+          val extrudeSet: MutSet[ST] = MutSet.empty
+          extrudeTy(rhs)(tv.level, extrudeSet)
+          println(s"U EXTR ~> ${rhs.toString}")
           // u = tv ---- st2
           tv.uni.foreach(tvuni => {
             // tvuni = tv ---- b
-            if (tvuni.a.unwrapProvs == tv) enqueueUnification(tvuni.rev.concat(newU))
+            if (tvuni.a.unwrapProvs == tv) enqueueUnification(tvuni.rev.concat(u))
             // tvuni = a ---- tv
-            else enqueueUnification(tvuni.concat(newU))
+            else enqueueUnification(tvuni.concat(u))
           })
 
-          tv.uni ::= newU
+          tv.uni ::= u
         case (lhs, tv: TypeVariable) if lhs.level <= tv.level =>
           // u = st1 ---- tv
           tv.uni.foreach(tvuni => {
@@ -113,55 +111,48 @@ trait UnificationSolver extends TyperDatatypes {
 
           tv.uni ::= u
         // lhs0.level >= tv.level
-        case (lhs0, tv: TypeVariable) =>
-          val extrudeMap: MutMap[ST, ST] = MutMap.empty
-          val lhs = extrudeTy(lhs0)(tv.level, extrudeMap)
-          val newU = extrudeUni(u)(tv.level, extrudeMap)
-          println(s"U EXTR ${lhs0.toString} ~> ${lhs.toString}")
+        case (lhs, tv: TypeVariable) =>
+          val extrudeSet: MutSet[ST] = MutSet.empty
+          extrudeTy(lhs)(tv.level, extrudeSet)
+          println(s"U EXTR ~> ${lhs.toString}")
           // u = st1 ---- tv
           tv.uni.foreach(tvuni => {
             // tvuni = tv ---- b
-            if (tvuni.a.unwrapProvs == tv) enqueueUnification(newU.concat(tvuni))
+            if (tvuni.a.unwrapProvs == tv) enqueueUnification(u.concat(tvuni))
             // tvuni = a ---- tv
-            else enqueueUnification(newU.concat(tvuni.rev))
+            else enqueueUnification(u.concat(tvuni.rev))
           })
 
-          tv.uni ::= newU
+          tv.uni ::= u
         case (st1, st2) if st1 != st2 => addError(u)
         case _ => ()
       }
     }
     
-     def extrudeDF(df: DataFlow)(implicit lvl: Int, cache: MutMap[ST, ST]) = df match {
-       case c@Constraint(a, b) =>
-         Constraint(extrudeTy(a), extrudeTy(b))
+     def extrudeDF(df: DataFlow)(implicit lvl: Int, cache: MutSet[ST]): Unit = df match {
+       case c@Constraint(a, b) => extrudeTy(a); extrudeTy(b)
        case Constructor(a, b, ctora, ctorb, uni) =>
-         Constructor(extrudeTy(a), extrudeTy(b), extrudeTy(ctora), extrudeTy(ctorb), extrudeUni(uni))
+         extrudeTy(a); extrudeTy(b); extrudeTy(ctora); extrudeTy(ctorb); extrudeUni(uni)
      }
 
-     def extrudeUni(uni: Unification)(implicit lvl: Int, cache: MutMap[ST, ST]): Unification = uni.copy(flow = uni.flow.map(extrudeDF))
+     def extrudeUni(uni: Unification)(implicit lvl: Int, cache: MutSet[ST]): Unit = uni.flow.foreach(extrudeDF)
 
-     def extrudeTy(ty: ST)(implicit lvl: Int, cache: MutMap[ST, ST]): ST = {
+     def extrudeTy(ty: ST)(implicit lvl: Int, cache: MutSet[ST]): Unit = {
        if (ty.level <= lvl) ty else ty match {
-         case t @ TypeBounds(lb, ub) => TypeBounds(extrudeTy(lb), extrudeTy(ub))(t.prov)
-         case t @ FunctionType(l, r) => FunctionType(extrudeTy(l), extrudeTy(r))(t.prov)
-         case t @ ComposedType(p, l, r) => ComposedType(p, extrudeTy(l), extrudeTy(r))(t.prov)
-         case t @ RecordType(fs) =>
-           RecordType(fs.mapValues(extrudeTy(_)))(t.prov)
-         case t @ TupleType(fs) =>
-           TupleType(fs.mapValues(extrudeTy(_)))(t.prov)
-         case t @ ArrayType(ar) =>
-           ArrayType(extrudeTy(ar))(t.prov)
-         case tv: TypeVariable => cache.getOrElse(tv, {
-           val nv = freshVar(tv.prov, tv.nameHint)(lvl)
-           nv.uni = tv.uni.map(extrudeUni)
-           cache += tv -> nv
-           nv
-         })
+         case t @ TypeBounds(lb, ub) => extrudeTy(lb); extrudeTy(ub)
+         case t @ FunctionType(l, r) => extrudeTy(l); extrudeTy(r)
+         case t @ ComposedType(p, l, r) => extrudeTy(l); extrudeTy(r)
+         case t @ RecordType(fs) => fs.foreach(tup => extrudeTy(tup._2))
+         case t @ TupleType(fs) => fs.foreach(tup => extrudeTy(tup._2))
+         case t @ ArrayType(ar) => extrudeTy(ar)
+         case tv: TypeVariable => if (cache.add(tv)) {
+           tv.level = lvl
+           tv.uni.foreach(extrudeUni(_))
+         }
          case e @ ExtrType(_) => e
-         case p @ ProvType(und) => ProvType(extrudeTy(und))(p.prov)
+         case p @ ProvType(und) => extrudeTy(und)
          case _: ClassTag | _: TraitTag => ty
-         case tr @ TypeRef(d, ts) => TypeRef(d, ts.map(extrudeTy))(tr.prov)
+         case tr @ TypeRef(d, ts) => ts.foreach(extrudeTy)
        }
      }
   }
