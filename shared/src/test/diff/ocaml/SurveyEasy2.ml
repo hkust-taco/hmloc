@@ -29,6 +29,6 @@ let increment result = match result with
 //│ ◉ (int) is here
 //│    - lib. let (+): int -> int -> int
 //│                                  ^^^
-//│ U max: 7, total: 8
+//│ U max: 1, total: 8
 //│ UERR 1 errors
 //│ L: 0 [string ~ int, string <: α68', α68' :> int]

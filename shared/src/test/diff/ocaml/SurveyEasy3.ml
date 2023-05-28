@@ -48,6 +48,6 @@ let check result condition =
 //│ ◉ (string) is here
 //│    - l.4      | Left n -> "OK"
 //│                           ^^^^
-//│ U max: 7, total: 10
+//│ U max: 1, total: 10
 //│ UERR 1 errors
 //│ L: 0 [either['a71','b72'] ~ string, either['a71','b72'] :> α67', α67' <: α69', α69' :> α70', α70' :> string]

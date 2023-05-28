@@ -40,6 +40,6 @@ let rec additivePersistence n =
 //│ ◉ (int) is here
 //│    - l.12   | [] -> 0
 //│                     ^
-//│ U max: 11, total: 56
+//│ U max: 2, total: 56
 //│ UERR 1 errors
 //│ L: 0 [bool ~ int, bool <: α154', α154' <: α140', α140' :> int]

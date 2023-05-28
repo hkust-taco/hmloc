@@ -16,6 +16,6 @@ let boolToBit x = if x then "0" else 1
 //│ ◉ (string) is here
 //│    - l.1  let boolToBit x = if x then "0" else 1
 //│                                       ^^^
-//│ U max: 3, total: 4
+//│ U max: 1, total: 4
 //│ UERR 1 errors
 //│ L: 0 [int ~ string, int <: α68', α68' :> string]
