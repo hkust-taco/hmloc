@@ -455,7 +455,8 @@ abstract class TyperHelpers { Typer: Typer =>
     }
 
     def children(includeBounds: Bool): List[SimpleType] = this match {
-      case tv: TypeVariable => if (includeBounds) tv.lowerBounds ::: tv.upperBounds else Nil
+//      case tv: TypeVariable => if (includeBounds) tv.lowerBounds ::: tv.upperBounds else Nil
+      case tv: TypeVariable => if (includeBounds) tv.uniConcreteTypes.toList else Nil
       case FunctionType(l, r) => l :: r :: Nil
       case ComposedType(_, l, r) => l :: r :: Nil
       case RecordType(fs) => fs.flatMap(f => f._2 :: Nil)
@@ -491,6 +492,10 @@ abstract class TyperHelpers { Typer: Typer =>
           + (if (tv.lowerBounds.isEmpty) "" else " :> " + tv.lowerBounds.mkString(" | "))
           + (if (tv.upperBounds.isEmpty) "" else " <: " + tv.upperBounds.mkString(" & "))
       ).mkString
+
+    def showUnified: String =
+      getVars.iterator.filter(tv => tv.uniConcreteTypes.nonEmpty)
+        .map(tv => "\n\t\t" + tv.toString + " = " + tv.uniConcreteTypes.mkString(", ")).mkString
 
     def expPos(implicit ctx: Ctx): Type = exp(S(true), this)
 

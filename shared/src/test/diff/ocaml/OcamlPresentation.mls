@@ -19,6 +19,9 @@ let boolToInt x = if x then "0" else 1
 //│    - l.1  let boolToInt x = if x then "0" else 1
 //│                                       ^^^
 //│ boolToInt: bool -> (int | string)
+//│ boolToInt: bool -> 'a
+//│   where
+//│     'a = int, string
 //│ U max: 1, total: 4
 //│ UERR 1 errors
 //│ L: 0 [int ~ string, int <: α68', α68' :> string]
@@ -55,6 +58,9 @@ let destructEither x = match x with
 //│    - lib. let (+): int -> int -> int
 //│                                  ^^^
 //│ destructEither: either[int, bool] -> (bool | int)
+//│ destructEither: either[int, bool] -> 'a
+//│   where
+//│     'a = bool, int
 //│ U max: 1, total: 8
 //│ UERR 1 errors
 //│ L: 0 [bool ~ int, bool <: α72', α72' :> int]
@@ -153,7 +159,10 @@ let destructEither x = if x then
 //│    - lib. let (+): int -> int -> int
 //│                                  ^^^
 //│ destructEither: (either[int, bool] & bool) -> (bool | int)
-//│ U max: 2, total: 16
+//│ destructEither: 'a -> 'a
+//│   where
+//│     'a = either[int, bool], bool
+//│ U max: 2, total: 17
 //│ UERR 3 errors
 //│ L: 0 [either['a86','b87'] ~ int, either['a86','b87'] :> α83', α83' <: α84', α84' :> α85', α85' :> int]
 //│ L: 0 [bool ~ either['a86','b87'], bool :> α83', α83' <: either['a86','b87']]
@@ -185,10 +194,14 @@ let test2 x = match x with
 //│    - l.1  let succ: int -> int
 //│                     ^^^
 //│ succ: int -> int
+//│ succ: int -> int
 //│ test2: (int & bool) -> int
+//│ test2: 'a -> int
+//│   where
+//│     'a = int, bool
 //│ U max: 1, total: 4
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool :> α97', α97' <: int]
+//│ L: 0 [bool ~ int, bool :> α98', α98' <: int]
 
 let g x = (not x, (if true then x else 5))
 //│ [ERROR] Type `int` does not match `bool`
@@ -219,9 +232,12 @@ let g x = (not x, (if true then x else 5))
 //│    - lib. let not: bool -> bool
 //│                    ^^^^
 //│ g: ('a & bool) -> (bool, 'a,)
-//│ U max: 1, total: 6
+//│ g: 'a -> (bool, 'a,)
+//│   where
+//│     'a = int, bool
+//│ U max: 2, total: 7
 //│ UERR 1 errors
-//│ L: 0 [int ~ bool, int <: α104', α104' :> α102', α102' <: bool]
+//│ L: 0 [int ~ bool, int <: α105', α105' :> α103', α103' <: bool]
 
 // Jonathan
 let confluence z = if true then z else 5
@@ -272,25 +288,33 @@ let conflict x = mkpair (not x) x
 //│    - l.1  let confluence z = if true then z else 5
 //│                                                  ^
 //│ confluence: 'a -> (int | 'a)
+//│ confluence: int -> int
 //│ mkpair: 'a -> anything -> ('a, anything,)
+//│ mkpair: 'a -> 'b -> ('a, int,)
 //│ conflict: ('a & bool) -> (anything, 'a,)
-//│ U max: 1, total: 11
+//│ conflict: bool -> (bool, 'a,)
+//│   where
+//│     'a = bool, int
+//│ U max: 2, total: 12
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool :> α127', α127' <: α129', α129' <: α131', α131' <: α130', α130' :> int]
+//│ L: 0 [bool ~ int, bool :> α132', α132' <: α134', α134' <: α136', α136' <: α135', α135' :> int]
 
 let test =
   let f x = x in
   (f 1, f true)
 //│ test: (anything, anything,)
+//│ test: (int, bool,)
 
 
 
 let wrap x = x :: []
 let rec t = wrap (if true then 1 else t)
 //│ wrap: 'a -> list['a]
+//│ wrap: 'a -> list['a]
 //│ t: 't
 //│   where
 //│     't :> list['t | int]
+//│ t: int
 
 // TODO weird unification error investigate
 let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
@@ -322,10 +346,14 @@ let weird x = (x + 1, length x)
 //│    - lib. let (+): int -> int -> int
 //│                    ^^^
 //│ length: list[?] -> int
+//│ length: list['a] -> int
 //│ weird: (list[?] & int) -> (anything, anything,)
-//│ U max: 2, total: 12
+//│ weird: 'b -> (int, int,)
+//│   where
+//│     'b = list['a], int
+//│ U max: 2, total: 14
 //│ UERR 1 errors
-//│ L: 1 [list['a189'] ~ int, [list['a189'] - ([list['a189']] -> α191') ~ ([α184'] -> α193') - α184', L: 0 [([list['a189']] -> α191') ~ ([α184'] -> α193'), ([list['a189']] -> α191') :> length187', length187' <: ([α184'] -> α193')]], α184' <: int]
+//│ L: 1 [list['a198'] ~ int, [list['a198'] - ([list['a198']] -> α200') ~ ([α193'] -> α202') - α193', L: 0 [([list['a198']] -> α200') ~ ([α193'] -> α202'), ([list['a198']] -> α200') :> length196', length196' <: ([α193'] -> α202')]], α193' <: int]
 
 
 let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
@@ -351,6 +379,9 @@ let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│    - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│                                                          ^^
 //│ len: (list[?] & string) -> int
+//│ len: 'b -> int
+//│   where
+//│     'b = list['a], string
 //│ U max: 1, total: 4
 //│ UERR 1 errors
-//│ L: 0 [string ~ list['a201'], string :> α199', α199' <: list['a201']]
+//│ L: 0 [string ~ list['a211'], string :> α209', α209' <: list['a211']]

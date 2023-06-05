@@ -30,7 +30,10 @@ let h y = (not y, (if true then y else 5))
 //│    - lib. let not: bool -> bool
 //│                    ^^^^
 //│ h: ('a & bool) -> (bool, 'a,)
-//│ U max: 1, total: 6
+//│ h: 'a -> (bool, 'a,)
+//│   where
+//│     'a = int, bool
+//│ U max: 2, total: 7
 //│ UERR 1 errors
 //│ L: 0 [int ~ bool, int <: α69', α69' :> α67', α67' <: bool]
 
@@ -69,9 +72,12 @@ let h y = (not y, (if true then y else 5))
 //│    - lib. let not: bool -> bool
 //│                    ^^^^
 //│ h: ('a & bool) -> (bool, 'a,)
-//│ U max: 1, total: 6
+//│ h: 'a -> (bool, 'a,)
+//│   where
+//│     'a = int, bool
+//│ U max: 2, total: 7
 //│ UERR 1 errors
-//│ L: 0 [int ~ bool, int <: α76', α76' :> α74', α74' <: bool]
+//│ L: 0 [int ~ bool, int <: α77', α77' :> α75', α75' <: bool]
 
 
 
@@ -105,10 +111,14 @@ confluence true
 //│    - l.1  let confluence z = if true then z else 5
 //│                                                  ^
 //│ confluence: 'a -> (int | 'a)
+//│ confluence: int -> int
 //│ res: bool | int
-//│ U max: 1, total: 6
+//│ resU: 'a
+//│   where
+//│     'a = bool, int
+//│ U max: 2, total: 7
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool <: α87, α87 <: α88, α88 :> int]
+//│ L: 0 [bool ~ int, bool <: α90, α90 <: α91, α91 :> int]
 
 
 let mkpair x y = (x, confluence y)
@@ -138,29 +148,33 @@ let conflict x = mkpair (not x) x
 //│ │                      ^
 //│ │  - l.1  let mkpair x y = (x, confluence y)
 //│ │                                         ^
-//│ │  - l.-33let confluence z = if true then z else 5
+//│ │  - l.-37let confluence z = if true then z else 5
 //│ │                        ^
 //│ ▼ 
 //│ ◉ (?c) is assumed here
-//│ │  - l.-33let confluence z = if true then z else 5
+//│ │  - l.-37let confluence z = if true then z else 5
 //│ │                        ^
-//│ │  - l.-33let confluence z = if true then z else 5
+//│ │  - l.-37let confluence z = if true then z else 5
 //│ │                                         ^
-//│ │  - l.-33let confluence z = if true then z else 5
+//│ │  - l.-37let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
 //│ ◉ (?d) is assumed here
-//│ ▲  - l.-33let confluence z = if true then z else 5
+//│ ▲  - l.-37let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
 //│ ◉ (int) is here
-//│    - l.-33let confluence z = if true then z else 5
+//│    - l.-37let confluence z = if true then z else 5
 //│                                                  ^
 //│ mkpair: 'a -> anything -> ('a, anything,)
+//│ mkpair: 'a -> 'b -> ('a, int,)
 //│ conflict: ('a & bool) -> (anything, 'a,)
-//│ U max: 1, total: 8
+//│ conflict: bool -> (bool, 'a,)
+//│   where
+//│     'a = bool, int
+//│ U max: 2, total: 8
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool :> α104', α104' <: α106', α106' <: α108', α108' <: α107', α107' :> int]
+//│ L: 0 [bool ~ int, bool :> α110', α110' <: α112', α112' <: α114', α114' <: α113', α113' :> int]
 
 
 
@@ -169,8 +183,10 @@ let conflict x = mkpair (not x) x
 let rec digitsOfInt n =
   if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
 //│ digitsOfInt: int -> (list[int] | list[nothing])
+//│ digitsOfInt: int -> list[int]
 
 let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
+//│ addNumbs: list[int] -> int
 //│ addNumbs: list[int] -> int
 
 // show nested unification error
@@ -178,6 +194,7 @@ let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
 // :tex
 let digits n = digitsOfInt (abs n)
 //│ digits: int -> (list[int] | list[nothing])
+//│ digits: int -> list[int]
 
 
 let rec additivePersistence n =
@@ -212,9 +229,10 @@ let rec additivePersistence n =
 //│    - l.3    | [] -> 0
 //│                     ^
 //│ additivePersistence: int -> (bool | int)
-//│ U max: 2, total: 28
+//│ additivePersistence: 'additivePersistence
+//│ U max: 6, total: 48
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool <: α206', α206' <: α192', α192' :> int]
+//│ L: 0 [bool ~ int, bool <: α217', α217' <: α203', α203' :> int]
 
 // TODO: weird unification shown investigate
 let y x = [x]
@@ -259,8 +277,65 @@ let k a = if a then [2] else y true
 //│   ◉ (int * _ list) is here
 //│      - l.2  let k a = if a then [2] else y true
 //│                                  ^
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│         (bool) ---> (?b) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (int)
+//│ 
+//│ ◉ (bool) is here
+//│ │  - l.2  let k a = if a then [2] else y true
+//│ │                                        ^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.1  let y x = [x]
+//│                 ^
+//│   ◉ (?b * ?a list) is here
+//│   │  - l.1  let y x = [x]
+//│   │                    ^
+//│   ▼ 
+//│   ◉ (?a0 * ?a0 list) is here
+//│      - l.1  let y x = [x]
+//│                        ^
+//│     ◉ (?a0 * ?a0 list) is here
+//│     ▲  - l.1  let y x = [x]
+//│     │                    ^
+//│     │ 
+//│     ◉ (?b * ?a list) is here
+//│        - l.1  let y x = [x]
+//│                          ^
+//│     ◉ (?b * ?a list) is here
+//│     │  - l.1  let y x = [x]
+//│     │                    ^
+//│     ▼ 
+//│     ◉ (?a0 * ?a0 list) is here
+//│        - l.1  let y x = [x]
+//│                          ^
+//│   ◉ (?a0 list) is here
+//│   │  - l.1  let y x = [x]
+//│   │                   ^^^
+//│   │  - l.2  let k a = if a then [2] else y true
+//│   │                                      ^^^^^^
+//│   │  - l.2  let k a = if a then [2] else y true
+//│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   ▲  - l.2  let k a = if a then [2] else y true
+//│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │ 
+//│   ◉ (?a1 list) is here
+//│      - l.2  let k a = if a then [2] else y true
+//│                                 ^^^
+//│   ◉ (?a1 * ?a1 list) is here
+//│   ▲  - l.2  let k a = if a then [2] else y true
+//│   │                              ^
+//│   │ 
+//│   ◉ (int * _ list) is here
+//│      - l.2  let k a = if a then [2] else y true
+//│                                  ^
+//│ y: 'a -> list['a]
 //│ y: 'a -> list['a]
 //│ k: bool -> (list[bool] | list[int])
-//│ U max: 2, total: 17
-//│ UERR 1 errors
-//│ L: 1 [bool ~ int, bool <: α226', [α226' - ([[α226']], [[list['a228']]],) ~ ('a227', list['a227'],) - 'a227', L: 0 [([[α226']], [[list['a228']]],) ~ ('a227', list['a227'],), ([[α226']], [[list['a228']]],) <: ('a227', list['a227'],)]], ['a227' - list['a227'] ~ list['a223'] - 'a223', L: 0 [list['a227'] ~ list['a223'], list['a227'] <: α222', α222' :> list['a223']]], ['a223' - ('a223', list['a223'],) ~ ([int], [[list['a224']]],) - int, L: 0 [('a223', list['a223'],) ~ ([int], [[list['a224']]],), ('a223', list['a223'],) :> ([int], [[list['a224']]],)]]]
+//│ k: bool -> list[bool]
+//│ U max: 5, total: 31
+//│ UERR 2 errors
+//│ L: 2 [bool ~ int, bool <: α238', [α238' - ([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],) - 'a239', L: 0 [([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],), ([[α238']], [[list['a240']]],) <: ('a239', list['a239'],)]], ['a239' - list['a239'] ~ list['a240'] - 'a240', L: 1 [list['a239'] ~ list['a240'], [list['a239'] - ('a239', list['a239'],) ~ ([[α238']], [[list['a240']]],) - list['a240'], L: 0 [('a239', list['a239'],) ~ ([[α238']], [[list['a240']]],), ('a239', list['a239'],) :> ([[α238']], [[list['a240']]],)]]]], ['a240' - list['a240'] ~ list['a239'] - 'a239', L: 1 [list['a240'] ~ list['a239'], [list['a240'] - ([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],) - list['a239'], L: 0 [([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],), ([[α238']], [[list['a240']]],) <: ('a239', list['a239'],)]]]], ['a239' - list['a239'] ~ list['a235'] - 'a235', L: 0 [list['a239'] ~ list['a235'], list['a239'] <: α234', α234' :> list['a235']]], ['a235' - ('a235', list['a235'],) ~ ([int], [[list['a236']]],) - int, L: 0 [('a235', list['a235'],) ~ ([int], [[list['a236']]],), ('a235', list['a235'],) :> ([int], [[list['a236']]],)]]]
+//│ L: 1 [bool ~ int, bool <: α238', [α238' - ([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],) - 'a239', L: 0 [([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],), ([[α238']], [[list['a240']]],) <: ('a239', list['a239'],)]], ['a239' - list['a239'] ~ list['a235'] - 'a235', L: 0 [list['a239'] ~ list['a235'], list['a239'] <: α234', α234' :> list['a235']]], ['a235' - ('a235', list['a235'],) ~ ([int], [[list['a236']]],) - int, L: 0 [('a235', list['a235'],) ~ ([int], [[list['a236']]],), ('a235', list['a235'],) :> ([int], [[list['a236']]],)]]]

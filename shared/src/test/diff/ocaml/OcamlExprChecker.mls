@@ -9,28 +9,39 @@ exception Error
 //│ Defined class None
 //│ Defined class Some[+'a]
 //│ None: option[nothing]
+//│ None: option['a]
+//│ Some: 'a -> option['a]
 //│ Some: 'a -> option['a]
 //│ raise: anything -> nothing
+//│ raise: 'a -> nothing
+//│ Error: anything
 //│ Error: anything
 
 let List.length: 'a list -> int
 let List.mem: 'a -> 'a list -> bool
 let List.append: 'a list -> 'a list -> 'a list
 //│ List.length: list[?] -> int
+//│ List.length: list['a] -> int
 //│ List.mem: anything -> list[?] -> bool
+//│ List.mem: 'a -> list['a] -> bool
+//│ List.append: list['a] -> list['a] -> list['a]
 //│ List.append: list['a] -> list['a] -> list['a]
 
 let (@): 'a list -> 'a list -> 'a list
 Cons(1, Nil) @ Cons(2, Nil)
 //│ @: list['a] -> list['a] -> list['a]
+//│ @: list['a] -> list['a] -> list['a]
 //│ res: list[int]
+//│ resU: list[int]
 
 // equality check
 // FIXME
 let a b c = b = c
 let a b c d = b = c = d
 //│ a: anything -> anything -> bool
+//│ a: 'a -> 'b -> bool
 //│ a: anything -> anything -> anything -> bool
+//│ a: bool -> 'a -> 'b -> bool
 
 // list values
 1 :: Nil
@@ -39,9 +50,13 @@ let a b c d = b = c = d
 []
 // let a = []
 //│ res: list[int]
+//│ resU: list[int]
 //│ res: list[int]
+//│ resU: list[int]
 //│ res: list[(int, int, int, int,)]
+//│ resU: list[(int, int, int, int,)]
 //│ res: list[nothing]
+//│ resU: list['a]
 
 let (+.): float -> float -> float
 let (-.): float -> float -> float
@@ -49,18 +64,26 @@ let ( *. ): float -> float -> float
 let ( /. ): float -> float -> float
 let ( ** ): float -> float -> float
 //│ +.: float -> float -> float
+//│ +.: float -> float -> float
+//│ -.: float -> float -> float
 //│ -.: float -> float -> float
 //│ *.: float -> float -> float
+//│ *.: float -> float -> float
 //│ /.: float -> float -> float
+//│ /.: float -> float -> float
+//│ **: float -> float -> float
 //│ **: float -> float -> float
 
 1.0 +. 1.0 -. 1.0 *. 2.0 /. 3.0 ** 5.0
 //│ res: float
+//│ resU: float
 
 1.0 :: Nil
 2.0 :: 3.223 :: Nil
 //│ res: list[float]
+//│ resU: list[float]
 //│ res: list[float]
+//│ resU: list[float]
 
 let f = 3.14
 let f = f +. 1.0
@@ -68,8 +91,12 @@ let f = f +. f +. 1.0
 //│ f: float
 //│ f: float
 //│ f: float
+//│ f: float
+//│ f: float
+//│ f: float
 
 let (+): int -> int -> int
+//│ +: int -> int -> int
 //│ +: int -> int -> int
 
 // let without in as definitions
@@ -79,19 +106,28 @@ let a = a + a + 1
 //│ a: int
 //│ a: int
 //│ a: int
+//│ a: int
+//│ a: int
+//│ a: int
 
 let a = ("hi", 2)
 let b = ("bye", 3)
 let data = Cons (a, Cons (b, Nil))
 //│ a: (string, int,)
+//│ a: (string, int,)
 //│ b: (string, int,)
+//│ b: (string, int,)
+//│ data: list[(string, int,)]
 //│ data: list[(string, int,)]
 
 2.0
 let b = 3.0
 let c = 3.0 +. 4.0 *. 6.0
 //│ res: float
+//│ resU: float
 //│ b: float
+//│ b: float
+//│ c: float
 //│ c: float
 
 // make tuples from comma separated terms
@@ -100,9 +136,13 @@ let mktup = 1, 2, 3
 let mktup = 1, (2, 3)
 let mktup = [1, 2, 3], 4, (5, 6)
 //│ res: (int, int, int,)
+//│ resU: (int, int, int,)
+//│ mktup: (int, int, int,)
 //│ mktup: (int, int, int,)
 //│ mktup: (int, (int, int,),)
+//│ mktup: (int, (int, int,),)
 //│ mktup: (list[?], int, (int, int,),)
+//│ mktup: (list[(int, int, int,)], int, (int, int,),)
 
 // create classes for exceptions
 exception Unimplemented
@@ -110,9 +150,13 @@ exception AlreadyDone
 raise Unimplemented
 raise AlreadyDone
 //│ Unimplemented: anything
+//│ Unimplemented: anything
+//│ AlreadyDone: anything
 //│ AlreadyDone: anything
 //│ res: nothing
+//│ resU: nothing
 //│ res: nothing
+//│ resU: nothing
 
 // type definitions
 type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
@@ -121,6 +165,8 @@ type heapVar = HeapInt of int | Heap of heap and heap = (string * int) list
 //│ Defined class Heap
 //│ Defined type alias heap
 //│ HeapInt: int -> heapVar
+//│ HeapInt: int -> heapVar
+//│ Heap: heap -> heapVar
 //│ Heap: heap -> heapVar
 
 type exp = Int of int | Var of string | Plus of exp * exp | Times of exp * exp
@@ -130,8 +176,12 @@ type exp = Int of int | Var of string | Plus of exp * exp | Times of exp * exp
 //│ Defined class Plus
 //│ Defined class Times
 //│ Int: int -> exp
+//│ Int: int -> exp
+//│ Var: string -> exp
 //│ Var: string -> exp
 //│ Plus: (exp, exp,) -> exp
+//│ Plus: (exp, exp,) -> exp
+//│ Times: (exp, exp,) -> exp
 //│ Times: (exp, exp,) -> exp
 
 type stmt = Skip | Assign of string * exp
@@ -149,11 +199,18 @@ type stmt = Skip | Assign of string * exp
 //│ Defined class SaveHeap
 //│ Defined class RestoreHeap
 //│ Skip: stmt
+//│ Skip: stmt
+//│ Assign: (string, exp,) -> stmt
 //│ Assign: (string, exp,) -> stmt
 //│ Seq: (stmt, stmt,) -> stmt
+//│ Seq: (stmt, stmt,) -> stmt
+//│ If: (exp, stmt, stmt,) -> stmt
 //│ If: (exp, stmt, stmt,) -> stmt
 //│ While: (exp, stmt,) -> stmt
+//│ While: (exp, stmt,) -> stmt
 //│ SaveHeap: string -> stmt
+//│ SaveHeap: string -> stmt
+//│ RestoreHeap: string -> stmt
 //│ RestoreHeap: string -> stmt
 
 // parameterized type definitions
@@ -170,8 +227,12 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│ Defined type alias heapD[+'a, +'b]
 //│ Defined class HeapD[+'a, +'b]
 //│ HeapA: 'a -> heapA['a]
+//│ HeapA: 'a -> heapA['a]
+//│ HeapB: ('a, 'b,) -> heapB['a, 'b]
 //│ HeapB: ('a, 'b,) -> heapB['a, 'b]
 //│ HeapC: list[('a, 'b,)] -> heapC['a, 'b]
+//│ HeapC: list[('a, 'b,)] -> heapC['a, 'b]
+//│ HeapD: ('a, list['b],) -> heapD['a, 'b]
 //│ HeapD: ('a, list['b],) -> heapD['a, 'b]
 
 (("hi", 1) :: Nil)
@@ -200,15 +261,19 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│    - l.3  (("hi", 1) :: ("bye", 2) :: Nil):heap
 //│                                            ^^^^
 //│ res: list[(string, int,)]
+//│ resU: list[(string, int,)]
 //│ res: heap
+//│ resU: heap
 //│ res: heap
-//│ U max: 2, total: 22
+//│ resU: heap
+//│ U max: 3, total: 25
 //│ UERR 2 errors
-//│ L: 0 [list['a301] ~ heap, list['a301] <: heap]
-//│ L: 0 [list['a304] ~ heap, list['a304] <: heap]
+//│ L: 0 [list['a315] ~ heap, list['a315] <: heap]
+//│ L: 0 [list['a318] ~ heap, list['a318] <: heap]
 
 let update h str i = (str,i)::h
 //│ update: list['a] -> 'b -> 'c -> list[('b, 'c,) | 'a]
+//│ update: list[('a, 'b,)] -> 'a -> 'b -> list[('a, 'b,)]
 
 /// FIXME
 // define lambdas using fun
@@ -229,26 +294,29 @@ let interp2 = (fun (env:env) opt ->
 //│                ^^^^
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.215:	fun (env: env) _ -> []
+//│ ║  l.280:	fun (env: env) _ -> []
 //│ ╙──      	    ^^^^^^^^^^^^
 //│ res: error -> list[nothing]
+//│ resU: error -> list['a]
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.216:	let interp2 = (fun (env:env) opt ->
+//│ ║  l.281:	let interp2 = (fun (env:env) opt ->
 //│ ╙──      	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
 //│ ║  
-//│ ║  l.217:	  match opt with
+//│ ║  l.282:	  match opt with
 //│ ╙──      	        ^^^
+//│ interp2: error -> int
 //│ interp2: error -> int
 //│ U max: 1, total: 2
 //│ UERR 1 errors
-//│ L: 0 [error<> ~ option['a327'], error<> <: option['a327']]
+//│ L: 0 [error<> ~ option['a341'], error<> <: option['a341']]
 
 let head xs = match xs with
   Cons(x, xs) -> x
   | _ -> raise Error
 //│ head: list['a] -> (nothing | 'a)
+//│ head: list[nothing] -> nothing
 
 
 :s
@@ -256,6 +324,7 @@ let head xs = match xs with
   x :: xs -> x
   | _ -> raise Error
 //│ head: list['a] -> (nothing | 'a)
+//│ head: list[nothing] -> nothing
 
 type ('a) bigHeap =
   NoHeap of 'a list
@@ -268,7 +337,10 @@ type ('a) bigHeap =
 //│ Defined class NonsHeap[+'a]
 //│ Defined type alias otherList
 //│ NoHeap: list['a] -> bigHeap['a]
+//│ NoHeap: list['a] -> bigHeap['a]
 //│ NonHeap: otherList -> bigHeap[nothing]
+//│ NonHeap: otherList -> bigHeap['a]
+//│ NonsHeap: list[(otherList, 'a,)] -> bigHeap['a]
 //│ NonsHeap: list[(otherList, 'a,)] -> bigHeap['a]
 
 :dp
@@ -291,6 +363,7 @@ let check (v: ((int, int))) =
   match v with
    ((c, d)) -> c + d
 //│ check: (int, int,) -> int
+//│ check: (int, int,) -> int
 
 // FIXME: nested match case not working right now
 let checkagain (v: (int, int, (int, int))) =
@@ -305,7 +378,7 @@ let checkagain (v: (int, int, (int, int))) =
 //│ │                                      ^
 //│ ▼ 
 //│ ◉ (int) is here
-//│    - l.-223let (+): int -> int -> int
+//│    - l.-270let (+): int -> int -> int
 //│                            ^^^
 //│ [ERROR] Type `int` does not match `error`
 //│ 
@@ -335,28 +408,30 @@ let checkagain (v: (int, int, (int, int))) =
 //│                        ^^^^
 //│ ╔══[ERROR] identifier not found: k
 //│ ║  
-//│ ║  l.298:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.371:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	           ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.298:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.371:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	              ^
 //│ ╔══[ERROR] identifier not found: k
 //│ ║  
-//│ ║  l.298:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.371:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	                             ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.298:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.371:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	                                 ^
+//│ checkagain: (int, int, (int, int,),) -> int
 //│ checkagain: (int, int, (int, int,),) -> int
 //│ U max: 3, total: 15
 //│ UERR 2 errors
-//│ L: 2 [int ~ error<>, [int - ([int], [int],) ~ ([[error<>]], [[error<>]],) - error<>, L: 1 [([int], [int],) ~ ([[error<>]], [[error<>]],), [([int], [int],) - ([int], [int], [([int], [int],)],) ~ ([α385'], [α386'], [α387'],) - α387', L: 0 [([int], [int], [([int], [int],)],) ~ ([α385'], [α386'], [α387'],), ([int], [int], [([int], [int],)],) :> α383', α383' <: ([α385'], [α386'], [α387'],)]], α387' <: ([[error<>]], [[error<>]],)]]]
 //│ L: 0 [error<> ~ int, error<> <: int]
+//│ L: 2 [int ~ error<>, [int - ([int], [int],) ~ ([[error<>]], [[error<>]],) - error<>, L: 1 [([int], [int],) ~ ([[error<>]], [[error<>]],), [([int], [int],) - ([int], [int], [([int], [int],)],) ~ ([α401'], [α402'], [α403'],) - α403', L: 0 [([int], [int], [([int], [int],)],) ~ ([α401'], [α402'], [α403'],), ([int], [int], [([int], [int],)],) :> α399', α399' <: ([α401'], [α402'], [α403'],)]], α403' <: ([[error<>]], [[error<>]],)]]]
 
 let (<): 'a -> 'a -> bool
 //│ <: anything -> anything -> bool
+//│ <: 'a -> 'a -> bool
 
 :dp
 let temp n = 
@@ -365,28 +440,37 @@ let temp n =
     | false  -> 1
 //│ Parsed: Def(false, temp, Lam(Var(n), If(App(App(Var(<), Var(n)), IntLit(0)), List(IfThen(Var(true), IntLit(0), IfThen(Var(false), IntLit(1)))), true)
 //│ temp: anything -> int
+//│ temp: int -> int
 
 let (-): int -> int -> int
 let (+): int -> int -> int
 let ( * ): int -> int -> int
 //│ -: int -> int -> int
+//│ -: int -> int -> int
 //│ +: int -> int -> int
+//│ +: int -> int -> int
+//│ *: int -> int -> int
 //│ *: int -> int -> int
 
 let check a b =
   let (sum, sub) = (a + b, a - b) in sum * sub
 //│ check: int -> int -> int
+//│ check: int -> int -> int
 
 let d x =
   let (hd :: tl) = x in hd
+//│ d: list['a] -> 'a
 //│ d: list['a] -> 'a
 
 let mod: int -> int -> int
 10 mod 4
 3 mod 10 mod 4
 //│ mod: int -> int -> int
+//│ mod: int -> int -> int
 //│ res: int
+//│ resU: int
 //│ res: int
+//│ resU: int
 
 // tuples
 0, fun x -> x
@@ -395,10 +479,15 @@ let g x = x, if true then x else x
 [0; 1]
 [0, 1; 2, 3]
 //│ res: (int, 'a -> 'a,)
+//│ resU: (int, 'a -> 'a,)
 //│ g: 'a -> ('a, anything,)
+//│ g: 'a -> ('a, 'a,)
 //│ res: list[(int, int,)]
+//│ resU: list[(int, int,)]
 //│ res: list[int]
+//│ resU: list[int]
 //│ res: list[(int, int,)]
+//│ resU: list[(int, int,)]
 
 [0, 1; 2, 3, 4]
 //│ [ERROR] Type `int * int * int` does not match `int * int`
@@ -427,9 +516,12 @@ let g x = x, if true then x else x
 //│      - l.1  [0, 1; 2, 3, 4]
 //│              ^^^^^^^^^^^^^
 //│ res: list[(int, int, int,) | (int, int,)]
-//│ U max: 2, total: 10
+//│ resU: list['a]
+//│   where
+//│     'a = (int, int, int,), (int, int,)
+//│ U max: 3, total: 15
 //│ UERR 1 errors
-//│ L: 2 [([int], [int], [int],) ~ ([int], [int],), [([int], [int], [int],) - ([([int], [int], [int],)], [[list['a466]]],) ~ ('a465, list['a465],) - 'a465, L: 0 [([([int], [int], [int],)], [[list['a466]]],) ~ ('a465, list['a465],), ([([int], [int], [int],)], [[list['a466]]],) <: ('a465, list['a465],)]], ['a465 - list['a465] ~ list['a464] - 'a464, L: 1 [list['a465] ~ list['a464], [list['a465] - ([([int], [int],)], [[list['a465]]],) ~ ('a464, list['a464],) - list['a464], L: 0 [([([int], [int],)], [[list['a465]]],) ~ ('a464, list['a464],), ([([int], [int],)], [[list['a465]]],) <: ('a464, list['a464],)]]]], ['a464 - ('a464, list['a464],) ~ ([([int], [int],)], [[list['a465]]],) - ([int], [int],), L: 0 [('a464, list['a464],) ~ ([([int], [int],)], [[list['a465]]],), ('a464, list['a464],) :> ([([int], [int],)], [[list['a465]]],)]]]
+//│ L: 2 [([int], [int], [int],) ~ ([int], [int],), [([int], [int], [int],) - ([([int], [int], [int],)], [[list['a488]]],) ~ ('a487, list['a487],) - 'a487, L: 0 [([([int], [int], [int],)], [[list['a488]]],) ~ ('a487, list['a487],), ([([int], [int], [int],)], [[list['a488]]],) <: ('a487, list['a487],)]], ['a487 - list['a487] ~ list['a486] - 'a486, L: 1 [list['a487] ~ list['a486], [list['a487] - ([([int], [int],)], [[list['a487]]],) ~ ('a486, list['a486],) - list['a486], L: 0 [([([int], [int],)], [[list['a487]]],) ~ ('a486, list['a486],), ([([int], [int],)], [[list['a487]]],) <: ('a486, list['a486],)]]]], ['a486 - ('a486, list['a486],) ~ ([([int], [int],)], [[list['a487]]],) - ([int], [int],), L: 0 [('a486, list['a486],) ~ ([([int], [int],)], [[list['a487]]],), ('a486, list['a486],) :> ([([int], [int],)], [[list['a487]]],)]]]
 
 let increment x = match x with
   | 0 -> 1
@@ -442,9 +534,13 @@ let score stmt = match stmt with
 let test n = match n with | x -> x + 1 - x - 1
 let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 //│ increment: int -> int
+//│ increment: int -> int
+//│ score: stmt -> int
 //│ score: stmt -> int
 //│ test: int -> int
+//│ test: int -> int
 //│ length: list[?] -> int
+//│ length: list['a] -> int
 
 
 let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
@@ -470,7 +566,10 @@ let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│    - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│                                                          ^^
 //│ len: (list[?] & string) -> int
+//│ len: 'b -> int
+//│   where
+//│     'b = list['a], string
 //│ U max: 1, total: 4
 //│ UERR 1 errors
-//│ L: 0 [string ~ list['a506'], string :> α504', α504' <: list['a506']]
+//│ L: 0 [string ~ list['a529'], string :> α527', α527' <: list['a529']]
 

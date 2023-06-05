@@ -124,6 +124,10 @@ abstract class TypeImpl extends Located { self: Type =>
         s"\n    ${vstr             } :> ${lb.showIn(ctx, 0)}" +
         s"\n    ${" " * vstr.length} <: ${ub.showIn(ctx, 0)}"
     }.mkString}", outerPrec > 0)
+    case Unified(ty, us) => parensIf(s"${ty.showIn(ctx, 0)}\n  where${us.map {
+      case (tv, tys) =>
+        s"\n    ${ctx.vs(tv)} = ${tys.map(_.showIn(ctx, 0)).mkString(", ")}"
+    }.mkString}", outerPrec > 0)
     case Literal(UnitLit(b)) => if (b) "undefined" else "null"
   }
   
@@ -141,6 +145,7 @@ abstract class TypeImpl extends Located { self: Type =>
     case Rem(b, _) => b :: Nil
     case WithExtension(b, r) => b :: r :: Nil
     case Constrained(b, ws) => b :: ws.flatMap(c => c._1 :: c._2 :: Nil)
+    case Unified(ty, us) => ty.children ::: us.flatMap { case (tv, tys) => tv :: tys.flatMap(_.children)}
   }
 
   /**

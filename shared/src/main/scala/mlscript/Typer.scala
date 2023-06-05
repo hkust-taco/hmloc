@@ -873,10 +873,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
 
   /** Convert an inferred SimpleType into the immutable Type representation. */
   def expandType(st: SimpleType, stopAtTyVars: Bool = false, showTV: Set[TV] = Set(), ocamlStyle: Bool = false)(implicit ctx: Ctx): Type = {
-    val expandType = ()
-    
-    import Set.{empty => semp}
-    
     var bounds: Ls[TypeVar -> Bounds] = Nil
     
     val seenVars = mutable.Set.empty[TV]
@@ -944,8 +940,71 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     if (bounds.isEmpty) res
     else Constrained(res, bounds)
   }
-  
-  
+
+  /** Convert an inferred SimpleType into the immutable Type representation using Unification information. */
+  def expandUnifiedType(st: SimpleType, stopAtTyVars: Bool = false, showTV: Set[TV] = Set(), ocamlStyle: Bool = false)(implicit ctx: Ctx): Type = {
+    var bounds: Ls[TypeVar -> Bounds] = Nil
+    var unified: Ls[TypeVar -> Ls[Type]] = Nil
+
+    val seenVars = mutable.Set.empty[TV]
+
+    def go(st: SimpleType)(implicit cache: Set[TV]): Type =
+    // trace(s"expand $st") {
+      st.unwrapProvs match {
+        case tv: TypeVariable if ocamlStyle =>
+          if (showTV(tv)) {
+            tv.asTypeVar
+          } else {
+            tv.asTypeVar
+              .copy(nameHint = S("_"))
+          }
+        case tv: TypeVariable if stopAtTyVars => tv.asTypeVar
+        case tv: TypeVariable =>
+          val nv = tv.asTypeVar
+          if (!seenVars(tv)) {
+            seenVars += tv
+            val mapping = tv.uniConcreteTypes.iterator.map(go).toList
+            if (mapping.nonEmpty) unified ::= (nv, mapping)
+            val l = go(tv.lowerBounds.foldLeft(BotType: ST)(_ | _))
+            val u = go(tv.upperBounds.foldLeft(TopType: ST)(_ & _))
+            if (l =/= Bot || u =/= Top)
+              bounds ::= nv -> Bounds(l, u)
+          }
+          nv
+        case FunctionType(l, r) => Function(go(l), go(r))
+        case ComposedType(true, l, r) => Union(go(l), go(r))
+        case ComposedType(false, l, r) => Inter(go(l), go(r))
+        case RecordType(fs) => Record(fs.mapValues(go))
+        case TupleType(fs) => Tuple(fs.map{ case (_, fld) => go(fld)})
+        case ArrayType(st) => AppliedType(TypeName("Array"), go(st) :: Nil)
+        case ExtrType(true) => Bot
+        case ExtrType(false) => Top
+        case ProxyType(und) => go(und)
+        case tag: ObjectTag => tag.id match {
+          case Var(n) =>
+            if (primitiveTypes.contains(n) // primitives like `int` are internally maintained as class tags
+              || n.isCapitalized // rigid type params like A in class Foo[A]
+              || n.startsWith("'") // rigid type varibales
+              || n === "this" // `this` type
+            ) TypeName(n)
+            else TypeTag(n.capitalize)
+          case lit: Lit => Literal(lit)
+        }
+        case TypeRef(td, Nil) => td
+        case tr @ TypeRef(td, targs) => AppliedType(td, tr.mapTargs(S(true)) {
+          case ta @ ((S(true), TopType) | (S(false), BotType)) => Bounds(Bot, Top)
+          case (_, ty) => go(ty)
+        })
+        case TypeBounds(lb, ub) => Bounds(go(lb), go(ub))
+        case _ => ???
+      }
+    // }(r => s"~> $r")
+
+    val res = go(st)(Set.empty)
+    if (unified.isEmpty) res
+    else Unified(res, unified)
+  }
+
   private var curUid: Int = 0
   def nextUid: Int = {
     val res = curUid

@@ -85,11 +85,15 @@ trait UnificationSolver extends TyperDatatypes {
             else enqueueUnification(tvuni.concat(u))
           })
 
+          // update rhs with unification if it is a type variable
+          rhs match {
+            case tv: TV => tv.uni ::= u
+            case _ => ()
+          }
           tv.uni ::= u
         // rhs0.level >= tv.level
         case (tv: TypeVariable, rhs) =>
-          val extrudeSet: MutSet[ST] = MutSet.empty
-          extrudeTy(rhs)(tv.level, extrudeSet)
+          extrudeTy(rhs)(tv.level)
           println(s"U EXTR ~> ${rhs.toString}")
           // u = tv ---- st2
           tv.uni.foreach(tvuni => {
@@ -99,6 +103,11 @@ trait UnificationSolver extends TyperDatatypes {
             else enqueueUnification(tvuni.concat(u))
           })
 
+          // update rhs with unification if it is a type variable
+          rhs match {
+            case tv: TV => tv.uni ::= u
+            case _ => ()
+          }
           tv.uni ::= u
         case (lhs, tv: TypeVariable) if lhs.level <= tv.level =>
           // u = st1 ---- tv
@@ -109,11 +118,15 @@ trait UnificationSolver extends TyperDatatypes {
             else enqueueUnification(u.concat(tvuni.rev))
           })
 
+          // update lhs with unification if it is a type variable
+          lhs match {
+            case tv: TV => tv.uni ::= u
+            case _ => ()
+          }
           tv.uni ::= u
         // lhs0.level >= tv.level
         case (lhs, tv: TypeVariable) =>
-          val extrudeSet: MutSet[ST] = MutSet.empty
-          extrudeTy(lhs)(tv.level, extrudeSet)
+          extrudeTy(lhs)(tv.level)
           println(s"U EXTR ~> ${lhs.toString}")
           // u = st1 ---- tv
           tv.uni.foreach(tvuni => {
@@ -123,21 +136,26 @@ trait UnificationSolver extends TyperDatatypes {
             else enqueueUnification(u.concat(tvuni.rev))
           })
 
+          // update lhs with unification if it is a type variable
+          lhs match {
+            case tv: TV => tv.uni ::= u
+            case _ => ()
+          }
           tv.uni ::= u
         case (st1, st2) if st1 != st2 => addError(u)
         case _ => ()
       }
     }
     
-     def extrudeDF(df: DataFlow)(implicit lvl: Int, cache: MutSet[ST]): Unit = df match {
+     def extrudeDF(df: DataFlow)(implicit lvl: Int): Unit = df match {
        case c@Constraint(a, b) => extrudeTy(a); extrudeTy(b)
        case Constructor(a, b, ctora, ctorb, uni) =>
          extrudeTy(a); extrudeTy(b); extrudeTy(ctora); extrudeTy(ctorb); extrudeUni(uni)
      }
 
-     def extrudeUni(uni: Unification)(implicit lvl: Int, cache: MutSet[ST]): Unit = uni.flow.foreach(extrudeDF)
+     def extrudeUni(uni: Unification)(implicit lvl: Int): Unit = uni.flow.foreach(extrudeDF)
 
-     def extrudeTy(ty: ST)(implicit lvl: Int, cache: MutSet[ST]): Unit = {
+     def extrudeTy(ty: ST)(implicit lvl: Int): Unit = {
        if (ty.level <= lvl) ty else ty match {
          case t @ TypeBounds(lb, ub) => extrudeTy(lb); extrudeTy(ub)
          case t @ FunctionType(l, r) => extrudeTy(l); extrudeTy(r)
@@ -145,10 +163,9 @@ trait UnificationSolver extends TyperDatatypes {
          case t @ RecordType(fs) => fs.foreach(tup => extrudeTy(tup._2))
          case t @ TupleType(fs) => fs.foreach(tup => extrudeTy(tup._2))
          case t @ ArrayType(ar) => extrudeTy(ar)
-         case tv: TypeVariable => if (cache.add(tv)) {
+         case tv: TypeVariable =>
            tv.level = lvl
            tv.uni.foreach(extrudeUni(_))
-         }
          case e @ ExtrType(_) => e
          case p @ ProvType(und) => extrudeTy(und)
          case _: ClassTag | _: TraitTag => ty

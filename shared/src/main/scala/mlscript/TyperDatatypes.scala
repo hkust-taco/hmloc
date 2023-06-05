@@ -272,6 +272,9 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     private[mlscript] val uid: Int = { freshCount += 1; freshCount - 1 }
     lazy val asTypeVar = new TypeVar(L(uid), nameHint)
     var uni: Ls[Unification] = Ls()
+    var uniConcreteTypes: Set[ST] = Set.empty
+
+    def unifiedWith: Ls[ST] = uni.map(u => if (u.a.unwrapProvs == this) u.b.unwrapProvs else u.a.unwrapProvs)
     def compare(that: TV): Int = this.uid compare that.uid
     def isRecursive_$(implicit ctx: Ctx) : Bool = (lbRecOccs_$, ubRecOccs_$) match {
       case (S(N | S(true)), _) | (_, S(N | S(false))) => true
