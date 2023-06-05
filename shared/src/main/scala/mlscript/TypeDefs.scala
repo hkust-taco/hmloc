@@ -8,7 +8,7 @@ import scala.annotation.tailrec
 import mlscript.utils._, shorthands._
 import mlscript.Message._
 
-class TypeDefs extends ConstraintSolver with UnificationSolver { self: Typer =>
+class TypeDefs extends UnificationSolver { self: Typer =>
   import TypeProvenance.{apply => tp}
   
   

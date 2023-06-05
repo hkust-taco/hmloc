@@ -276,18 +276,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
 
     def unifiedWith: Ls[ST] = uni.map(u => if (u.a.unwrapProvs == this) u.b.unwrapProvs else u.a.unwrapProvs)
     def compare(that: TV): Int = this.uid compare that.uid
-    def isRecursive_$(implicit ctx: Ctx) : Bool = (lbRecOccs_$, ubRecOccs_$) match {
-      case (S(N | S(true)), _) | (_, S(N | S(false))) => true
-      case _ => false
-    }
-    /** None: not recursive in this bound; Some(Some(pol)): polarly-recursive; Some(None): nonpolarly-recursive.
-      * Note that if we have something like 'a :> Bot <: 'a -> Top, 'a is not truly recursive
-      *   and its bounds can actually be inlined. */
-    private final def lbRecOccs_$(implicit ctx: Ctx): Opt[Opt[Bool]] =
-      TupleType(lowerBounds.map(N -> _))(noProv).getVarsPol(S(true)).get(this)
-    private final def ubRecOccs_$(implicit ctx: Ctx): Opt[Opt[Bool]] =
-      TupleType(upperBounds.map(N -> _))(noProv).getVarsPol(S(false)).get(this)
-
     override def toString: String = showProvOver(false)(nameHint.getOrElse("α") + uid + "'" * level)
   }
   type TV = TypeVariable

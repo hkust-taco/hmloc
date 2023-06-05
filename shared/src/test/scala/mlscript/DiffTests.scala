@@ -229,7 +229,7 @@ class DiffTests
                 // the inferred type is used to for ts type gen
                 case S(sign) =>
                   ctx += nme.name -> typer.VarSymbol(sign, nme)
-                  typer.subsume(ty_sch, sign)(ctx, raise, typer.TypeProvenance(d.toLoc, "def definition"))
+                  typer.uniState.subsume(ty_sch, sign)(ctx, raise, typer.TypeProvenance(d.toLoc, "def definition"))
               }
 
             case desug: DesugaredStatement => ()
@@ -626,7 +626,6 @@ class DiffTests
             typer.recordProvenances = true
             typer.verbose = mode.verbose
             typer.explainErrors = mode.explainErrors
-            typer.setErrorSimplification(mode.simplifyError)
             // survey programs should only output diagnostics
             stdout = mode.stdout || file.baseName.contains("Survey")
 
@@ -649,29 +648,8 @@ class DiffTests
               // if (newParser) typer.typeTypingUnit(tu)
               // else 
               typer.processTypeDefs(typeDefs)(ctx, raise)
-            
+
             def getType(ty: typer.TypeScheme): Type = {
-              val wty = ty.uninstantiatedBody
-              if (mode.isDebugging) output(s"⬤ Typed as: $wty")
-              if (mode.isDebugging) output(s" where: ${wty.showBounds}")
-              typer.dbg = mode.dbgSimplif
-              
-              val exp = if (mode.noSimplification) typer.expandType(wty)(ctx)
-              else {
-                object SimplifyPipeline extends typer.SimplifyPipeline {
-                  def debugOutput(msg: => Str): Unit = ()
-//                    if (mode.dbgSimplif) output(msg)
-                }
-                val sim = SimplifyPipeline(wty)(ctx)
-                val exp = typer.expandType(sim)(ctx)
-                if (mode.dbgSimplif) output(s"⬤ Expanded: ${exp}")
-                exp
-              }
-
-              exp
-            }
-
-            def getUnifiedType(ty: typer.TypeScheme): Type = {
               val wty = ty.uninstantiatedBody
               if (mode.isDebugging) output(s"⬤ U Typed as: $wty")
               if (mode.isDebugging) output(s" where: ${wty.showUnified}")
@@ -683,7 +661,7 @@ class DiffTests
                   def debugOutput(msg: => Str): Unit =
                     if (mode.dbgSimplif) output(msg)
                 }
-                val sim = SimplifyPipeline.unify(wty)(ctx)
+                val sim = SimplifyPipeline(wty)(ctx)
                 val exp = typer.expandUnifiedType(sim)(ctx)
                 if (mode.dbgSimplif) output(s"⬤ Expanded: ${exp}")
                 exp
@@ -768,15 +746,12 @@ class DiffTests
                 declared += nme.name -> ty_sch
                 val exp = getType(ty_sch)
                 typingOutputs += R[Ls[Str], Str -> Ls[Str]](nme.name -> (s"$nme: ${exp.show}" :: Nil))
-                val expU = getUnifiedType(ty_sch)
-                typingOutputs += R[Ls[Str], Str -> Ls[Str]](nme.name -> (s"$nme: ${expU.show}" :: Nil))
 
               // statement is defined and has a body/definition
               case d @ Def(isrec, nme, L(rhs), isByname) =>
                 typer.dbg = mode.dbg
                 val ty_sch = typer.typeLetRhs(isrec, nme, rhs)(ctx, raiseToBuffer)
                 val exp = getType(ty_sch)
-                val expU = getUnifiedType(ty_sch)
                 // statement does not have a declared type for the body
                 // the inferred type must be used and stored for lookup
                 val typingOutput = declared.get(nme.name) match {
@@ -793,11 +768,10 @@ class DiffTests
                     ctx += nme.name -> typer.VarSymbol(sign, nme)
                     val sign_exp = getType(sign)
                     typer.dbg = mode.dbg
-                    typer.subsume(ty_sch, sign)(ctx, raiseToBuffer, typer.TypeProvenance(d.toLoc, "def definition"))
+                    typer.uniState.subsume(ty_sch, sign)(ctx, raiseToBuffer, typer.TypeProvenance(d.toLoc, "def definition"))
                     exp.show :: s"  <:  $nme:" :: sign_exp.show :: Nil
                 }
                 typingOutputs += R[Ls[Str], Str -> Ls[Str]](nme.name -> typingOutput)
-                typingOutputs += R[Ls[Str], Str -> Ls[Str]](nme.name -> (s"$nme: ${expU.show}" :: Nil))
               case desug: DesugaredStatement =>
                 typer.dbg = mode.dbg
                 typer.typeStatement(desug, allowPure = true)(ctx, raiseToBuffer) match {
@@ -813,12 +787,10 @@ class DiffTests
                   // and are not bound to a variable name
                   case L(pty) =>
                     val exp = getType(pty)
-                    val expU = getUnifiedType(pty)
                     if (exp =/= TypeName("unit")) {
                       val res = "res"
                       ctx += res -> typer.VarSymbol(pty, Var(res))
                       typingOutputs += R[Ls[Str], Str -> Ls[Str]](res, s"res: ${exp.show}" :: Nil)
-                      typingOutputs += R[Ls[Str], Str -> Ls[Str]](res, s"resU: ${expU.show}" :: Nil)
                     } else (
                       typingOutputs += R[Ls[Str], Str -> Ls[Str]]("" -> Nil)
                     )
@@ -844,9 +816,6 @@ class DiffTests
               case R(_ -> typingResults) => typingResults.foreach(output)
             }
 
-            // show a list of suspicious locations found in above block
-            if (mode.suspiciousLocation) typer.showSuspiciousLocations()(raise)
-            
             if (mode.stats) {
               val (co, an, su, ty) = typer.stats
               output(s"constrain calls  : " + co)

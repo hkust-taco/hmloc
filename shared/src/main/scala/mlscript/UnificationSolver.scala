@@ -50,6 +50,11 @@ trait UnificationSolver extends TyperDatatypes {
     override def hasNext: Bool = queue.nonEmpty
     override def next(): Unification = queue.dequeue()
 
+    def unify(a: ST, b: ST): Unit = {
+      enqueueUnification(Unification.fromLhsRhs(a, b))
+      unify()
+    }
+
     def unify(): Unit = foreach { u =>
       println(s"U $u")
       val st1 = u.a.unwrapProvs
@@ -172,6 +177,11 @@ trait UnificationSolver extends TyperDatatypes {
          case tr @ TypeRef(d, ts) => ts.foreach(extrudeTy)
        }
      }
+
+    def subsume(ty_sch: PolymorphicType, sign: PolymorphicType)
+               (implicit ctx: Ctx, raise: Raise, prov: TypeProvenance): Unit = {
+      enqueueUnification(Unification.fromLhsRhs(ty_sch.instantiate, sign.rigidify))
+    }
   }
 
   val newErrorCache: MutSet[Unification] = MutSet()
@@ -403,4 +413,100 @@ trait UnificationSolver extends TyperDatatypes {
     }
   }
   case class Constructor(a: ST, b: ST, ctora: ST, ctorb: ST, uni: Unification) extends DataFlow
+
+
+  // Note: maybe this and `extrude` should be merged?
+  def freshenAbove(lim: Int, ty: SimpleType, rigidify: Bool = false)(implicit lvl: Int): SimpleType = {
+    val freshened = MutMap.empty[TV, SimpleType]
+
+    def freshenDataFlow(df: DataFlow): DataFlow = df match {
+      case c@Constraint(a, b) =>
+        val c1 = Constraint(freshen(a), freshen(b))
+        c1.dir = c.dir
+        c1
+      case Constructor(a, b, ctora, ctorb, uni) =>
+        Constructor(freshen(a), freshen(b), freshen(ctora), freshen(ctorb), freshenUnification(uni))
+    }
+
+    def freshenUnification(u: Unification): Unification = u.copy(flow = u.flow.map(freshenDataFlow))
+
+    def freshen(ty: SimpleType): SimpleType =
+      if (!rigidify // Rigidification now also substitutes TypeBound-s with fresh vars;
+        // since these have the level of their bounds, when rigidifying
+        // we need to make sure to copy the whole type regardless of level...
+        && ty.level <= lim) ty else ty match {
+        case tv: TypeVariable => freshened.get(tv) match {
+          case Some(tv) => tv
+          case None if rigidify =>
+            val rv = TraitTag( // Rigid type variables (ie, skolems) are encoded as TraitTag-s
+              Var(tv.nameHint.getOrElse("_" + freshVar(noProv).toString)))(tv.prov)
+            if (tv.lowerBounds.nonEmpty || tv.upperBounds.nonEmpty) {
+              // The bounds of `tv` may be recursive (refer to `tv` itself),
+              //    so here we create a fresh variabe that will be able to tie the presumed recursive knot
+              //    (if there is no recursion, it will just be a useless type variable)
+              val tv2 = freshVar(tv.prov, tv.nameHint)
+              freshened += tv -> tv2
+              // Assuming there were no recursive bounds, given L <: tv <: U,
+              //    we essentially need to turn tv's occurrence into the type-bounds (rv | L)..(rv & U),
+              //    meaning all negative occurrences should be interpreted as rv | L
+              //    and all positive occurrences should be interpreted as rv & U
+              //    where rv is the rigidified variables.
+              // Now, since there may be recursive bounds, we do the same
+              //    but through the indirection of a type variable tv2:
+              tv2.lowerBounds ::= tv.lowerBounds.map(freshen).foldLeft(rv: ST)(_ & _)
+              tv2.upperBounds ::= tv.upperBounds.map(freshen).foldLeft(rv: ST)(_ | _)
+              // freshen all the unifications for the type variable
+              // without this unification cannot detect errors because
+              // when a type scheme is instantiated it won't have the
+              // types it's been previously unified with
+              tv2.uni = tv.uni.map(freshenUnification)
+              tv2
+            } else {
+              freshened += tv -> rv
+              rv
+            }
+          case None =>
+            val v = freshVar(tv.prov, tv.nameHint)
+            freshened += tv -> v
+            v.lowerBounds = tv.lowerBounds.mapConserve(freshen)
+            v.upperBounds = tv.upperBounds.mapConserve(freshen)
+            // freshen all the unifications for the type variable
+            // without this unification cannot detect errors because
+            // when a type scheme is instantiated it won't have the
+            // types it's been previously unified with
+            v.uni = tv.uni.map(freshenUnification)
+            v
+        }
+        case t@TypeBounds(lb, ub) =>
+          if (rigidify) {
+            val tv = freshVar(t.prov)
+            tv.lowerBounds ::= freshen(lb)
+            tv.upperBounds ::= freshen(ub)
+            tv
+          } else TypeBounds(freshen(lb), freshen(ub))(t.prov)
+        case t@FunctionType(l, r) => FunctionType(freshen(l), freshen(r))(t.prov)
+        case t@ComposedType(p, l, r) => ComposedType(p, freshen(l), freshen(r))(t.prov)
+        case t@RecordType(fs) => RecordType(fs.mapValues(freshen))(t.prov)
+        case t@TupleType(fs) => TupleType(fs.mapValues(freshen))(t.prov)
+        case t@ArrayType(ar) => ArrayType(freshen(ar))(t.prov)
+        case e@ExtrType(_) => e
+        case p@ProvType(und) => ProvType(freshen(und))(p.prov)
+        case p@ProxyType(und) => freshen(und)
+        case _: ClassTag | _: TraitTag => ty
+        case tr@TypeRef(d, ts) => TypeRef(d, ts.map(freshen))(tr.prov)
+      }
+
+    freshen(ty)
+  }
+
+  // helper functions
+  def err(msg: Message, loco: Opt[Loc])(implicit raise: Raise): SimpleType = err(msg -> loco :: Nil)
+  def err(msgs: List[Message -> Opt[Loc]])(implicit raise: Raise): SimpleType = {
+    raise(ErrorReport(msgs))
+    errType
+  }
+  def errType: SimpleType = ClassTag(ErrTypeId, Set.empty)(noProv)
+  def warn(msg: Message, loco: Opt[Loc])(implicit raise: Raise): Unit = warn(msg -> loco :: Nil)
+  def warn(msgs: List[Message -> Opt[Loc]])(implicit raise: Raise): Unit = raise(WarningReport(msgs))
+
 }

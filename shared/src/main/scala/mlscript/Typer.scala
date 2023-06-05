@@ -22,13 +22,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   
   def funkyTuples: Bool = false
   def doFactorize: Bool = false
-  def setErrorSimplification(simplifyError: Bool): Unit =
-    errorSimplifer.simplifyError = simplifyError
-    
   def reporCollisionErrors: Bool = true
-  
-  def showSuspiciousLocations()(implicit raise: Raise): Unit =
-    errorSimplifer.reportInfo(N, 8)
   
   /** If flag is set proxy types are created during constraint resolution. This
     * is needed for debugging, showing verbose error messages traces and
@@ -266,19 +260,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             TypeRef(base, realTargs)(prov)
           case L(e) => e()
         }
-      case Recursive(uv, body) =>
-        val tv = freshVar(tyTp(ty.toLoc, "local type binding"), uv.identifier.toOption)
-        val bod = rec(body)(ctx, recVars + (uv -> tv))
-        tv.upperBounds ::= bod
-        tv.lowerBounds ::= bod
-        tv
-      case Constrained(base, where) =>
-        val res = rec(base)
-        where.foreach { case (tv, Bounds(lb, ub)) =>
-          constrain(rec(lb), tv)(raise, tp(lb.toLoc, "lower bound specifiation"), ctx)
-          constrain(tv, rec(ub))(raise, tp(ub.toLoc, "upper bound specifiation"), ctx)
-        }
-        res
     }
     (rec(ty)(ctx, Map.empty), localVars.values)
   }(r => s"=> ${r._1} | ${r._2.mkString(", ")}")
@@ -306,12 +287,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         if (t.isInstanceOf[Var] || t.isInstanceOf[Lit])
           warn("Pure expression does nothing in statement position.", t.toLoc)
         else
-          constrain(mkProxy(ty, TypeProvenance(t.toCoveringLoc, "expression in statement position")), UnitType)(
-            raise = err => raise(WarningReport( // Demote constraint errors from this to warnings
-              msg"Expression in statement position should have type `unit`." -> N ::
-              msg"Use the `discard` function to discard non-unit values, making the intent clearer." -> N ::
-              err.allMsgs)),
-            prov = TypeProvenance(t.toLoc, t.describe), ctx)
+          uniState.unify(mkProxy(ty, TypeProvenance(t.toCoveringLoc, "expression in statement position")), UnitType)
       }
       L(PolymorphicType(0, ty))
     case _ =>
@@ -335,7 +311,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       )(lvl + 1)
       ctx += nme.name -> VarSymbol(e_ty, nme)
       val ty = typeTerm(rhs)(ctx.nextLevel, raise, vars)
-      constrain(ty, e_ty)(raise, TypeProvenance(rhs.toLoc, "binding of " + rhs.describe), ctx)
+      uniState.unify(ty, e_ty)
       e_ty
     } else typeTerm(rhs)(ctx.nextLevel, raise, vars)
     PolymorphicType(lvl, res)
@@ -353,7 +329,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       )(lvl)
       ctx += nme -> VarSymbol(e_ty, Var(nme))
       val ty = typeTerm(rhs)(ctx, raise, vars)
-      constrain(ty, e_ty)(raise, TypeProvenance(rhs.toLoc, "binding of " + rhs.describe), ctx)
+      uniState.unify(ty, e_ty)
       e_ty
     } else typeTerm(rhs)(ctx, raise, vars)
     res
@@ -415,32 +391,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       * @return
       */
     def con(lhs: SimpleType, rhs: SimpleType, res: SimpleType): SimpleType = {
-      var errorsCount = 0
-      constrain(lhs, rhs)({
-        case err: ErrorReport =>
-          // Note that we do not immediately abort constraining because we still
-          //  care about getting the non-erroneous parts of the code return meaningful types.
-          // In other words, this is so that errors do not interfere too much
-          //  with the rest of the (hopefully good) code.
-          if (errorsCount === 0) {
-            // constrain(errType, res)(_ => (), noProv, ctx)
-            // ^ This is just to get error types leak into the result
-            raise(err)
-          } else if (errorsCount < 3) {
-            // Silence further errors from this location.
-          } else {
-            return res
-            // ^ Stop constraining, at this point.
-            //    This is to avoid rogue (explosive) constraint solving from badly-behaved error cases.
-            //    For instance see the StressTraits.mls test.
-          }
-          errorsCount += 1
-        case diag => raise(diag)
-      }, prov, ctx)
-      uniState.enqueueUnification(Unification.fromLhsRhs(lhs, rhs))
-      uniState.unify()
-      // also unify types
-//      unifyTypes(lhs, rhs)(MutSet(), ctx, raise)
+      uniState.unify(lhs, rhs)
       res
     }
     term match {
