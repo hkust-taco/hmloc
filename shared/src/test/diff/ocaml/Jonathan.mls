@@ -176,8 +176,6 @@ let conflict x = mkpair (not x) x
 
 
 
-// TODO show nested unification error
-
 let rec digitsOfInt n =
   if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
 //│ digitsOfInt: int -> list[int]
@@ -185,9 +183,6 @@ let rec digitsOfInt n =
 let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
 //│ addNumbs: list[int] -> int
 
-// show nested unification error
-// :e
-// :tex
 let digits n = digitsOfInt (abs n)
 //│ digits: int -> list[int]
 
@@ -230,7 +225,10 @@ let rec additivePersistence n =
 //│ UERR 1 errors
 //│ L: 0 [bool ~ int, bool <: α173', α173' <: α159', α159' :> int]
 
-// TODO: weird unification shown investigate
+// The unification chain terminates at a higher level
+// because int is a direct parameter of the list
+// if it were a type parameter that was unified with int
+// the representation would handle it correctly
 let y x = [x]
 let k a = if a then [2] else y true
 //│ [ERROR] Type `bool` does not match `int`

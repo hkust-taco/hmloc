@@ -32,7 +32,7 @@ let test =
 //│ L: 0 [bool ~ int, bool <: α71', α71' <: int]
 
 
-// TODO: show error
+
 let test2 = let (a, b) = test in [[b]] + 1
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
@@ -66,7 +66,7 @@ let test2 = let (a, b) = test in [[b]] + 1
 //│ L: 0 [list['a77'] ~ int, list['a77'] <: int]
 //│ L: 0 [int ~ ([α75'], [α76'],), int <: ([α75'], [α76'],)]
 
-// TODO: show error
+
 let f x = x + 1
 not (f 1)
 //│ [ERROR] Type `int` does not match `bool`
@@ -90,7 +90,7 @@ not (f 1)
 //│ UERR 1 errors
 //│ L: 0 [int ~ bool, int <: bool]
 
-// TODO: show error
+
 :d
 let a = 1
 not a
@@ -172,7 +172,7 @@ let f: string list -> unit
 //│ y: list[string]
 //│ f: list[string] -> unit
 
-// TODO: this won't show error because there are no type variables
+
 f x
 //│ [ERROR] Type `int` does not match `string`
 //│ 
@@ -241,7 +241,7 @@ if true then x else y
 //│ UERR 1 errors
 //│ L: 1 [string ~ int, [string - list[string] ~ list[int] - int, L: 0 [list[string] ~ list[int], list[string] <: α100, α100 :> list[int]]]]
 
-// TODO: show error
+
 Left 1 : int
 //│ [ERROR] Type `(_, _) either` does not match `int`
 //│ 
@@ -307,7 +307,7 @@ mkpair 1 "2"
 //│ UERR 1 errors
 //│ L: 0 [string ~ int, string <: α115, α115 <: α116, α116 <: α117, α117 :> int]
 
-// TODO nested prov not shown in collision error
+
 let a = 1
 let b = a
 let f x = if x then true else false
@@ -377,10 +377,141 @@ g b
 //│ L: 0 [int ~ list[string], int <: list[string]]
 
 let wrap x = x :: []
-  
-// TODO: show error
-if true then wrap 1 else wrap true
 //│ wrap: 'a -> list['a]
+
+
+if true then wrap 1 else wrap true
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│         (bool) ---> (?b) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?c) <--- (int)
+//│ 
+//│ ◉ (bool) is here
+//│ │  - l.1  if true then wrap 1 else wrap true
+//│ │                                       ^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-3 let wrap x = x :: []
+//│                    ^
+//│   ◉ (?b * _ list) is here
+//│   │  - l.-3 let wrap x = x :: []
+//│   │                      ^
+//│   ▼ 
+//│   ◉ (?a * ?a list) is here
+//│      - l.-3 let wrap x = x :: []
+//│                          ^
+//│   ◉ (?a list) is here
+//│   │  - l.-3 let wrap x = x :: []
+//│   │                      ^^^^^^^
+//│   │  - l.1  if true then wrap 1 else wrap true
+//│   │                                  ^^^^^^^^^
+//│   │  - l.1  if true then wrap 1 else wrap true
+//│   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   ▲  - l.1  if true then wrap 1 else wrap true
+//│   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.1  if true then wrap 1 else wrap true
+//│   │                      ^^^^^^
+//│   │ 
+//│   ◉ (?a0 list) is here
+//│      - l.-3 let wrap x = x :: []
+//│                          ^^^^^^^
+//│   ◉ (?a0 * ?a0 list) is here
+//│   ▲  - l.-3 let wrap x = x :: []
+//│   │                      ^
+//│   │ 
+//│   ◉ (?d * _ list) is here
+//│      - l.-3 let wrap x = x :: []
+//│                          ^
+//│ ◉ (?d) is assumed here
+//│ ▲  - l.-3 let wrap x = x :: []
+//│ │                  ^
+//│ │ 
+//│ ◉ (int) is here
+//│    - l.1  if true then wrap 1 else wrap true
+//│                             ^
+//│ [ERROR] Type `bool` does not match `int`
+//│ 
+//│         (bool) ---> (?b) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a2) ~~~~ (?a1) ~~~~ (?c) <--- (int)
+//│ 
+//│ ◉ (bool) is here
+//│ │  - l.1  if true then wrap 1 else wrap true
+//│ │                                       ^^^^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│    - l.-3 let wrap x = x :: []
+//│                    ^
+//│   ◉ (?b * ?a list) is here
+//│   │  - l.-3 let wrap x = x :: []
+//│   │                      ^
+//│   ▼ 
+//│   ◉ (?a0 * ?a0 list) is here
+//│      - l.-3 let wrap x = x :: []
+//│                          ^
+//│     ◉ (?a0 * ?a0 list) is here
+//│     ▲  - l.-3 let wrap x = x :: []
+//│     │                      ^
+//│     │ 
+//│     ◉ (?b * ?a list) is here
+//│        - l.-3 let wrap x = x :: []
+//│                            ^
+//│     ◉ (?b * ?a list) is here
+//│     │  - l.-3 let wrap x = x :: []
+//│     │                      ^
+//│     ▼ 
+//│     ◉ (?a0 * ?a0 list) is here
+//│        - l.-3 let wrap x = x :: []
+//│                            ^
+//│   ◉ (?a0 list) is here
+//│   │  - l.-3 let wrap x = x :: []
+//│   │                      ^^^^^^^
+//│   │  - l.1  if true then wrap 1 else wrap true
+//│   │                                  ^^^^^^^^^
+//│   │  - l.1  if true then wrap 1 else wrap true
+//│   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?c) is assumed here
+//│   ▲  - l.1  if true then wrap 1 else wrap true
+//│   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.1  if true then wrap 1 else wrap true
+//│   │                      ^^^^^^
+//│   │ 
+//│   ◉ (?a1 list) is here
+//│      - l.-3 let wrap x = x :: []
+//│                          ^^^^^^^
+//│     ◉ (?a1 * ?a1 list) is here
+//│     ▲  - l.-3 let wrap x = x :: []
+//│     │                      ^
+//│     │ 
+//│     ◉ (?d * ?a2 list) is here
+//│        - l.-3 let wrap x = x :: []
+//│                            ^
+//│     ◉ (?d * ?a2 list) is here
+//│     │  - l.-3 let wrap x = x :: []
+//│     │                      ^
+//│     ▼ 
+//│     ◉ (?a1 * ?a1 list) is here
+//│        - l.-3 let wrap x = x :: []
+//│                            ^
+//│   ◉ (?a1 * ?a1 list) is here
+//│   ▲  - l.-3 let wrap x = x :: []
+//│   │                      ^
+//│   │ 
+//│   ◉ (?d * ?a2 list) is here
+//│      - l.-3 let wrap x = x :: []
+//│                          ^
+//│ ◉ (?d) is assumed here
+//│ ▲  - l.-3 let wrap x = x :: []
+//│ │                  ^
+//│ │ 
+//│ ◉ (int) is here
+//│    - l.1  if true then wrap 1 else wrap true
+//│                             ^
+//│ res: list[bool]
+//│ U max: 7, total: 33
+//│ UERR 2 errors
+//│ L: 2 [bool ~ int, bool <: α136, [α136 - ([[α136]], [[list['a138]]],) ~ ('a137, list['a137],) - 'a137, L: 0 [([[α136]], [[list['a138]]],) ~ ('a137, list['a137],), ([[α136]], [[list['a138]]],) <: ('a137, list['a137],)]], ['a137 - list['a137] ~ list['a138] - 'a138, L: 1 [list['a137] ~ list['a138], [list['a137] - ('a137, list['a137],) ~ ([[α136]], [[list['a138]]],) - list['a138], L: 0 [('a137, list['a137],) ~ ([[α136]], [[list['a138]]],), ('a137, list['a137],) :> ([[α136]], [[list['a138]]],)]]]], ['a138 - list['a138] ~ list['a137] - 'a137, L: 1 [list['a138] ~ list['a137], [list['a138] - ([[α136]], [[list['a138]]],) ~ ('a137, list['a137],) - list['a137], L: 0 [([[α136]], [[list['a138]]],) ~ ('a137, list['a137],), ([[α136]], [[list['a138]]],) <: ('a137, list['a137],)]]]], ['a137 - list['a137] ~ list['a133] - 'a133, L: 0 [list['a137] ~ list['a133], list['a137] <: α131, α131 :> list['a133]]], ['a133 - list['a133] ~ list['a134] - 'a134, L: 1 [list['a133] ~ list['a134], [list['a133] - ('a133, list['a133],) ~ ([[α132]], [[list['a134]]],) - list['a134], L: 0 [('a133, list['a133],) ~ ([[α132]], [[list['a134]]],), ('a133, list['a133],) :> ([[α132]], [[list['a134]]],)]]]], ['a134 - list['a134] ~ list['a133] - 'a133, L: 1 [list['a134] ~ list['a133], [list['a134] - ([[α132]], [[list['a134]]],) ~ ('a133, list['a133],) - list['a133], L: 0 [([[α132]], [[list['a134]]],) ~ ('a133, list['a133],), ([[α132]], [[list['a134]]],) <: ('a133, list['a133],)]]]], ['a133 - ('a133, list['a133],) ~ ([[α132]], [[list['a134]]],) - α132, L: 0 [('a133, list['a133],) ~ ([[α132]], [[list['a134]]],), ('a133, list['a133],) :> ([[α132]], [[list['a134]]],)]], α132 :> int]
+//│ L: 1 [bool ~ int, bool <: α136, [α136 - ([[α136]], [[list['a138]]],) ~ ('a137, list['a137],) - 'a137, L: 0 [([[α136]], [[list['a138]]],) ~ ('a137, list['a137],), ([[α136]], [[list['a138]]],) <: ('a137, list['a137],)]], ['a137 - list['a137] ~ list['a133] - 'a133, L: 0 [list['a137] ~ list['a133], list['a137] <: α131, α131 :> list['a133]]], ['a133 - ('a133, list['a133],) ~ ([[α132]], [[list['a134]]],) - α132, L: 0 [('a133, list['a133],) ~ ([[α132]], [[list['a134]]],), ('a133, list['a133],) :> ([[α132]], [[list['a134]]],)]], α132 :> int]
 
 
 if true then wrap (if true then 1 else false) else wrap true
@@ -416,25 +547,25 @@ if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
 //│ ◉ (?c) is assumed here
-//│    - l.-6 let wrap x = x :: []
-//│                    ^
+//│    - l.-137let wrap x = x :: []
+//│                     ^
 //│   ◉ (?c * _ list) is here
-//│   │  - l.-6 let wrap x = x :: []
-//│   │                      ^
+//│   │  - l.-137let wrap x = x :: []
+//│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-6 let wrap x = x :: []
-//│                          ^
+//│      - l.-137let wrap x = x :: []
+//│                           ^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-6 let wrap x = x :: []
-//│   │                      ^
+//│   ▲  - l.-137let wrap x = x :: []
+//│   │                       ^
 //│   │ 
 //│   ◉ (?c * _ list) is here
-//│      - l.-6 let wrap x = x :: []
-//│                          ^
+//│      - l.-137let wrap x = x :: []
+//│                           ^
 //│ ◉ (?c) is assumed here
-//│ ▲  - l.-6 let wrap x = x :: []
-//│ │                  ^
+//│ ▲  - l.-137let wrap x = x :: []
+//│ │                   ^
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -460,39 +591,39 @@ if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
 //│ ◉ (?c) is assumed here
-//│    - l.-6 let wrap x = x :: []
-//│                    ^
+//│    - l.-137let wrap x = x :: []
+//│                     ^
 //│   ◉ (?c * ?a list) is here
-//│   │  - l.-6 let wrap x = x :: []
-//│   │                      ^
+//│   │  - l.-137let wrap x = x :: []
+//│   │                       ^
 //│   ▼ 
 //│   ◉ (?a0 * ?a0 list) is here
-//│      - l.-6 let wrap x = x :: []
-//│                          ^
+//│      - l.-137let wrap x = x :: []
+//│                           ^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-6 let wrap x = x :: []
-//│     │                      ^
+//│     ▲  - l.-137let wrap x = x :: []
+//│     │                       ^
 //│     │ 
 //│     ◉ (?c * ?a list) is here
-//│        - l.-6 let wrap x = x :: []
-//│                            ^
+//│        - l.-137let wrap x = x :: []
+//│                             ^
 //│     ◉ (?c * ?a list) is here
-//│     │  - l.-6 let wrap x = x :: []
-//│     │                      ^
+//│     │  - l.-137let wrap x = x :: []
+//│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-6 let wrap x = x :: []
-//│                            ^
+//│        - l.-137let wrap x = x :: []
+//│                             ^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-6 let wrap x = x :: []
-//│   │                      ^
+//│   ▲  - l.-137let wrap x = x :: []
+//│   │                       ^
 //│   │ 
 //│   ◉ (?c * ?a list) is here
-//│      - l.-6 let wrap x = x :: []
-//│                          ^
+//│      - l.-137let wrap x = x :: []
+//│                           ^
 //│ ◉ (?c) is assumed here
-//│ ▲  - l.-6 let wrap x = x :: []
-//│ │                  ^
+//│ ▲  - l.-137let wrap x = x :: []
+//│ │                   ^
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -506,9 +637,9 @@ if true then wrap (if true then 1 else false) else wrap true
 //│ res: list[bool]
 //│ U max: 8, total: 42
 //│ UERR 3 errors
-//│ L: 2 [int ~ bool, int <: α135, α135 <: α132, [α132 - ([[α132]], [[list['a134]]],) ~ ('a133, list['a133],) - 'a133, L: 0 [([[α132]], [[list['a134]]],) ~ ('a133, list['a133],), ([[α132]], [[list['a134]]],) <: ('a133, list['a133],)]], ['a133 - list['a133] ~ list['a134] - 'a134, L: 1 [list['a133] ~ list['a134], [list['a133] - ('a133, list['a133],) ~ ([[α132]], [[list['a134]]],) - list['a134], L: 0 [('a133, list['a133],) ~ ([[α132]], [[list['a134]]],), ('a133, list['a133],) :> ([[α132]], [[list['a134]]],)]]]], ['a134 - list['a134] ~ list['a133] - 'a133, L: 1 [list['a134] ~ list['a133], [list['a134] - ([[α132]], [[list['a134]]],) ~ ('a133, list['a133],) - list['a133], L: 0 [([[α132]], [[list['a134]]],) ~ ('a133, list['a133],), ([[α132]], [[list['a134]]],) <: ('a133, list['a133],)]]]], ['a133 - ('a133, list['a133],) ~ ([[α132]], [[list['a134]]],) - α132, L: 0 [('a133, list['a133],) ~ ([[α132]], [[list['a134]]],), ('a133, list['a133],) :> ([[α132]], [[list['a134]]],)]], α132 :> α135, α135 :> bool]
-//│ L: 0 [bool ~ int, bool <: α135, α135 :> int]
-//│ L: 1 [int ~ bool, int <: α135, α135 <: α132, [α132 - ([[α132]], [[list['a134]]],) ~ ('a133, list['a133],) - 'a133, L: 0 [([[α132]], [[list['a134]]],) ~ ('a133, list['a133],), ([[α132]], [[list['a134]]],) <: ('a133, list['a133],)]], ['a133 - ('a133, list['a133],) ~ ([[α132]], [[list['a134]]],) - α132, L: 0 [('a133, list['a133],) ~ ([[α132]], [[list['a134]]],), ('a133, list['a133],) :> ([[α132]], [[list['a134]]],)]], α132 :> α135, α135 :> bool]
+//│ L: 1 [int ~ bool, int <: α145, α145 <: α142, [α142 - ([[α142]], [[list['a144]]],) ~ ('a143, list['a143],) - 'a143, L: 0 [([[α142]], [[list['a144]]],) ~ ('a143, list['a143],), ([[α142]], [[list['a144]]],) <: ('a143, list['a143],)]], ['a143 - ('a143, list['a143],) ~ ([[α142]], [[list['a144]]],) - α142, L: 0 [('a143, list['a143],) ~ ([[α142]], [[list['a144]]],), ('a143, list['a143],) :> ([[α142]], [[list['a144]]],)]], α142 :> α145, α145 :> bool]
+//│ L: 2 [int ~ bool, int <: α145, α145 <: α142, [α142 - ([[α142]], [[list['a144]]],) ~ ('a143, list['a143],) - 'a143, L: 0 [([[α142]], [[list['a144]]],) ~ ('a143, list['a143],), ([[α142]], [[list['a144]]],) <: ('a143, list['a143],)]], ['a143 - list['a143] ~ list['a144] - 'a144, L: 1 [list['a143] ~ list['a144], [list['a143] - ('a143, list['a143],) ~ ([[α142]], [[list['a144]]],) - list['a144], L: 0 [('a143, list['a143],) ~ ([[α142]], [[list['a144]]],), ('a143, list['a143],) :> ([[α142]], [[list['a144]]],)]]]], ['a144 - list['a144] ~ list['a143] - 'a143, L: 1 [list['a144] ~ list['a143], [list['a144] - ([[α142]], [[list['a144]]],) ~ ('a143, list['a143],) - list['a143], L: 0 [([[α142]], [[list['a144]]],) ~ ('a143, list['a143],), ([[α142]], [[list['a144]]],) <: ('a143, list['a143],)]]]], ['a143 - ('a143, list['a143],) ~ ([[α142]], [[list['a144]]],) - α142, L: 0 [('a143, list['a143],) ~ ([[α142]], [[list['a144]]],), ('a143, list['a143],) :> ([[α142]], [[list['a144]]],)]], α142 :> α145, α145 :> bool]
+//│ L: 0 [bool ~ int, bool <: α145, α145 :> int]
 
 
 let rec t = wrap (if true then 1 else t)
@@ -517,7 +648,7 @@ let rec t = wrap (if true then 1 else t)
 //│         (_ list) ---> (?t) ---> (?a) ---> (?b) <--- (?a) <--- (int)
 //│ 
 //│ ◉ (_ list) is here
-//│ │  - l.-134let wrap x = x :: []
+//│ │  - l.-265let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -535,11 +666,11 @@ let rec t = wrap (if true then 1 else t)
 //│ ◉ (?a) is assumed here
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
-//│ │  - l.-134let wrap x = x :: []
+//│ │  - l.-265let wrap x = x :: []
 //│ │                   ^
 //│ ▼ 
 //│ ◉ (?b) is assumed here
-//│ ▲  - l.-134let wrap x = x :: []
+//│ ▲  - l.-265let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
@@ -556,7 +687,7 @@ let rec t = wrap (if true then 1 else t)
 //│         (?a list) ---> (?t) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (int)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-134let wrap x = x :: []
+//│ │  - l.-265let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -576,24 +707,24 @@ let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
 //│ ◉ (?c) is assumed here
-//│    - l.-134let wrap x = x :: []
+//│    - l.-265let wrap x = x :: []
 //│                     ^
 //│   ◉ (?c * _ list) is here
-//│   │  - l.-134let wrap x = x :: []
+//│   │  - l.-265let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-134let wrap x = x :: []
+//│      - l.-265let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-134let wrap x = x :: []
+//│   ▲  - l.-265let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?c * _ list) is here
-//│      - l.-134let wrap x = x :: []
+//│      - l.-265let wrap x = x :: []
 //│                           ^
 //│ ◉ (?c) is assumed here
-//│ ▲  - l.-134let wrap x = x :: []
+//│ ▲  - l.-265let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
@@ -610,7 +741,7 @@ let rec t = wrap (if true then 1 else t)
 //│         (?a list) ---> (?t) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (int)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-134let wrap x = x :: []
+//│ │  - l.-265let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -630,38 +761,38 @@ let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
 //│ ◉ (?c) is assumed here
-//│    - l.-134let wrap x = x :: []
+//│    - l.-265let wrap x = x :: []
 //│                     ^
 //│   ◉ (?c * ?a0 list) is here
-//│   │  - l.-134let wrap x = x :: []
+//│   │  - l.-265let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-134let wrap x = x :: []
+//│      - l.-265let wrap x = x :: []
 //│                           ^
 //│     ◉ (?a * ?a list) is here
-//│     ▲  - l.-134let wrap x = x :: []
+//│     ▲  - l.-265let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?c * ?a0 list) is here
-//│        - l.-134let wrap x = x :: []
+//│        - l.-265let wrap x = x :: []
 //│                             ^
 //│     ◉ (?c * ?a0 list) is here
-//│     │  - l.-134let wrap x = x :: []
+//│     │  - l.-265let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a * ?a list) is here
-//│        - l.-134let wrap x = x :: []
+//│        - l.-265let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-134let wrap x = x :: []
+//│   ▲  - l.-265let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?c * ?a0 list) is here
-//│      - l.-134let wrap x = x :: []
+//│      - l.-265let wrap x = x :: []
 //│                           ^
 //│ ◉ (?c) is assumed here
-//│ ▲  - l.-134let wrap x = x :: []
+//│ ▲  - l.-265let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
@@ -679,9 +810,9 @@ let rec t = wrap (if true then 1 else t)
 //│     'a = list['a], int
 //│ U max: 5, total: 37
 //│ UERR 3 errors
-//│ L: 2 [list['a144'] ~ int, list['a144'] <: t142', t142' <: α146', α146' <: α143', [α143' - ([[α143']], [[list['a145']]],) ~ ('a144', list['a144'],) - 'a144', L: 0 [([[α143']], [[list['a145']]],) ~ ('a144', list['a144'],), ([[α143']], [[list['a145']]],) <: ('a144', list['a144'],)]], ['a144' - list['a144'] ~ list['a145'] - 'a145', L: 1 [list['a144'] ~ list['a145'], [list['a144'] - ('a144', list['a144'],) ~ ([[α143']], [[list['a145']]],) - list['a145'], L: 0 [('a144', list['a144'],) ~ ([[α143']], [[list['a145']]],), ('a144', list['a144'],) :> ([[α143']], [[list['a145']]],)]]]], ['a145' - list['a145'] ~ list['a144'] - 'a144', L: 1 [list['a145'] ~ list['a144'], [list['a145'] - ([[α143']], [[list['a145']]],) ~ ('a144', list['a144'],) - list['a144'], L: 0 [([[α143']], [[list['a145']]],) ~ ('a144', list['a144'],), ([[α143']], [[list['a145']]],) <: ('a144', list['a144'],)]]]], ['a144' - ('a144', list['a144'],) ~ ([[α143']], [[list['a145']]],) - α143', L: 0 [('a144', list['a144'],) ~ ([[α143']], [[list['a145']]],), ('a144', list['a144'],) :> ([[α143']], [[list['a145']]],)]], α143' :> α146', α146' :> int]
-//│ L: 1 [list['a144'] ~ int, list['a144'] <: t142', t142' <: α146', α146' <: α143', [α143' - ([[α143']], [[list['a145']]],) ~ ('a144', list['a144'],) - 'a144', L: 0 [([[α143']], [[list['a145']]],) ~ ('a144', list['a144'],), ([[α143']], [[list['a145']]],) <: ('a144', list['a144'],)]], ['a144' - ('a144', list['a144'],) ~ ([[α143']], [[list['a145']]],) - α143', L: 0 [('a144', list['a144'],) ~ ([[α143']], [[list['a145']]],), ('a144', list['a144'],) :> ([[α143']], [[list['a145']]],)]], α143' :> α146', α146' :> int]
-//│ L: 0 [list['a144'] ~ int, list['a144'] <: t142', t142' <: α146', α146' <: α143', α143' :> α146', α146' :> int]
+//│ L: 2 [list['a154'] ~ int, list['a154'] <: t152', t152' <: α156', α156' <: α153', [α153' - ([[α153']], [[list['a155']]],) ~ ('a154', list['a154'],) - 'a154', L: 0 [([[α153']], [[list['a155']]],) ~ ('a154', list['a154'],), ([[α153']], [[list['a155']]],) <: ('a154', list['a154'],)]], ['a154' - list['a154'] ~ list['a155'] - 'a155', L: 1 [list['a154'] ~ list['a155'], [list['a154'] - ('a154', list['a154'],) ~ ([[α153']], [[list['a155']]],) - list['a155'], L: 0 [('a154', list['a154'],) ~ ([[α153']], [[list['a155']]],), ('a154', list['a154'],) :> ([[α153']], [[list['a155']]],)]]]], ['a155' - list['a155'] ~ list['a154'] - 'a154', L: 1 [list['a155'] ~ list['a154'], [list['a155'] - ([[α153']], [[list['a155']]],) ~ ('a154', list['a154'],) - list['a154'], L: 0 [([[α153']], [[list['a155']]],) ~ ('a154', list['a154'],), ([[α153']], [[list['a155']]],) <: ('a154', list['a154'],)]]]], ['a154' - ('a154', list['a154'],) ~ ([[α153']], [[list['a155']]],) - α153', L: 0 [('a154', list['a154'],) ~ ([[α153']], [[list['a155']]],), ('a154', list['a154'],) :> ([[α153']], [[list['a155']]],)]], α153' :> α156', α156' :> int]
+//│ L: 1 [list['a154'] ~ int, list['a154'] <: t152', t152' <: α156', α156' <: α153', [α153' - ([[α153']], [[list['a155']]],) ~ ('a154', list['a154'],) - 'a154', L: 0 [([[α153']], [[list['a155']]],) ~ ('a154', list['a154'],), ([[α153']], [[list['a155']]],) <: ('a154', list['a154'],)]], ['a154' - ('a154', list['a154'],) ~ ([[α153']], [[list['a155']]],) - α153', L: 0 [('a154', list['a154'],) ~ ([[α153']], [[list['a155']]],), ('a154', list['a154'],) :> ([[α153']], [[list['a155']]],)]], α153' :> α156', α156' :> int]
+//│ L: 0 [list['a154'] ~ int, list['a154'] <: t152', t152' <: α156', α156' <: α153', α153' :> α156', α156' :> int]
 
 
 let test z = if true then wrap z else wrap true
@@ -692,7 +823,7 @@ let rec m = test (if true then 1 else m)
 //│         (_ list) ---> (?a) ---> (?m) ---> (?b) ---> (?c) <--- (?b) <--- (int)
 //│ 
 //│ ◉ (_ list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                               ^^^^^^^^^
@@ -739,7 +870,7 @@ let rec m = test (if true then 1 else m)
 //│         (_ list) ---> (?a) ---> (?m) ---> (?b) ---> (?c) <--- (?b) <--- (int)
 //│ 
 //│ ◉ (_ list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                   ^^^^^^
@@ -786,7 +917,7 @@ let rec m = test (if true then 1 else m)
 //│         (_ list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (_ list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                               ^^^^^^^^^
@@ -822,24 +953,24 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?e * _ list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?e) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
@@ -864,7 +995,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                   ^^^^^^
@@ -900,24 +1031,24 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?e * _ list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?e) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
@@ -960,17 +1091,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?d) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?d * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -984,17 +1115,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * _ list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?f) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │ 
 //│ ◉ (bool) is here
@@ -1005,7 +1136,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?f) <--- (bool)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                               ^^^^^^^^^
@@ -1041,17 +1172,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a0 * ?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -1065,17 +1196,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * _ list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?f) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │ 
 //│ ◉ (bool) is here
@@ -1086,7 +1217,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?f) <--- (bool)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                   ^^^^^^
@@ -1122,17 +1253,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -1146,17 +1277,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * _ list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?f) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │ 
 //│ ◉ (bool) is here
@@ -1185,17 +1316,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?d) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?d * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -1209,31 +1340,31 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * ?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?f) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │ 
 //│ ◉ (bool) is here
@@ -1244,7 +1375,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?f) <--- (bool)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                               ^^^^^^^^^
@@ -1280,17 +1411,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a0 * ?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -1304,31 +1435,31 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a * ?a list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a * ?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * ?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?f) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │ 
 //│ ◉ (bool) is here
@@ -1339,7 +1470,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?f) <--- (bool)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                   ^^^^^^
@@ -1375,17 +1506,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -1399,31 +1530,31 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * ?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?f) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │ 
 //│ ◉ (bool) is here
@@ -1434,7 +1565,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?f) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                               ^^^^^^^^^
@@ -1470,17 +1601,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a0 * ?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -1494,52 +1625,52 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a * ?a list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a * ?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * ?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?f * ?a1 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│     ◉ (?a * ?a list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a * ?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -1553,17 +1684,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?e * _ list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?e) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
@@ -1588,7 +1719,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?f) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                   ^^^^^^
@@ -1624,17 +1755,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -1648,52 +1779,52 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * ?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?f * ?a1 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a0 * ?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -1707,17 +1838,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?e * _ list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?e) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
@@ -1742,7 +1873,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                               ^^^^^^^^^
@@ -1778,17 +1909,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a0 * ?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -1818,24 +1949,24 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a * ?a list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (_ * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (_ * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a * ?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -1849,10 +1980,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -1888,17 +2019,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                        ^
 //│   ▼ 
 //│   ◉ (?e) is assumed here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                       ^
 //│     ◉ (?e * _ list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?a0 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                   ^^^^^^
@@ -1928,24 +2059,24 @@ let rec m = test (if true then 1 else m)
 //│     │                                               ^^^^^^^^^
 //│     │ 
 //│     ◉ (?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^^^^^^^
 //│       ◉ (?a * ?a list) is here
-//│       ▲  - l.-307let wrap x = x :: []
+//│       ▲  - l.-438let wrap x = x :: []
 //│       │                       ^
 //│       │ 
 //│       ◉ (_ * ?a1 list) is here
-//│          - l.-307let wrap x = x :: []
+//│          - l.-438let wrap x = x :: []
 //│                               ^
 //│       ◉ (_ * ?a1 list) is here
-//│       │  - l.-307let wrap x = x :: []
+//│       │  - l.-438let wrap x = x :: []
 //│       │                       ^
 //│       ▼ 
 //│       ◉ (?a * ?a list) is here
-//│          - l.-307let wrap x = x :: []
+//│          - l.-438let wrap x = x :: []
 //│                               ^
 //│     ◉ (?a list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                               ^^^^^^^^^
@@ -1959,17 +2090,17 @@ let rec m = test (if true then 1 else m)
 //│     │                                   ^^^^^^
 //│     │ 
 //│     ◉ (?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^^^^^^^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?e * _ list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?e) is assumed here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                   ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                        ^
@@ -2005,10 +2136,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -2022,17 +2153,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?e * _ list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?e) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
@@ -2061,17 +2192,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                                    ^^^^
 //│ ▼ 
 //│ ◉ (?b) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?b * ?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a0 * ?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -2085,10 +2216,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a1 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -2118,24 +2249,24 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?b * ?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?b * ?a list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -2149,10 +2280,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a1 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -2188,17 +2319,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                        ^
 //│   ▼ 
 //│   ◉ (?f) is assumed here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                       ^
 //│     ◉ (?f * _ list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a1 * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                   ^^^^^^
@@ -2228,24 +2359,24 @@ let rec m = test (if true then 1 else m)
 //│     │                                               ^^^^^^^^^
 //│     │ 
 //│     ◉ (?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^^^^^^^
 //│       ◉ (?a0 * ?a0 list) is here
-//│       ▲  - l.-307let wrap x = x :: []
+//│       ▲  - l.-438let wrap x = x :: []
 //│       │                       ^
 //│       │ 
 //│       ◉ (?b * ?a list) is here
-//│          - l.-307let wrap x = x :: []
+//│          - l.-438let wrap x = x :: []
 //│                               ^
 //│       ◉ (?b * ?a list) is here
-//│       │  - l.-307let wrap x = x :: []
+//│       │  - l.-438let wrap x = x :: []
 //│       │                       ^
 //│       ▼ 
 //│       ◉ (?a0 * ?a0 list) is here
-//│          - l.-307let wrap x = x :: []
+//│          - l.-438let wrap x = x :: []
 //│                               ^
 //│     ◉ (?a0 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                               ^^^^^^^^^
@@ -2259,17 +2390,17 @@ let rec m = test (if true then 1 else m)
 //│     │                                   ^^^^^^
 //│     │ 
 //│     ◉ (?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^^^^^^^
 //│     ◉ (?a1 * ?a1 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * _ list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?f) is assumed here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                   ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                        ^
@@ -2305,10 +2436,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -2322,17 +2453,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a1 * ?a1 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * _ list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?f) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
@@ -2357,7 +2488,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?f) <--- (bool)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                               ^^^^^^^^^
@@ -2393,17 +2524,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a0 * ?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -2433,24 +2564,24 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a * ?a list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a * ?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -2464,10 +2595,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -2503,17 +2634,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                        ^
 //│   ▼ 
 //│   ◉ (?e) is assumed here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                       ^
 //│     ◉ (?e * _ list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?a0 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                   ^^^^^^
@@ -2543,24 +2674,24 @@ let rec m = test (if true then 1 else m)
 //│     │                                               ^^^^^^^^^
 //│     │ 
 //│     ◉ (?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^^^^^^^
 //│       ◉ (?a * ?a list) is here
-//│       ▲  - l.-307let wrap x = x :: []
+//│       ▲  - l.-438let wrap x = x :: []
 //│       │                       ^
 //│       │ 
 //│       ◉ (?f * ?a1 list) is here
-//│          - l.-307let wrap x = x :: []
+//│          - l.-438let wrap x = x :: []
 //│                               ^
 //│       ◉ (?f * ?a1 list) is here
-//│       │  - l.-307let wrap x = x :: []
+//│       │  - l.-438let wrap x = x :: []
 //│       │                       ^
 //│       ▼ 
 //│       ◉ (?a * ?a list) is here
-//│          - l.-307let wrap x = x :: []
+//│          - l.-438let wrap x = x :: []
 //│                               ^
 //│     ◉ (?a list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                               ^^^^^^^^^
@@ -2574,17 +2705,17 @@ let rec m = test (if true then 1 else m)
 //│     │                                   ^^^^^^
 //│     │ 
 //│     ◉ (?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^^^^^^^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?e * _ list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?e) is assumed here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                   ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                        ^
@@ -2620,10 +2751,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -2653,10 +2784,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -2670,31 +2801,31 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a * ?a list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a * ?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * ?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?f) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │ 
 //│ ◉ (bool) is here
@@ -2705,7 +2836,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?f) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                   ^^^^^^
@@ -2741,17 +2872,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -2781,10 +2912,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -2814,10 +2945,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -2831,52 +2962,52 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * ?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?f * ?a1 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a0 * ?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -2890,10 +3021,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -2929,17 +3060,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                        ^
 //│   ▼ 
 //│   ◉ (?e) is assumed here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                       ^
 //│     ◉ (?e * _ list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a * ?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?a list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                   ^^^^^^
@@ -2969,24 +3100,24 @@ let rec m = test (if true then 1 else m)
 //│     │                                               ^^^^^^^^^
 //│     │ 
 //│     ◉ (?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^^^^^^^
 //│       ◉ (?a0 * ?a0 list) is here
-//│       ▲  - l.-307let wrap x = x :: []
+//│       ▲  - l.-438let wrap x = x :: []
 //│       │                       ^
 //│       │ 
 //│       ◉ (?f * ?a1 list) is here
-//│          - l.-307let wrap x = x :: []
+//│          - l.-438let wrap x = x :: []
 //│                               ^
 //│       ◉ (?f * ?a1 list) is here
-//│       │  - l.-307let wrap x = x :: []
+//│       │  - l.-438let wrap x = x :: []
 //│       │                       ^
 //│       ▼ 
 //│       ◉ (?a0 * ?a0 list) is here
-//│          - l.-307let wrap x = x :: []
+//│          - l.-438let wrap x = x :: []
 //│                               ^
 //│     ◉ (?a0 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                               ^^^^^^^^^
@@ -3000,17 +3131,17 @@ let rec m = test (if true then 1 else m)
 //│     │                                   ^^^^^^
 //│     │ 
 //│     ◉ (?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^^^^^^^
 //│     ◉ (?a * ?a list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?e * _ list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?e) is assumed here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                   ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                        ^
@@ -3046,10 +3177,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -3063,17 +3194,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a * ?a list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?e * _ list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?e) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
@@ -3098,7 +3229,7 @@ let rec m = test (if true then 1 else m)
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?f) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?f) <--- (bool)
 //│ 
 //│ ◉ (?a list) is here
-//│ │  - l.-307let wrap x = x :: []
+//│ │  - l.-438let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                   ^^^^^^
@@ -3134,17 +3265,17 @@ let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ ▼ 
 //│ ◉ (?e) is assumed here
-//│    - l.-307let wrap x = x :: []
+//│    - l.-438let wrap x = x :: []
 //│                     ^
 //│   ◉ (?e * _ list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -3174,10 +3305,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -3207,10 +3338,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -3224,52 +3355,52 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * ?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│   ◉ (?f * ?a1 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   ▼ 
 //│   ◉ (?a0 * ?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -3283,10 +3414,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -3322,17 +3453,17 @@ let rec m = test (if true then 1 else m)
 //│   │                                        ^
 //│   ▼ 
 //│   ◉ (?e) is assumed here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                       ^
 //│     ◉ (?e * _ list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a * ?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?a list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                   ^^^^^^
@@ -3362,24 +3493,24 @@ let rec m = test (if true then 1 else m)
 //│     │                                               ^^^^^^^^^
 //│     │ 
 //│     ◉ (?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^^^^^^^
 //│       ◉ (?a0 * ?a0 list) is here
-//│       ▲  - l.-307let wrap x = x :: []
+//│       ▲  - l.-438let wrap x = x :: []
 //│       │                       ^
 //│       │ 
 //│       ◉ (?f * ?a1 list) is here
-//│          - l.-307let wrap x = x :: []
+//│          - l.-438let wrap x = x :: []
 //│                               ^
 //│       ◉ (?f * ?a1 list) is here
-//│       │  - l.-307let wrap x = x :: []
+//│       │  - l.-438let wrap x = x :: []
 //│       │                       ^
 //│       ▼ 
 //│       ◉ (?a0 * ?a0 list) is here
-//│          - l.-307let wrap x = x :: []
+//│          - l.-438let wrap x = x :: []
 //│                               ^
 //│     ◉ (?a0 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                               ^^^^^^^^^
@@ -3393,17 +3524,17 @@ let rec m = test (if true then 1 else m)
 //│     │                                   ^^^^^^
 //│     │ 
 //│     ◉ (?a list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^^^^^^^
 //│     ◉ (?a * ?a list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?e * _ list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?e) is assumed here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                   ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                        ^
@@ -3439,10 +3570,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a0 list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
@@ -3472,10 +3603,10 @@ let rec m = test (if true then 1 else m)
 //│   │                                   ^^^^^^
 //│   │ 
 //│   ◉ (?a list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│   ◉ (?a list) is here
-//│   │  - l.-307let wrap x = x :: []
+//│   │  - l.-438let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
@@ -3489,31 +3620,31 @@ let rec m = test (if true then 1 else m)
 //│   │                                               ^^^^^^^^^
 //│   │ 
 //│   ◉ (?a0 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^^^^^^^
 //│     ◉ (?a0 * ?a0 list) is here
-//│     ▲  - l.-307let wrap x = x :: []
+//│     ▲  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     │ 
 //│     ◉ (?f * ?a1 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│     ◉ (?f * ?a1 list) is here
-//│     │  - l.-307let wrap x = x :: []
+//│     │  - l.-438let wrap x = x :: []
 //│     │                       ^
 //│     ▼ 
 //│     ◉ (?a0 * ?a0 list) is here
-//│        - l.-307let wrap x = x :: []
+//│        - l.-438let wrap x = x :: []
 //│                             ^
 //│   ◉ (?a0 * ?a0 list) is here
-//│   ▲  - l.-307let wrap x = x :: []
+//│   ▲  - l.-438let wrap x = x :: []
 //│   │                       ^
 //│   │ 
 //│   ◉ (?f * ?a1 list) is here
-//│      - l.-307let wrap x = x :: []
+//│      - l.-438let wrap x = x :: []
 //│                           ^
 //│ ◉ (?f) is assumed here
-//│ ▲  - l.-307let wrap x = x :: []
+//│ ▲  - l.-438let wrap x = x :: []
 //│ │                   ^
 //│ │ 
 //│ ◉ (bool) is here
@@ -3526,23 +3657,23 @@ let rec m = test (if true then 1 else m)
 //│     'a = int, bool, list['a]
 //│ U max: 56, total: 218
 //│ UERR 17 errors
-//│ L: 1 [int ~ bool, int <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], α164' :> bool]
-//│ L: 0 [list['a165'] ~ int, list['a165'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' :> α171', α171' :> int]
-//│ L: 0 [list['a167'] ~ int, list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' :> α171', α171' :> int]
-//│ L: 2 [list['a165'] ~ bool, list['a165'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], α164' :> bool]
-//│ L: 3 [list['a167'] ~ int, list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a167']]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], [α164' - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - 'a165', L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 2 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> int]
-//│ L: 1 [list['a165'] ~ bool, list['a165'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], α164' :> bool]
-//│ L: 3 [list['a165'] ~ int, list['a165'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 2 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> int]
-//│ L: 1 [list['a167'] ~ int, list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> int]
-//│ L: 2 [list['a165'] ~ int, list['a165'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], [α164' - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - 'a165', L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> int]
-//│ L: 2 [int ~ bool, int <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], α164' :> bool]
-//│ L: 3 [bool ~ int, bool <: α164', [α164' - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - 'a165', L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 2 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> int]
-//│ L: 3 [list['a167'] ~ bool, list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a167']]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], [α164' - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - 'a165', L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 2 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a167']]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], α164' :> bool]
-//│ L: 1 [list['a167'] ~ bool, list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], α164' :> bool]
-//│ L: 3 [list['a165'] ~ bool, list['a165'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 2 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> m162', m162' :> α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' <: m162', m162' :> α168', α168' :> list['a167']]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], α164' :> bool]
-//│ L: 1 [list['a165'] ~ int, list['a165'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> int]
-//│ L: 2 [list['a167'] ~ int, list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], [α164' - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - 'a165', L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - list['a165'] ~ list['a167'] - 'a167', L: 0 [list['a165'] ~ list['a167'], list['a165'] <: α168', α168' :> list['a167']]], ['a167' - ('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],) - α170', L: 0 [('a167', list['a167'],) ~ ([[α170']], [[list['a169']]],), ('a167', list['a167'],) :> ([[α170']], [[list['a169']]],)]], α170' :> α163', α163' :> α171', α171' :> int]
-//│ L: 2 [list['a167'] ~ bool, list['a167'] <: α168', α168' <: m162', m162' <: α171', α171' <: α163', α163' <: α170', [α170' - ([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],) - 'a167', L: 0 [([[α170']], [[list['a169']]],) ~ ('a167', list['a167'],), ([[α170']], [[list['a169']]],) <: ('a167', list['a167'],)]], ['a167' - list['a167'] ~ list['a165'] - 'a165', L: 0 [list['a167'] ~ list['a165'], list['a167'] <: α168', α168' :> list['a165']]], ['a165' - list['a165'] ~ list['a166'] - 'a166', L: 1 [list['a165'] ~ list['a166'], [list['a165'] - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - list['a166'], L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]]]], ['a166' - list['a166'] ~ list['a165'] - 'a165', L: 1 [list['a166'] ~ list['a165'], [list['a166'] - ([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],) - list['a165'], L: 0 [([[α164']], [[list['a166']]],) ~ ('a165', list['a165'],), ([[α164']], [[list['a166']]],) <: ('a165', list['a165'],)]]]], ['a165' - ('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],) - α164', L: 0 [('a165', list['a165'],) ~ ([[α164']], [[list['a166']]],), ('a165', list['a165'],) :> ([[α164']], [[list['a166']]],)]], α164' :> bool]
+//│ L: 2 [list['a177'] ~ int, list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], [α174' - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - 'a175', L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> int]
+//│ L: 2 [int ~ bool, int <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], α174' :> bool]
+//│ L: 1 [list['a177'] ~ bool, list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], α174' :> bool]
+//│ L: 1 [int ~ bool, int <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], α174' :> bool]
+//│ L: 3 [bool ~ int, bool <: α174', [α174' - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - 'a175', L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 2 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> int]
+//│ L: 2 [list['a175'] ~ bool, list['a175'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], α174' :> bool]
+//│ L: 3 [list['a175'] ~ int, list['a175'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 2 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> int]
+//│ L: 0 [list['a175'] ~ int, list['a175'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' :> α181', α181' :> int]
+//│ L: 1 [list['a175'] ~ bool, list['a175'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], α174' :> bool]
+//│ L: 0 [list['a177'] ~ int, list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' :> α181', α181' :> int]
+//│ L: 3 [list['a175'] ~ bool, list['a175'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 2 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a177']]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], α174' :> bool]
+//│ L: 1 [list['a177'] ~ int, list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> int]
+//│ L: 3 [list['a177'] ~ bool, list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a177']]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], [α174' - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - 'a175', L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 2 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a177']]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], α174' :> bool]
+//│ L: 2 [list['a175'] ~ int, list['a175'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], [α174' - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - 'a175', L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> int]
+//│ L: 2 [list['a177'] ~ bool, list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], α174' :> bool]
+//│ L: 1 [list['a175'] ~ int, list['a175'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> int]
+//│ L: 3 [list['a177'] ~ int, list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a177']]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - α174', L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]], [α174' - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - 'a175', L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 2 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' <: α181', α181' <: α173', α173' <: α180', [α180' - ([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],) - 'a177', L: 0 [([[α180']], [[list['a179']]],) ~ ('a177', list['a177'],), ([[α180']], [[list['a179']]],) <: ('a177', list['a177'],)]], ['a177' - list['a177'] ~ list['a175'] - 'a175', L: 0 [list['a177'] ~ list['a175'], list['a177'] <: α178', α178' <: m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a176'] - 'a176', L: 1 [list['a175'] ~ list['a176'], [list['a175'] - ('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],) - list['a176'], L: 0 [('a175', list['a175'],) ~ ([[α174']], [[list['a176']]],), ('a175', list['a175'],) :> ([[α174']], [[list['a176']]],)]]]], ['a176' - list['a176'] ~ list['a175'] - 'a175', L: 1 [list['a176'] ~ list['a175'], [list['a176'] - ([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],) - list['a175'], L: 0 [([[α174']], [[list['a176']]],) ~ ('a175', list['a175'],), ([[α174']], [[list['a176']]],) <: ('a175', list['a175'],)]]]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> m172', m172' :> α178', α178' :> list['a175']]], ['a175' - list['a175'] ~ list['a177'] - 'a177', L: 0 [list['a175'] ~ list['a177'], list['a175'] <: α178', α178' :> list['a177']]], ['a177' - ('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],) - α180', L: 0 [('a177', list['a177'],) ~ ([[α180']], [[list['a179']]],), ('a177', list['a177'],) :> ([[α180']], [[list['a179']]],)]], α180' :> α173', α173' :> α181', α181' :> int]
 
 
 // FIXME implementation exception
@@ -3589,7 +3720,7 @@ let rec digitsOfInt n =
 //│                      ^^^
 //│ ╔══[ERROR] identifier not found: remainder
 //│ ║  
-//│ ║  l.3550:	  ((digitsOfInt n) / 10) @ [remainder];;
+//│ ║  l.3681:	  ((digitsOfInt n) / 10) @ [remainder];;
 //│ ╙──       	                            ^^^^^^^^^
 //│ digitsOfInt: 'digitsOfInt
 //│   where
@@ -3597,5 +3728,5 @@ let rec digitsOfInt n =
 //│     'b = list[error], int
 //│ U max: 3, total: 23
 //│ UERR 2 errors
-//│ L: 0 [int ~ list[α177'], int <: list[α177']]
-//│ L: 1 [list[α177'] ~ int, [list[α177'] - (α176' -> [list[α177']]) ~ ([α176'] -> α179') - α179', L: 0 [(α176' -> [list[α177']]) ~ ([α176'] -> α179'), (α176' -> [list[α177']]) <: digitsOfInt175', digitsOfInt175' <: ([α176'] -> α179')]], α179' <: int]
+//│ L: 1 [list[α187'] ~ int, [list[α187'] - (α186' -> [list[α187']]) ~ ([α186'] -> α189') - α189', L: 0 [(α186' -> [list[α187']]) ~ ([α186'] -> α189'), (α186' -> [list[α187']]) <: digitsOfInt185', digitsOfInt185' <: ([α186'] -> α189')]], α189' <: int]
+//│ L: 0 [int ~ list[α187'], int <: list[α187']]
