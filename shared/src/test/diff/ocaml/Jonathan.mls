@@ -29,7 +29,6 @@ let h y = (not y, (if true then y else 5))
 //│ ◉ (bool) is here
 //│    - lib. let not: bool -> bool
 //│                    ^^^^
-//│ h: ('a & bool) -> (bool, 'a,)
 //│ h: 'a -> (bool, 'a,)
 //│   where
 //│     'a = int, bool
@@ -71,13 +70,14 @@ let h y = (not y, (if true then y else 5))
 //│ ◉ (bool) is here
 //│    - lib. let not: bool -> bool
 //│                    ^^^^
-//│ h: ('a & bool) -> (bool, 'a,)
 //│ h: 'a -> (bool, 'a,)
 //│   where
 //│     'a = int, bool
 //│ U max: 2, total: 7
 //│ UERR 1 errors
-//│ L: 0 [int ~ bool, int <: α77', α77' :> α75', α75' <: bool]
+//│ L: 0 [int ~ bool, int <: α73', α73' :> α71', α71' <: bool]
+
+
 
 
 
@@ -110,15 +110,15 @@ confluence true
 //│ ◉ (int) is here
 //│    - l.1  let confluence z = if true then z else 5
 //│                                                  ^
-//│ confluence: 'a -> (int | 'a)
 //│ confluence: int -> int
-//│ res: bool | int
-//│ resU: 'a
+//│ res: 'a
 //│   where
 //│     'a = bool, int
 //│ U max: 2, total: 7
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool <: α90, α90 <: α91, α91 :> int]
+//│ L: 0 [bool ~ int, bool <: α78, α78 <: α79, α79 :> int]
+
+
 
 
 let mkpair x y = (x, confluence y)
@@ -166,15 +166,13 @@ let conflict x = mkpair (not x) x
 //│ ◉ (int) is here
 //│    - l.-37let confluence z = if true then z else 5
 //│                                                  ^
-//│ mkpair: 'a -> anything -> ('a, anything,)
 //│ mkpair: 'a -> 'b -> ('a, int,)
-//│ conflict: ('a & bool) -> (anything, 'a,)
 //│ conflict: bool -> (bool, 'a,)
 //│   where
 //│     'a = bool, int
 //│ U max: 2, total: 8
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool :> α110', α110' <: α112', α112' <: α114', α114' <: α113', α113' :> int]
+//│ L: 0 [bool ~ int, bool :> α89', α89' <: α91', α91' <: α92', α92' <: α93', α93' :> int]
 
 
 
@@ -182,18 +180,15 @@ let conflict x = mkpair (not x) x
 
 let rec digitsOfInt n =
   if n <= 0 then [] else (digitsOfInt (n / 10)) @ [n mod 10]
-//│ digitsOfInt: int -> (list[int] | list[nothing])
 //│ digitsOfInt: int -> list[int]
 
 let rec addNumbs n = match n with | [] -> 0 | h::t -> h + (addNumbs t)
-//│ addNumbs: list[int] -> int
 //│ addNumbs: list[int] -> int
 
 // show nested unification error
 // :e
 // :tex
 let digits n = digitsOfInt (abs n)
-//│ digits: int -> (list[int] | list[nothing])
 //│ digits: int -> list[int]
 
 
@@ -228,11 +223,12 @@ let rec additivePersistence n =
 //│ ◉ (int) is here
 //│    - l.3    | [] -> 0
 //│                     ^
-//│ additivePersistence: int -> (bool | int)
-//│ additivePersistence: 'additivePersistence
-//│ U max: 6, total: 48
+//│ additivePersistence: 'a -> 'b
+//│   where
+//│     'b = bool, int
+//│ U max: 6, total: 56
 //│ UERR 1 errors
-//│ L: 0 [bool ~ int, bool <: α217', α217' <: α203', α203' :> int]
+//│ L: 0 [bool ~ int, bool <: α173', α173' <: α159', α159' :> int]
 
 // TODO: weird unification shown investigate
 let y x = [x]
@@ -332,10 +328,8 @@ let k a = if a then [2] else y true
 //│      - l.2  let k a = if a then [2] else y true
 //│                                  ^
 //│ y: 'a -> list['a]
-//│ y: 'a -> list['a]
-//│ k: bool -> (list[bool] | list[int])
 //│ k: bool -> list[bool]
 //│ U max: 5, total: 31
 //│ UERR 2 errors
-//│ L: 2 [bool ~ int, bool <: α238', [α238' - ([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],) - 'a239', L: 0 [([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],), ([[α238']], [[list['a240']]],) <: ('a239', list['a239'],)]], ['a239' - list['a239'] ~ list['a240'] - 'a240', L: 1 [list['a239'] ~ list['a240'], [list['a239'] - ('a239', list['a239'],) ~ ([[α238']], [[list['a240']]],) - list['a240'], L: 0 [('a239', list['a239'],) ~ ([[α238']], [[list['a240']]],), ('a239', list['a239'],) :> ([[α238']], [[list['a240']]],)]]]], ['a240' - list['a240'] ~ list['a239'] - 'a239', L: 1 [list['a240'] ~ list['a239'], [list['a240'] - ([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],) - list['a239'], L: 0 [([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],), ([[α238']], [[list['a240']]],) <: ('a239', list['a239'],)]]]], ['a239' - list['a239'] ~ list['a235'] - 'a235', L: 0 [list['a239'] ~ list['a235'], list['a239'] <: α234', α234' :> list['a235']]], ['a235' - ('a235', list['a235'],) ~ ([int], [[list['a236']]],) - int, L: 0 [('a235', list['a235'],) ~ ([int], [[list['a236']]],), ('a235', list['a235'],) :> ([int], [[list['a236']]],)]]]
-//│ L: 1 [bool ~ int, bool <: α238', [α238' - ([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],) - 'a239', L: 0 [([[α238']], [[list['a240']]],) ~ ('a239', list['a239'],), ([[α238']], [[list['a240']]],) <: ('a239', list['a239'],)]], ['a239' - list['a239'] ~ list['a235'] - 'a235', L: 0 [list['a239'] ~ list['a235'], list['a239'] <: α234', α234' :> list['a235']]], ['a235' - ('a235', list['a235'],) ~ ([int], [[list['a236']]],) - int, L: 0 [('a235', list['a235'],) ~ ([int], [[list['a236']]],), ('a235', list['a235'],) :> ([int], [[list['a236']]],)]]]
+//│ L: 2 [bool ~ int, bool <: α186', [α186' - ([[α186']], [[list['a188']]],) ~ ('a187', list['a187'],) - 'a187', L: 0 [([[α186']], [[list['a188']]],) ~ ('a187', list['a187'],), ([[α186']], [[list['a188']]],) <: ('a187', list['a187'],)]], ['a187' - list['a187'] ~ list['a188'] - 'a188', L: 1 [list['a187'] ~ list['a188'], [list['a187'] - ('a187', list['a187'],) ~ ([[α186']], [[list['a188']]],) - list['a188'], L: 0 [('a187', list['a187'],) ~ ([[α186']], [[list['a188']]],), ('a187', list['a187'],) :> ([[α186']], [[list['a188']]],)]]]], ['a188' - list['a188'] ~ list['a187'] - 'a187', L: 1 [list['a188'] ~ list['a187'], [list['a188'] - ([[α186']], [[list['a188']]],) ~ ('a187', list['a187'],) - list['a187'], L: 0 [([[α186']], [[list['a188']]],) ~ ('a187', list['a187'],), ([[α186']], [[list['a188']]],) <: ('a187', list['a187'],)]]]], ['a187' - list['a187'] ~ list['a183'] - 'a183', L: 0 [list['a187'] ~ list['a183'], list['a187'] <: α182', α182' :> list['a183']]], ['a183' - ('a183', list['a183'],) ~ ([int], [[list['a184']]],) - int, L: 0 [('a183', list['a183'],) ~ ([int], [[list['a184']]],), ('a183', list['a183'],) :> ([int], [[list['a184']]],)]]]
+//│ L: 1 [bool ~ int, bool <: α186', [α186' - ([[α186']], [[list['a188']]],) ~ ('a187', list['a187'],) - 'a187', L: 0 [([[α186']], [[list['a188']]],) ~ ('a187', list['a187'],), ([[α186']], [[list['a188']]],) <: ('a187', list['a187'],)]], ['a187' - list['a187'] ~ list['a183'] - 'a183', L: 0 [list['a187'] ~ list['a183'], list['a187'] <: α182', α182' :> list['a183']]], ['a183' - ('a183', list['a183'],) ~ ([int], [[list['a184']]],) - int, L: 0 [('a183', list['a183'],) ~ ([int], [[list['a184']]],), ('a183', list['a183'],) :> ([int], [[list['a184']]],)]]]

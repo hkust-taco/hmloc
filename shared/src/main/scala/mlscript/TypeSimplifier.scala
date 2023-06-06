@@ -65,11 +65,11 @@ trait TypeSimplifier { self: Typer =>
         val tvMap: MutMap[TV, ST] = MutMap.empty
         def process(ty: SimpleType): SimpleType = trace(s"S: $ty ${ty.getClass.getSimpleName}"){
           ty match {
-            case tv: TV => tvMap.getOrElse(tv, {
+            case tv: TV => tvMap.getOrElseUpdate(tv, {
               // temporarily map type to prevent infinite recursion
+              // this value will be overwritten by the value returned by this function
               tvMap += ((tv, tv))
               tv.uniConcreteTypes = tv.uniConcreteTypes.map(process)
-              tvMap -= tv
 
               tv.uniConcreteTypes.toSeq match {
                 case Seq(ty) =>

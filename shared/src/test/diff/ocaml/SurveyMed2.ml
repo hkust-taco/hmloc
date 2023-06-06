@@ -50,8 +50,8 @@ let rec mulByDigit i l =
 //│ ◉ (int) is here
 //│    - lib. let ( * ): int -> int -> int
 //│                             ^^^
-//│ U max: 7, total: 71
+//│ U max: 7, total: 100
 //│ UERR 2 errors
-//│ L: 0 [list['a118'] ~ int, list['a118'] <: α112', α112' <: int]
-//│ L: 0 [(α114' -> [(list[α115'] -> list[α116'])]) ~ int, (α114' -> [(list[α115'] -> list[α116'])]) <: α111', α111' <: int]
+//│ L: 0 [list['a108'] ~ int, list['a108'] <: α102', α102' <: int]
+//│ L: 0 [(α104' -> [(list[α105'] -> list[α106'])]) ~ int, (α104' -> [(list[α105'] -> list[α106'])]) <: α101', α101' <: int]
 
