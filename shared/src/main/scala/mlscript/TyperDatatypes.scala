@@ -184,9 +184,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       // with the arguments given to the type ref
       subst(td.kind match {
         case Als => td.bodyTy
-        case Nms => throw new NotImplementedError("Namespaces are not supported yet.")
         case Cls => clsNameToNomTag(td)(prov, ctx) & td.bodyTy & tparamTags
-        case Trt => trtNameToNomTag(td)(prov, ctx) & td.bodyTy & tparamTags
       }, td.targs.lazyZip(targs).toMap) //.withProv(prov)
     }
     private var tag: Opt[Opt[ClassTag]] = N

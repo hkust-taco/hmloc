@@ -38,9 +38,7 @@ final case class TypeDef(
 sealed abstract class TypeDefKind(val str: Str)
 sealed trait ObjDefKind
 case object Cls extends TypeDefKind("class") with ObjDefKind
-case object Trt extends TypeDefKind("trait") with ObjDefKind
 case object Als extends TypeDefKind("type alias")
-case object Nms extends TypeDefKind("namespace")
 
 sealed abstract class Term                                           extends Terms with TermImpl
 sealed abstract class Lit                                            extends SimpleTerm with LitImpl
@@ -111,10 +109,7 @@ final case class Record(fields: Ls[Var -> Type])        extends Type
 case class Tuple(fields: Ls[Type])    extends Type
 final case class Recursive(uv: TypeVar, body: Type)      extends Type
 final case class AppliedType(base: TypeName, targs: List[Type]) extends Type with NamedType
-final case class Neg(base: Type)                         extends Type
-final case class Rem(base: Type, names: Ls[Var])         extends Type
 final case class Bounds(lb: Type, ub: Type)              extends Type
-final case class WithExtension(base: Type, rcd: Record)  extends Type
 final case class Constrained(base: Type, where: Ls[TypeVar -> Bounds]) extends Type
 final case class Unified(base: Type, where: Ls[TypeVar -> Ls[Type]]) extends Type
 

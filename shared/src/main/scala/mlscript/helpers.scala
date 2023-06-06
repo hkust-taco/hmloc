@@ -71,10 +71,8 @@ abstract class TypeImpl extends Located { self: Type =>
     case TypeTag(name) => "#"+name
     case uv: TypeVar => ctx.vs(uv)
     case Recursive(n, b) => parensIf(s"${b.showIn(ctx, 2)} as ${ctx.vs(n)}", outerPrec > 1)
-    case WithExtension(b, r) => parensIf(s"${b.showIn(ctx, 2)} with ${r.showIn(ctx, 0)}", outerPrec > 1)
     case Function(Tuple(l :: Nil), r) => Function(l, r).showIn(ctx, outerPrec)
     case Function(l, r) => parensIf(l.showIn(ctx, 31) + " -> " + r.showIn(ctx, 30), outerPrec > 30)
-    case Neg(t) => s"~${t.showIn(ctx, 100)}"
     case Record(fs) => fs.map { nt =>
         val nme = nt._1.name
         if (nme.isCapitalized) nt._2 match {
@@ -87,8 +85,6 @@ abstract class TypeImpl extends Located { self: Type =>
       fs.map(nt => s"${nt.showIn(ctx, 0)},").mkString("(", " ", ")")
     case Union(TypeName("true"), TypeName("false")) | Union(TypeName("false"), TypeName("true")) =>
       TypeName("bool").showIn(ctx, 0)
-    // case Union(l, r) => parensIf(l.showIn(ctx, 20) + " | " + r.showIn(ctx, 20), outerPrec > 20)
-    // case Inter(l, r) => parensIf(l.showIn(ctx, 25) + " & " + r.showIn(ctx, 25), outerPrec > 25)
     case c: Composed =>
       val prec = if (c.pol) 20 else 25
       val opStr = if (c.pol) " | " else " & "
@@ -108,7 +104,6 @@ abstract class TypeImpl extends Located { self: Type =>
     case Bounds(lb, ub) => s"in ${lb.showIn(ctx, 0)} out ${ub.showIn(ctx, 0)}"
     // 
     case AppliedType(n, args) => s"${n.name}[${args.map(_.showIn(ctx, 0)).mkString(", ")}]"
-    case Rem(b, ns) => s"${b.showIn(ctx, 90)}${ns.map("\\"+_).mkString}"
     case Literal(IntLit(n)) => n.toString
     case Literal(DecLit(n)) => n.toString
     case Literal(StrLit(s)) => "\"" + s + "\""
@@ -135,58 +130,14 @@ abstract class TypeImpl extends Located { self: Type =>
     case _: NullaryType => Nil
     case Function(l, r) => l :: r :: Nil
     case Bounds(l, r) => l :: r :: Nil
-    case Neg(b) => b :: Nil
     case Record(fs) => fs.map(_._2)
     case Tuple(fs) => fs
     case Union(l, r) => l :: r :: Nil.toList
     case Inter(l, r) => l :: r :: Nil
     case Recursive(n, b) => b :: Nil
     case AppliedType(n, ts) => n :: ts
-    case Rem(b, _) => b :: Nil
-    case WithExtension(b, r) => b :: r :: Nil
     case Constrained(b, ws) => b :: ws.flatMap(c => c._1 :: c._2 :: Nil)
     case Unified(ty, us) => ty.children ::: us.flatMap { case (tv, tys) => tv :: tys.flatMap(_.children)}
-  }
-
-  /**
-    * Collect fields recursively during code generation.
-    * Note that the type checker will reject illegal cases.
-    */
-  lazy val collectFields: Ls[Str] = this match {
-    case Record(fields) => fields.map(_._1.name)
-    case Inter(ty1, ty2) => ty1.collectFields ++ ty2.collectFields
-    case _: Union | _: Function | _: Tuple | _: Recursive
-        | _: Neg | _: Rem | _: Bounds | _: WithExtension | Top | Bot
-        | _: Literal | _: TypeVar | _: AppliedType | _: TypeName 
-        | _: Constrained | _: TypeTag =>
-      Nil
-  }
-
-  /**
-    * Collect `TypeName`s recursively during code generation.
-    * Note that the type checker will reject illegal cases.
-    */
-  lazy val collectTypeNames: Ls[Str] = this match {
-    case TypeName(name) => name :: Nil
-    case AppliedType(TypeName(name), _) => name :: Nil
-    case Inter(lhs, rhs) => lhs.collectTypeNames ++ rhs.collectTypeNames
-    case _: Union | _: Function | _: Record | _: Tuple | _: Recursive
-        | _: Neg | _: Rem | _: Bounds | _: WithExtension | Top | Bot
-        | _: Literal | _: TypeVar | _: Constrained | _: TypeTag =>
-      Nil
-  }
-
-  // Collect fields and types of record types that are intersected
-  // by traversing the first level of intersection. This is used
-  // for finding the fields and types of a class body, since the
-  // body is made of up an intersection of classes and records
-  lazy val collectBodyFieldsAndTypes: List[Var -> Type] = this match {
-    case Record(fields) => fields.map(field => (field._1, field._2))
-    case Inter(ty1, ty2) => ty1.collectBodyFieldsAndTypes ++ ty2.collectBodyFieldsAndTypes
-    case _: Union | _: Function | _: Tuple | _: Recursive
-        | _: Neg | _: Rem | _: Bounds | _: WithExtension | Top | Bot
-        | _: Literal | _: TypeVar | _: AppliedType | _: TypeName | _: Constrained | _: TypeTag =>
-      Nil
   }
 }
 

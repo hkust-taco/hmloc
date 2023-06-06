@@ -461,7 +461,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   
   def tyKind[p: P]: P[TypeDefKind] = (kw("class") | kw("trait") | kw("type")).! map {
     case "class" => Cls
-    case "trait" => Trt
     case "type"  => Als
   }
   /** Modified type declaration that parses type constructor
@@ -559,12 +558,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   //    but parsing them is useful in tests (such as shared/src/test/diff/mlscript/Annoying.mls)
   def tyNoFun[p: P]: P[Type] = P( (rcd | ctor | parTy) ~ ("\\" ~ variable).rep(0) ) map {
     case (ty, Nil) => ty
-    case (ty, ids) => Rem(ty, ids.toList)
   }
   def ctor[p: P]: P[Type] = locate(P( tyName ~ "[" ~ ty.rep(0, ",") ~ "]" ) map {
     case (tname, targs) => AppliedType(tname, targs.toList)
-  }) | tyNeg | tyName | tyVar | tyWild | litTy
-  def tyNeg[p: P]: P[Type] = locate(P("~" ~/ tyNoFun map { t => Neg(t) }))
+  }) | tyName | tyVar | tyWild | litTy
   def tyName[p: P]: P[TypeName] = locate(P(ident map TypeName))
   def cons[p: P]: P[TypeName] = locate(P(ident map TypeName))
   def ocamlTyParam[p: P]: P[TypeName] = locate(P(("'" ~~ lowercase.!).map(param =>

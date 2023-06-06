@@ -59,10 +59,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
     require(td.kind is Cls)
     ClassTag(Var(td.nme.name), ctx.allBaseClassesOf(td.nme.name))(prov)
   }
-  def trtNameToNomTag(td: TypeDef)(prov: TypeProvenance, ctx: Ctx): TraitTag = {
-    require(td.kind is Trt)
-    TraitTag(Var(td.nme.name))(prov)
-  }
   
   def baseClassesOf(tyd: mlscript.TypeDef): Set[TypeName] =
     if (tyd.kind === Als) Set.empty else baseClassesOf(tyd.body)
@@ -173,9 +169,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
         
         val rightParents = td.kind match {
           case Als => checkCycle(td.bodyTy)(Set.single(L(td.nme)))
-          case Nms =>
-            err(msg"a namespace cannot inherit from others", prov.loco)
-            false
           case k: ObjDefKind =>
             val parentsClasses = MutSet.empty[TypeRef]
             def checkParents(ty: SimpleType): Bool = ty match {
@@ -194,11 +187,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
                       } tap (_ => parentsClasses += tr)
                     } else
                       checkParents(tr.expand)
-                  case Trt => checkParents(tr.expand)
-                  case Nms =>
-                    err(msg"cannot inherit from a namespace", prov.loco)
-                    false
-                  case Als => 
+                  case Als =>
                     err(msg"cannot inherit from a type alias", prov.loco)
                     false
                 }
@@ -248,12 +237,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
                   // * TODO try later:
                   // TypeRef(td.nme, td.tparamsargs.unzip._2)(noProv) & RecordType.mk(fieldsRefined)(noProv)
                 )(originProv(td.nme.toLoc, "class constructor", td.nme.name)))
-              case Trt =>
-                val nomTag = trtNameToNomTag(td)(originProv(td.nme.toLoc, "trait", td.nme.name), ctx)
-                val tv = freshVar(noProv)(1)
-                tv.upperBounds ::= td.bodyTy
-                PolymorphicType(0, FunctionType( tv, tv & nomTag & RecordType.mk(tparamTags)(noProv)
-                )(originProv(td.nme.toLoc, "trait constructor", td.nme.name)))
             }
             ctx += n.name -> VarSymbol(ctor, Var(n.name))
 
