@@ -2,13 +2,14 @@ import scala.util.Try
 import scala.scalajs.js.annotation.JSExportTopLevel
 import org.scalajs.dom
 import org.scalajs.dom.document
-import org.scalajs.dom.raw.{Event, TextEvent, UIEvent, HTMLTextAreaElement}
+import org.scalajs.dom.raw.{Event, HTMLTextAreaElement, TextEvent, UIEvent}
 import mlscript.utils._
 import mlscript._
 import mlscript.utils.shorthands._
+
 import scala.util.matching.Regex
 import scala.scalajs.js
-import scala.collection.immutable
+import scala.collection.{immutable, mutable}
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -50,18 +51,6 @@ object Main {
             case Some(typeCheckResult) => typeCheckResult
             case None =>
               val htmlBuilder = new StringBuilder
-              // var results = generateRuntimeCode(pgrm) match {
-              //   case R(code) =>
-              //     executeCode(code) match {
-              //       case L(errorHtml) =>
-              //         htmlBuilder ++= errorHtml
-              //         Nil
-              //       case R(results) => results
-              //     }
-              //   case L(errorHtml) =>
-              //     htmlBuilder ++= errorHtml
-              //     Nil
-              // }
               htmlBuilder ++= """<table>
                   |  <thead>
                   |    <tr>
@@ -116,50 +105,11 @@ object Main {
     )
   }
   
-  // // Returns `Right[Str]` if successful, `Left[Str]` if not.
-  // private def generateRuntimeCode(pgrm: Pgrm): Either[Str, Str] = {
-  //   try {
-  //     val backend = new JSWebBackend()
-  //     val lines = backend(pgrm)
-  //     val code = lines.mkString("\n")
-  //     println("Running code: " + code)
-  //     R(code)
-  //   } catch {
-  //     case e: Throwable =>
-  //       val sb = new StringBuilder()
-  //       sb ++= "<font color=\"red\">Code generation crashed:</font>"
-  //       sb ++= htmlLineBreak + e.getMessage
-  //       // sb ++= htmlLineBreak + ((e.getStackTrace) mkString htmlLineBreak)
-  //       sb ++= htmlLineBreak
-  //       sb ++= htmlLineBreak
-  //       L(sb.toString)
-  //   }
-  // }
-  
-  // Execute the generated code.
-  // We extract this function because there is some boilerplate code.
-  // It returns a tuple of three items:
-  // 1. results of definitions;
-  // 2. results of expressions;
-  // 3. error message (if has).
-  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  private def executeCode(code: Str): Either[Str, Ls[Str]] = {
-    try {
-      R(js.eval(code).asInstanceOf[js.Array[Str]].toList)
-    } catch {
-      case e: Throwable =>
-        val errorBuilder = new StringBuilder()
-        errorBuilder ++= "<font color=\"red\">Runtime error occurred:</font>"
-        errorBuilder ++= htmlLineBreak + e.getMessage
-        errorBuilder ++= htmlLineBreak
-        errorBuilder ++= htmlLineBreak
-        L(errorBuilder.toString)
-    }
-  }
-  
   private val htmlLineBreak = "<br/>"
   private val htmlWhiteSpace = "&nbsp;"
   private val splitLeadingSpaces: Regex = "^( +)(.+)$".r
+  private def underline(fragment: Str): Str =
+    s"<u class=\"error-underline\">$fragment</u>"
   
   def checkProgramType(pgrm: Pgrm): Ls[Option[Str] -> Str] -> Option[Str] = {
     val (diags, (typeDefs, stmts)) = pgrm.desugared
@@ -214,7 +164,7 @@ object Main {
         def debugOutput(msg: => Str): Unit = println(msg)
       }
       val sim = SimplifyPipeline(wty)(ctx)
-      val exp = typer.expandType(sim)
+      val exp = typer.expandUnifiedType(sim)
       exp
     }
     def formatBinding(nme: Str, ty: TypeScheme): Str = {
@@ -269,16 +219,16 @@ object Main {
           val truncateStr = " ..."
 
           // single line location and markers
-          lineNumStr = if (loc.origin.fileName == "builtin") {
+          lineNumStr = if (loc.origin.fileName === "builtin") {
             "lib.".padTo(lineNumPad, ' ')
           } else {
             s"l.$lineNum".padTo(lineNumPad, ' ')
           }
           val fstLine: String = loc.origin.fph.lines(startLineNum - 1)
-          if (!dir && idx == 0 && !lastMsg) termLinePre = levelOffset ++ "▲ "
+          if (!dir && idx === 0 && !lastMsg) termLinePre = levelOffset ++ "▲ "
           var linePre = termLinePre ++ lineBullet ++ lineNumStr
 
-          if (endLineNum == startLineNum) {
+          if (endLineNum === startLineNum) {
             val (begin, rest) = fstLine.splitAt(startLineCol - 1)
             val (mid, last) = rest.splitAt(endLineCol - startLineCol)
             val reLine = s"$begin${underline(mid)}$last"
@@ -322,7 +272,7 @@ object Main {
       val (mainMsg, seqStr, msgs, _, _) = UniErrReport.unapply(err).get
       val sctx = show.getOrElse(Message.mkCtx(err.allMsgs.map(_._1)))
 
-      if (err.level == 0) {
+      if (err.level === 0) {
         output("")
         val pre = "<strong style=\"color: #E74C3C\">[ERROR]</strong> "
         output(s"$pre${mainMsg.showIn(sctx)}")
@@ -410,11 +360,6 @@ object Main {
     def htmlize(str: Str): Str =
       str.replace("\n", "<br/>").replace("  ", "&emsp;")
 
-    // clear existing type variables so that only type variables
-    // created while typing the current block are retained
-    typer.TypeVariable.clearCollectedTypeVars()
-    typer.TypeVariable.collectTypeVars = true
-
     var decls = stmts
     while (decls.nonEmpty) {
       val d = decls.head
@@ -428,7 +373,7 @@ object Main {
           val exp = getType(ty_sch)
           declared.get(nme) match {
             case S(sign) =>
-              subsume(ty_sch, sign)(ctx, raise, TypeProvenance(d.toLoc, "def definition"))
+              typer.uniState.subsume(ty_sch, sign)(ctx, raise, TypeProvenance(d.toLoc, "def definition"))
               // Note: keeping the less precise declared type signature here (no ctx update)
             case N =>
               ctx += nme.name -> VarSymbol(ty_sch, nme)
@@ -479,18 +424,13 @@ object Main {
       }
     }
 
-
     // generate unification for the type variables created in the current typing unit.
-    typer.newUnifyTypes()(ctx, raise)
-    typer.uniState.error.iterator
-      .foreach(u => res ++= reportUniError(u.createErrorMessage()(ctx)))
+    typer.uniState.error.toList.sorted
+      .foreach(u => res ++= reportUniError(u.createErrorMessage()(ctx, u.sequenceTVs)))
 
     // results.toList -> (if (errorOccurred) S(res.toString) else N)
     results.toList -> S(res.toString)
   }
-  
-  private def underline(fragment: Str): Str =
-    s"<u class=\"error-underline\">$fragment</u>"
 }
 
 object Helpers {
@@ -556,12 +496,11 @@ object Helpers {
                 // the inferred type is used to for ts type gen
                 case S(sign) =>
                   ctx += nme.name -> typer.VarSymbol(sign, nme)
-                  typer.subsume(ty_sch, sign)(ctx, raise, typer.TypeProvenance(d.toLoc, "def definition"))
+                  typer.uniState.subsume(ty_sch, sign)(ctx, raise, typer.TypeProvenance(d.toLoc, "def definition"))
               }
 
             case desug: DesugaredStatement => ()
           }
-          typer.showUnificationDebugInfo()
           (ctx, declared)
         }
       }
