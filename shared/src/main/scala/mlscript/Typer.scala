@@ -634,7 +634,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
 
                 val fields = fs match {
                   case t: Tup => t.fields
-                  case Bra(false, t: Tup) => t.fields
                   case t => t :: Nil
                 }
                 println(s"fields $fs ~> $fields")

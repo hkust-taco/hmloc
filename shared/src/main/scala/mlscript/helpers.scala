@@ -288,8 +288,6 @@ trait TermImpl extends StatementImpl { self: Term =>
     case S(t) => t.describe
     case N => this match {
       // TODO check this case
-//      case Bra(true, Tup(_ :: _ :: _) | Tup((S(_), _) :: _) | Blk(_)) => "record"
-      case Bra(_, trm) => trm.describe
       case Blk((trm: Term) :: Nil) => trm.describe
       case Blk(_) => "block of statements"
       case IntLit(value) => "integer literal"
@@ -313,9 +311,7 @@ trait TermImpl extends StatementImpl { self: Term =>
       case With(t, fs) =>  "`with` extension"
       case CaseOf(scrut, cases) =>  "`case` expression" 
       case Assign(lhs, rhs) => "assignment"
-      case New(h, b) => "object instantiation"
       case If(_, _) => "if-else block"
-      case TyApp(_, _) => "type application"
     }
   }
   
@@ -324,8 +320,6 @@ trait TermImpl extends StatementImpl { self: Term =>
   def print(brackets: Bool): Str = {
       def bra(str: Str): Str = if (brackets) s"($str)" else str
       this match {
-    case Bra(true, trm) => s"'{' $trm '}'"
-    case Bra(false, trm) => s"'(' $trm ')'"
     case Blk(stmts) => stmts.mkString("{", "; ", "}")
     case IntLit(value) => value.toString
     case DecLit(value) => value.toString
@@ -348,10 +342,7 @@ trait TermImpl extends StatementImpl { self: Term =>
     case CaseOf(s, c) =>
       s"case $s of { ${c.print(true)} }" |> bra
     case Assign(lhs, rhs) => s" $lhs <- $rhs" |> bra
-    case New(S((at, ar)), bod) => s"new ${at.show}($ar) ${bod.show}" |> bra
-    case New(N, bod) => s"new ${bod.show}" |> bra
     case If(cond, body) => s"if $cond" + body.mkString(" then ") |> bra
-    case TyApp(lhs, targs) => s"$lhs‹${targs.map(_.show).mkString(", ")}›"
   }}
   
   def toType: Diagnostic \/ Type =
@@ -372,14 +363,6 @@ trait TermImpl extends StatementImpl { self: Term =>
       case _ => throw new NotAType(this)
     }
     case Tup(fields) => Tuple(fields.map(fld => fld.toType_!))
-    case Bra(rcd, trm) => trm match {
-      case _: Rcd => if (rcd) trm.toType_! else throw new NotAType(this)
-      case _ => if (!rcd) trm.toType_! else throw new NotAType(this)
-    }
-    case TyApp(lhs, targs) => lhs.toType_! match {
-      case p: TypeName => AppliedType(p, targs)
-      case _ => throw new NotAType(this)
-    }
     case Rcd(fields) => Record(fields.map(fld => (fld._1, fld._2.toType_!)))
     case Sel(receiver, fieldName) => receiver match {
       case Var(name) if !name.startsWith("`") => TypeName(s"$name.$fieldName")
@@ -536,22 +519,7 @@ trait StatementImpl extends Located { self: Statement =>
               tp :: Nil
             case Blk((t: Term)::Nil) => getFields(t)
             case Blk(_) => ??? // TODO proper error
-            case Bra(b, Blk((t:Term)::Nil)) => getFields(Bra(b, t))
-            case Bra(false, t) => getFields(t)
-            // TODO: check case
-//            case Bra(true, Tup(fs)) =>
-//              Record(fs.map {
-//                case (S(n) -> Fld(mut, _, t)) =>
-//                  val ty = t.toType match {
-//                    case L(d) => allDiags += d; Top
-//                    case R(t) => t
-//                  }
-//                  fields += n -> ty
-//                  n -> Field(None, ty)
-//                case _ => ???
-//              }) :: Nil
-            case Bra(true, t) => lastWords(s"$t ${t.getClass}")
-            case Tup(fs) => // TODO factor with case Bra(true, Tup(fs)) above
+            case Tup(fs) =>
               Tuple(fs.map {
                 case t =>
                   val ty = t.toType match {
@@ -578,7 +546,6 @@ trait StatementImpl extends Located { self: Statement =>
   }
   
   def children: List[Located] = this match {
-    case Bra(_, trm) => trm :: Nil
     case Var(name) => Nil
     case Asc(trm, ty) => trm :: Nil
     case Lam(lhs, rhs) => lhs :: rhs :: Nil
@@ -599,8 +566,6 @@ trait StatementImpl extends Located { self: Statement =>
     case TypeDef(kind, nme, tparams, body, pos, _) => nme :: tparams ::: pos ::: body :: Nil
     case Assign(lhs, rhs) => lhs :: rhs :: Nil
     case If(body, els) => body :: els.toList
-    case TyApp(lhs, targs) => lhs :: targs
-    case New(base, bod) => base.toList.flatMap(ab => ab._1 :: ab._2 :: Nil) ::: bod :: Nil
   }
   
   
@@ -714,7 +679,6 @@ object PrettyPrintHelper {
     case Sel(receiver, fieldName)    => s"Sel(${inspect(receiver)}, $fieldName)"
     case Let(isRec, name, rhs, body) => s"Let($isRec, $name, ${inspect(rhs)}, ${inspect(body)})"
     case Blk(stmts)                  => s"Blk(...)"
-    case Bra(rcd, trm)               => s"Bra(rcd = $rcd, ${inspect(trm)})"
     case Asc(trm, ty)                => s"Asc(${inspect(trm)}, $ty)"
     case Bind(lhs, rhs)              => s"Bind(${inspect(lhs)}, ${inspect(rhs)})"
     case With(trm, fields) =>
@@ -733,8 +697,6 @@ object PrettyPrintHelper {
     case UnitLit(value)  => s"UnitLit($value)"
     case Assign(f, v)   => s"Assign(${inspect(f)}, ${inspect(v)})"
     case If(bod, els) => s"If(${inspect(bod)}, ${els.map(inspect)})"
-    case New(base, body) => s"New(${base}, ${body})"
-    case TyApp(base, targs) => s"TyApp(${inspect(base)}, ${targs})"
     case DataDefn(body) => s"DataDefn(${inspect(body)})"
     case DatatypeDefn(head, body) => s"DatatypeDefn(head: ${inspect(head)}, body: ${inspect(body)}"
     case LetS(isRec, pat, rhs) => s"LetS(isRec: $isRec, pat: ${inspect(pat)}, rhs: ${inspect(rhs)}"

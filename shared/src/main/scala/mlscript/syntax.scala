@@ -55,16 +55,13 @@ final case class Blk(stmts: Ls[Statement])                           extends Ter
   * @param rcd set this flag if this term is a record, otherwise it's a tuple
   * @param trm
   */
-final case class Bra(rcd: Bool, trm: Term)                           extends Term
 /** A term is optionally ascribed with a type as in: term: ty */
 final case class Asc(trm: Term, ty: Type)                            extends Term
 final case class Bind(lhs: Term, rhs: Term)                          extends Term
 final case class With(trm: Term, fields: Rcd)                        extends Term
 final case class CaseOf(trm: Term, cases: CaseBranches)              extends Term
 final case class Assign(lhs: Term, rhs: Term)                        extends Term
-final case class New(head: Opt[(NamedType, Term)], body: TypingUnit) extends Term // `new C(...)` or `new C(){...}` or `new{...}`
 final case class If(lhs: Term, rhs: Ls[IfBody])                    extends Term with IfImpl
-final case class TyApp(lhs: Term, targs: Ls[Type])                   extends Term
 
 sealed abstract class IfBody extends IfBodyImpl
 final case class IfThen(expr: Term, rhs: Term) extends IfBody
