@@ -446,20 +446,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           N -> tym.withProv(fprov)
         })(tp(term.toLoc, "tuple literal"))
         // TODO is this supported in ocaml
-      case Subs(a, i) =>
-        val t_a = typeTerm(a)
-        val t_i = typeTerm(i)
-        con(t_i, IntType, TopType)
-        val elemType = freshVar(prov)
-        elemType.upperBounds ::=
-          // * We forbid using [⋅] indexing to access elements that possibly have `undefined` value,
-          // *  which could result in surprising behavior and bugs in the presence of parametricity!
-          // * Note that in modern JS, `undefined` is arguably not a value you're supposed to use explicitly;
-          // *  `null` should be used instead for those willing to indulge in the Billion Dollar Mistake.
-          TypeRef(TypeName("undefined"), Nil)(noProv).neg(
-            prov.copy(desc = "prohibited undefined element")) // TODO better reporting for this; the prov isn't actually used
-        con(t_a, ArrayType(elemType.withProv(tp(i.toLoc, "array element")))(prov), elemType) |
-          TypeRef(TypeName("undefined"), Nil)(prov.copy(desc = "possibly-undefined array access"))
       case Assign(s @ Sel(r, f), rhs) =>
         val o_ty = typeTerm(r)
         val sprov = tp(s.toLoc, "assigned selection")
@@ -473,18 +459,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         )) :: Nil)(sprov), fieldType)
         val vl = typeTerm(rhs)
         con(vl, fieldType, UnitType.withProv(prov))
-      case Assign(s @ Subs(a, i), rhs) => 
-        val a_ty = typeTerm(a)
-        val sprov = tp(s.toLoc, "assigned array element")
-        val elemType = freshVar(sprov)
-        val arr_ty =
-            // Note: this proxy does not seem to make any difference:
-            mkProxy(a_ty, tp(a.toCoveringLoc, "receiver"))
-        con(arr_ty, ArrayType(elemType.withProv(sprov))(prov), TopType)
-        val i_ty = typeTerm(i)
-        con(i_ty, IntType, TopType)
-        val vl = typeTerm(rhs)
-        con(vl, elemType, UnitType.withProv(prov))
       case Assign(lhs, rhs) =>
         err(msg"Illegal assignment" -> prov.loco
           :: msg"cannot assign to ${lhs.describe}" -> lhs.toLoc :: Nil)

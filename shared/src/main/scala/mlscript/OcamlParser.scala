@@ -93,16 +93,11 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     // Fields:
     ("." ~/ (variable | locate(("(" ~/ ident ~ "." ~ ident ~ ")")
       .map {case (prt, id) => Var(s"${prt}.${id}")})))
-      .map {(t: Var) => Left(t)} |
-    // Array subscripts:
-    ("[" ~ term ~/ "]" ~~ Index).map {Right(_)}
+      .map {(t: Var) => t}
     // Assignment:
     ).rep ~ ("<-" ~ term).?).map {
       case (i0, st, sels, a) =>
-        val base = sels.foldLeft(st)((acc, t) => t match {
-          case Left(se) => Sel(acc, se)
-          case Right((su, i1)) => Subs(acc, su).withLoc(i0, i1, origin)
-        })
+        val base = sels.foldLeft(st)((acc, t) => Sel(acc, t))
         a.fold(base)(Assign(base, _))
     }
   def record[p: P]: P[Rcd] = locate(P(

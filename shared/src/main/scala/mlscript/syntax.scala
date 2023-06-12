@@ -59,10 +59,8 @@ final case class Bra(rcd: Bool, trm: Term)                           extends Ter
 /** A term is optionally ascribed with a type as in: term: ty */
 final case class Asc(trm: Term, ty: Type)                            extends Term
 final case class Bind(lhs: Term, rhs: Term)                          extends Term
-final case class Test(trm: Term, ty: Term)                           extends Term
 final case class With(trm: Term, fields: Rcd)                        extends Term
 final case class CaseOf(trm: Term, cases: CaseBranches)              extends Term
-final case class Subs(arr: Term, idx: Term)                          extends Term
 final case class Assign(lhs: Term, rhs: Term)                        extends Term
 final case class New(head: Opt[(NamedType, Term)], body: TypingUnit) extends Term // `new C(...)` or `new C(){...}` or `new{...}`
 final case class If(lhs: Term, rhs: Ls[IfBody])                    extends Term with IfImpl
