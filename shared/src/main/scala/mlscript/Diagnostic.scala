@@ -79,28 +79,21 @@ final case class Loc(spanStart: Int, spanEnd: Int, origin: Origin) {
   def right: Loc = copy(spanStart = spanEnd)
   def left: Loc = copy(spanEnd = spanStart)
   def showLocationInSource: Str = {
-    val prepre = "║  "
-    val preend = "╙──"
     val (startLineNum, _, startLineCol) = origin.fph.getLineColAt(spanStart)
     val (endLineNum, _, endLineCol) = origin.fph.getLineColAt(spanEnd)
-    var l = startLineNum
-    var c = startLineCol
+    val l = startLineNum
+    var c = startLineCol - 1
     val tickBuilder = new mutable.StringBuilder()
+    val curLine = origin.fph.lines(l - 1)
+    val lastCol = if (l =:= endLineNum) endLineCol else curLine.length
 
-    while (l <= endLineNum) {
-      val curLine = origin.fph.lines(l - 1)
-      tickBuilder ++= (prepre + "\t" + curLine)
-      tickBuilder ++= (if (l =:= endLineNum) preend else prepre) + "\t" + " " * (c - 1)
-      val lastCol = if (l =:= endLineNum) endLineCol else curLine.length + 1
-      while (c < lastCol) {
-        tickBuilder += '^';
-        c += 1
-      }
-      if (c =:= startLineCol) tickBuilder += '^'
-      tickBuilder += '\n'
-      c = 1
-      l += 1
+    while (c < lastCol && c < curLine.length) {
+      tickBuilder += curLine(c)
+      c += 1
     }
+
+    if (l =/= endLineNum) tickBuilder ++= " ..."
+
     tickBuilder.toString
   }
 }

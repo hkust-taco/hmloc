@@ -62,17 +62,17 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ascribableTerm[p: P]: P[Term] = P(let | letPatMat | fun | ite | _match | withs)
 
   def lit[p: P]: P[Lit] =
-    locate(floatnumber.map(x => DecLit(x)) | number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit(_))
+    locate(floatnumber.map(x => DecLit(x)) | number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit)
     | P(kw("undefined")).map(x => UnitLit(true)) | P(kw("null")).map(x => UnitLit(false)))
 
   // repeat withs because we don't want full terms that get implicitly tupled
-  def ocamlList[p: P]: P[Term] = P("[" ~ term.rep(0, ";") ~ "]").map(vals => {
+  def ocamlList[p: P]: P[Term] = locate(P("[" ~ term.rep(0, ";") ~ "]").map(vals => {
     // assumes that the standard library defining list
     // also defines a helper function to create lists
     val emptyList: Term = Var("Nil")
     vals.foldRight(emptyList)((v, list) =>
       mkApp(Var("Cons"), Tup(v :: list :: Nil)))
-  })
+  }))
   def variable[p: P]: P[Var] = locate(ident.map(Var))
   def ocamlLabelName[p: P]: P[Var] = locate(ident.map(Var) | "(" ~ ocamlOps ~ ")")
 
