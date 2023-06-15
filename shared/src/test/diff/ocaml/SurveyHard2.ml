@@ -76,6 +76,14 @@ let bigAdd l1 l2 =
 //│ 
 //│         (int) ~~~~ (?a) ---> (_ * _)
 //│ 
+//│ ◉ (int) is here
+//│    - l.11     let f a x = (a + x) mod 10 in
+//│                           ^^^^^^^^^^^^^^
+//│    - lib. let mod: int -> int -> int
+//│                                  ^^^
+//│   ◉ (_ -> int) is here
+//│      - l.11     let f a x = (a + x) mod 10 in
+//│                         ^^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> _ -> int) is here
 //│     │  - l.11     let f a x = (a + x) mod 10 in
 //│     │                   ^^^^^^^^^^^^^^^^^^^^
@@ -85,6 +93,9 @@ let bigAdd l1 l2 =
 //│     ◉ (?a -> _ -> ?a) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?a) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│ ◉ (?a) is assumed here
 //│ │  - l.14     let (_,res) = List.fold_left f base args in res in
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -311,6 +311,12 @@ let checkagain (v: (int, int, (int, int))) =
 //│ 
 //│         (int) ~~~~ (error)
 //│ 
+//│ ◉ (int) is here
+//│    - l.1  let checkagain (v: (int, int, (int, int))) =
+//│                                          ^^^
+//│   ◉ (int * int) is here
+//│      - l.1  let checkagain (v: (int, int, (int, int))) =
+//│                                           ^^^^^^^^^^
 //│     ◉ (int * int * (int * int)) is here
 //│     ▲  - l.1  let checkagain (v: (int, int, (int, int))) =
 //│     │                            ^^^^^^^^^^^^^^^^^^^^^^
@@ -333,6 +339,9 @@ let checkagain (v: (int, int, (int, int))) =
 //│   ◉ (error * error) is here
 //│      - l.3     (a, b, (k, d)) -> a + b + k + d
 //│                        ^^^^
+//│ ◉ (error) is here
+//│    - l.3     (a, b, (k, d)) -> a + b + k + d
+//│                      ^
 //│ ╔══[ERROR] identifier not found: k
 //│ ║  
 //│ ║  l.298:	   (a, b, (k, d)) -> a + b + k + d
@@ -405,11 +414,18 @@ let g x = x, if true then x else x
 //│ 
 //│         (int * int * int) ~~~~ (?a) ~~~~ (?a0) ~~~~ (int * int)
 //│ 
+//│ ◉ (int * int * int) is here
+//│    - l.1  [0, 1; 2, 3, 4]
+//│                  ^^^^^^^
 //│   ◉ ((int * int * int) * _ list) is here
 //│   │  - l.1  [0, 1; 2, 3, 4]
 //│   │                ^^^^^^^
 //│   ▼ 
 //│   ◉ (?a * ?a list) is here
+//│      - l.1  [0, 1; 2, 3, 4]
+//│                    ^^^^^^^
+//│ ◉ (?a) is assumed here
+//│   ◉ (?a list) is here
 //│      - l.1  [0, 1; 2, 3, 4]
 //│                    ^^^^^^^
 //│     ◉ ((int * int) * ?a list) is here
@@ -419,6 +435,8 @@ let g x = x, if true then x else x
 //│     ◉ (?a0 * ?a0 list) is here
 //│        - l.1  [0, 1; 2, 3, 4]
 //│                ^^^^^^^^^^^^^
+//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed here
 //│   ◉ (?a0 * ?a0 list) is here
 //│   ▲  - l.1  [0, 1; 2, 3, 4]
 //│   │          ^^^^^^^^^^^^^
@@ -426,6 +444,9 @@ let g x = x, if true then x else x
 //│   ◉ ((int * int) * ?a list) is here
 //│      - l.1  [0, 1; 2, 3, 4]
 //│              ^^^^^^^^^^^^^
+//│ ◉ (int * int) is here
+//│    - l.1  [0, 1; 2, 3, 4]
+//│            ^^^^
 //│ res: list['a]
 //│   where
 //│     'a = (int, int, int,), (int, int,)

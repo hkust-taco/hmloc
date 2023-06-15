@@ -23,6 +23,11 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ ◉ (?a) is assumed here
 //│    - l.1  let rec sepConcat sep sl =
 //│                                 ^^
+//│   ◉ (?a -> _) is here
+//│      - l.1  let rec sepConcat sep sl =
+//│                                   ^^^^
+//│               match sl with ...
+//│               ^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> ?a -> _) is here
 //│     │  - l.1  let rec sepConcat sep sl =
 //│     │                           ^^^^^^^^
@@ -45,6 +50,11 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│   ◉ (((_ -> _) -> _ list -> _ list) -> _) is here
 //│      - l.8  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│                                            ^^^^^^^^^^^^^^
+//│ ◉ ((_ -> _) -> _ list -> _ list) is here
+//│    - l.8  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
+//│                                                         ^^^^^^^^
+//│    - lib. let List.map: ('a -> 'b) -> 'a list -> 'b list
+//│                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `string` does not match `(_ * _) -> _`
 //│ 
 //│         (string) <--- (?a) ~~~~ (?b) ---> (?c) ~~~~ (?d) ---> ((_ * _) -> _)
@@ -76,6 +86,11 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│             ^^^^^^^^^^^^^
 //│             | [] -> "" ...
 //│             ^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?c) is here
+//│      - l.1  let rec sepConcat sep sl =
+//│                                   ^^^^
+//│               match sl with ...
+//│               ^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> _ -> ?c) is here
 //│     │  - l.1  let rec sepConcat sep sl =
 //│     │                           ^^^^^^^^

@@ -288,15 +288,16 @@ trait UnificationSolver extends TyperDatatypes {
       println(s"UERR REPORT $toString")
       val mainMsg = msg"Type `${a.expOcamlTy()(ctx, Set())}` does not match `${b.expOcamlTy()(ctx, Set())}`"
       val seqString = createSequenceString
+      def msg(a: ST): Message = a.unwrapProvs match {
+        case tv: TV => msg"(${tv.expOcamlTy()}) is assumed here"
+        case st => msg"(${st.expOcamlTy()}) is here"
+      }
+
       def constraintToMessage(c: Constraint, last: Bool = false): Ls[(Message, Ls[Loc], Bool, Int, Bool)] = {
         val (a, b) = Constraint.unapply(c).get
         val flow = c.dir
         val locs = c.getCleanProvs.collect {
           case TypeProvenance(S(loc), _, _, _) => loc
-        }
-        def msg(a: ST): Message = a.unwrapProvs match {
-          case tv: TV => msg"(${tv.expOcamlTy()}) is assumed here"
-          case st => msg"(${st.expOcamlTy()}) is here"
         }
 
         // for the last constraint display both the types
@@ -314,18 +315,50 @@ trait UnificationSolver extends TyperDatatypes {
         }
       }
 
+      // Helpful show types being projected from their constructors
+      def constructorArgumentMessage(c: Constructor, leftEnd: Bool, level: Int): (Message, Ls[Loc], Bool, Int, Bool) = {
+        val ty = if (leftEnd) { c.a } else { c.b }
+        val locs = ty.uniqueTypeUseLocations.collect {
+          case TypeProvenance(S(loc), _, _, _) => loc
+        }
+        (msg(ty), locs, false, level, true)
+      }
+
       val report = {
-        val msgs = flow.iterator.sliding(2).collect {
-          case Seq(c: Constraint) => constraintToMessage(c, true).map(L(_))
-          case Seq(Constructor(_, _, _, _, uni)) =>
-            R(uni.createErrorMessage(level + 1)(ctx, showTV)) :: Nil
-          case Seq(c: Constraint, _: Constraint) => constraintToMessage(c).map(L(_))
-          case Seq(c: Constraint, _: Constructor) => constraintToMessage(c, true).map(L(_))
-          case Seq(Constructor(_, _, _, _, uni), _) => R(uni.createErrorMessage(level + 1)(ctx, showTV)) :: Nil
+        val msgs = flow.iterator.sliding(2).zipWithIndex.collect {
+          // single constraint
+          case (Seq(c: Constraint), _) => constraintToMessage(c, true).map(L(_))
+          // single constructor show projected types
+          case (Seq(ctor@Constructor(_, _, _, _, uni)), _) =>
+            L(constructorArgumentMessage(ctor, true, level)) ::
+              R(uni.createErrorMessage(level + 1)(ctx, showTV)) ::
+              L(constructorArgumentMessage(ctor, false, level)) ::
+              Nil
+          case (Seq(c: Constraint, _: Constraint), _) => constraintToMessage(c).map(L(_))
+          case (Seq(c: Constraint, _: Constructor), _) => constraintToMessage(c, true).map(L(_))
+          // if there are two constructors side by side
+          // project their common type once
+          case (Seq(ctor@Constructor(_, _, _, _, uni), ctor2: Constructor), idx) if ctor.b === ctor2.a =>
+            val project = L(constructorArgumentMessage(ctor, false, level))
+            val nestedReport = R(uni.createErrorMessage(level + 1)(ctx, showTV))
+            if (idx == 0) {
+              L(constructorArgumentMessage(ctor, true, level)) :: nestedReport :: project :: Nil
+            } else {
+              nestedReport :: project :: Nil
+            }
+          // if constructor is first in the sequence project left type
+          case (Seq(ctor@Constructor(_, _, _, _, uni), _), idx) =>
+            val nestedReport = R(uni.createErrorMessage(level + 1)(ctx, showTV)) :: Nil
+            if (idx == 0) {
+              L(constructorArgumentMessage(ctor, true, level)) :: nestedReport
+            } else {
+              nestedReport
+            }
         }.flatten.toList ::: (if (flow.length != 1) flow.last match {
           case c: Constraint => constraintToMessage(c, true).map(L(_))
-          case Constructor(_, _, _, _, uni) =>
-            R(uni.createErrorMessage(level + 1)(ctx, showTV)) :: Nil
+          case ctor@Constructor(_, _, _, _, uni) =>
+            // if constructor is last in the sequence project type
+            R(uni.createErrorMessage(level + 1)(ctx, showTV)) :: L(constructorArgumentMessage(ctor, false, level)) :: Nil
         } else { Nil })
         UniErrReport(mainMsg, seqString, msgs, level)
       }

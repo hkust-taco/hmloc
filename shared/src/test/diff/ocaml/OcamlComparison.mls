@@ -82,6 +82,14 @@ let bigAdd l1 l2 =
 //│ 
 //│         (int) ~~~~ (?a) ---> (_ * _)
 //│ 
+//│ ◉ (int) is here
+//│    - l.3      let f a x = (a + x) mod 10 in
+//│                           ^^^^^^^^^^^^^^
+//│    - lib. let mod: int -> int -> int
+//│                                  ^^^
+//│   ◉ (_ -> int) is here
+//│      - l.3      let f a x = (a + x) mod 10 in
+//│                         ^^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> _ -> int) is here
 //│     │  - l.3      let f a x = (a + x) mod 10 in
 //│     │                   ^^^^^^^^^^^^^^^^^^^^
@@ -91,6 +99,9 @@ let bigAdd l1 l2 =
 //│     ◉ (?a -> _ -> ?a) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?a) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│ ◉ (?a) is assumed here
 //│ │  - l.6      let (_,res) = List.fold_left f base args in res in
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -174,6 +185,9 @@ let bigAdd l1 l2 =
 //│ 
 //│         (_ * _) ~~~~ (?a) ~~~~ (?b) ~~~~ (?c) ---> (?d) <--- (_ list)
 //│ 
+//│ ◉ (_ * _) is here
+//│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
+//│                                                    ^^^^^^^
 //│   ◉ ((_ * _) list) is here
 //│   │  - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│   │                                                  ^^^^^^^^^^^^^
@@ -183,6 +197,7 @@ let bigAdd l1 l2 =
 //│   ◉ (?a list) is here
 //│      - lib. let List.rev: 'a list -> 'a list
 //│                           ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a list) is here
 //│   │  - lib. let List.rev: 'a list -> 'a list
 //│   │                                  ^^^^^^^
@@ -194,6 +209,10 @@ let bigAdd l1 l2 =
 //│   ◉ (?b list) is here
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                                            ^^^^^^^
+//│ ◉ (?b) is assumed here
+//│   ◉ (?b -> _) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│     ◉ (_ -> ?b -> _) is here
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
@@ -205,6 +224,11 @@ let bigAdd l1 l2 =
 //│                         ^^^^^
 //│                     let (carry,currentSum) = a in ...
 //│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (?c -> _) is here
+//│      - l.3      let f a x =
+//│                         ^^^
+//│                   let (carry,currentSum) = a in ...
+//│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ◉ (?c) is assumed here
 //│ │  - l.3      let f a x =
 //│ │                     ^
@@ -233,6 +257,11 @@ let bigAdd l1 l2 =
 //│ ◉ (?b) is assumed here
 //│    - l.3      let f a x =
 //│                       ^
+//│   ◉ (?b -> _) is here
+//│      - l.3      let f a x =
+//│                         ^^^
+//│                   let (carry,currentSum) = a in ...
+//│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> ?b -> _) is here
 //│     │  - l.3      let f a x =
 //│     │                   ^^^^^
@@ -244,6 +273,13 @@ let bigAdd l1 l2 =
 //│     ◉ (_ -> ?c -> _) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
+//│   ◉ (?c -> _) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
+//│ ◉ (?c) is assumed here
+//│   ◉ (?c -> _) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│     ◉ (_ -> ?c -> _) is here
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
@@ -255,6 +291,11 @@ let bigAdd l1 l2 =
 //│                         ^^^^^
 //│                     let (carry,currentSum) = a in ...
 //│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (?b -> _) is here
+//│      - l.3      let f a x =
+//│                         ^^^
+//│                   let (carry,currentSum) = a in ...
+//│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ◉ (?b) is assumed here
 //│ │  - l.3      let f a x =
 //│ │                     ^
@@ -590,6 +631,9 @@ let bigMul l1 l2 =
 //│   ◉ (?e * _) is here
 //│      - l.-25  let add (l1,l2) =
 //│                       ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│    - l.-25  let add (l1,l2) =
+//│                      ^^
 //│   ◉ (?e * _) is here
 //│   ▲  - l.-25  let add (l1,l2) =
 //│   │                   ^^^^^^^
@@ -619,6 +663,11 @@ let bigMul l1 l2 =
 //│   ◉ (_ list * _) is here
 //│      - l.-32    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
 //│                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ◉ (_ list) is here
+//│    - l.-32    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+//│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│    - lib. let (@): 'a list -> 'a list -> 'a list
+//│                                          ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
 //│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
@@ -667,6 +716,9 @@ let bigMul l1 l2 =
 //│   ◉ (?e * _) is here
 //│      - l.-25  let add (l1,l2) =
 //│                       ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│    - l.-25  let add (l1,l2) =
+//│                      ^^
 //│   ◉ (?e * _) is here
 //│   ▲  - l.-25  let add (l1,l2) =
 //│   │                   ^^^^^^^
@@ -753,6 +805,9 @@ let bigMul l1 l2 =
 //│   ◉ (?e * _) is here
 //│      - l.-25  let add (l1,l2) =
 //│                       ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│    - l.-25  let add (l1,l2) =
+//│                      ^^
 //│   ◉ (?e * _) is here
 //│   ▲  - l.-25  let add (l1,l2) =
 //│   │                   ^^^^^^^
@@ -839,6 +894,9 @@ let bigMul l1 l2 =
 //│   ◉ (?e * _) is here
 //│      - l.-25  let add (l1,l2) =
 //│                       ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│    - l.-25  let add (l1,l2) =
+//│                      ^^
 //│   ◉ (?e * _) is here
 //│   ▲  - l.-25  let add (l1,l2) =
 //│   │                   ^^^^^^^
@@ -925,6 +983,9 @@ let bigMul l1 l2 =
 //│   ◉ (?e * _) is here
 //│      - l.-25  let add (l1,l2) =
 //│                       ^^^^^^^
+//│ ◉ (?e) is assumed here
+//│    - l.-25  let add (l1,l2) =
+//│                      ^^
 //│   ◉ (?e * _) is here
 //│   ▲  - l.-25  let add (l1,l2) =
 //│   │                   ^^^^^^^
@@ -974,6 +1035,9 @@ let bigMul l1 l2 =
 //│ ◉ (?a) is assumed here
 //│    - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│                                                ^^^^
+//│   ◉ (_ -> ?a) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│     ◉ (?a -> _ -> ?a) is here
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
@@ -985,6 +1049,11 @@ let bigMul l1 l2 =
 //│                       ^^^^^
 //│                   let (x1,x2) = x in ...
 //│                   ^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?b) is here
+//│      - l.2    let f a x =
+//│                       ^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
 //│ ◉ (?b) is assumed here
 //│ ▲  - l.3      let (x1,x2) = x in
 //│ │             ^^^^^^^^^^^^^^^^^^
@@ -1025,6 +1094,9 @@ let bigMul l1 l2 =
 //│ ◉ (?a) is assumed here
 //│    - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│                                                ^^^^
+//│   ◉ (_ -> ?a) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│     ◉ (?a -> _ -> ?a) is here
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
@@ -1036,6 +1108,11 @@ let bigMul l1 l2 =
 //│                       ^^^^^
 //│                   let (x1,x2) = x in ...
 //│                   ^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?b) is here
+//│      - l.2    let f a x =
+//│                       ^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
 //│ ◉ (?b) is assumed here
 //│ ▲  - l.3      let (x1,x2) = x in
 //│ │             ^^^^^^^^^^^^^^^^^^
@@ -1094,6 +1171,11 @@ let bigMul l1 l2 =
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?c) is here
+//│      - l.2    let f a x =
+//│                       ^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> _ -> ?c) is here
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
@@ -1105,6 +1187,9 @@ let bigMul l1 l2 =
 //│     ◉ (?d -> _ -> ?d) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?d) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│ ◉ (?d) is assumed here
 //│ │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1141,6 +1226,11 @@ let bigMul l1 l2 =
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?c) is here
+//│      - l.2    let f a x =
+//│                       ^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> _ -> ?c) is here
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
@@ -1152,6 +1242,9 @@ let bigMul l1 l2 =
 //│     ◉ (?d -> _ -> ?d) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?d) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│ ◉ (?d) is assumed here
 //│ │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1172,6 +1265,11 @@ let bigMul l1 l2 =
 //│ ◉ (?a) is assumed here
 //│    - l.-16let rec mulByDigit i l =
 //│                                ^
+//│   ◉ (?a -> _) is here
+//│      - l.-16let rec mulByDigit i l =
+//│                                  ^^^
+//│               let f a x = ...
+//│               ^^^^^^^^^^^^^^^
 //│     ◉ (_ -> ?a -> _) is here
 //│     │  - l.-16let rec mulByDigit i l =
 //│     │                            ^^^^^
@@ -1234,6 +1332,11 @@ let bigMul l1 l2 =
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?c) is here
+//│      - l.2    let f a x =
+//│                       ^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
 //│     ◉ (?d -> _ -> ?c) is here
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
@@ -1245,6 +1348,10 @@ let bigMul l1 l2 =
 //│     ◉ (?e -> _ -> ?e) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?e) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
+//│ ◉ (?e) is assumed here
 //│   ◉ (?e -> _ -> ?e) is here
 //│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│   │                               ^^^^^^^^^^^^^^
@@ -1294,6 +1401,11 @@ let bigMul l1 l2 =
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?c) is here
+//│      - l.2    let f a x =
+//│                       ^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
 //│     ◉ (?d -> _ -> ?c) is here
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
@@ -1305,6 +1417,10 @@ let bigMul l1 l2 =
 //│     ◉ (?e -> _ -> ?e) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?e) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
+//│ ◉ (?e) is assumed here
 //│   ◉ (?e -> _ -> ?e) is here
 //│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│   │                               ^^^^^^^^^^^^^^
@@ -1354,6 +1470,11 @@ let bigMul l1 l2 =
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?c) is here
+//│      - l.2    let f a x =
+//│                       ^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> _ -> ?c) is here
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
@@ -1365,6 +1486,13 @@ let bigMul l1 l2 =
 //│     ◉ (?d -> _ -> ?d) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?d) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
+//│ ◉ (?d) is assumed here
+//│   ◉ (_ -> ?d) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│     ◉ (?d -> _ -> ?d) is here
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
@@ -1376,6 +1504,11 @@ let bigMul l1 l2 =
 //│                       ^^^^^
 //│                   let (x1,x2) = x in ...
 //│                   ^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?c) is here
+//│      - l.2    let f a x =
+//│                       ^^^
+//│                 let (x1,x2) = x in ...
+//│                 ^^^^^^^^^^^^^^^^^^^^^^
 //│ ◉ (?c) is assumed here
 //│ ▲  - l.3      let (x1,x2) = x in
 //│ │             ^^^^^^^^^^^^^^^^^^

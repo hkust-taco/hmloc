@@ -348,8 +348,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ocamlTypeExpression[p: P]: P[(Set[TypeName], Type)] = (
     // multiple type parameters applied to a type
     ("(" ~ ocamlTypeAlias.rep(1, ",") ~ ")" ~ tyName.?).map {
-      case ((Seq(), N)) => throw new Exception("Ocaml type expression without any parameters or types is not allowed")
-      case ((Seq(t), N)) => t
+      case (Seq(), N) => throw new Exception("Ocaml type expression without any parameters or types is not allowed")
+      case (Seq(t), N) => t
       // cases where the type is a tuple like
       // Class of ('a, 'b)
       case (parts, N) =>
@@ -360,8 +360,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       // int
       // int list
       // (int, string) tup2
-      case ((Seq(), S(t))) => (Set.empty[TypeName], t)
-      case ((parts, S(t))) =>
+      case (Seq(), S(t)) => (Set.empty[TypeName], t)
+      case (parts, S(t)) =>
         val tparams = parts.flatMap(_._1).toSet
         val args = parts.map(_._2).toList
         (tparams, AppliedType(t, args))
@@ -458,6 +458,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case "class" => Cls
     case "type"  => Als
   }
+
   /** Modified type declaration that parses type constructor
     * and data constructor and returns them all together as a
     * list
@@ -478,7 +479,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
           val paramMapIndex = tyDef.tparams.filter(paramSet(_)).map(elem => tparams.zipWithIndex.filter(_._1 == elem).head._2)
           tyDef.copy(adtData = S((alsName, paramMapIndex)))
         })
-        val unionType: TypeDef => Type = (tyDef) => {
+        val unionType: TypeDef => Type = tyDef => {
           val appliedParams = tyDef.tparams.filter(paramSet(_))
           appliedParams match {
             case Nil => tyDef.nme
@@ -489,11 +490,11 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         val aliasBody = bodyUpdateAdtInfo.foldLeft[Type](initialBody){
           case (union, tdef) => Union(unionType(tdef), union)
         }
-        val helpers = bodyUpdateAdtInfo.flatMap(cls => ocamlTyDeclHelper(cls, alsName, tparams)).toList
+        val helpers = bodyUpdateAdtInfo.flatMap(cls => ocamlTyDeclHelper(cls, alsName, tparams))
         TypeDef(Als, alsName, tparams, aliasBody, Nil, S(alsName, Nil)) :: bodyUpdateAdtInfo ::: helpers ::: moreTypes.getOrElse(Nil)
       // a type name, variable or applied type as alias
       case (tparams, tname, R((_, t)), moreTypes) =>
-        TypeDef(Als, tname, tparams.toList, t, Nil) :: moreTypes.getOrElse(Nil)
+        TypeDef(Als, tname, tparams, t, Nil) :: moreTypes.getOrElse(Nil)
       }
     )
   
@@ -517,7 +518,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         tyDef.body match {
           case Record(Nil) =>
             val funAppTy = PolyType(alsParams, alsTy)
-            val fun = Def(false, Var(tyDef.nme.name), R(funAppTy), true)
+            val fun = Def(false, Var(tyDef.nme.name), R(funAppTy), true).withLocOf(tyDef.nme)
             S(fun)
           case Record(fields) =>
             val funArg = fields match {
@@ -525,7 +526,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
               case _ => Tuple(fields.map(_._2))
             }
             val funTy = PolyType(alsParams, Function(funArg, alsTy))
-            val fun = Def(false, Var(tyDef.nme.name), R(funTy), true)
+            val fun = Def(false, Var(tyDef.nme.name), R(funTy), true).withLocOf(tyDef.nme)
             S(fun)
           case _ => N
         }

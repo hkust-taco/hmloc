@@ -6,6 +6,9 @@ let rec assoc (d,k,l) =
 //│ 
 //│         (?a * _ * _) ~~~~ (?a) ---> (?b) ~~~~ (?c) ---> (_ -> _)
 //│ 
+//│ ◉ (?a * _ * _) is here
+//│    - l.1  let rec assoc (d,k,l) =
+//│                         ^^^^^^^
 //│   ◉ ((?a * _ * _) -> ?b) is here
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                       ^^^^^^^^^

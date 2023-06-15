@@ -64,6 +64,7 @@ let rec check cond =
 //│   ◉ (?a * ?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a * ?a list) is here
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -150,6 +151,7 @@ let rec check cond =
 //│   ◉ (?a * ?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a * ?a list) is here
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -236,6 +238,7 @@ let rec check cond =
 //│   ◉ (?a0 * ?a0 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a0) is assumed here
 //│   ◉ (?a0 list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -257,6 +260,8 @@ let rec check cond =
 //│   ◉ (?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
+//│   ◉ (?a list) is here
 //│     ◉ (?a * ?a list) is here
 //│     ▲  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -264,6 +269,13 @@ let rec check cond =
 //│     ◉ (?g * ?a1 list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a1 list) is here
+//│      - l.1  let wrap x = x :: []
+//│                               ^^
+//│ ◉ (?a1) is assumed here
+//│   ◉ (?a1 list) is here
+//│      - l.1  let wrap x = x :: []
+//│                               ^^
 //│     ◉ (?g * ?a1 list) is here
 //│     │  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -271,6 +283,8 @@ let rec check cond =
 //│     ◉ (?a * ?a list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a * ?a list) is here
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -278,6 +292,11 @@ let rec check cond =
 //│   ◉ (?g * ?a1 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?g) is assumed here
+//│    - l.1  let wrap x = x :: []
+//│                        ^
+//│    - l.1  let wrap x = x :: []
+//│                    ^
 //│   ◉ (?g * ?a1 list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -285,6 +304,8 @@ let rec check cond =
 //│   ◉ (?a * ?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
+//│   ◉ (?a list) is here
 //│     ◉ (?a * ?a list) is here
 //│     ▲  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -292,6 +313,13 @@ let rec check cond =
 //│     ◉ (?g * ?a1 list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a1 list) is here
+//│      - l.1  let wrap x = x :: []
+//│                               ^^
+//│ ◉ (?a1) is assumed here
+//│   ◉ (?a1 list) is here
+//│      - l.1  let wrap x = x :: []
+//│                               ^^
 //│     ◉ (?g * ?a1 list) is here
 //│     │  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -299,6 +327,8 @@ let rec check cond =
 //│     ◉ (?a * ?a list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -320,6 +350,7 @@ let rec check cond =
 //│   ◉ (?a0 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a0) is assumed here
 //│   ◉ (?a0 * ?a0 list) is here
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -406,6 +437,7 @@ let rec check cond =
 //│   ◉ (?a * ?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -427,6 +459,8 @@ let rec check cond =
 //│   ◉ (?a0 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a0) is assumed here
+//│   ◉ (?a0 list) is here
 //│     ◉ (?a0 * ?a0 list) is here
 //│     ▲  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -434,6 +468,13 @@ let rec check cond =
 //│     ◉ (?g * ?a1 list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a1 list) is here
+//│      - l.1  let wrap x = x :: []
+//│                               ^^
+//│ ◉ (?a1) is assumed here
+//│   ◉ (?a1 list) is here
+//│      - l.1  let wrap x = x :: []
+//│                               ^^
 //│     ◉ (?g * ?a1 list) is here
 //│     │  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -441,6 +482,8 @@ let rec check cond =
 //│     ◉ (?a0 * ?a0 list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed here
 //│   ◉ (?a0 * ?a0 list) is here
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -448,6 +491,11 @@ let rec check cond =
 //│   ◉ (?g * ?a1 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?g) is assumed here
+//│    - l.1  let wrap x = x :: []
+//│                        ^
+//│    - l.1  let wrap x = x :: []
+//│                    ^
 //│   ◉ (?g * ?a1 list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -455,6 +503,8 @@ let rec check cond =
 //│   ◉ (?a0 * ?a0 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a0) is assumed here
+//│   ◉ (?a0 list) is here
 //│     ◉ (?a0 * ?a0 list) is here
 //│     ▲  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -462,6 +512,13 @@ let rec check cond =
 //│     ◉ (?g * ?a1 list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a1 list) is here
+//│      - l.1  let wrap x = x :: []
+//│                               ^^
+//│ ◉ (?a1) is assumed here
+//│   ◉ (?a1 list) is here
+//│      - l.1  let wrap x = x :: []
+//│                               ^^
 //│     ◉ (?g * ?a1 list) is here
 //│     │  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -469,6 +526,8 @@ let rec check cond =
 //│     ◉ (?a0 * ?a0 list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed here
 //│   ◉ (?a0 list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -490,6 +549,7 @@ let rec check cond =
 //│   ◉ (?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a * ?a list) is here
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -576,6 +636,7 @@ let rec check cond =
 //│   ◉ (?a0 * ?a0 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a0) is assumed here
 //│   ◉ (?a0 list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -602,6 +663,9 @@ let rec check cond =
 //│     ◉ (bool -> ?c) is here
 //│        - l.8   test (if cond then false else check (not cond)) cond
 //│                                              ^^^^^
+//│   ◉ (?c) is assumed here
+//│      - l.8   test (if cond then false else check (not cond)) cond
+//│                                            ^^^^^^^^^^^^^^^^
 //│     ◉ (bool -> ?c) is here
 //│     ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│     │                                        ^^^^^
@@ -628,6 +692,7 @@ let rec check cond =
 //│   ◉ (?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -654,6 +719,9 @@ let rec check cond =
 //│     ◉ (bool -> ?c) is here
 //│        - l.8   test (if cond then false else check (not cond)) cond
 //│                                              ^^^^^
+//│   ◉ (?c) is assumed here
+//│      - l.8   test (if cond then false else check (not cond)) cond
+//│                                            ^^^^^^^^^^^^^^^^
 //│     ◉ (bool -> ?c) is here
 //│     ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│     │                                        ^^^^^
@@ -680,6 +748,7 @@ let rec check cond =
 //│   ◉ (?a0 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a0) is assumed here
 //│   ◉ (?a0 list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -734,6 +803,7 @@ let rec check cond =
 //│     ◉ (?a0 * ?a0 list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a0) is assumed here
 //│     ◉ (?a0 list) is here
 //│     │  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -760,6 +830,9 @@ let rec check cond =
 //│       ◉ (bool -> ?c) is here
 //│          - l.8   test (if cond then false else check (not cond)) cond
 //│                                                ^^^^^
+//│     ◉ (?c) is assumed here
+//│        - l.8   test (if cond then false else check (not cond)) cond
+//│                                              ^^^^^^^^^^^^^^^^
 //│       ◉ (bool -> ?c) is here
 //│       ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│       │                                        ^^^^^
@@ -786,6 +859,7 @@ let rec check cond =
 //│     ◉ (?a list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a) is assumed here
 //│     ◉ (?a list) is here
 //│     │  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -807,6 +881,7 @@ let rec check cond =
 //│     ◉ (?a0 list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a0) is assumed here
 //│     ◉ (?a0 * ?a0 list) is here
 //│     ▲  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -861,6 +936,7 @@ let rec check cond =
 //│   ◉ (?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -882,6 +958,7 @@ let rec check cond =
 //│   ◉ (?a0 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a0) is assumed here
 //│   ◉ (?a0 * ?a0 list) is here
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -968,6 +1045,7 @@ let rec check cond =
 //│   ◉ (?a * ?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -994,6 +1072,9 @@ let rec check cond =
 //│     ◉ (bool -> ?c) is here
 //│        - l.8   test (if cond then false else check (not cond)) cond
 //│                                              ^^^^^
+//│   ◉ (?c) is assumed here
+//│      - l.8   test (if cond then false else check (not cond)) cond
+//│                                            ^^^^^^^^^^^^^^^^
 //│     ◉ (bool -> ?c) is here
 //│     ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│     │                                        ^^^^^
@@ -1020,6 +1101,7 @@ let rec check cond =
 //│   ◉ (?a0 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a0) is assumed here
 //│   ◉ (?a0 list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -1046,6 +1128,9 @@ let rec check cond =
 //│     ◉ (bool -> ?c) is here
 //│        - l.8   test (if cond then false else check (not cond)) cond
 //│                                              ^^^^^
+//│   ◉ (?c) is assumed here
+//│      - l.8   test (if cond then false else check (not cond)) cond
+//│                                            ^^^^^^^^^^^^^^^^
 //│     ◉ (bool -> ?c) is here
 //│     ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│     │                                        ^^^^^
@@ -1072,6 +1157,7 @@ let rec check cond =
 //│   ◉ (?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -1126,6 +1212,7 @@ let rec check cond =
 //│     ◉ (?a * ?a list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a) is assumed here
 //│     ◉ (?a list) is here
 //│     │  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -1152,6 +1239,9 @@ let rec check cond =
 //│       ◉ (bool -> ?c) is here
 //│          - l.8   test (if cond then false else check (not cond)) cond
 //│                                                ^^^^^
+//│     ◉ (?c) is assumed here
+//│        - l.8   test (if cond then false else check (not cond)) cond
+//│                                              ^^^^^^^^^^^^^^^^
 //│       ◉ (bool -> ?c) is here
 //│       ▲  - l.8   test (if cond then false else check (not cond)) cond
 //│       │                                        ^^^^^
@@ -1178,6 +1268,7 @@ let rec check cond =
 //│     ◉ (?a0 list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a0) is assumed here
 //│     ◉ (?a0 list) is here
 //│     │  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -1199,6 +1290,7 @@ let rec check cond =
 //│     ◉ (?a list) is here
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
+//│   ◉ (?a) is assumed here
 //│     ◉ (?a * ?a list) is here
 //│     ▲  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
@@ -1253,6 +1345,7 @@ let rec check cond =
 //│   ◉ (?a0 list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a0) is assumed here
 //│   ◉ (?a0 list) is here
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
@@ -1274,6 +1367,7 @@ let rec check cond =
 //│   ◉ (?a list) is here
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a * ?a list) is here
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^

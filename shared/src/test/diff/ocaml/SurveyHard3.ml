@@ -61,6 +61,9 @@ let bigAdd l1 l2 =
 //│ 
 //│         (_ * _) ~~~~ (?a) ~~~~ (?b) ~~~~ (?c) ---> (?d) <--- (_ list)
 //│ 
+//│ ◉ (_ * _) is here
+//│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
+//│                                                    ^^^^^^^
 //│   ◉ ((_ * _) list) is here
 //│   │  - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│   │                                                  ^^^^^^^^^^^^^
@@ -70,6 +73,7 @@ let bigAdd l1 l2 =
 //│   ◉ (?a list) is here
 //│      - lib. let List.rev: 'a list -> 'a list
 //│                           ^^^^^^^
+//│ ◉ (?a) is assumed here
 //│   ◉ (?a list) is here
 //│   │  - lib. let List.rev: 'a list -> 'a list
 //│   │                                  ^^^^^^^
@@ -81,6 +85,10 @@ let bigAdd l1 l2 =
 //│   ◉ (?b list) is here
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                                            ^^^^^^^
+//│ ◉ (?b) is assumed here
+//│   ◉ (?b -> _) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│     ◉ (_ -> ?b -> _) is here
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
@@ -92,6 +100,11 @@ let bigAdd l1 l2 =
 //│                         ^^^^^
 //│                     let (carry,currentSum) = a in ...
 //│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (?c -> _) is here
+//│      - l.17     let f a x =
+//│                         ^^^
+//│                   let (carry,currentSum) = a in ...
+//│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ◉ (?c) is assumed here
 //│ │  - l.17     let f a x =
 //│ │                     ^
@@ -120,6 +133,11 @@ let bigAdd l1 l2 =
 //│ ◉ (?b) is assumed here
 //│    - l.17     let f a x =
 //│                       ^
+//│   ◉ (?b -> _) is here
+//│      - l.17     let f a x =
+//│                         ^^^
+//│                   let (carry,currentSum) = a in ...
+//│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ◉ (_ -> ?b -> _) is here
 //│     │  - l.17     let f a x =
 //│     │                   ^^^^^
@@ -131,6 +149,13 @@ let bigAdd l1 l2 =
 //│     ◉ (_ -> ?c -> _) is here
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
+//│   ◉ (?c -> _) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
+//│ ◉ (?c) is assumed here
+//│   ◉ (?c -> _) is here
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
 //│     ◉ (_ -> ?c -> _) is here
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
@@ -142,6 +167,11 @@ let bigAdd l1 l2 =
 //│                         ^^^^^
 //│                     let (carry,currentSum) = a in ...
 //│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ◉ (?b -> _) is here
+//│      - l.17     let f a x =
+//│                         ^^^
+//│                   let (carry,currentSum) = a in ...
+//│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ◉ (?b) is assumed here
 //│ │  - l.17     let f a x =
 //│ │                     ^
