@@ -1,0 +1,202 @@
+let wrapx (x, y) =
+  if x > y then (x - y, y) else (x, y)
+ 
+let dist (x, y) = x *. x +. y *. y
+ 
+let rel pos ref =
+    dist (wrapx pos) -. dist ref
+//│ [ERROR] Type `int` does not match `float`
+//│ 
+//│         (int) ~~~~ (?a) ---> (float)
+//│ 
+//│ ◉ (int) is here
+//│    - l.2    if x > y then (x - y, y) else (x, y)
+//│                            ^^^^^
+//│    - lib. let (-): int -> int -> int
+//│                                  ^^^
+//│   ◉ (int * _) is here
+//│   │  - l.2    if x > y then (x - y, y) else (x, y)
+//│   │                         ^^^^^^^^^^
+//│   │  - l.2    if x > y then (x - y, y) else (x, y)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?a) is assumed here
+//│   │  - l.2    if x > y then (x - y, y) else (x, y)
+//│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.7      dist (wrapx pos) -. dist ref
+//│   │                  ^^^^^^^^^^^
+//│   ▼ 
+//│   ◉ (?b * _) is here
+//│      - l.4  let dist (x, y) = x *. x +. y *. y
+//│                      ^^^^^^
+//│ ◉ (?b) is assumed here
+//│ │  - l.4  let dist (x, y) = x *. x +. y *. y
+//│ │                   ^
+//│ │  - l.4  let dist (x, y) = x *. x +. y *. y
+//│ │                           ^
+//│ ▼ 
+//│ ◉ (float) is here
+//│    - lib. let ( *. ): float -> float -> float
+//│                       ^^^^^
+//│ wrapx: (int, int,) -> (int, int,)
+//│ dist: (float, float,) -> float
+//│ rel: ('a, 'b,) -> (float, float,) -> float
+//│   where
+//│     'b = float, int
+//│     'a = float, int
+//│ U max: 6, total: 41
+//│ UERR 1 errors
+//│ L: 1 [int ~ float, [int - ([[int]], [[α90']],) ~ ([α87'], [α88'],) - α87', L: 0 [([[int]], [[α90']],) ~ ([α87'], [α88'],), ([[int]], [[α90']],) <: α92', α92' <: ([α87'], [α88'],)]], α87' <: float]
+
+let clamp x =
+  if x > 0.0 then x else 0.0
+ 
+let dist (x, y) = x + y
+ 
+let displace pos orig = clamp (dist pos) - dist orig
+//│ [ERROR] Type `int` does not match `float`
+//│ 
+//│         (int) ---> (?a) ---> (?b) <--- (float)
+//│ 
+//│ ◉ (int) is here
+//│ │  - lib. let (+): int -> int -> int
+//│ │                                ^^^
+//│ │  - l.4  let dist (x, y) = x + y
+//│ │                           ^^^^^
+//│ │  - l.6  let displace pos orig = clamp (dist pos) - dist orig
+//│ │                                       ^^^^^^^^^^
+//│ │  - l.1  let clamp x =
+//│ │                   ^
+//│ ▼ 
+//│ ◉ (?a) is assumed here
+//│ │  - l.1  let clamp x =
+//│ │                   ^
+//│ │  - l.2    if x > 0.0 then x else 0.0
+//│ │              ^
+//│ ▼ 
+//│ ◉ (?b) is assumed here
+//│ ▲  - l.2    if x > 0.0 then x else 0.0
+//│ │                  ^^^
+//│ │ 
+//│ ◉ (float) is here
+//│    - l.2    if x > 0.0 then x else 0.0
+//│                    ^^^
+//│ clamp: float -> float
+//│ dist: (int, int,) -> int
+//│ displace: (int, int,) -> (int, int,) -> int
+//│ U max: 3, total: 16
+//│ UERR 1 errors
+//│ L: 0 [int ~ float, int <: α114', α114' <: α116', α116' :> float]
+
+
+let wrapx (x, y) = (x mod y, y)
+ 
+let dist (x, y) = x *. x +. y *. y
+ 
+let wrapdist pos =
+   if dist pos < 25.0 then pos else wrapx pos
+//│ [ERROR] Type `float` does not match `int`
+//│ 
+//│         (float) <--- (?a) ~~~~ (?b) ---> (int)
+//│ 
+//│ ◉ (float) is here
+//│ ▲  - lib. let ( *. ): float -> float -> float
+//│ │                     ^^^^^
+//│ │  - l.3  let dist (x, y) = x *. x +. y *. y
+//│ │                           ^
+//│ │ 
+//│ ◉ (?a) is assumed here
+//│    - l.3  let dist (x, y) = x *. x +. y *. y
+//│                     ^
+//│   ◉ (?a * _) is here
+//│   ▲  - l.3  let dist (x, y) = x *. x +. y *. y
+//│   │                  ^^^^^^
+//│   │  - l.6     if dist pos < 25.0 then pos else wrapx pos
+//│   │                    ^^^
+//│   │  - l.5  let wrapdist pos =
+//│   │                      ^^^
+//│   │ 
+//│   ◉ (?b) is assumed here
+//│   │  - l.5  let wrapdist pos =
+//│   │                      ^^^
+//│   │  - l.6     if dist pos < 25.0 then pos else wrapx pos
+//│   │                                                   ^^^
+//│   ▼ 
+//│   ◉ (?c * _) is here
+//│      - l.1  let wrapx (x, y) = (x mod y, y)
+//│                       ^^^^^^
+//│ ◉ (?c) is assumed here
+//│ │  - l.1  let wrapx (x, y) = (x mod y, y)
+//│ │                    ^
+//│ │  - l.1  let wrapx (x, y) = (x mod y, y)
+//│ │                             ^
+//│ ▼ 
+//│ ◉ (int) is here
+//│    - lib. let mod: int -> int -> int
+//│                    ^^^
+//│ wrapx: (int, int,) -> (int, int,)
+//│ dist: (float, float,) -> float
+//│ wrapdist: 'a -> 'a
+//│   where
+//│     'a = (int, 'b,), ('c, 'b,)
+//│     'c = int, float
+//│     'b = float, int
+//│ U max: 4, total: 29
+//│ UERR 1 errors
+//│ L: 1 [float ~ int, float :> α140', [α140' - ([α140'], [α141'],) ~ ([α146'], [α147'],) - α146', L: 0 [([α140'], [α141'],) ~ ([α146'], [α147'],), ([α140'], [α141'],) :> α138', α138' <: ([α146'], [α147'],)]], α146' <: int]
+
+let move (x, y) = (x / 2, y / 2)
+ 
+let dist (x, y) = x *. x +. y *. y
+ 
+let movecloser pos =
+   if dist pos < 25.0 then pos else move pos
+//│ [ERROR] Type `float` does not match `int`
+//│ 
+//│         (float) <--- (?a) ~~~~ (?b) ---> (int)
+//│ 
+//│ ◉ (float) is here
+//│ ▲  - lib. let ( *. ): float -> float -> float
+//│ │                     ^^^^^
+//│ │  - l.3  let dist (x, y) = x *. x +. y *. y
+//│ │                           ^
+//│ │ 
+//│ ◉ (?a) is assumed here
+//│    - l.3  let dist (x, y) = x *. x +. y *. y
+//│                     ^
+//│   ◉ (?a * _) is here
+//│   ▲  - l.3  let dist (x, y) = x *. x +. y *. y
+//│   │                  ^^^^^^
+//│   │  - l.6     if dist pos < 25.0 then pos else move pos
+//│   │                    ^^^
+//│   │  - l.5  let movecloser pos =
+//│   │                        ^^^
+//│   │ 
+//│   ◉ (?b) is assumed here
+//│   │  - l.5  let movecloser pos =
+//│   │                        ^^^
+//│   │  - l.6     if dist pos < 25.0 then pos else move pos
+//│   │                                                  ^^^
+//│   ▼ 
+//│   ◉ (?c * _) is here
+//│      - l.1  let move (x, y) = (x / 2, y / 2)
+//│                      ^^^^^^
+//│ ◉ (?c) is assumed here
+//│ │  - l.1  let move (x, y) = (x / 2, y / 2)
+//│ │                   ^
+//│ │  - l.1  let move (x, y) = (x / 2, y / 2)
+//│ │                            ^
+//│ ▼ 
+//│ ◉ (int) is here
+//│    - lib. let ( / ): int -> int -> int
+//│                      ^^^
+//│ move: (int, int,) -> (int, int,)
+//│ dist: (float, float,) -> float
+//│ movecloser: 'a -> 'a
+//│   where
+//│     'a = (int, int,), ('b, 'c,)
+//│     'c = int, float
+//│     'b = int, float
+//│ U max: 5, total: 31
+//│ UERR 1 errors
+//│ L: 1 [float ~ int, float :> α168', [α168' - ([α168'], [α169'],) ~ ([α174'], [α175'],) - α174', L: 0 [([α168'], [α169'],) ~ ([α174'], [α175'],), ([α168'], [α169'],) :> α166', α166' <: ([α174'], [α175'],)]], α174' <: int]
