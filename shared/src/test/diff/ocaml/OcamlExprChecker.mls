@@ -181,22 +181,22 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 //│ 
 //│         (_ list) ---> (heap)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│ │  - l.2  (("hi", 1) :: Nil):heap
 //│ │         ^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (heap) is here
+//│ ◉ (heap) comes from
 //│    - l.2  (("hi", 1) :: Nil):heap
 //│                              ^^^^
 //│ [ERROR] Type `_ list` does not match `heap`
 //│ 
 //│         (_ list) ---> (heap)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│ │  - l.3  (("hi", 1) :: ("bye", 2) :: Nil):heap
 //│ │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (heap) is here
+//│ ◉ (heap) comes from
 //│    - l.3  (("hi", 1) :: ("bye", 2) :: Nil):heap
 //│                                            ^^^^
 //│ res: list[(string, int,)]
@@ -220,11 +220,11 @@ let interp2 = (fun (env:env) opt ->
 //│ 
 //│         (error) ---> (_ option)
 //│ 
-//│ ◉ (error) is here
+//│ ◉ (error) comes from
 //│ │  - l.3    match opt with
 //│ │                 ^^^
 //│ ▼ 
-//│ ◉ (_ option) is here
+//│ ◉ (_ option) comes from
 //│    - l.4       None -> 0)
 //│                ^^^^
 //│ ╔══[ERROR] Unsupported pattern shape:
@@ -300,46 +300,46 @@ let checkagain (v: (int, int, (int, int))) =
 //│ 
 //│         (error) ---> (int)
 //│ 
-//│ ◉ (error) is here
+//│ ◉ (error) comes from
 //│ │  - l.3     (a, b, (k, d)) -> a + b + k + d
 //│ │                                      ^
 //│ ▼ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.-223let (+): int -> int -> int
 //│                            ^^^
 //│ [ERROR] Type `int` does not match `error`
 //│ 
 //│         (int) ~~~~ (error)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  let checkagain (v: (int, int, (int, int))) =
 //│                                          ^^^
-//│   ◉ (int * int) is here
+//│   ◉ (int * int) comes from
 //│      - l.1  let checkagain (v: (int, int, (int, int))) =
 //│                                           ^^^^^^^^^^
-//│     ◉ (int * int * (int * int)) is here
+//│     ◉ (int * int * (int * int)) comes from
 //│     ▲  - l.1  let checkagain (v: (int, int, (int, int))) =
 //│     │                            ^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let checkagain (v: (int, int, (int, int))) =
 //│     │                         ^
 //│     │ 
-//│     ◉ (?a) is assumed here
+//│     ◉ (?a) is assumed for
 //│     │  - l.1  let checkagain (v: (int, int, (int, int))) =
 //│     │                         ^
 //│     │  - l.2    match v with
 //│     │                 ^
 //│     ▼ 
-//│     ◉ (_ * _ * ?b) is here
+//│     ◉ (_ * _ * ?b) comes from
 //│        - l.3     (a, b, (k, d)) -> a + b + k + d
 //│                  ^^^^^^^^^^^^^^
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.3     (a, b, (k, d)) -> a + b + k + d
 //│   │                    ^^^^
 //│   ▼ 
-//│   ◉ (error * error) is here
+//│   ◉ (error * error) comes from
 //│      - l.3     (a, b, (k, d)) -> a + b + k + d
 //│                        ^^^^
-//│ ◉ (error) is here
+//│ ◉ (error) comes from
 //│    - l.3     (a, b, (k, d)) -> a + b + k + d
 //│                      ^
 //│ ╔══[ERROR] identifier not found: k
@@ -414,37 +414,37 @@ let g x = x, if true then x else x
 //│ 
 //│         (int * int * int) ~~~~ (?a) ~~~~ (?a0) ~~~~ (int * int)
 //│ 
-//│ ◉ (int * int * int) is here
+//│ ◉ (int * int * int) comes from
 //│    - l.1  [0, 1; 2, 3, 4]
 //│                  ^^^^^^^
-//│   ◉ ((int * int * int) * _ list) is here
+//│   ◉ ((int * int * int) * _ list) comes from
 //│   │  - l.1  [0, 1; 2, 3, 4]
 //│   │                ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.1  [0, 1; 2, 3, 4]
 //│                    ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│      - l.1  [0, 1; 2, 3, 4]
 //│                    ^^^^^^^
-//│     ◉ ((int * int) * ?a list) is here
+//│     ◉ ((int * int) * ?a list) comes from
 //│     │  - l.1  [0, 1; 2, 3, 4]
 //│     │          ^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.1  [0, 1; 2, 3, 4]
 //│                ^^^^^^^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.1  [0, 1; 2, 3, 4]
 //│   │          ^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ ((int * int) * ?a list) is here
+//│   ◉ ((int * int) * ?a list) comes from
 //│      - l.1  [0, 1; 2, 3, 4]
 //│              ^^^^^^^^^^^^^
-//│ ◉ (int * int) is here
+//│ ◉ (int * int) comes from
 //│    - l.1  [0, 1; 2, 3, 4]
 //│            ^^^^
 //│ res: list['a]
@@ -475,7 +475,7 @@ let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ 
 //│         (string) <--- (?a) ---> (_ list)
 //│ 
-//│ ◉ (string) is here
+//│ ◉ (string) comes from
 //│ ▲  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                                      ^^^^^^^^^^
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
@@ -483,13 +483,13 @@ let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                 ^^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                 ^^
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                            ^^
 //│ ▼ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│    - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│                                                          ^^
 //│ len: 'b -> int

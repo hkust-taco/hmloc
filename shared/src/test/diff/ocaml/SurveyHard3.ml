@@ -38,43 +38,43 @@ let bigAdd l1 l2 =
 //│ 
 //│         (_ list) ---> (?a) <--- (?b) ---> (_ * _)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│ │  - l.19       if x = []
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.19       if x = []
 //│ │                  ^
 //│ │  - l.17     let f a x =
 //│ │                     ^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.17     let f a x =
 //│ │                     ^
 //│ │  - l.22         (let (toSum1,toSum2) = x in
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (_ * _) is here
+//│ ◉ (_ * _) comes from
 //│    - l.22         (let (toSum1,toSum2) = x in
 //│                        ^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
 //│         (_ * _) ~~~~ (?a) ~~~~ (?b) ~~~~ (?c) ---> (?d) <--- (_ list)
 //│ 
-//│ ◉ (_ * _) is here
+//│ ◉ (_ * _) comes from
 //│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│                                                    ^^^^^^^
-//│   ◉ ((_ * _) list) is here
+//│   ◉ ((_ * _) list) comes from
 //│   │  - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
 //│   │                                                  ^^^^^^^^^^^^^
 //│   │  - l.28     let args = List.rev (List.combine l1 l2) in
 //│   │                                 ^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - lib. let List.rev: 'a list -> 'a list
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - lib. let List.rev: 'a list -> 'a list
 //│   │                                  ^^^^^^^
 //│   │  - l.28     let args = List.rev (List.combine l1 l2) in
@@ -82,63 +82,63 @@ let bigAdd l1 l2 =
 //│   │  - l.29     let (_,res) = List.fold_left f base args in res in
 //│   │                                                 ^^^^
 //│   ▼ 
-//│   ◉ (?b list) is here
+//│   ◉ (?b list) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                                            ^^^^^^^
-//│ ◉ (?b) is assumed here
-//│   ◉ (?b -> _) is here
+//│ ◉ (?b) is assumed for
+//│   ◉ (?b -> _) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│     ◉ (_ -> ?b -> _) is here
+//│     ◉ (_ -> ?b -> _) comes from
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
 //│     │  - l.29     let (_,res) = List.fold_left f base args in res in
 //│     │                                          ^
 //│     │ 
-//│     ◉ (_ -> ?c -> _) is here
+//│     ◉ (_ -> ?c -> _) comes from
 //│        - l.17     let f a x =
 //│                         ^^^^^
 //│                     let (carry,currentSum) = a in ...
 //│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (?c -> _) is here
+//│   ◉ (?c -> _) comes from
 //│      - l.17     let f a x =
 //│                         ^^^
 //│                   let (carry,currentSum) = a in ...
 //│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.17     let f a x =
 //│ │                     ^
 //│ │  - l.19       if x = []
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.19       if x = []
 //│ │                      ^^
 //│ │ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│    - l.19       if x = []
 //│                        ^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
 //│         (_ list) ---> (?a) <--- (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ * _)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│ │  - l.19       if x = []
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.19       if x = []
 //│ │                  ^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│    - l.17     let f a x =
 //│                       ^
-//│   ◉ (?b -> _) is here
+//│   ◉ (?b -> _) comes from
 //│      - l.17     let f a x =
 //│                         ^^^
 //│                   let (carry,currentSum) = a in ...
 //│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> ?b -> _) is here
+//│     ◉ (_ -> ?b -> _) comes from
 //│     │  - l.17     let f a x =
 //│     │                   ^^^^^
 //│     │               let (carry,currentSum) = a in ...
@@ -146,39 +146,39 @@ let bigAdd l1 l2 =
 //│     │  - l.29     let (_,res) = List.fold_left f base args in res in
 //│     │                                          ^
 //│     ▼ 
-//│     ◉ (_ -> ?c -> _) is here
+//│     ◉ (_ -> ?c -> _) comes from
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (?c -> _) is here
+//│   ◉ (?c -> _) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│ ◉ (?c) is assumed here
-//│   ◉ (?c -> _) is here
+//│ ◉ (?c) is assumed for
+//│   ◉ (?c -> _) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│     ◉ (_ -> ?c -> _) is here
+//│     ◉ (_ -> ?c -> _) comes from
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
 //│     │  - l.29     let (_,res) = List.fold_left f base args in res in
 //│     │                                          ^
 //│     │ 
-//│     ◉ (_ -> ?b -> _) is here
+//│     ◉ (_ -> ?b -> _) comes from
 //│        - l.17     let f a x =
 //│                         ^^^^^
 //│                     let (carry,currentSum) = a in ...
 //│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (?b -> _) is here
+//│   ◉ (?b -> _) comes from
 //│      - l.17     let f a x =
 //│                         ^^^
 //│                   let (carry,currentSum) = a in ...
 //│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.17     let f a x =
 //│ │                     ^
 //│ │  - l.22         (let (toSum1,toSum2) = x in
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (_ * _) is here
+//│ ◉ (_ * _) comes from
 //│    - l.22         (let (toSum1,toSum2) = x in
 //│                        ^^^^^^^^^^^^^^^
 //│ U max: 35, total: 551

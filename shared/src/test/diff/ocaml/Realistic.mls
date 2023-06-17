@@ -9,33 +9,33 @@ let rel pos ref =
 //│ 
 //│         (int) ~~~~ (?a) ---> (float)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.2    if x > y then (x - y, y) else (x, y)
 //│                            ^^^^^
 //│    - lib. let (-): int -> int -> int
 //│                                  ^^^
-//│   ◉ (int * _) is here
+//│   ◉ (int * _) comes from
 //│   │  - l.2    if x > y then (x - y, y) else (x, y)
 //│   │                         ^^^^^^^^^^
 //│   │  - l.2    if x > y then (x - y, y) else (x, y)
 //│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?a) is assumed here
+//│   ◉ (?a) is assumed for
 //│   │  - l.2    if x > y then (x - y, y) else (x, y)
 //│   │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.7      dist (wrapx pos) -. dist ref
 //│   │                  ^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b * _) is here
+//│   ◉ (?b * _) comes from
 //│      - l.4  let dist (x, y) = x *. x +. y *. y
 //│                      ^^^^^^
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.4  let dist (x, y) = x *. x +. y *. y
 //│ │                   ^
 //│ │  - l.4  let dist (x, y) = x *. x +. y *. y
 //│ │                           ^
 //│ ▼ 
-//│ ◉ (float) is here
+//│ ◉ (float) comes from
 //│    - lib. let ( *. ): float -> float -> float
 //│                       ^^^^^
 //│ wrapx: (int, int,) -> (int, int,)
@@ -58,7 +58,7 @@ let displace pos orig = clamp (dist pos) - dist orig
 //│ 
 //│         (int) ---> (?a) ---> (?b) <--- (float)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - lib. let (+): int -> int -> int
 //│ │                                ^^^
 //│ │  - l.4  let dist (x, y) = x + y
@@ -68,17 +68,17 @@ let displace pos orig = clamp (dist pos) - dist orig
 //│ │  - l.1  let clamp x =
 //│ │                   ^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let clamp x =
 //│ │                   ^
 //│ │  - l.2    if x > 0.0 then x else 0.0
 //│ │              ^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.2    if x > 0.0 then x else 0.0
 //│ │                  ^^^
 //│ │ 
-//│ ◉ (float) is here
+//│ ◉ (float) comes from
 //│    - l.2    if x > 0.0 then x else 0.0
 //│                    ^^^
 //│ clamp: float -> float
@@ -99,16 +99,16 @@ let wrapdist pos =
 //│ 
 //│         (float) <--- (?a) ~~~~ (?b) ---> (int)
 //│ 
-//│ ◉ (float) is here
+//│ ◉ (float) comes from
 //│ ▲  - lib. let ( *. ): float -> float -> float
 //│ │                     ^^^^^
 //│ │  - l.3  let dist (x, y) = x *. x +. y *. y
 //│ │                           ^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│    - l.3  let dist (x, y) = x *. x +. y *. y
 //│                     ^
-//│   ◉ (?a * _) is here
+//│   ◉ (?a * _) comes from
 //│   ▲  - l.3  let dist (x, y) = x *. x +. y *. y
 //│   │                  ^^^^^^
 //│   │  - l.6     if dist pos < 25.0 then pos else wrapx pos
@@ -116,22 +116,22 @@ let wrapdist pos =
 //│   │  - l.5  let wrapdist pos =
 //│   │                      ^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.5  let wrapdist pos =
 //│   │                      ^^^
 //│   │  - l.6     if dist pos < 25.0 then pos else wrapx pos
 //│   │                                                   ^^^
 //│   ▼ 
-//│   ◉ (?c * _) is here
+//│   ◉ (?c * _) comes from
 //│      - l.1  let wrapx (x, y) = (x mod y, y)
 //│                       ^^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.1  let wrapx (x, y) = (x mod y, y)
 //│ │                    ^
 //│ │  - l.1  let wrapx (x, y) = (x mod y, y)
 //│ │                             ^
 //│ ▼ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - lib. let mod: int -> int -> int
 //│                    ^^^
 //│ wrapx: (int, int,) -> (int, int,)
@@ -155,16 +155,16 @@ let movecloser pos =
 //│ 
 //│         (float) <--- (?a) ~~~~ (?b) ---> (int)
 //│ 
-//│ ◉ (float) is here
+//│ ◉ (float) comes from
 //│ ▲  - lib. let ( *. ): float -> float -> float
 //│ │                     ^^^^^
 //│ │  - l.3  let dist (x, y) = x *. x +. y *. y
 //│ │                           ^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│    - l.3  let dist (x, y) = x *. x +. y *. y
 //│                     ^
-//│   ◉ (?a * _) is here
+//│   ◉ (?a * _) comes from
 //│   ▲  - l.3  let dist (x, y) = x *. x +. y *. y
 //│   │                  ^^^^^^
 //│   │  - l.6     if dist pos < 25.0 then pos else move pos
@@ -172,22 +172,22 @@ let movecloser pos =
 //│   │  - l.5  let movecloser pos =
 //│   │                        ^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.5  let movecloser pos =
 //│   │                        ^^^
 //│   │  - l.6     if dist pos < 25.0 then pos else move pos
 //│   │                                                  ^^^
 //│   ▼ 
-//│   ◉ (?c * _) is here
+//│   ◉ (?c * _) comes from
 //│      - l.1  let move (x, y) = (x / 2, y / 2)
 //│                      ^^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.1  let move (x, y) = (x / 2, y / 2)
 //│ │                   ^
 //│ │  - l.1  let move (x, y) = (x / 2, y / 2)
 //│ │                            ^
 //│ ▼ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - lib. let ( / ): int -> int -> int
 //│                      ^^^
 //│ move: (int, int,) -> (int, int,)

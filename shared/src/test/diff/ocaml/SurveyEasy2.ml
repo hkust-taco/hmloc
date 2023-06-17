@@ -8,7 +8,7 @@ let increment result = match result with
 //│ 
 //│         (string) ---> (?a) <--- (int)
 //│ 
-//│ ◉ (string) is here
+//│ ◉ (string) comes from
 //│ │  - lib. let (^): string -> string -> string
 //│ │                                      ^^^^^^
 //│ │  - l.3   | Right msg -> "ERROR: " ^ msg
@@ -18,7 +18,7 @@ let increment result = match result with
 //│ │          | Left n -> n + 1 ...
 //│ │          ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.1  let increment result = match result with
 //│ │                                ^^^^^^^^^^^^^^^^^
 //│ │          | Left n -> n + 1 ...
@@ -26,7 +26,7 @@ let increment result = match result with
 //│ │  - l.2   | Left n -> n + 1
 //│ │                      ^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - lib. let (+): int -> int -> int
 //│                                  ^^^
 //│ U max: 1, total: 8

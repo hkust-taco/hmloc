@@ -11,7 +11,7 @@ let check result condition =
 //│ 
 //│         ((_, _) either) <--- (?a) ---> (?b) <--- (?c) <--- (string)
 //│ 
-//│ ◉ ((_, _) either) is here
+//│ ◉ ((_, _) either) comes from
 //│ ▲  - l.4      | Left n -> "OK"
 //│ │               ^^^^^^
 //│ │  - l.3     match result with
@@ -19,7 +19,7 @@ let check result condition =
 //│ │  - l.1  let check result condition =
 //│ │                   ^^^^^^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let check result condition =
 //│ │                   ^^^^^^
 //│ │  - l.6   else result
@@ -29,7 +29,7 @@ let check result condition =
 //│ │            match result with ...
 //│ │            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.2   if condition then
 //│ │          ^^^^^^^^^^^^^^^^^
 //│ │            match result with ...
@@ -39,13 +39,13 @@ let check result condition =
 //│ │             | Left n -> "OK" ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.3     match result with
 //│ │            ^^^^^^^^^^^^^^^^^
 //│ │             | Left n -> "OK" ...
 //│ │             ^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (string) is here
+//│ ◉ (string) comes from
 //│    - l.4      | Left n -> "OK"
 //│                           ^^^^
 //│ U max: 2, total: 11

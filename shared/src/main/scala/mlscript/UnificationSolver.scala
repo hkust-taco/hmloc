@@ -289,8 +289,8 @@ trait UnificationSolver extends TyperDatatypes {
       val mainMsg = msg"Type `${a.expOcamlTy()(ctx, Set())}` does not match `${b.expOcamlTy()(ctx, Set())}`"
       val seqString = createSequenceString
       def msg(a: ST): Message = a.unwrapProvs match {
-        case tv: TV => msg"(${tv.expOcamlTy()}) is assumed here"
-        case st => msg"(${st.expOcamlTy()}) is here"
+        case tv: TV => msg"(${tv.expOcamlTy()}) is assumed for"
+        case st => msg"(${st.expOcamlTy()}) comes from"
       }
 
       def constraintToMessage(c: Constraint, last: Bool = false): Ls[(Message, Ls[Loc], Bool, Int, Bool)] = {

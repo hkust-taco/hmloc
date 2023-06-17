@@ -9,13 +9,13 @@ let test =
 //│ 
 //│         (bool) ---> (?a) ---> (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ │  - l.3    (f 1 + f true)
 //│ │                    ^^^^
 //│ │  - l.2    let f x = x in
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.2    let f x = x in
 //│ │                 ^
 //│ │  - l.2    let f x = x in
@@ -23,7 +23,7 @@ let test =
 //│ │  - l.3    (f 1 + f true)
 //│ │                  ^^^^^^
 //│ ▼ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - lib. let (+): int -> int -> int
 //│                           ^^^
 //│ test: int
@@ -38,7 +38,7 @@ let test2 = let (a, b) = test in [[b]] + 1
 //│ 
 //│         (int) ---> (_ * _)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - lib. let (+): int -> int -> int
 //│ │                                ^^^
 //│ │  - l.-28  (f 1 + f true)
@@ -46,18 +46,18 @@ let test2 = let (a, b) = test in [[b]] + 1
 //│ │  - l.1  let test2 = let (a, b) = test in [[b]] + 1
 //│ │                                  ^^^^
 //│ ▼ 
-//│ ◉ (_ * _) is here
+//│ ◉ (_ * _) comes from
 //│    - l.1  let test2 = let (a, b) = test in [[b]] + 1
 //│                           ^^^^^^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (_ list) ---> (int)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│ │  - l.1  let test2 = let (a, b) = test in [[b]] + 1
 //│ │                                          ^^^^^
 //│ ▼ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - lib. let (+): int -> int -> int
 //│                    ^^^
 //│ test2: int
@@ -73,7 +73,7 @@ not (f 1)
 //│ 
 //│         (int) ---> (bool)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - lib. let (+): int -> int -> int
 //│ │                                ^^^
 //│ │  - l.1  let f x = x + 1
@@ -81,7 +81,7 @@ not (f 1)
 //│ │  - l.2  not (f 1)
 //│ │             ^^^^^
 //│ ▼ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - lib. let not: bool -> bool
 //│                    ^^^^
 //│ f: int -> int
@@ -113,13 +113,13 @@ not a
 //│ 
 //│         (int) ---> (bool)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - l.1  let a = 1
 //│ │                 ^
 //│ │  - l.2  not a
 //│ │             ^
 //│ ▼ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - lib. let not: bool -> bool
 //│                    ^^^^
 //│ a: int
@@ -135,13 +135,13 @@ confluence true
 //│ 
 //│         (bool) ---> (?a) ---> (?b) <--- (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ │  - l.2  confluence true
 //│ │                    ^^^^
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                        ^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                        ^
 //│ │  - l.1  let confluence z = if true then z else 5
@@ -149,11 +149,11 @@ confluence true
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  let confluence z = if true then z else 5
 //│                                                  ^
 //│ confluence: int -> int
@@ -178,19 +178,19 @@ f x
 //│ 
 //│         (int) ~~~~ (string)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.-7 let x: int list
 //│                  ^^^
-//│   ◉ (int list) is here
+//│   ◉ (int list) comes from
 //│   │  - l.-7 let x: int list
 //│   │                ^^^^^^^^
 //│   │  - l.1  f x
 //│   │           ^
 //│   ▼ 
-//│   ◉ (string list) is here
+//│   ◉ (string list) comes from
 //│      - l.-5 let f: string list -> unit
 //│                    ^^^^^^^^^^^
-//│ ◉ (string) is here
+//│ ◉ (string) comes from
 //│    - l.-5 let f: string list -> unit
 //│                  ^^^^^^
 //│ U max: 1, total: 2
@@ -223,10 +223,10 @@ if true then x else y
 //│ 
 //│         (string) ~~~~ (int)
 //│ 
-//│ ◉ (string) is here
+//│ ◉ (string) comes from
 //│    - l.-51let y: string list
 //│                  ^^^^^^
-//│   ◉ (string list) is here
+//│   ◉ (string list) comes from
 //│   │  - l.-51let y: string list
 //│   │                ^^^^^^^^^^^
 //│   │  - l.1  if true then x else y
@@ -234,16 +234,16 @@ if true then x else y
 //│   │  - l.1  if true then x else y
 //│   │         ^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?a) is assumed here
+//│   ◉ (?a) is assumed for
 //│   ▲  - l.1  if true then x else y
 //│   │         ^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  if true then x else y
 //│   │                      ^
 //│   │ 
-//│   ◉ (int list) is here
+//│   ◉ (int list) comes from
 //│      - l.-52let x: int list
 //│                    ^^^^^^^^
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.-52let x: int list
 //│                  ^^^
 //│ res: 'a
@@ -259,13 +259,13 @@ Left 1 : int
 //│ 
 //│         ((_, _) either) ---> (int)
 //│ 
-//│ ◉ ((_, _) either) is here
+//│ ◉ ((_, _) either) comes from
 //│ │  - lib. type ('a, 'b) either = Left of 'a | Right of 'b
 //│ │                                ^^^^^^^^^^
 //│ │  - l.1  Left 1 : int
 //│ │         ^^^^^^
 //│ ▼ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  Left 1 : int
 //│                    ^^^
 //│ res: int
@@ -281,13 +281,13 @@ mkpair 1 "2"
 //│ 
 //│         (string) ---> (?a) ---> (?b) ---> (?c) <--- (int)
 //│ 
-//│ ◉ (string) is here
+//│ ◉ (string) comes from
 //│ │  - l.3  mkpair 1 "2"
 //│ │                  ^^^
 //│ │  - l.2  let mkpair x y = (x, confluence y)
 //│ │                      ^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.2  let mkpair x y = (x, confluence y)
 //│ │                      ^
 //│ │  - l.2  let mkpair x y = (x, confluence y)
@@ -295,7 +295,7 @@ mkpair 1 "2"
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                        ^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                        ^
 //│ │  - l.1  let confluence z = if true then z else 5
@@ -303,11 +303,11 @@ mkpair 1 "2"
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.1  let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  let confluence z = if true then z else 5
 //│                                                  ^
 //│ confluence: int -> int
@@ -329,7 +329,7 @@ g b
 //│ 
 //│         (int) ---> (string list)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - l.1  let a = 1
 //│ │                 ^
 //│ │  - l.2  let b = a
@@ -337,49 +337,49 @@ g b
 //│ │  - l.5  g b
 //│ │           ^
 //│ ▼ 
-//│ ◉ (string list) is here
+//│ ◉ (string list) comes from
 //│    - l.-152let f: string list -> unit
 //│                   ^^^^^^^^^^^
 //│ [ERROR] Type `bool` does not match `unit`
 //│ 
 //│         (bool) ---> (?a) ~~~~ (unit)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ │  - l.3  let f x = if x then true else false
 //│ │                             ^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│    - l.3  let f x = if x then true else false
 //│                     ^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?a) is here
+//│   ◉ (_ -> ?a) comes from
 //│   │  - l.3  let f x = if x then true else false
 //│   │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (string list -> unit) is here
+//│   ◉ (string list -> unit) comes from
 //│      - l.-152let f: string list -> unit
 //│                     ^^^^^^^^^^^^^^^^^^^
-//│ ◉ (unit) is here
+//│ ◉ (unit) comes from
 //│    - l.-152let f: string list -> unit
 //│                                  ^^^^
 //│ [ERROR] Type `bool` does not match `string list`
 //│ 
 //│         (bool) <--- (?a) ~~~~ (string list)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ ▲  - l.3  let f x = if x then true else false
 //│ │                      ^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│    - l.3  let f x = if x then true else false
 //│                 ^
-//│   ◉ (?a -> _) is here
+//│   ◉ (?a -> _) comes from
 //│   │  - l.3  let f x = if x then true else false
 //│   │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (string list -> unit) is here
+//│   ◉ (string list -> unit) comes from
 //│      - l.-152let f: string list -> unit
 //│                     ^^^^^^^^^^^^^^^^^^^
-//│ ◉ (string list) is here
+//│ ◉ (string list) comes from
 //│    - l.-152let f: string list -> unit
 //│                   ^^^^^^^^^^^
 //│ a: int
@@ -403,22 +403,22 @@ if true then wrap 1 else wrap true
 //│ 
 //│         (bool) ---> (?b) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?c) <--- (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ │  - l.1  if true then wrap 1 else wrap true
 //│ │                                       ^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│    - l.-3 let wrap x = x :: []
 //│                    ^
-//│   ◉ (?b * _ list) is here
+//│   ◉ (?b * _ list) comes from
 //│   │  - l.-3 let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-3 let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-3 let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   │  - l.1  if true then wrap 1 else wrap true
@@ -426,74 +426,74 @@ if true then wrap 1 else wrap true
 //│   │  - l.1  if true then wrap 1 else wrap true
 //│   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.1  if true then wrap 1 else wrap true
 //│   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  if true then wrap 1 else wrap true
 //│   │                      ^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-3 let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-3 let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   │ 
-//│   ◉ (?d * _ list) is here
+//│   ◉ (?d * _ list) comes from
 //│      - l.-3 let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.-3 let wrap x = x :: []
 //│ │                  ^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  if true then wrap 1 else wrap true
 //│                             ^
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
 //│         (bool) ---> (?b) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a2) ~~~~ (?a1) ~~~~ (?c) <--- (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ │  - l.1  if true then wrap 1 else wrap true
 //│ │                                       ^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│    - l.-3 let wrap x = x :: []
 //│                    ^
-//│   ◉ (?b * ?a list) is here
+//│   ◉ (?b * ?a list) comes from
 //│   │  - l.-3 let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-3 let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-3 let wrap x = x :: []
 //│     │                      ^^^^^^^
 //│     │ 
-//│     ◉ (?b * ?a list) is here
+//│     ◉ (?b * ?a list) comes from
 //│        - l.-3 let wrap x = x :: []
 //│                            ^^^^^^^
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-3 let wrap x = x :: []
 //│                               ^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│      - l.-3 let wrap x = x :: []
 //│                               ^^
-//│     ◉ (?b * ?a list) is here
+//│     ◉ (?b * ?a list) comes from
 //│     │  - l.-3 let wrap x = x :: []
 //│     │                      ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-3 let wrap x = x :: []
 //│                            ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-3 let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   │  - l.1  if true then wrap 1 else wrap true
@@ -501,52 +501,52 @@ if true then wrap 1 else wrap true
 //│   │  - l.1  if true then wrap 1 else wrap true
 //│   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.1  if true then wrap 1 else wrap true
 //│   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  if true then wrap 1 else wrap true
 //│   │                      ^^^^^^
 //│   │ 
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-3 let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
-//│     ◉ (?a1 * ?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
+//│     ◉ (?a1 * ?a1 list) comes from
 //│     ▲  - l.-3 let wrap x = x :: []
 //│     │                      ^^^^^^^
 //│     │ 
-//│     ◉ (?d * ?a2 list) is here
+//│     ◉ (?d * ?a2 list) comes from
 //│        - l.-3 let wrap x = x :: []
 //│                            ^^^^^^^
-//│   ◉ (?a2 list) is here
+//│   ◉ (?a2 list) comes from
 //│      - l.-3 let wrap x = x :: []
 //│                               ^^
-//│ ◉ (?a2) is assumed here
-//│   ◉ (?a2 list) is here
+//│ ◉ (?a2) is assumed for
+//│   ◉ (?a2 list) comes from
 //│      - l.-3 let wrap x = x :: []
 //│                               ^^
-//│     ◉ (?d * ?a2 list) is here
+//│     ◉ (?d * ?a2 list) comes from
 //│     │  - l.-3 let wrap x = x :: []
 //│     │                      ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a1 * ?a1 list) is here
+//│     ◉ (?a1 * ?a1 list) comes from
 //│        - l.-3 let wrap x = x :: []
 //│                            ^^^^^^^
-//│   ◉ (?a1 list) is here
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 * ?a1 list) is here
+//│   ◉ (?a1 list) comes from
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 * ?a1 list) comes from
 //│   ▲  - l.-3 let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   │ 
-//│   ◉ (?d * ?a2 list) is here
+//│   ◉ (?d * ?a2 list) comes from
 //│      - l.-3 let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.-3 let wrap x = x :: []
 //│ │                  ^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  if true then wrap 1 else wrap true
 //│                             ^
 //│ res: list[bool]
@@ -561,131 +561,131 @@ if true then wrap (if true then 1 else false) else wrap true
 //│ 
 //│         (bool) ---> (?a) <--- (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                                                ^^^^^
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│                                           ^
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
 //│         (int) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (bool)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                                         ^
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│    - l.-161let wrap x = x :: []
 //│                     ^
-//│   ◉ (?c * _ list) is here
+//│   ◉ (?c * _ list) comes from
 //│   │  - l.-161let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-161let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-161let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?c * _ list) is here
+//│   ◉ (?c * _ list) comes from
 //│      - l.-161let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.-161let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│                                                  ^^^^^
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
 //│         (int) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (bool)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                                         ^
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│    - l.-161let wrap x = x :: []
 //│                     ^
-//│   ◉ (?c * ?a list) is here
+//│   ◉ (?c * ?a list) comes from
 //│   │  - l.-161let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-161let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-161let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?c * ?a list) is here
+//│     ◉ (?c * ?a list) comes from
 //│        - l.-161let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-161let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│      - l.-161let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?c * ?a list) is here
+//│     ◉ (?c * ?a list) comes from
 //│     │  - l.-161let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-161let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-161let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?c * ?a list) is here
+//│   ◉ (?c * ?a list) comes from
 //│      - l.-161let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.-161let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - l.1  if true then wrap (if true then 1 else false) else wrap true
 //│                                                  ^^^^^
 //│ res: list[bool]
@@ -701,7 +701,7 @@ let rec t = wrap (if true then 1 else t)
 //│ 
 //│         (_ list) ---> (?t) ---> (?a) ---> (?b) <--- (?a) <--- (int)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│ │  - l.-301let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
@@ -709,7 +709,7 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?t) is assumed here
+//│ ◉ (?t) is assumed for
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
@@ -717,30 +717,30 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.-301let wrap x = x :: []
 //│ │                   ^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.-301let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (?a list) ---> (?t) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (int)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-301let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
@@ -748,7 +748,7 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?t) is assumed here
+//│ ◉ (?t) is assumed for
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
@@ -756,46 +756,46 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│    - l.-301let wrap x = x :: []
 //│                     ^
-//│   ◉ (?c * _ list) is here
+//│   ◉ (?c * _ list) comes from
 //│   │  - l.-301let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-301let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-301let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?c * _ list) is here
+//│   ◉ (?c * _ list) comes from
 //│      - l.-301let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.-301let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (?a list) ---> (?t) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (int)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-301let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
@@ -803,7 +803,7 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?t) is assumed here
+//│ ◉ (?t) is assumed for
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
@@ -811,63 +811,63 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│    - l.-301let wrap x = x :: []
 //│                     ^
-//│   ◉ (?c * ?a0 list) is here
+//│   ◉ (?c * ?a0 list) comes from
 //│   │  - l.-301let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-301let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
-//│     ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
+//│     ◉ (?a * ?a list) comes from
 //│     ▲  - l.-301let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?c * ?a0 list) is here
+//│     ◉ (?c * ?a0 list) comes from
 //│        - l.-301let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-301let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│      - l.-301let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?c * ?a0 list) is here
+//│     ◉ (?c * ?a0 list) comes from
 //│     │  - l.-301let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a * ?a list) is here
+//│     ◉ (?a * ?a list) comes from
 //│        - l.-301let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a list) is here
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a list) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-301let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?c * ?a0 list) is here
+//│   ◉ (?c * ?a0 list) comes from
 //│      - l.-301let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.-301let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ t: 't
@@ -888,7 +888,7 @@ let rec m = test (if true then 1 else m)
 //│ 
 //│         (_ list) ---> (?a) ---> (?m) ---> (?b) ---> (?c) <--- (?b) <--- (int)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -896,7 +896,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -904,7 +904,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -912,30 +912,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.3  let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (_ list) ---> (?a) ---> (?m) ---> (?b) ---> (?c) <--- (?b) <--- (int)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -943,7 +943,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -951,7 +951,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -959,30 +959,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.3  let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (_ list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -990,7 +990,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -998,7 +998,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1006,37 +1006,37 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -1044,24 +1044,24 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.3  let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -1069,7 +1069,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1077,7 +1077,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1085,37 +1085,37 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -1123,53 +1123,53 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.3  let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
 //│         (int) ---> (?b) ---> (?c) ---> (?d) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?e) <--- (bool)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?d * _ list) is here
+//│   ◉ (?d * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -1177,35 +1177,35 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * _ list) is here
+//│   ◉ (?f * _ list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - l.1  let test z = if true then wrap z else wrap true
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?f) <--- (bool)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -1213,7 +1213,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1221,7 +1221,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1229,30 +1229,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -1260,35 +1260,35 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * _ list) is here
+//│   ◉ (?f * _ list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - l.1  let test z = if true then wrap z else wrap true
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?f) <--- (bool)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -1296,7 +1296,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1304,7 +1304,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1312,30 +1312,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -1343,64 +1343,64 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * _ list) is here
+//│   ◉ (?f * _ list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - l.1  let test z = if true then wrap z else wrap true
 //│                                                      ^^^^
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
 //│         (int) ---> (?b) ---> (?c) ---> (?d) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?e) <--- (bool)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                                        ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?d * _ list) is here
+//│   ◉ (?d * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -1408,59 +1408,59 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - l.1  let test z = if true then wrap z else wrap true
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?f) <--- (bool)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -1468,7 +1468,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1476,7 +1476,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1484,30 +1484,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -1515,59 +1515,59 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
-//│     ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
+//│     ◉ (?a * ?a list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a * ?a list) is here
+//│     ◉ (?a * ?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a list) is here
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a list) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - l.1  let test z = if true then wrap z else wrap true
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?f) <--- (bool)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -1575,7 +1575,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1583,7 +1583,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1591,30 +1591,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -1622,59 +1622,59 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - l.1  let test z = if true then wrap z else wrap true
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?f) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -1682,7 +1682,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1690,7 +1690,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1698,30 +1698,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -1729,85 +1729,85 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
-//│     ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
+//│     ◉ (?a * ?a list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a * ?a list) is here
+//│     ◉ (?a * ?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a list) is here
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a list) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                         ^
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
-//│     ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
+//│     ◉ (?a * ?a list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a * ?a list) is here
+//│     ◉ (?a * ?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a list) is here
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -1815,24 +1815,24 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -1840,24 +1840,24 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.3  let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?f) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -1865,7 +1865,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1873,7 +1873,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1881,30 +1881,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -1912,85 +1912,85 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                         ^
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -1998,24 +1998,24 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -2023,24 +2023,24 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.3  let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -2048,7 +2048,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -2056,7 +2056,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -2064,30 +2064,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2095,7 +2095,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2103,7 +2103,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2111,41 +2111,41 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
-//│     ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
+//│     ◉ (?a * ?a list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (_ * ?a1 list) is here
+//│     ◉ (_ * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (_ * ?a1 list) is here
+//│     ◉ (_ * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a * ?a list) is here
+//│     ◉ (?a * ?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a list) is here
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2153,17 +2153,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2171,7 +2171,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2179,7 +2179,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2187,30 +2187,30 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   ▼ 
-//│   ◉ (?d) is assumed here
+//│   ◉ (?d) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                        ^
 //│   ▼ 
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│      - l.-486let wrap x = x :: []
 //│                       ^
-//│     ◉ (?e * _ list) is here
+//│     ◉ (?e * _ list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0) is assumed here
-//│     ◉ (?a0 list) is here
+//│   ◉ (?a0) is assumed for
+//│     ◉ (?a0 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
@@ -2218,7 +2218,7 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.3  let rec m = test (if true then 1 else m)
@@ -2226,7 +2226,7 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.3  let rec m = test (if true then 1 else m)
 //│     │                 ^
 //│     ▼ 
-//│     ◉ (?m) is assumed here
+//│     ◉ (?m) is assumed for
 //│     ▲  - l.3  let rec m = test (if true then 1 else m)
 //│     │                 ^
 //│     │  - l.3  let rec m = test (if true then 1 else m)
@@ -2234,41 +2234,41 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     ▲  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                               ^^^^^^^^^
 //│     │ 
-//│     ◉ (?a list) is here
+//│     ◉ (?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a) is assumed here
-//│     ◉ (?a list) is here
-//│       ◉ (?a * ?a list) is here
+//│   ◉ (?a) is assumed for
+//│     ◉ (?a list) comes from
+//│       ◉ (?a * ?a list) comes from
 //│       ▲  - l.-486let wrap x = x :: []
 //│       │                       ^^^^^^^
 //│       │ 
-//│       ◉ (_ * ?a1 list) is here
+//│       ◉ (_ * ?a1 list) comes from
 //│          - l.-486let wrap x = x :: []
 //│                               ^^^^^^^
-//│     ◉ (?a1 list) is here
+//│     ◉ (?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                                  ^^
-//│   ◉ (?a1) is assumed here
-//│     ◉ (?a1 list) is here
+//│   ◉ (?a1) is assumed for
+//│     ◉ (?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                                  ^^
-//│       ◉ (_ * ?a1 list) is here
+//│       ◉ (_ * ?a1 list) comes from
 //│       │  - l.-486let wrap x = x :: []
 //│       │                       ^^^^^^^
 //│       ▼ 
-//│       ◉ (?a * ?a list) is here
+//│       ◉ (?a * ?a list) comes from
 //│          - l.-486let wrap x = x :: []
 //│                               ^^^^^^^
-//│     ◉ (?a list) is here
-//│   ◉ (?a) is assumed here
-//│     ◉ (?a list) is here
+//│     ◉ (?a list) comes from
+//│   ◉ (?a) is assumed for
+//│     ◉ (?a list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
@@ -2276,24 +2276,24 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     ▲  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                   ^^^^^^
 //│     │ 
-//│     ◉ (?a0 list) is here
+//│     ◉ (?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0) is assumed here
-//│     ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0) is assumed for
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?e * _ list) is here
+//│     ◉ (?e * _ list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                   ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2301,13 +2301,13 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │ 
-//│   ◉ (?d) is assumed here
+//│   ◉ (?d) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2315,7 +2315,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2323,17 +2323,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2341,24 +2341,24 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -2366,39 +2366,39 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.3  let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
 //│         (bool) ---> (?b) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?c) <--- (?d) <--- (?e) <--- (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                                    ^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?b * ?a list) is here
+//│   ◉ (?b * ?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2406,17 +2406,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2424,7 +2424,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2432,7 +2432,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2440,41 +2440,41 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?b * ?a list) is here
+//│     ◉ (?b * ?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?b * ?a list) is here
+//│     ◉ (?b * ?a list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2482,17 +2482,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2500,7 +2500,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2508,7 +2508,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2516,30 +2516,30 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?d) is assumed here
+//│   ◉ (?d) is assumed for
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   ▼ 
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                        ^
 //│   ▼ 
-//│   ◉ (?f) is assumed here
+//│   ◉ (?f) is assumed for
 //│      - l.-486let wrap x = x :: []
 //│                       ^
-//│     ◉ (?f * _ list) is here
+//│     ◉ (?f * _ list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a1 * ?a1 list) is here
+//│     ◉ (?a1 * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1) is assumed here
-//│     ◉ (?a1 list) is here
+//│   ◉ (?a1) is assumed for
+//│     ◉ (?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
@@ -2547,7 +2547,7 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?c) is assumed here
+//│     ◉ (?c) is assumed for
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.3  let rec m = test (if true then 1 else m)
@@ -2555,7 +2555,7 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.3  let rec m = test (if true then 1 else m)
 //│     │                 ^
 //│     ▼ 
-//│     ◉ (?m) is assumed here
+//│     ◉ (?m) is assumed for
 //│     ▲  - l.3  let rec m = test (if true then 1 else m)
 //│     │                 ^
 //│     │  - l.3  let rec m = test (if true then 1 else m)
@@ -2563,41 +2563,41 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │ 
-//│     ◉ (?c) is assumed here
+//│     ◉ (?c) is assumed for
 //│     ▲  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                               ^^^^^^^^^
 //│     │ 
-//│     ◉ (?a0 list) is here
+//│     ◉ (?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0) is assumed here
-//│     ◉ (?a0 list) is here
-//│       ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0) is assumed for
+//│     ◉ (?a0 list) comes from
+//│       ◉ (?a0 * ?a0 list) comes from
 //│       ▲  - l.-486let wrap x = x :: []
 //│       │                       ^^^^^^^
 //│       │ 
-//│       ◉ (?b * ?a list) is here
+//│       ◉ (?b * ?a list) comes from
 //│          - l.-486let wrap x = x :: []
 //│                               ^^^^^^^
-//│     ◉ (?a list) is here
+//│     ◉ (?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                                  ^^
-//│   ◉ (?a) is assumed here
-//│     ◉ (?a list) is here
+//│   ◉ (?a) is assumed for
+//│     ◉ (?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                                  ^^
-//│       ◉ (?b * ?a list) is here
+//│       ◉ (?b * ?a list) comes from
 //│       │  - l.-486let wrap x = x :: []
 //│       │                       ^^^^^^^
 //│       ▼ 
-//│       ◉ (?a0 * ?a0 list) is here
+//│       ◉ (?a0 * ?a0 list) comes from
 //│          - l.-486let wrap x = x :: []
 //│                               ^^^^^^^
-//│     ◉ (?a0 list) is here
-//│   ◉ (?a0) is assumed here
-//│     ◉ (?a0 list) is here
+//│     ◉ (?a0 list) comes from
+//│   ◉ (?a0) is assumed for
+//│     ◉ (?a0 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
@@ -2605,24 +2605,24 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?c) is assumed here
+//│     ◉ (?c) is assumed for
 //│     ▲  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                   ^^^^^^
 //│     │ 
-//│     ◉ (?a1 list) is here
+//│     ◉ (?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1) is assumed here
-//│     ◉ (?a1 * ?a1 list) is here
+//│   ◉ (?a1) is assumed for
+//│     ◉ (?a1 * ?a1 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * _ list) is here
+//│     ◉ (?f * _ list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?f) is assumed here
+//│   ◉ (?f) is assumed for
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                   ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2630,13 +2630,13 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │ 
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?d) is assumed here
+//│   ◉ (?d) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2644,7 +2644,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2652,17 +2652,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2670,24 +2670,24 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 * ?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 * ?a1 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * _ list) is here
+//│   ◉ (?f * _ list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -2695,24 +2695,24 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│ ▲  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.3  let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?f) <--- (bool)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -2720,7 +2720,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -2728,7 +2728,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -2736,30 +2736,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2767,7 +2767,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2775,7 +2775,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2783,41 +2783,41 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
-//│     ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
+//│     ◉ (?a * ?a list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a * ?a list) is here
+//│     ◉ (?a * ?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a list) is here
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2825,17 +2825,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2843,7 +2843,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2851,7 +2851,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2859,30 +2859,30 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   ▼ 
-//│   ◉ (?d) is assumed here
+//│   ◉ (?d) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                        ^
 //│   ▼ 
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│      - l.-486let wrap x = x :: []
 //│                       ^
-//│     ◉ (?e * _ list) is here
+//│     ◉ (?e * _ list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0) is assumed here
-//│     ◉ (?a0 list) is here
+//│   ◉ (?a0) is assumed for
+//│     ◉ (?a0 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
@@ -2890,7 +2890,7 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.3  let rec m = test (if true then 1 else m)
@@ -2898,7 +2898,7 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.3  let rec m = test (if true then 1 else m)
 //│     │                 ^
 //│     ▼ 
-//│     ◉ (?m) is assumed here
+//│     ◉ (?m) is assumed for
 //│     ▲  - l.3  let rec m = test (if true then 1 else m)
 //│     │                 ^
 //│     │  - l.3  let rec m = test (if true then 1 else m)
@@ -2906,41 +2906,41 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     ▲  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                               ^^^^^^^^^
 //│     │ 
-//│     ◉ (?a list) is here
+//│     ◉ (?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a) is assumed here
-//│     ◉ (?a list) is here
-//│       ◉ (?a * ?a list) is here
+//│   ◉ (?a) is assumed for
+//│     ◉ (?a list) comes from
+//│       ◉ (?a * ?a list) comes from
 //│       ▲  - l.-486let wrap x = x :: []
 //│       │                       ^^^^^^^
 //│       │ 
-//│       ◉ (?f * ?a1 list) is here
+//│       ◉ (?f * ?a1 list) comes from
 //│          - l.-486let wrap x = x :: []
 //│                               ^^^^^^^
-//│     ◉ (?a1 list) is here
+//│     ◉ (?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                                  ^^
-//│   ◉ (?a1) is assumed here
-//│     ◉ (?a1 list) is here
+//│   ◉ (?a1) is assumed for
+//│     ◉ (?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                                  ^^
-//│       ◉ (?f * ?a1 list) is here
+//│       ◉ (?f * ?a1 list) comes from
 //│       │  - l.-486let wrap x = x :: []
 //│       │                       ^^^^^^^
 //│       ▼ 
-//│       ◉ (?a * ?a list) is here
+//│       ◉ (?a * ?a list) comes from
 //│          - l.-486let wrap x = x :: []
 //│                               ^^^^^^^
-//│     ◉ (?a list) is here
-//│   ◉ (?a) is assumed here
-//│     ◉ (?a list) is here
+//│     ◉ (?a list) comes from
+//│   ◉ (?a) is assumed for
+//│     ◉ (?a list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
@@ -2948,24 +2948,24 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     ▲  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                   ^^^^^^
 //│     │ 
-//│     ◉ (?a0 list) is here
+//│     ◉ (?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0) is assumed here
-//│     ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0) is assumed for
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?e * _ list) is here
+//│     ◉ (?e * _ list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                   ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -2973,13 +2973,13 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │ 
-//│   ◉ (?d) is assumed here
+//│   ◉ (?d) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2987,7 +2987,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -2995,17 +2995,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3013,7 +3013,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3021,7 +3021,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3029,17 +3029,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3047,59 +3047,59 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
-//│     ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
+//│     ◉ (?a * ?a list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a * ?a list) is here
+//│     ◉ (?a * ?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a list) is here
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a list) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - l.1  let test z = if true then wrap z else wrap true
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?f) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?e) <--- (?d) <--- (?c) <--- (int)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -3107,7 +3107,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -3115,7 +3115,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -3123,30 +3123,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3154,7 +3154,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3162,7 +3162,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3170,17 +3170,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3188,7 +3188,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3196,7 +3196,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3204,17 +3204,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3222,85 +3222,85 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                         ^
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3308,17 +3308,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3326,7 +3326,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3334,7 +3334,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3342,30 +3342,30 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   ▼ 
-//│   ◉ (?d) is assumed here
+//│   ◉ (?d) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                        ^
 //│   ▼ 
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│      - l.-486let wrap x = x :: []
 //│                       ^
-//│     ◉ (?e * _ list) is here
+//│     ◉ (?e * _ list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a * ?a list) is here
+//│     ◉ (?a * ?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a) is assumed here
-//│     ◉ (?a list) is here
+//│   ◉ (?a) is assumed for
+//│     ◉ (?a list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
@@ -3373,7 +3373,7 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.3  let rec m = test (if true then 1 else m)
@@ -3381,7 +3381,7 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.3  let rec m = test (if true then 1 else m)
 //│     │                 ^
 //│     ▼ 
-//│     ◉ (?m) is assumed here
+//│     ◉ (?m) is assumed for
 //│     ▲  - l.3  let rec m = test (if true then 1 else m)
 //│     │                 ^
 //│     │  - l.3  let rec m = test (if true then 1 else m)
@@ -3389,41 +3389,41 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     ▲  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                               ^^^^^^^^^
 //│     │ 
-//│     ◉ (?a0 list) is here
+//│     ◉ (?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0) is assumed here
-//│     ◉ (?a0 list) is here
-//│       ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0) is assumed for
+//│     ◉ (?a0 list) comes from
+//│       ◉ (?a0 * ?a0 list) comes from
 //│       ▲  - l.-486let wrap x = x :: []
 //│       │                       ^^^^^^^
 //│       │ 
-//│       ◉ (?f * ?a1 list) is here
+//│       ◉ (?f * ?a1 list) comes from
 //│          - l.-486let wrap x = x :: []
 //│                               ^^^^^^^
-//│     ◉ (?a1 list) is here
+//│     ◉ (?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                                  ^^
-//│   ◉ (?a1) is assumed here
-//│     ◉ (?a1 list) is here
+//│   ◉ (?a1) is assumed for
+//│     ◉ (?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                                  ^^
-//│       ◉ (?f * ?a1 list) is here
+//│       ◉ (?f * ?a1 list) comes from
 //│       │  - l.-486let wrap x = x :: []
 //│       │                       ^^^^^^^
 //│       ▼ 
-//│       ◉ (?a0 * ?a0 list) is here
+//│       ◉ (?a0 * ?a0 list) comes from
 //│          - l.-486let wrap x = x :: []
 //│                               ^^^^^^^
-//│     ◉ (?a0 list) is here
-//│   ◉ (?a0) is assumed here
-//│     ◉ (?a0 list) is here
+//│     ◉ (?a0 list) comes from
+//│   ◉ (?a0) is assumed for
+//│     ◉ (?a0 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
@@ -3431,24 +3431,24 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     ▲  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                   ^^^^^^
 //│     │ 
-//│     ◉ (?a list) is here
+//│     ◉ (?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a) is assumed here
-//│     ◉ (?a * ?a list) is here
+//│   ◉ (?a) is assumed for
+//│     ◉ (?a * ?a list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?e * _ list) is here
+//│     ◉ (?e * _ list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                   ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3456,13 +3456,13 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │ 
-//│   ◉ (?d) is assumed here
+//│   ◉ (?d) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3470,7 +3470,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3478,17 +3478,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3496,24 +3496,24 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -3521,24 +3521,24 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.3  let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
 //│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?f) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?f) <--- (bool)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
 //│ │                       ^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -3546,7 +3546,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -3554,7 +3554,7 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?m) is assumed here
+//│ ◉ (?m) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                 ^
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -3562,30 +3562,30 @@ let rec m = test (if true then 1 else m)
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.3  let rec m = test (if true then 1 else m)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                  ^
 //│ │  - l.1  let test z = if true then wrap z else wrap true
 //│ │                                        ^
 //│ ▼ 
-//│ ◉ (?e) is assumed here
+//│ ◉ (?e) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?e * _ list) is here
+//│   ◉ (?e * _ list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3593,7 +3593,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3601,7 +3601,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3609,17 +3609,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3627,7 +3627,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3635,7 +3635,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3643,17 +3643,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3661,85 +3661,85 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│    - l.-486let wrap x = x :: []
 //│                         ^
 //│    - l.-486let wrap x = x :: []
 //│                     ^
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3747,17 +3747,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3765,7 +3765,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3773,7 +3773,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3781,30 +3781,30 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   ▼ 
-//│   ◉ (?d) is assumed here
+//│   ◉ (?d) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                        ^
 //│   ▼ 
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│      - l.-486let wrap x = x :: []
 //│                       ^
-//│     ◉ (?e * _ list) is here
+//│     ◉ (?e * _ list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a * ?a list) is here
+//│     ◉ (?a * ?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a) is assumed here
-//│     ◉ (?a list) is here
+//│   ◉ (?a) is assumed for
+//│     ◉ (?a list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
@@ -3812,7 +3812,7 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.3  let rec m = test (if true then 1 else m)
@@ -3820,7 +3820,7 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.3  let rec m = test (if true then 1 else m)
 //│     │                 ^
 //│     ▼ 
-//│     ◉ (?m) is assumed here
+//│     ◉ (?m) is assumed for
 //│     ▲  - l.3  let rec m = test (if true then 1 else m)
 //│     │                 ^
 //│     │  - l.3  let rec m = test (if true then 1 else m)
@@ -3828,41 +3828,41 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     ▲  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                               ^^^^^^^^^
 //│     │ 
-//│     ◉ (?a0 list) is here
+//│     ◉ (?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0) is assumed here
-//│     ◉ (?a0 list) is here
-//│       ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0) is assumed for
+//│     ◉ (?a0 list) comes from
+//│       ◉ (?a0 * ?a0 list) comes from
 //│       ▲  - l.-486let wrap x = x :: []
 //│       │                       ^^^^^^^
 //│       │ 
-//│       ◉ (?f * ?a1 list) is here
+//│       ◉ (?f * ?a1 list) comes from
 //│          - l.-486let wrap x = x :: []
 //│                               ^^^^^^^
-//│     ◉ (?a1 list) is here
+//│     ◉ (?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                                  ^^
-//│   ◉ (?a1) is assumed here
-//│     ◉ (?a1 list) is here
+//│   ◉ (?a1) is assumed for
+//│     ◉ (?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                                  ^^
-//│       ◉ (?f * ?a1 list) is here
+//│       ◉ (?f * ?a1 list) comes from
 //│       │  - l.-486let wrap x = x :: []
 //│       │                       ^^^^^^^
 //│       ▼ 
-//│       ◉ (?a0 * ?a0 list) is here
+//│       ◉ (?a0 * ?a0 list) comes from
 //│          - l.-486let wrap x = x :: []
 //│                               ^^^^^^^
-//│     ◉ (?a0 list) is here
-//│   ◉ (?a0) is assumed here
-//│     ◉ (?a0 list) is here
+//│     ◉ (?a0 list) comes from
+//│   ◉ (?a0) is assumed for
+//│     ◉ (?a0 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
@@ -3870,24 +3870,24 @@ let rec m = test (if true then 1 else m)
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     ▼ 
-//│     ◉ (?b) is assumed here
+//│     ◉ (?b) is assumed for
 //│     ▲  - l.1  let test z = if true then wrap z else wrap true
 //│     │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.1  let test z = if true then wrap z else wrap true
 //│     │                                   ^^^^^^
 //│     │ 
-//│     ◉ (?a list) is here
+//│     ◉ (?a list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a) is assumed here
-//│     ◉ (?a * ?a list) is here
+//│   ◉ (?a) is assumed for
+//│     ◉ (?a * ?a list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?e * _ list) is here
+//│     ◉ (?e * _ list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?e) is assumed here
+//│   ◉ (?e) is assumed for
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                   ^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3895,13 +3895,13 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │ 
-//│   ◉ (?d) is assumed here
+//│   ◉ (?d) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                  ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed here
+//│   ◉ (?c) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3909,7 +3909,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3917,17 +3917,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3935,7 +3935,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3943,7 +3943,7 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   ▼ 
-//│   ◉ (?m) is assumed here
+//│   ◉ (?m) is assumed for
 //│   ▲  - l.3  let rec m = test (if true then 1 else m)
 //│   │                 ^
 //│   │  - l.3  let rec m = test (if true then 1 else m)
@@ -3951,17 +3951,17 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                   ^^^^^^
 //│   │ 
-//│   ◉ (?a list) is here
+//│   ◉ (?a list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
 //│   │  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
@@ -3969,52 +3969,52 @@ let rec m = test (if true then 1 else m)
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?b) is assumed here
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.1  let test z = if true then wrap z else wrap true
 //│   │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.1  let test z = if true then wrap z else wrap true
 //│   │                                               ^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
-//│     ◉ (?a0 * ?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     │ 
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a1 list) is here
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│ ◉ (?a1) is assumed here
-//│   ◉ (?a1 list) is here
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                                ^^
-//│     ◉ (?f * ?a1 list) is here
+//│     ◉ (?f * ?a1 list) comes from
 //│     │  - l.-486let wrap x = x :: []
 //│     │                       ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) is here
+//│     ◉ (?a0 * ?a0 list) comes from
 //│        - l.-486let wrap x = x :: []
 //│                             ^^^^^^^
-//│   ◉ (?a0 list) is here
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 * ?a0 list) is here
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.-486let wrap x = x :: []
 //│   │                       ^^^^^^^
 //│   │ 
-//│   ◉ (?f * ?a1 list) is here
+//│   ◉ (?f * ?a1 list) comes from
 //│      - l.-486let wrap x = x :: []
 //│                           ^^^^^^^
-//│ ◉ (?f) is assumed here
+//│ ◉ (?f) is assumed for
 //│ ▲  - l.-486let wrap x = x :: []
 //│ │                   ^
 //│ │ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - l.1  let test z = if true then wrap z else wrap true
 //│                                                      ^^^^
 //│ test: bool -> list[bool]
@@ -4050,25 +4050,25 @@ let rec digitsOfInt n =
 //│ 
 //│         (int) ---> (_ list)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - lib. let ( / ): int -> int -> int
 //│ │                                  ^^^
 //│ │  - l.2    ((digitsOfInt n) / 10) @ [remainder];;
 //│ │           ^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│    - lib. let (@): 'a list -> 'a list -> 'a list
 //│                    ^^^^^^^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (_ list) ~~~~ (?a) ---> (int)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│    - l.2    ((digitsOfInt n) / 10) @ [remainder];;
 //│             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│    - lib. let (@): 'a list -> 'a list -> 'a list
 //│                                          ^^^^^^^
-//│   ◉ (_ -> _ list) is here
+//│   ◉ (_ -> _ list) comes from
 //│   │  - l.1  let rec digitsOfInt n =
 //│   │                             ^^^
 //│   │           ((digitsOfInt n) / 10) @ [remainder];;
@@ -4076,18 +4076,18 @@ let rec digitsOfInt n =
 //│   │  - l.1  let rec digitsOfInt n =
 //│   │                 ^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?digitsOfInt) is assumed here
+//│   ◉ (?digitsOfInt) is assumed for
 //│   │  - l.1  let rec digitsOfInt n =
 //│   │                 ^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (_ -> ?a) is here
+//│   ◉ (_ -> ?a) comes from
 //│      - l.2    ((digitsOfInt n) / 10) @ [remainder];;
 //│                 ^^^^^^^^^^^
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.2    ((digitsOfInt n) / 10) @ [remainder];;
 //│ │            ^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - lib. let ( / ): int -> int -> int
 //│                      ^^^
 //│ ╔══[ERROR] identifier not found: remainder

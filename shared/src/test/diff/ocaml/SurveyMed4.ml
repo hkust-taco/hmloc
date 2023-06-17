@@ -6,10 +6,10 @@ let rec assoc (d,k,l) =
 //│ 
 //│         (?a * _ * _) ~~~~ (?a) ---> (?b) ~~~~ (?c) ---> (_ -> _)
 //│ 
-//│ ◉ (?a * _ * _) is here
+//│ ◉ (?a * _ * _) comes from
 //│    - l.1  let rec assoc (d,k,l) =
 //│                         ^^^^^^^
-//│   ◉ ((?a * _ * _) -> ?b) is here
+//│   ◉ ((?a * _ * _) -> ?b) comes from
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                       ^^^^^^^^^
 //│   │           match l with ...
@@ -17,25 +17,25 @@ let rec assoc (d,k,l) =
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                 ^^^^^
 //│   ▼ 
-//│   ◉ (?assoc) is assumed here
+//│   ◉ (?assoc) is assumed for
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                 ^^^^^
 //│   ▼ 
-//│   ◉ (?a -> ?c) is here
+//│   ◉ (?a -> ?c) comes from
 //│      - l.4    | h::t -> let (f,s) = h in if k = f then s else assoc d k t
 //│                                                               ^^^^^
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let rec assoc (d,k,l) =
 //│ │                        ^
 //│ │  - l.3    | [] -> d
 //│ │                   ^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│    - l.2    match l with
 //│             ^^^^^^^^^^^^
 //│             | [] -> d ...
 //│             ^^^^^^^^^^^^^
-//│   ◉ ((?a * _ * _) -> ?b) is here
+//│   ◉ ((?a * _ * _) -> ?b) comes from
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                       ^^^^^^^^^
 //│   │           match l with ...
@@ -43,18 +43,18 @@ let rec assoc (d,k,l) =
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                 ^^^^^
 //│   ▼ 
-//│   ◉ (?assoc) is assumed here
+//│   ◉ (?assoc) is assumed for
 //│   │  - l.1  let rec assoc (d,k,l) =
 //│   │                 ^^^^^
 //│   ▼ 
-//│   ◉ (?a -> ?c) is here
+//│   ◉ (?a -> ?c) comes from
 //│      - l.4    | h::t -> let (f,s) = h in if k = f then s else assoc d k t
 //│                                                               ^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.4    | h::t -> let (f,s) = h in if k = f then s else assoc d k t
 //│ │                                                           ^^^^^^^
 //│ ▼ 
-//│ ◉ (_ -> _) is here
+//│ ◉ (_ -> _) comes from
 //│    - l.4    | h::t -> let (f,s) = h in if k = f then s else assoc d k t
 //│                                                             ^^^^^^^
 //│ U max: 10, total: 34

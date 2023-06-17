@@ -17,13 +17,13 @@ let rec additivePersistence n =
 //│ 
 //│         (bool) ---> (?a) ---> (?b) <--- (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ │  - l.13   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
 //│ │                                                       ^^^^^
 //│ │  - l.13   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
 //│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.13   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true
 //│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.11   match digits n with
@@ -31,13 +31,13 @@ let rec additivePersistence n =
 //│ │           | [] -> 0 ...
 //│ │           ^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.11   match digits n with
 //│ │           ^^^^^^^^^^^^^^^^^^^
 //│ │           | [] -> 0 ...
 //│ │           ^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.12   | [] -> 0
 //│                     ^
 //│ U max: 6, total: 137

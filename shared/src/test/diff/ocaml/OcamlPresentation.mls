@@ -5,17 +5,17 @@ let boolToInt x = if x then "0" else 1
 //│ 
 //│         (int) ---> (?a) <--- (string)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - l.1  let boolToInt x = if x then "0" else 1
 //│ │                                              ^
 //│ │  - l.1  let boolToInt x = if x then "0" else 1
 //│ │                           ^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.1  let boolToInt x = if x then "0" else 1
 //│ │                           ^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (string) is here
+//│ ◉ (string) comes from
 //│    - l.1  let boolToInt x = if x then "0" else 1
 //│                                       ^^^
 //│ boolToInt: bool -> 'a
@@ -35,7 +35,7 @@ let destructEither x = match x with
 //│ 
 //│         (bool) ---> (?a) <--- (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ │  - lib. let (&&): bool -> bool -> bool
 //│ │                                   ^^^^
 //│ │  - l.3   | Right r -> r && true
@@ -45,7 +45,7 @@ let destructEither x = match x with
 //│ │          | Left l -> l + 1 ...
 //│ │          ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.1  let destructEither x = match x with
 //│ │                                ^^^^^^^^^^^^
 //│ │          | Left l -> l + 1 ...
@@ -53,7 +53,7 @@ let destructEither x = match x with
 //│ │  - l.2   | Left l -> l + 1
 //│ │                      ^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - lib. let (+): int -> int -> int
 //│                                  ^^^
 //│ destructEither: either[int, bool] -> 'a
@@ -73,7 +73,7 @@ let destructEither x = if x then
 //│ 
 //│         (bool) ---> (?a) <--- (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ │  - lib. let (&&): bool -> bool -> bool
 //│ │                                   ^^^^
 //│ │  - l.4     | Right r -> r && true
@@ -83,7 +83,7 @@ let destructEither x = if x then
 //│ │            | Left l -> l + 1 ...
 //│ │            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.2    match x with
 //│ │           ^^^^^^^^^^^^
 //│ │            | Left l -> l + 1 ...
@@ -91,33 +91,33 @@ let destructEither x = if x then
 //│ │  - l.3     | Left l -> l + 1
 //│ │                        ^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - lib. let (+): int -> int -> int
 //│                                  ^^^
 //│ [ERROR] Type `bool` does not match `(_, _) either`
 //│ 
 //│         (bool) <--- (?a) ---> ((_, _) either)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ ▲  - l.1  let destructEither x = if x then
 //│ │                                   ^
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
 //│ │  - l.2    match x with
 //│ │                 ^
 //│ ▼ 
-//│ ◉ ((_, _) either) is here
+//│ ◉ ((_, _) either) comes from
 //│    - l.3     | Left l -> l + 1
 //│                ^^^^^^
 //│ [ERROR] Type `(_, _) either` does not match `int`
 //│ 
 //│         ((_, _) either) <--- (?a) ---> (?b) <--- (?c) <--- (int)
 //│ 
-//│ ◉ ((_, _) either) is here
+//│ ◉ ((_, _) either) comes from
 //│ ▲  - l.3     | Left l -> l + 1
 //│ │              ^^^^^^
 //│ │  - l.2    match x with
@@ -125,7 +125,7 @@ let destructEither x = if x then
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let destructEither x = if x then
 //│ │                            ^
 //│ │  - l.5    else x
@@ -135,7 +135,7 @@ let destructEither x = if x then
 //│ │           match x with ...
 //│ │           ^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  let destructEither x = if x then
 //│ │                                ^^^^^^^^^
 //│ │           match x with ...
@@ -145,7 +145,7 @@ let destructEither x = if x then
 //│ │            | Left l -> l + 1 ...
 //│ │            ^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.2    match x with
 //│ │           ^^^^^^^^^^^^
 //│ │            | Left l -> l + 1 ...
@@ -153,7 +153,7 @@ let destructEither x = if x then
 //│ │  - l.3     | Left l -> l + 1
 //│ │                        ^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - lib. let (+): int -> int -> int
 //│                                  ^^^
 //│ destructEither: 'a -> 'a
@@ -173,7 +173,7 @@ let test2 x = match x with
 //│ 
 //│         (bool) <--- (?a) ---> (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ ▲  - l.4   | true -> succ x
 //│ │            ^^^^
 //│ │  - l.3  let test2 x = match x with
@@ -181,13 +181,13 @@ let test2 x = match x with
 //│ │  - l.3  let test2 x = match x with
 //│ │                   ^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.3  let test2 x = match x with
 //│ │                   ^
 //│ │  - l.4   | true -> succ x
 //│ │                         ^
 //│ ▼ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  let succ: int -> int
 //│                     ^^^
 //│ succ: int -> int
@@ -203,13 +203,13 @@ let g x = (not x, (if true then x else 5))
 //│ 
 //│         (int) ---> (?a) <--- (?b) ---> (bool)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │                                                ^
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.1  let g x = (not x, (if true then x else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
@@ -217,13 +217,13 @@ let g x = (not x, (if true then x else 5))
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │               ^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │               ^
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │                        ^
 //│ ▼ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│    - lib. let not: bool -> bool
 //│                    ^^^^
 //│ g: 'a -> (bool, 'a,)
@@ -242,7 +242,7 @@ let conflict x = mkpair (not x) x
 //│ 
 //│         (bool) <--- (?a) ---> (?b) ---> (?c) ---> (?d) <--- (int)
 //│ 
-//│ ◉ (bool) is here
+//│ ◉ (bool) comes from
 //│ ▲  - lib. let not: bool -> bool
 //│ │                  ^^^^
 //│ │  - l.4  let conflict x = mkpair (not x) x
@@ -250,7 +250,7 @@ let conflict x = mkpair (not x) x
 //│ │  - l.4  let conflict x = mkpair (not x) x
 //│ │                      ^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.4  let conflict x = mkpair (not x) x
 //│ │                      ^
 //│ │  - l.4  let conflict x = mkpair (not x) x
@@ -258,7 +258,7 @@ let conflict x = mkpair (not x) x
 //│ │  - l.2  let mkpair x y = (x, confluence y)
 //│ │                      ^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.2  let mkpair x y = (x, confluence y)
 //│ │                      ^
 //│ │  - l.2  let mkpair x y = (x, confluence y)
@@ -266,7 +266,7 @@ let conflict x = mkpair (not x) x
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                        ^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                        ^
 //│ │  - l.1  let confluence z = if true then z else 5
@@ -274,11 +274,11 @@ let conflict x = mkpair (not x) x
 //│ │  - l.1  let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?d) is assumed here
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.1  let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.1  let confluence z = if true then z else 5
 //│                                                  ^
 //│ confluence: int -> int
@@ -303,7 +303,7 @@ let rec t = wrap (if true then 1 else t)
 //│ 
 //│         (_ list) ---> (?t) ---> (?a) ---> (?b) <--- (?a) <--- (int)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│ │  - l.1  let wrap x = x :: []
 //│ │                      ^^^^^^^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
@@ -311,7 +311,7 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?t) is assumed here
+//│ ◉ (?t) is assumed for
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
@@ -319,30 +319,30 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.2  let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (?a list) ---> (?t) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (int)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.1  let wrap x = x :: []
 //│ │                      ^^^^^^^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
@@ -350,7 +350,7 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?t) is assumed here
+//│ ◉ (?t) is assumed for
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
@@ -358,46 +358,46 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│    - l.1  let wrap x = x :: []
 //│                    ^
-//│   ◉ (?c * _ list) is here
+//│   ◉ (?c * _ list) comes from
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   │ 
-//│   ◉ (?c * _ list) is here
+//│   ◉ (?c * _ list) comes from
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.2  let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
 //│         (?a list) ---> (?t) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (int)
 //│ 
-//│ ◉ (?a list) is here
+//│ ◉ (?a list) comes from
 //│ │  - l.1  let wrap x = x :: []
 //│ │                      ^^^^^^^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
@@ -405,7 +405,7 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ ▼ 
-//│ ◉ (?t) is assumed here
+//│ ◉ (?t) is assumed for
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                 ^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
@@ -413,63 +413,63 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│    - l.1  let wrap x = x :: []
 //│                    ^
-//│   ◉ (?c * ?a0 list) is here
+//│   ◉ (?c * ?a0 list) comes from
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a * ?a list) comes from
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a list) is here
-//│     ◉ (?a * ?a list) is here
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a list) comes from
+//│     ◉ (?a * ?a list) comes from
 //│     ▲  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
 //│     │ 
-//│     ◉ (?c * ?a0 list) is here
+//│     ◉ (?c * ?a0 list) comes from
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
-//│   ◉ (?a0 list) is here
+//│   ◉ (?a0 list) comes from
 //│      - l.1  let wrap x = x :: []
 //│                               ^^
-//│ ◉ (?a0) is assumed here
-//│   ◉ (?a0 list) is here
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│      - l.1  let wrap x = x :: []
 //│                               ^^
-//│     ◉ (?c * ?a0 list) is here
+//│     ◉ (?c * ?a0 list) comes from
 //│     │  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
 //│     ▼ 
-//│     ◉ (?a * ?a list) is here
+//│     ◉ (?a * ?a list) comes from
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
-//│   ◉ (?a list) is here
-//│ ◉ (?a) is assumed here
-//│   ◉ (?a * ?a list) is here
+//│   ◉ (?a list) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   │ 
-//│   ◉ (?c * ?a0 list) is here
+//│   ◉ (?c * ?a0 list) comes from
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?c) is assumed here
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.2  let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ wrap: 'a -> list['a]
@@ -490,29 +490,29 @@ let weird x = (x + 1, length x)
 //│ 
 //│         (_ list) ~~~~ (?a) ---> (int)
 //│ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│    - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 //│                                                                      ^^
-//│   ◉ (_ list -> _) is here
+//│   ◉ (_ list -> _) comes from
 //│   ▲  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 //│   │                                                             ^^^^^^
 //│   │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 //│   │                 ^^^^^^
 //│   │ 
-//│   ◉ (?length) is assumed here
+//│   ◉ (?length) is assumed for
 //│   │  - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 //│   │                 ^^^^^^
 //│   ▼ 
-//│   ◉ (?a -> _) is here
+//│   ◉ (?a -> _) comes from
 //│      - l.2  let weird x = (x + 1, length x)
 //│                                   ^^^^^^
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.2  let weird x = (x + 1, length x)
 //│ │                   ^
 //│ │  - l.2  let weird x = (x + 1, length x)
 //│ │                        ^
 //│ ▼ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - lib. let (+): int -> int -> int
 //│                    ^^^
 //│ length: list['a] -> int
@@ -529,7 +529,7 @@ let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ 
 //│         (string) <--- (?a) ---> (_ list)
 //│ 
-//│ ◉ (string) is here
+//│ ◉ (string) comes from
 //│ ▲  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                                      ^^^^^^^^^^
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
@@ -537,13 +537,13 @@ let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                 ^^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                 ^^
 //│ │  - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│ │                            ^^
 //│ ▼ 
-//│ ◉ (_ list) is here
+//│ ◉ (_ list) comes from
 //│    - l.1  let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│                                                          ^^
 //│ len: 'b -> int

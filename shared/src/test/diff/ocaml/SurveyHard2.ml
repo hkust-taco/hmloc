@@ -30,77 +30,77 @@ let bigAdd l1 l2 =
 //│ 
 //│         (int) ---> (?a) ---> (_ * _)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - l.12     let base = 0 in
 //│ │                        ^
 //│ │  - l.14     let (_,res) = List.fold_left f base args in res in
 //│ │                                            ^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.14     let (_,res) = List.fold_left f base args in res in
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (_ * _) is here
+//│ ◉ (_ * _) comes from
 //│    - l.14     let (_,res) = List.fold_left f base args in res in
 //│                   ^^^^^^^
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
 //│         (int) <--- (?a) ~~~~ (?b) ---> (_ * _)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ ▲  - lib. let (+): int -> int -> int
 //│ │                  ^^^
 //│ │  - l.11     let f a x = (a + x) mod 10 in
 //│ │                          ^
 //│ │ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│    - l.11     let f a x = (a + x) mod 10 in
 //│                     ^
-//│   ◉ (?a -> _ -> int) is here
+//│   ◉ (?a -> _ -> int) comes from
 //│   │  - l.11     let f a x = (a + x) mod 10 in
 //│   │                   ^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.14     let (_,res) = List.fold_left f base args in res in
 //│   │                                          ^
 //│   ▼ 
-//│   ◉ (?b -> _ -> ?b) is here
+//│   ◉ (?b -> _ -> ?b) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                   ^^^^^^^^^^^^^^
-//│ ◉ (?b) is assumed here
+//│ ◉ (?b) is assumed for
 //│ │  - l.14     let (_,res) = List.fold_left f base args in res in
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (_ * _) is here
+//│ ◉ (_ * _) comes from
 //│    - l.14     let (_,res) = List.fold_left f base args in res in
 //│                   ^^^^^^^
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
 //│         (int) ~~~~ (?a) ---> (_ * _)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│    - l.11     let f a x = (a + x) mod 10 in
 //│                           ^^^^^^^^^^^^^^
 //│    - lib. let mod: int -> int -> int
 //│                                  ^^^
-//│   ◉ (_ -> int) is here
+//│   ◉ (_ -> int) comes from
 //│      - l.11     let f a x = (a + x) mod 10 in
 //│                         ^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> int) is here
+//│     ◉ (_ -> _ -> int) comes from
 //│     │  - l.11     let f a x = (a + x) mod 10 in
 //│     │                   ^^^^^^^^^^^^^^^^^^^^
 //│     │  - l.14     let (_,res) = List.fold_left f base args in res in
 //│     │                                          ^
 //│     ▼ 
-//│     ◉ (?a -> _ -> ?a) is here
+//│     ◉ (?a -> _ -> ?a) comes from
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?a) is here
+//│   ◉ (_ -> ?a) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ │  - l.14     let (_,res) = List.fold_left f base args in res in
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (_ * _) is here
+//│ ◉ (_ * _) comes from
 //│    - l.14     let (_,res) = List.fold_left f base args in res in
 //│                   ^^^^^^^
 //│ U max: 63, total: 470

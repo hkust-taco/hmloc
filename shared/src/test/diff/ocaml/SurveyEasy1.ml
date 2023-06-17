@@ -3,17 +3,17 @@ let boolToBit x = if x then "0" else 1
 //│ 
 //│         (int) ---> (?a) <--- (string)
 //│ 
-//│ ◉ (int) is here
+//│ ◉ (int) comes from
 //│ │  - l.1  let boolToBit x = if x then "0" else 1
 //│ │                                              ^
 //│ │  - l.1  let boolToBit x = if x then "0" else 1
 //│ │                           ^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed here
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.1  let boolToBit x = if x then "0" else 1
 //│ │                           ^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (string) is here
+//│ ◉ (string) comes from
 //│    - l.1  let boolToBit x = if x then "0" else 1
 //│                                       ^^^
 //│ U max: 1, total: 4
