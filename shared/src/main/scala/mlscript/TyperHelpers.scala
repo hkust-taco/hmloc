@@ -1,10 +1,11 @@
 package mlscript
 
-import scala.collection.mutable.{Map => MutMap, Set => MutSet, LinkedHashMap, LinkedHashSet}
-import scala.collection.immutable.{SortedMap, SortedSet}
+import mlscript.utils._
+import mlscript.utils.shorthands._
+
 import scala.annotation.tailrec
-import mlscript.utils._, shorthands._
-import mlscript.Message._
+import scala.collection.immutable.SortedSet
+import scala.collection.mutable.{Map => MutMap, Set => MutSet}
 
 /** Inessential methods used to help debugging. */
 abstract class TyperHelpers { Typer: Typer =>
@@ -50,20 +51,7 @@ abstract class TyperHelpers { Typer: Typer =>
   // val showPrintPrefix =
   //   // false
   //   true
-  
-  def dbg_assert(assertion: => Boolean): Unit = if (dbg) scala.Predef.assert(assertion)
-  // def dbg_assert(assertion: Boolean): Unit = scala.Predef.assert(assertion)
-  
-  
-  def printPol(pol: Opt[Bool]): Str = pol match {
-    case S(true) => "+"
-    case S(false) => "-"
-    case N => "="
-  }
-  
-  def recordIntersection(fs1: Ls[Var -> ST], fs2: Ls[Var -> ST]): Ls[Var -> ST] =
-    mergeMap(fs1, fs2)(_ & _).toList
-  
+
   def recordUnion(fs1: Ls[Var -> ST], fs2: Ls[Var -> ST]): Ls[Var -> ST] = {
     val fs2m = fs2.toMap
     fs1.flatMap { case (k, v) => fs2m.get(k).map(v2 => k -> (v | v2)) }
@@ -133,13 +121,7 @@ abstract class TyperHelpers { Typer: Typer =>
     }
     res
   }
-  def factorize(ctx: Ctx)(ty: ST): ST = {
-    cleanupUnion(ty.components(true))(ctx) match {
-      case Nil => BotType
-      case ty :: Nil => ty
-      case cs => factorizeImpl(cs.map(_.components(false)))
-    }
-  }
+
   def factorizeImpl(cs: Ls[Ls[ST]]): ST = trace(s"factorize? ${cs.map(_.mkString(" & ")).mkString(" | ")}") {
     def rebuild(cs: Ls[Ls[ST]]): ST =
       cs.iterator.map(_.foldLeft(TopType: ST)(_ & _)).foldLeft(BotType: ST)(_ | _)
@@ -149,8 +131,6 @@ abstract class TyperHelpers { Typer: Typer =>
       c.foreach {
         case tv: TV =>
           factors(tv) = factors.getOrElse(tv, 0) + 1
-        case tt: TraitTag =>
-          factors(tt) = factors.getOrElse(tt, 0) + 1
         case _ =>
       }
     }
@@ -171,17 +151,6 @@ abstract class TyperHelpers { Typer: Typer =>
       case _ => rebuild(cs)
     }
   }(r => s"yes: $r")
-  
-  
-  def mapPol(rt: RecordType, pol: Opt[Bool], smart: Bool)(f: (Opt[Bool], SimpleType) => SimpleType): RecordType =
-    RecordType(rt.fields.mapValues(f(pol, _)))(rt.prov)
-  
-  def mapPol(bt: BaseType, pol: Opt[Bool], smart: Bool)(f: (Opt[Bool], SimpleType) => SimpleType): BaseType = bt match {
-    case FunctionType(lhs, rhs) => FunctionType(f(pol.map(!_), lhs), f(pol, rhs))(bt.prov)
-    case TupleType(fields) => TupleType(fields.mapValues(f(pol, _)))(bt.prov)
-    case ArrayType(inner) => ArrayType(f(pol, inner))(bt.prov)
-    case _: ClassTag => bt
-  }
 
   trait SimpleTypeImpl {
     self: SimpleType =>
@@ -237,28 +206,10 @@ abstract class TyperHelpers { Typer: Typer =>
       case FunctionType(lhs, rhs) => FunctionType(f(lhs), f(rhs))(prov)
       case RecordType(fields) => RecordType(fields.mapValues(f(_)))(prov)
       case TupleType(fields) => TupleType(fields.mapValues(f(_)))(prov)
-      case ArrayType(inner) => ArrayType(f(inner))(prov)
       case ComposedType(pol, lhs, rhs) => ComposedType(pol, f(lhs), f(rhs))(prov)
       case ProvType(underlying) => ProvType(f(underlying))(prov)
       case ProxyType(underlying) => f(underlying) // TODO different?
       case TypeRef(defn, targs) => TypeRef(defn, targs.map(f(_)))(prov)
-      case _: TypeVariable | _: ObjectTag | _: ExtrType => this
-    }
-
-    def mapPol(pol: Opt[Bool], smart: Bool = false)(f: (Opt[Bool], SimpleType) => SimpleType)
-              (implicit ctx: Ctx): SimpleType = this match {
-      case TypeBounds(lb, ub) if smart && pol.isDefined =>
-        if (pol.getOrElse(die)) f(S(true), ub) else f(S(false), lb)
-      case TypeBounds(lb, ub) => TypeBounds(f(S(false), lb), f(S(true), ub))(prov)
-      case rt: RecordType => Typer.mapPol(rt, pol, smart)(f)
-      case bt: BaseType => Typer.mapPol(bt, pol, smart)(f)
-      case ComposedType(kind, lhs, rhs) if smart =>
-        if (kind) f(pol, lhs) | f(pol, rhs)
-        else f(pol, lhs) & f(pol, rhs)
-      case ComposedType(kind, lhs, rhs) => ComposedType(kind, f(pol, lhs), f(pol, rhs))(prov)
-      case ProvType(underlying) => ProvType(f(pol, underlying))(prov)
-      case ProxyType(underlying) => f(pol, underlying) // TODO different?
-      case tr@TypeRef(defn, targs) => TypeRef(defn, tr.mapTargs(pol)(f))(prov)
       case _: TypeVariable | _: ObjectTag | _: ExtrType => this
     }
 
@@ -405,63 +356,12 @@ abstract class TyperHelpers { Typer: Typer =>
       case _ => this :: Nil
     }
 
-    def childrenPol(pol: Opt[Bool])(implicit ctx: Ctx): List[Opt[Bool] -> SimpleType] = {
-      def childrenPolField(fld: ST): List[Opt[Bool] -> SimpleType] = pol -> fld :: Nil
-
-      this match {
-        case tv: TypeVariable =>
-          (if (pol =/= S(false)) tv.lowerBounds.map(S(true) -> _) else Nil) :::
-            (if (pol =/= S(true)) tv.upperBounds.map(S(false) -> _) else Nil)
-        case FunctionType(l, r) => pol.map(!_) -> l :: pol -> r :: Nil
-        case ComposedType(_, l, r) => pol -> l :: pol -> r :: Nil
-        case RecordType(fs) => fs.unzip._2.flatMap(childrenPolField)
-        case TupleType(fs) => fs.unzip._2.flatMap(childrenPolField)
-        case ArrayType(fld) => childrenPolField(fld)
-        case ExtrType(_) => Nil
-        case ProxyType(und) => pol -> und :: Nil
-        case _: ObjectTag => Nil
-        case tr: TypeRef => tr.mapTargs(pol)(_ -> _)
-        case TypeBounds(lb, ub) => S(false) -> lb :: S(true) -> ub :: Nil
-      }
-    }
-
-    def getVarsPol(pol: Opt[Bool])(implicit ctx: Ctx): SortedMap[TypeVariable, Opt[Bool]] = {
-      val res = MutMap.empty[TypeVariable, Opt[Bool]]
-
-      @tailrec
-      def rec(queue: List[Opt[Bool] -> SimpleType]): Unit =
-      // trace(s"getVarsPol ${queue.iterator.map(e => s"${printPol(e._1)}${e._2}").mkString(", ")}") {
-        queue match {
-          case (tvp, tv: TypeVariable) :: tys =>
-            res.get(tv) match {
-              case S(N) => rec(tys)
-              case S(p) if p === tvp => rec(tys)
-              case S(S(p)) =>
-                assert(!tvp.contains(p))
-                // println(s"$tv -> =")
-                res += tv -> N
-                rec(tv.childrenPol(tvp) ::: tys)
-              case N =>
-                res += tv -> tvp
-                // println(s"$tv -> ${printPol(tvp)}")
-                rec(tv.childrenPol(tvp) ::: tys)
-            }
-          case (typ, ty) :: tys => rec(ty.childrenPol(typ) ::: tys)
-          case Nil => ()
-        }
-      // }()
-      rec(pol -> this :: Nil)
-      SortedMap.from(res)(Ordering.by(_.uid))
-    }
-
     def children(includeBounds: Bool): List[SimpleType] = this match {
-//      case tv: TypeVariable => if (includeBounds) tv.lowerBounds ::: tv.upperBounds else Nil
       case tv: TypeVariable => if (includeBounds) tv.uniConcreteTypes.toList else Nil
       case FunctionType(l, r) => l :: r :: Nil
       case ComposedType(_, l, r) => l :: r :: Nil
       case RecordType(fs) => fs.flatMap(f => f._2 :: Nil)
       case TupleType(fs) => fs.flatMap(f => f._2 :: Nil)
-      case ArrayType(inner) => inner :: Nil
       case ExtrType(_) => Nil
       case ProxyType(und) => und :: Nil
       case _: ObjectTag => Nil
@@ -496,10 +396,6 @@ abstract class TyperHelpers { Typer: Typer =>
     def showUnified: String =
       getVars.iterator.filter(tv => tv.uniConcreteTypes.nonEmpty)
         .map(tv => "\n\t\t" + tv.toString + " = " + tv.uniConcreteTypes.mkString(", ")).mkString
-
-    def expPos(implicit ctx: Ctx): Type = exp(S(true), this)
-
-    def expNeg(implicit ctx: Ctx): Type = exp(S(false), this)
 
     def exp(pol: Opt[Bool], ty: ST)(implicit ctx: Ctx): Type = (
       ty
@@ -540,35 +436,6 @@ abstract class TyperHelpers { Typer: Typer =>
     }
   }
 
-  /** Show the locations where a type is introduced and consumed
-    * Only show one location if they are the same location.
-    *
-    * flow: true indicates introduction to consumption flow
-    * flow: false indicates the opposite
-    */
-  def firstAndLastUseLocation(t: ST, flow: Bool = true)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-    var stUseLocation = if (flow) t.typeUseLocations.reverse else t.typeUseLocations
-    // remove prov that has duplicate location as previous
-    stUseLocation = stUseLocation.headOption.map(head => head :: stUseLocation.sliding(2).collect {
-      case Seq(TypeProvenance(loc1, _, _, _), t@TypeProvenance(loc2, _, _, _)) if loc1 =/= loc2 => t
-    }.toList).getOrElse(Nil)
-
-    val st = t.unwrapProvs
-    stUseLocation.map {
-      case TypeProvenance(loc, desc, _, false) => msg"${desc} `${st.expPos}`" -> loc
-      case TypeProvenance(loc, _, _, true) => msg"`${st.expPos}` is found here" -> loc
-    }
-  }
-
-  def lastUseLocation(t: ST)(implicit ctx: Ctx): Ls[Message -> Opt[Loc]] = {
-    var stUseLocation = t.typeUseLocations
-    val st = t.unwrapProvs
-    stUseLocation.map {
-      case TypeProvenance(loc, desc, _, false) => msg"${desc} `${st.expPos}`" -> loc
-      case TypeProvenance(loc, _, _, true) => msg"`${st.expPos}` is found here" -> loc
-    }
-  }
-
   def shallowCopy(st: ST)(implicit cache: MutMap[TV, TV] = MutMap.empty): ST = st match {
     case tv: TV => cache.getOrElseUpdate(tv, freshVar(tv.prov, tv.nameHint, Nil, Nil)(tv.level))
     case _ => st.map(shallowCopy)
@@ -588,7 +455,6 @@ abstract class TyperHelpers { Typer: Typer =>
       case ComposedType(_, l, r) => apply(pol)(l); apply(pol)(r)
       case RecordType(fs) => fs.unzip._2.foreach(applyField(pol))
       case TupleType(fs) => fs.unzip._2.foreach(applyField(pol))
-      case ArrayType(fld) => applyField(pol)(fld)
       case ExtrType(_) => ()
       case ProxyType(und) => apply(pol)(und)
       case _: ObjectTag => ()
@@ -597,11 +463,4 @@ abstract class TyperHelpers { Typer: Typer =>
     }
     def applyField(pol: Opt[Bool])(fld: ST): Unit = apply(pol)(fld)
   }
-  object Traverser {
-    trait InvariantFields extends Traverser {
-      override def applyField(pol: Opt[Bool])(fld: ST): Unit = super.applyField(pol)(fld)
-    }
-  }
-  
-  
 }

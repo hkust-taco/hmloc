@@ -59,18 +59,12 @@ final case class Blk(stmts: Ls[Statement])                           extends Ter
 final case class Asc(trm: Term, ty: Type)                            extends Term
 final case class Bind(lhs: Term, rhs: Term)                          extends Term
 final case class With(trm: Term, fields: Rcd)                        extends Term
-final case class CaseOf(trm: Term, cases: CaseBranches)              extends Term
 final case class Assign(lhs: Term, rhs: Term)                        extends Term
 final case class If(lhs: Term, rhs: Ls[IfBody])                    extends Term with IfImpl
 
 sealed abstract class IfBody extends IfBodyImpl
 final case class IfThen(expr: Term, rhs: Term) extends IfBody
 final case class IfElse(expr: Term) extends IfBody
-
-sealed abstract class CaseBranches extends CaseBranchesImpl
-final case class Case(pat: SimpleTerm, body: Term, rest: CaseBranches) extends CaseBranches
-final case class Wildcard(body: Term) extends CaseBranches
-final case object NoCases extends CaseBranches
 
 final case class IntLit(value: BigInt)            extends Lit
 final case class DecLit(value: BigDecimal)        extends Lit

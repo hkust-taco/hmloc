@@ -1,16 +1,8 @@
 package mlscript
 
-import scala.collection.mutable
-import scala.collection.mutable.{Map => MutMap, Set => MutSet}
-import scala.collection.immutable.{HashMap, SortedMap, SortedSet}
-import scala.util.chaining._
-import scala.annotation.tailrec
 import mlscript.utils._
-import shorthands._
-import mlscript.Message._
+import mlscript.utils.shorthands._
 import sourcecode._
-
-import scala.::
 
 abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
 
@@ -20,25 +12,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   case class TypeProvenance(loco: Opt[Loc], desc: Str, originName: Opt[Str] = N, isType: Bool = false)(implicit val file: FileName, val line: Line) {
     val isOrigin: Bool = originName.isDefined
     def & (that: TypeProvenance): TypeProvenance = this // arbitrary; maybe should do better
-    override def toString: Str = (if (isOrigin) "o: " else "") + "‹"+loco.fold(desc)(desc+":"+_)+s"›[${file.value}:${line.value}]"
-  }
-
-  case class NestingInfo(info: Str = "<nesting info here>", reversed: Bool = false) {
-    override def toString: Str = info
-  }
-  class NestedTypeProvenance(var chain: Ls[SimpleType], var nestingInfo: NestingInfo = NestingInfo()) extends TypeProvenance(N, "<nested>") {
-    override def toString: Str = "<nested> " + chain.mkString(" -> ") + " <nested>"
-
-    def updateInfo(newInfo: Str): NestedTypeProvenance = {
-      nestingInfo = nestingInfo.copy(info = newInfo)
-      this
-    }
-  }
-
-  object NestedTypeProvenance {
-    def apply(chain: Ls[SimpleType], nestingInfo: NestingInfo = NestingInfo()): NestedTypeProvenance = {
-      new NestedTypeProvenance(chain, nestingInfo)
-    }
+    override def toString: Str = (if (isOrigin) "o: " else "") + "‹"+loco.fold(desc)(desc+":"+_)+s"›[${file.value}:${line.value}] src: ${loco.fold("NA")(_.showLocationInSource)}"
   }
 
   type TP = TypeProvenance
@@ -97,31 +71,15 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       if (fields.isEmpty) ExtrType(false)(prov) else RecordType(fields)(prov)
   }
 
-  sealed abstract class ArrayBase extends MiscBaseType {
-    def inner: ST
-  }
-
-  case class ArrayType(val inner: ST)(val prov: TypeProvenance) extends ArrayBase {
-    def level: Int = inner.level
-    override def toString = s"Array‹$inner›"
-  }
-
-  case class TupleType(fields: List[Opt[Var] -> ST])(val prov: TypeProvenance) extends ArrayBase {
+  case class TupleType(fields: List[Opt[Var] -> ST])(val prov: TypeProvenance) extends BaseType {
     lazy val inner: ST = fields.map(_._2).reduceLeftOption(_ | _).getOrElse(BotType)
     lazy val level: Int = fields.iterator.map(_._2.level).maxOption.getOrElse(0)
-    lazy val toArray: ArrayType = ArrayType(inner)(prov)  // upcast to array
-    var implicitTuple: Bool = false
     override lazy val toRecord: RecordType =
       RecordType(
         fields.zipWithIndex.map { case ((_, t), i) => (Var("_"+(i+1)), t) }
-        // Note: In line with TypeScript, tuple field names are pure type system fictions,
-        //    with no runtime existence. Therefore, they should not be included in the record type
-        //    corresponding to this tuple type.
-        //    i.e., no `::: fields.collect { case (S(n), t) => (n, t) }`
       )(prov)
     override def toString =
       s"(${fields.map(f => s"${f._1.fold("")(_.name+": ")}${f._2},").mkString(" ")})"
-    // override def toString = s"(${fields.map(f => s"${f._1.fold("")(_+": ")}${f._2},").mkString(" ")})"
   }
 
   /** Polarity `pol` being `true` means Bot; `false` means Top. These are extrema of the subtyping lattice. */
@@ -149,15 +107,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
 
   /** The sole purpose of ProvType is to store additional type provenance info. */
   case class ProvType(underlying: SimpleType)(val prov: TypeProvenance) extends ProxyType {
-    override def toString = if (prov is NestedTypeProvenance) s"{$underlying} prov: $prov" else s"[$underlying]"
-    // override def toString = s"$underlying[${prov.desc.take(5)}]"
-    // override def toString = s"$underlying[${prov.toString.take(5)}]"
-    // override def toString = s"$underlying@${prov}"
-    // override def toString = showProvOver(true)(""+underlying)
-
-    // TOOD override equals/hashCode? — could affect hash consing...
-    // override def equals(that: Any): Bool = super.equals(that) || underlying.equals(that)
-    // override def equals(that: Any): Bool = unwrapProxies.equals(that)
+    override def toString = s"[$underlying]"
   }
 
   type TR = TypeRef

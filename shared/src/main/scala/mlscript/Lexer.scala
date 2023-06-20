@@ -11,10 +11,6 @@ import fastparse.NoWhitespace._
 object Lexer {
   
   def kw[p: P](s: String) = s ~ !(letter | digit | "_")
-  def comment[p: P] = P( "//" ~ CharsWhile(_ != '\n', /*min =*/ 0) )
-  def wscomment[p: P] = P( (CharsWhileIn(" \n") | Lexer.comment | "\\\n").rep )
-  def nonewlinewscomment[p: P] = P( (CharsWhileIn(" ") | Lexer.comment | "\\\n").rep )
-  
   def identifier[p: P]: P[String] =
     P( (letter|"_"|"`") ~ (letter | digit | "_" | "-" | "'" | "!" | "?").rep ).!.filter(!keywordList.contains(_))
   def letter[p: P]     = P( lowercase | uppercase )
@@ -22,14 +18,7 @@ object Lexer {
   def uppercase[p: P]  = P( CharIn("A-Z") )
   def digit[p: P]      = P( CharIn("0-9") )
   
-  //def operator[p: P]: P[String] =
-  //  P( ("_" | "-" | opchar).rep ).!.filter(!keywordList.contains(_))
-  def operator[p: P]: P[Unit] = P(
-    !symbolicKeywords ~ (!StringIn("/*", "//") ~ (CharsWhile(OpCharNotSlash) | "/")).rep(1)
-  ).opaque("operator")
-  
   val OpCharNotSlash = NamedFunction(x => isOpChar(x) && x != '/')
-  val NotBackTick = NamedFunction(_ != '`')
   case class NamedFunction(f: Char => Boolean)
                           (implicit name: sourcecode.Name) extends (Char => Boolean){
     def apply(t: Char) = f(t)
@@ -82,7 +71,6 @@ object Lexer {
   }.opaque("SymbolicKeywords")
   
   def stringliteral[p: P]: P[String] = P(longstring | shortstring)
-  def stringprefix[p: P]: P[Unit] = identifier
   def shortstring[p: P]: P[String] = P( shortstring0("'") | shortstring0("\"") )
   def shortstring0[p: P](delimiter: String) = P( delimiter ~ shortstringitem(delimiter).rep.! ~ delimiter)
   def shortstringitem[p: P](quote: String): P[Unit] = P( shortstringchar(quote) | escapeseq )

@@ -309,7 +309,6 @@ trait TermImpl extends StatementImpl { self: Term =>
       case Tup(xs) => "tuple"
       case Bind(l, r) => "'as' binding"
       case With(t, fs) =>  "`with` extension"
-      case CaseOf(scrut, cases) =>  "`case` expression" 
       case Assign(lhs, rhs) => "assignment"
       case If(_, _) => "if-else block"
     }
@@ -339,8 +338,6 @@ trait TermImpl extends StatementImpl { self: Term =>
       xs.iterator.map(t => t + ",").mkString(" ") |> bra
     case Bind(l, r) => s"$l as $r" |> bra
     case With(t, fs) =>  s"$t with $fs" |> bra
-    case CaseOf(s, c) =>
-      s"case $s of { ${c.print(true)} }" |> bra
     case Assign(lhs, rhs) => s" $lhs <- $rhs" |> bra
     case If(cond, body) => s"if $cond" + body.mkString(" then ") |> bra
   }}
@@ -374,13 +371,12 @@ trait TermImpl extends StatementImpl { self: Term =>
     // case Asc(trm, ty) => ???
     // case Bind(lhs, rhs) => ???
     // case With(trm, fieldNme, fieldVal) => ???
-    // case CaseOf(trm, cases) => ???
     // case IntLit(value) => ???
     // case DecLit(value) => ???
     // case StrLit(value) => ???
     case _ => throw new NotAType(this)
   }).withLocOf(this)
-  
+
 }
 private class NotAType(val trm: Term) extends Throwable
 
@@ -561,7 +557,6 @@ trait StatementImpl extends Located { self: Statement =>
     case _: Lit => Nil
     case Bind(l, r) => l :: r :: Nil
     case With(t, fs) => t :: fs :: Nil
-    case CaseOf(s, c) => s :: c :: Nil
     case d @ Def(_, n, b, _) => n :: d.body :: Nil
     case TypeDef(kind, nme, tparams, body, pos, _) => nme :: tparams ::: pos ::: body :: Nil
     case Assign(lhs, rhs) => lhs :: rhs :: Nil
@@ -587,54 +582,13 @@ trait BlkImpl { self: Blk =>
   
 }
 
-trait CaseBranchesImpl extends Located { self: CaseBranches =>
-
-  def children: List[Located] = this match {
-    case Case(pat, body, rest) => pat :: body :: rest :: Nil
-    case Wildcard(body) => body :: Nil
-    case NoCases => Nil
-  }
-  
-  lazy val toList: Ls[Case] = this match {
-    case c: Case => c :: c.rest.toList
-    case _ => Nil
-  }
-
-  def print(isFirst: Bool): Str = this match {
-    case Case(pat, body, rest) =>
-      (if (isFirst) { "" } else { "; " }) +
-      pat.print(false) + " => " + body.print(false) + rest.print(false)
-    case Wildcard(body) => 
-      (if (isFirst) { "" } else { "; " }) +
-      "_ => " + body.print(false)
-    case NoCases => ""
-  }
-}
-
-abstract class MatchCase
-
-object MatchCase {
-  final case class ClassPattern(name: Var, fields: Buffer[Var -> Var]) extends MatchCase
-  final case class TuplePattern(arity: Int, fields: Buffer[Int -> Var]) extends MatchCase
-  final case class BooleanTest(test: Term) extends MatchCase
-}
-
 trait IfBodyImpl extends Located { self: IfBody =>
 
   def children: List[Located] = this match {
-    // case Case(pat, body, rest) => pat :: body :: rest :: Nil
-    // case Wildcard(body) => body :: Nil
-    // case NoCases => Nil
-    case _ if false => ??? // TODO
     case IfThen(l, r) => l :: r :: Nil
     case IfElse(t) => t :: Nil
   }
-  
-  // lazy val toList: Ls[Case] = this match {
-  //   case c: Case => c :: c.rest.toList
-  //   case _ => Nil
-  // }
-  
+
   override def toString: String = this match {
     // case IfThen(lhs, rhs) => s"${lhs.print(true)} then $rhs"
     case IfThen(lhs, rhs) => s"($lhs) then $rhs"
@@ -683,14 +637,6 @@ object PrettyPrintHelper {
     case Bind(lhs, rhs)              => s"Bind(${inspect(lhs)}, ${inspect(rhs)})"
     case With(trm, fields) =>
       s"With(${inspect(trm)}, ${inspect(fields)})"
-    case CaseOf(trm, cases) =>
-      def inspectCaseBranches(br: CaseBranches): Str = br match {
-        case Case(clsNme, body, rest) =>
-          s"Case($clsNme, ${inspect(body)}, ${inspectCaseBranches(rest)})"
-        case Wildcard(body) => s"Wildcard(${inspect(body)})"
-        case NoCases        => "NoCases"
-      }
-      s"CaseOf(${inspect(trm)}, ${inspectCaseBranches(cases)}"
     case IntLit(value)  => s"IntLit($value)"
     case DecLit(value)  => s"DecLit($value)"
     case StrLit(value)  => s"StrLit($value)"

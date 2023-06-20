@@ -1,10 +1,11 @@
 package mlscript
 
-import scala.util.chaining._
-import scala.collection.mutable
-import fastparse._, fastparse.ScalaWhitespace._
-import mlscript.utils._, shorthands._
+import fastparse._
 import mlscript.Lexer._
+import mlscript.utils._
+import mlscript.utils.shorthands._
+
+import scala.util.chaining._
 
 /** Parser for an ML-style input syntax, used in the legacy `ML*` tests. */
 @SuppressWarnings(Array("org.wartremover.warts.All"))
@@ -75,12 +76,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   }))
   def variable[p: P]: P[Var] = locate(ident.map(Var))
   def ocamlLabelName[p: P]: P[Var] = locate(ident.map(Var) | "(" ~ ocamlOps ~ ")")
-
-//  def parenCell[p: P]: P[Either[Term, (Term, Boolean)]] = term).map {
-//    case (Some("..."), t) => Left(t)
-//    case (Some("mut"), t) => Right(t -> true)
-//    case (_, t) => Right(t -> false)
-//  }
 
   def parens[p: P]: P[Term] = locate(P( "(" ~/ term.rep(0, ",") ~ ",".!.? ~ ")" ).map {
     case (Seq(t), _)  => t  // don't make tuple for a single element
@@ -307,30 +302,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), true)
     })))
     
-  /** Parse each ocaml type parameters like
-   * 'a (string * int) list
-   * and return the type variables and the type
-  */
-  def ocamlTypeBodyPart[p: P]: P[(Set[TypeName], Type)] = (
-    tyName.map(tname => (Set.empty[TypeName], tname))
-  | ocamlTyParam.map(param => (Set(param), param))
-  | "(" ~ ocamlConstructorBody ~ ")"
-  ).rep(1)
-    .map {
-      case Seq(b) => b
-      case parts =>
-        val tparams = parts.flatMap(_._1).toSet
-        parts.last._2 match {
-          case tname: TypeName =>
-            val args = parts.init.toList.map(_._2).toList
-            (tparams, AppliedType(tname, args))
-          case t =>
-            // last parameter has to be a type name when there are
-            // multiple parameters being applied
-            throw new Error(s"Parameters applied to non-TypeName $t")
-        }
-    }
-
   /** Type parameters and types separated by white space
    * this is one part of a type alias separated by `*`
    * 
@@ -534,8 +505,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case _ => N
     }
   }
-  def tyParams[p: P]: P[Ls[TypeName]] =
-    ("[" ~ tyName.rep(0, ",") ~ "]").?.map(_.toList.flatten)
   def ocamlTyParams[p: P]: P[Ls[TypeName]] =
     ocamlTyParam.map(_ :: Nil) |
     ("(" ~ ocamlTyParam.rep(0, ",") ~ ")").?.map(_.toList.flatten)
@@ -607,8 +576,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
 object OcamlParser {
   
-  import scala.annotation.{Annotation, switch, tailrec}
   import fastparse.internal.Util
+
+  import scala.annotation.{switch, tailrec}
   
   // scala style white space parser modified to handle ocaml style comments too
   implicit val whitespace: ParsingRun[_] => ParsingRun[Unit] = {implicit ctx: ParsingRun[_] =>

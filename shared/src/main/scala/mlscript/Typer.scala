@@ -702,56 +702,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case _ => lastWords(s"Cannot type term: ${PrettyPrintHelper.inspect(term)}")
     }
   }(r => s"$lvl. : ${r}")
-  
-  def typeArms(scrutVar: Opt[Var], arms: CaseBranches)
-      (implicit ctx: Ctx, raise: Raise, lvl: Int)
-      : Ls[SimpleType -> SimpleType] -> Ls[SimpleType] = arms match {
-    case NoCases => Nil -> Nil
-    case Wildcard(b) =>
-      val fv = freshVar(tp(arms.toLoc, "wildcard pattern"))
-      val newCtx = ctx.nest
-      scrutVar match {
-        case Some(v) =>
-          newCtx += v.name -> VarSymbol(fv, v)
-          val b_ty = typeTerm(b)(newCtx, raise)
-          (fv -> TopType :: Nil) -> (b_ty :: Nil)
-        case _ =>
-          (fv -> TopType :: Nil) -> (typeTerm(b) :: Nil)
-      }
-    case Case(pat, bod, rest) =>
-      val patTy = pat match {
-        case lit: Lit =>
-          ClassTag(lit, lit.baseClasses)(tp(pat.toLoc, "literal pattern"))
-        case Var(nme) =>
-          val tpr = tp(pat.toLoc, "type pattern")
-          ctx.tyDefs.get(nme) match {
-            case None =>
-              err("type identifier not found: " + nme, pat.toLoc)(raise)
-              val e = ClassTag(ErrTypeId, Set.empty)(tpr)
-              return ((e -> e) :: Nil) -> (e :: Nil)
-            case Some(td) =>
-              td.kind match {
-                case Als => err(msg"can only match on classes and traits", pat.toLoc)(raise)
-                case Cls => clsNameToNomTag(td)(tp(pat.toLoc, "class pattern"), ctx)
-              }
-          }
-      }
-      val newCtx = ctx.nest
-      val (req_ty, bod_ty, (tys, rest_ty)) = scrutVar match {
-        case S(v) =>
-          val tv = freshVar(tp(v.toLoc, "refined scrutinee"),
-            // S(v.name), // this one seems a bit excessive
-          )
-          newCtx += v.name -> VarSymbol(tv, v)
-          val bod_ty = typeTerm(bod)(newCtx, raise)
-          (patTy -> tv, bod_ty, typeArms(scrutVar, rest))
-        case N =>
-          val bod_ty = typeTerm(bod)(newCtx, raise)
-          (patTy -> TopType, bod_ty, typeArms(scrutVar, rest))
-      }
-      (req_ty :: tys) -> (bod_ty :: rest_ty)
-  }
-  
+
   def typeTerms(term: Ls[Statement], rcd: Bool, fields: List[Opt[Var] -> SimpleType])
         (implicit ctx: Ctx, raise: Raise, prov: TypeProvenance): SimpleType
       = term match {
@@ -831,7 +782,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case ComposedType(false, l, r) => Inter(go(l), go(r))
         case RecordType(fs) => Record(fs.mapValues(go))
         case TupleType(fs) => Tuple(fs.map{ case (_, fld) => go(fld)})
-        case ArrayType(st) => AppliedType(TypeName("Array"), go(st) :: Nil)
         case ExtrType(true) => Bot
         case ExtrType(false) => Top
         case ProxyType(und) => go(und)
@@ -895,7 +845,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case ComposedType(false, l, r) => Inter(go(l), go(r))
         case RecordType(fs) => Record(fs.mapValues(go))
         case TupleType(fs) => Tuple(fs.map{ case (_, fld) => go(fld)})
-        case ArrayType(st) => AppliedType(TypeName("Array"), go(st) :: Nil)
         case ExtrType(true) => Bot
         case ExtrType(false) => Top
         case ProxyType(und) => go(und)

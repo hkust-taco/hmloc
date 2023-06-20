@@ -1,10 +1,9 @@
 package mlscript
 
-import scala.collection.mutable.{LinkedHashMap, LinkedHashSet, Map => MutMap, Set => MutSet}
-import scala.collection.immutable.{AbstractSet, SortedMap, SortedSet}
-import scala.util.chaining._
 import mlscript.utils._
-import shorthands._
+import mlscript.utils.shorthands._
+
+import scala.collection.mutable.{Map => MutMap}
 
 trait TypeSimplifier { self: Typer =>
   
@@ -50,7 +49,6 @@ trait TypeSimplifier { self: Typer =>
             case t @ ComposedType(p, l, r) => ComposedType(p, process(l), process(r))(t.prov)
             case t @ RecordType(fs) => RecordType(fs.mapValues(process))(t.prov)
             case t @ TupleType(fs) => TupleType(fs.mapValues(process))(t.prov)
-            case t @ ArrayType(ar) => ArrayType(process(ar))(t.prov)
             case e @ ExtrType(_) => e
             case p @ ProvType(und) => ProvType(process(und))(p.prov)
             case _: ClassTag | _: TraitTag => ty
@@ -83,7 +81,6 @@ trait TypeSimplifier { self: Typer =>
             case t @ ComposedType(p, l, r) => ComposedType(p, process(l), process(r))(t.prov)
             case t @ RecordType(fs) => RecordType(fs.mapValues(process))(t.prov)
             case t @ TupleType(fs) => TupleType(fs.mapValues(process))(t.prov)
-            case t @ ArrayType(ar) => ArrayType(process(ar))(t.prov)
             case e @ ExtrType(_) => e
             case p @ ProvType(und) => ProvType(process(und))(p.prov)
             case _: ClassTag | _: TraitTag => ty

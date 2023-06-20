@@ -87,7 +87,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
       case RecordType(fs) => fs.toMap
       case p: ProxyType => fieldsOf(p.underlying, paramTags)
       case TypeBounds(lb, ub) => fieldsOf(ub, paramTags)
-      case _: ObjectTag | _: FunctionType | _: ArrayBase | _: TypeVariable
+      case _: ObjectTag | _: FunctionType | _: TupleType | _: TypeVariable
         | _: ExtrType | _: ComposedType => Map.empty
     }
   }
@@ -163,10 +163,10 @@ class TypeDefs extends UnificationSolver { self: Typer =>
             val t2 = travsersed + R(tv)
             tv.lowerBounds.forall(checkCycle(_)(t2)) && tv.upperBounds.forall(checkCycle(_)(t2))
           }
-          case _: ExtrType | _: ObjectTag | _: FunctionType | _: RecordType | _: ArrayBase => true
+          case _: ExtrType | _: ObjectTag | _: FunctionType | _: RecordType | _: TupleType => true
         }
         // }()
-        
+
         val rightParents = td.kind match {
           case Als => checkCycle(td.bodyTy)(Set.single(L(td.nme)))
           case k: ObjDefKind =>
@@ -203,9 +203,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
                 false
               case _: TupleType =>
                 err(msg"cannot inherit from a tuple type", prov.loco)
-                false
-              case _: ArrayType => 
-                err(msg"cannot inherit from a array type", prov.loco)
                 false
               case _: TypeBounds =>
                 err(msg"cannot inherit from type bounds", prov.loco)
@@ -309,7 +306,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
       trace(s"upd[$curVariance] $ty") {
         ty match {
           case ProxyType(underlying) => updateVariance(underlying, curVariance)
-          case TraitTag(_) | ClassTag(_, _) => ()
+          case ClassTag(_, _) => ()
           case ExtrType(pol) => ()
           case t: TypeVariable =>
             // update the variance information for the type variable
@@ -354,7 +351,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
           case TypeBounds(lb, ub) =>
             updateVariance(lb, VarianceInfo.contra)
             updateVariance(ub, VarianceInfo.co)
-          case ArrayType(inner) => fieldVarianceHelper(inner)
           case TupleType(fields) => fields.foreach {
               case (_ , fieldTy) => fieldVarianceHelper(fieldTy)
             }
