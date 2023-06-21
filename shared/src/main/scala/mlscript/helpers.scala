@@ -59,7 +59,8 @@ abstract class TypeImpl extends Located { self: Type =>
     case AppliedType(n, arg :: Nil) => s"${arg.showOcaml(ctx, 2)} ${n.name}"
     case AppliedType(n, args) => s"(${args.map(_.showOcaml(ctx, 2)).mkString(", ")}) ${n.name}"
     case TypeName(name) => name
-    case _ => lastWords(s"Cannot create showOcaml for ${this.show}")
+    case TypeTag(name) => "#"+name
+    case _ => lastWords(s"Cannot create showOcaml for ${this.show} ${this.getClass.getSimpleName}")
   }
 
   def showIn(ctx: ShowCtx, outerPrec: Int): Str = this match {
