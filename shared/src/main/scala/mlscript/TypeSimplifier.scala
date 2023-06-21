@@ -51,7 +51,7 @@ trait TypeSimplifier { self: Typer =>
             case t @ TupleType(fs) => TupleType(fs.mapValues(process))(t.prov)
             case e @ ExtrType(_) => e
             case p @ ProvType(und) => ProvType(process(und))(p.prov)
-            case _: ClassTag | _: TraitTag => ty
+            case _: TraitTag => ty
             case tr @ TypeRef(d, ts) => TypeRef(d, ts.map(process))(tr.prov)
           }
         }
@@ -83,7 +83,7 @@ trait TypeSimplifier { self: Typer =>
             case t @ TupleType(fs) => TupleType(fs.mapValues(process))(t.prov)
             case e @ ExtrType(_) => e
             case p @ ProvType(und) => ProvType(process(und))(p.prov)
-            case _: ClassTag | _: TraitTag => ty
+            case _: TraitTag => ty
             case tr @ TypeRef(d, ts) => TypeRef(d, ts.map(process))(tr.prov)
           }
         }(res => s"S: $res")

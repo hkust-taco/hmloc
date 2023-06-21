@@ -240,7 +240,6 @@ abstract class TyperHelpers { Typer: Typer =>
         case (BotType, _) => BotType
         // Unnecessary and can complicate constraint solving quite a lot:
         // case (ComposedType(true, l, r), _) => l & that | r & that
-        case (_: ClassTag, _: FunctionType) => BotType
         case (FunctionType(l1, r1), FunctionType(l2, r2)) =>
           FunctionType(l1 | l2, r1 & r2)(prov)
         case (RecordType(fs1), RecordType(fs2)) =>
@@ -276,7 +275,6 @@ abstract class TyperHelpers { Typer: Typer =>
       (this === that) || ((this, that) match {
         case (RecordType(Nil), _) => TopType <:< that
         case (_, RecordType(Nil)) => this <:< TopType
-        case (pt1@ClassTag(id1, ps1), pt2@ClassTag(id2, ps2)) => (id1 === id2) || pt1.parentsST(id2)
         case (TypeBounds(lb, ub), _) => ub <:< that
         case (_, TypeBounds(lb, ub)) => this <:< lb
         case (FunctionType(l1, r1), FunctionType(l2, r2)) => assume { implicit cache =>
@@ -311,9 +309,10 @@ abstract class TyperHelpers { Typer: Typer =>
           if (primitiveTypes contains tr.defn.name) && !tr.defn.name.isCapitalized => tr.expand <:< that
         case (_, tr: TypeRef)
           if (primitiveTypes contains tr.defn.name) && !tr.defn.name.isCapitalized => this <:< tr.expand
+        // TODO: In HML systems with nominal types a type ref of a data constructor can be consider a sub type of it's type constructor
         case (tr: TypeRef, _) =>
           ctx.tyDefs.get(tr.defn.name) match {
-            case S(td) if td.kind is Cls => clsNameToNomTag(td)(noProv, ctx) <:< that
+            case S(td) if td.kind is Cls => td.adtData.exists(tup => ctx.tyDefs.get(tup._1.name).exists(_.bodyTy <:< that))
             case _ => false
           }
         case (_, _: TypeRef) =>
@@ -324,10 +323,6 @@ abstract class TyperHelpers { Typer: Typer =>
       })
       // }(r => s"! $r")
     }
-
-    def isTop: Bool = (TopType <:< this) (Ctx.empty)
-
-    def isBot: Bool = (this <:< BotType) (Ctx.empty)
 
     def unwrapAll(implicit ctx: Ctx): SimpleType = unwrapProxies match {
       case tr: TypeRef => tr.expand.unwrapAll

@@ -50,4 +50,4 @@ let check result condition =
 //│                           ^^^^
 //│ U max: 2, total: 11
 //│ UERR 1 errors
-//│ L: 0 [either['a68','b69'] ~ string, either['a68','b69'] :> α64', α64' <: α66', α66' :> α67', α67' :> string]
+//│ L: 0 [either['a46','b47'] ~ string, either['a46','b47'] :> α42', α42' <: α44', α44' :> α45', α45' :> string]

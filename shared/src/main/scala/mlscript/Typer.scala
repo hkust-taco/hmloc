@@ -60,8 +60,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     def nest: Ctx = copy(Some(this), MutMap.empty)
     def nextLevel: Ctx = copy(lvl = lvl + 1)
     private val abcCache: MutMap[Str, Set[TypeName]] = MutMap.empty
-    def allBaseClassesOf(name: Str): Set[TypeName] = abcCache.getOrElseUpdate(name,
-      tyDefs.get(name).fold(Set.empty[TypeName])(_.allBaseClasses(this)(Set.empty)))
   }
   object Ctx {
     def init: Ctx = Ctx(
@@ -109,8 +107,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     TypeDef(Cls, TypeName("true"), Nil, Nil, TopType, Set.single(TypeName("bool")), N, Nil, S(TypeName("bool")->Nil)) ::
     TypeDef(Cls, TypeName("false"), Nil, Nil, TopType, Set.single(TypeName("bool")), N, Nil, S(TypeName("bool")->Nil)) ::
     TypeDef(Cls, TypeName("string"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("string")->Nil)) ::
-    TypeDef(Als, TypeName("undefined"), Nil, Nil, ClassTag(UnitLit(true), Set.empty)(noProv), Set.empty, N, Nil) ::
-    TypeDef(Als, TypeName("null"), Nil, Nil, ClassTag(UnitLit(false), Set.empty)(noProv), Set.empty, N, Nil) ::
     TypeDef(Als, TypeName("anything"), Nil, Nil, TopType, Set.empty, N, Nil) ::
     TypeDef(Als, TypeName("nothing"), Nil, Nil, BotType, Set.empty, N, Nil) ::
     TypeDef(Cls, TypeName("error"), Nil, Nil, TopType, Set.empty, N, Nil) ::
@@ -213,7 +209,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           nt._1 -> rec(nt._2).withProv(tp(App(nt._1, Var("").withLocOf(nt._2)).toCoveringLoc, "record field"))
         })(prov)
       case Function(lhs, rhs) => FunctionType(rec(lhs), rec(rhs))(tyTp(ty.toLoc, "function type"))
-      case Literal(lit) => ClassTag(lit, lit.baseClasses)(tyTp(ty.toLoc, "literal type"))
       case TypeName("this") =>
         ctx.env.getOrElse("this", err(msg"undeclared this" -> ty.toLoc :: Nil)) match {
           case VarSymbol(t: TypeScheme, _) => t.instantiate
@@ -228,16 +223,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
               if (tpnum =/= 0) {
                 err(msg"Type $name takes parameters", tyLoc)(raise)
               } else TypeRef(tn, Nil)(tpr)
-            case L(e) =>
-              if (name.isEmpty || !name.head.isLower) e()
-              else (typeNamed(tyLoc, name), ctx.tyDefs.get(name)) match {
-                case (R((kind, _)), S(td)) => kind match {
-                  case Cls => clsNameToNomTag(td)(tyTp(tyLoc, "class tag"), ctx)
-                  case Als => err(
-                    msg"Type alias ${name} cannot be used as a type tag", tyLoc)(raise)
-                }
-                case _ => e()
-              }
+            case L(e) => e()
           }
         })
       case tv: TypeVar =>
@@ -353,12 +339,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   object ValidPatVar {
     def unapply(v: Var)(implicit ctx: Ctx, raise: Raise): Opt[Str] =
       if (ctx.inPattern && v.isPatVar) {
-        ctx.parent.dlof(_.get(v.name))(N) |>? { case S(VarSymbol(ts: TypeScheme, _)) =>
-          ts.instantiate(0).unwrapProxies } |>? {
-            case S(ClassTag(Var(v.name), _)) =>
-              warn(msg"Variable name '${v.name}' already names a symbol in scope. " +
-                s"If you want to refer to that symbol, you can use `scope.${v.name}`; " +
-                s"if not, give your future readers a break and use another name :^)", v.toLoc)
+        ctx.parent.dlof(_.get(v.name))(N) |>? {
+          case S(VarSymbol(ts: TypeScheme, _)) => ts.instantiate(0).unwrapProxies
         }
         ValidVar.unapply(v)
       } else N
@@ -424,7 +406,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case _: IntLit => TypeRef(TypeName("int"), Nil)(prov)
       case _: StrLit => TypeRef(TypeName("string"), Nil)(prov)
       case _: DecLit => TypeRef(TypeName("float"), Nil)(prov)
-      case lit: Lit => ClassTag(lit, lit.baseClasses)(prov)
       case Rcd(fs) =>
         val prov = tp(term.toLoc, "record literal")
         fs.groupMap(_._1.name)(_._1).foreach { case s -> fieldNames if fieldNames.sizeIs > 1 => err(

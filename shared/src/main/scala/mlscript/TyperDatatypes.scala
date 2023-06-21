@@ -126,26 +126,14 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       require(targs.size === td.tparamsargs.size)
       lazy val tparamTags =
         if (paramTags) RecordType.mk(td.tparamsargs.map { case (tp, tv) =>
-            val tvv = td.getVariancesOrDefault
             tparamField(defn, tp) -> tv
           })(noProv)
         else TopType
       // substitute the arguments of type def
       // with the arguments given to the type ref
-      subst(td.kind match {
-        case Als => td.bodyTy
-        case Cls => clsNameToNomTag(td)(prov, ctx) & td.bodyTy & tparamTags
-      }, td.targs.lazyZip(targs).toMap) //.withProv(prov)
+      subst(td.bodyTy, td.targs.lazyZip(targs).toMap)
     }
-    private var tag: Opt[Opt[ClassTag]] = N
-    def mkTag(implicit ctx: Ctx): Opt[ClassTag] = tag.getOrElse {
-      val res = ctx.tyDefs.get(defn.name) match {
-        case S(td: TypeDef) if td.kind is Cls => S(clsNameToNomTag(td)(noProv, ctx))
-        case _ => N
-      }
-      tag = S(res)
-      res
-    }
+
     def mapTargs[R](pol: Opt[Bool])(f: (Opt[Bool], ST) => R)(implicit ctx: Ctx): Ls[R] = {
       val td = ctx.tyDefs(defn.name)
       td.tvarVariances.fold(targs.map(f(N, _))) { tvv =>
@@ -169,23 +157,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   sealed trait ObjectTag extends BaseTypeOrTag with Ordered[ObjectTag] {
     val id: SimpleTerm
     def compare(that: ObjectTag): Int = this.id compare that.id
-  }
-
-  case class ClassTag(id: SimpleTerm, parents: Set[TypeName])(val prov: TypeProvenance) extends BaseType with ObjectTag {
-    lazy val parentsST = parents.iterator.map(tn => Var(tn.name)).toSet[SimpleTerm]
-    def glb(that: ClassTag): Opt[ClassTag] =
-      if (that.id === this.id) S(this)
-      else if (that.parentsST.contains(this.id)) S(that)
-      else if (this.parentsST.contains(that.id)) S(this)
-      else N
-    def lub(that: ClassTag): Set[ClassTag] = // TODO rm? it's unused
-      if (that.id === this.id) Set.single(that)
-      else if (that.parentsST.contains(this.id)) Set.single(this)
-      else if (this.parentsST.contains(that.id)) Set.single(that)
-      // else this.parentsST.union(that.parentsST)
-      else Set(this, that)
-    def level: Int = 0
-    override def toString = showProvOver(false)(id.idStr+s"<${parents.map(_.show).mkString(",")}>")
   }
 
   case class TraitTag(id: SimpleTerm)(val prov: TypeProvenance) extends BaseTypeOrTag with ObjectTag with Factorizable {

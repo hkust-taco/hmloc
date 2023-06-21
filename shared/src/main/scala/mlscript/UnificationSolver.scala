@@ -172,7 +172,7 @@ trait UnificationSolver extends TyperDatatypes {
            tv.uni.foreach(extrudeUni(_))
          case e @ ExtrType(_) => e
          case p @ ProvType(und) => extrudeTy(und)
-         case _: ClassTag | _: TraitTag => ty
+         case _: TraitTag => ty
          case tr @ TypeRef(d, ts) => ts.foreach(extrudeTy)
        }
      }
@@ -523,7 +523,7 @@ trait UnificationSolver extends TyperDatatypes {
         case e@ExtrType(_) => e
         case p@ProvType(und) => ProvType(freshen(und))(p.prov)
         case p@ProxyType(und) => freshen(und)
-        case _: ClassTag | _: TraitTag => ty
+        case _: TraitTag => ty
         case tr@TypeRef(d, ts) => TypeRef(d, ts.map(freshen))(tr.prov)
       }
 
@@ -534,9 +534,8 @@ trait UnificationSolver extends TyperDatatypes {
   def err(msg: Message, loco: Opt[Loc])(implicit raise: Raise): SimpleType = err(msg -> loco :: Nil)
   def err(msgs: List[Message -> Opt[Loc]])(implicit raise: Raise): SimpleType = {
     raise(ErrorReport(msgs))
-    errType
+    TypeRef(TypeName("err"), Nil)(noProv)
   }
-  def errType: SimpleType = ClassTag(ErrTypeId, Set.empty)(noProv)
   def warn(msg: Message, loco: Opt[Loc])(implicit raise: Raise): Unit = warn(msg -> loco :: Nil)
   def warn(msgs: List[Message -> Opt[Loc]])(implicit raise: Raise): Unit = raise(WarningReport(msgs))
 

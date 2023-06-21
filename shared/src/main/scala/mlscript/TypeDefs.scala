@@ -41,25 +41,13 @@ class TypeDefs extends UnificationSolver { self: Typer =>
     // indicating that it's adt is either and it's param is the 1th param of either
     adtData: Opt[(TypeName, Ls[Int])] = N
   ) {
-    def allBaseClasses(ctx: Ctx)(implicit traversed: Set[TypeName]): Set[TypeName] =
-      baseClasses.map(v => TypeName(v.name)) ++
-        baseClasses.iterator.filterNot(traversed).flatMap(v =>
-          ctx.tyDefs.get(v.name).fold(Set.empty[TypeName])(_.allBaseClasses(ctx)(traversed + v)))
-    val (tparams: List[TypeName], targs: List[TypeVariable]) = tparamsargs.unzip
-    val thisTv: TypeVariable = freshVar(noProv, S("this"), Nil, TypeRef(nme, targs)(noProv) :: Nil)(1)
+    val (_: List[TypeName], targs: List[TypeVariable]) = tparamsargs.unzip
     var tvarVariances: Opt[VarianceStore] = N
-    def getVariancesOrDefault: collection.Map[TV, VarianceInfo] =
-      tvarVariances.getOrElse(Map.empty[TV, VarianceInfo].withDefaultValue(VarianceInfo.in))
   }
   
   def tparamField(clsNme: TypeName, tparamNme: TypeName): Var =
     Var(clsNme.name + "#" + tparamNme.name)
-  
-  def clsNameToNomTag(td: TypeDef)(prov: TypeProvenance, ctx: Ctx): ClassTag = {
-    require(td.kind is Cls)
-    ClassTag(Var(td.nme.name), ctx.allBaseClassesOf(td.nme.name))(prov)
-  }
-  
+
   def baseClassesOf(tyd: mlscript.TypeDef): Set[TypeName] =
     if (tyd.kind === Als) Set.empty else baseClassesOf(tyd.body)
   
@@ -172,7 +160,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
           case k: ObjDefKind =>
             val parentsClasses = MutSet.empty[TypeRef]
             def checkParents(ty: SimpleType): Bool = ty match {
-              // case ClassTag(Var("string"), _) => true // Q: always?
               case _: ObjectTag => true // Q: always? // FIXME actually no
               case tr @ TypeRef(tn2, _) =>
                 val td2 = ctx.tyDefs(tn2.name)
@@ -280,7 +267,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
       trace(s"upd[$curVariance] $ty") {
         ty match {
           case ProxyType(underlying) => updateVariance(underlying, curVariance)
-          case ClassTag(_, _) => ()
           case ExtrType(pol) => ()
           case t: TypeVariable =>
             // update the variance information for the type variable

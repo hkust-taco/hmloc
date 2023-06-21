@@ -52,6 +52,6 @@ let rec mulByDigit i l =
 //│                             ^^^
 //│ U max: 7, total: 100
 //│ UERR 2 errors
-//│ L: 0 [(α101' -> [(list[α102'] -> list[α103'])]) ~ int, (α101' -> [(list[α102'] -> list[α103'])]) <: α98', α98' <: int]
-//│ L: 0 [list['a105'] ~ int, list['a105'] <: α99', α99' <: int]
+//│ L: 0 [(α79' -> [(list[α80'] -> list[α81'])]) ~ int, (α79' -> [(list[α80'] -> list[α81'])]) <: α76', α76' <: int]
+//│ L: 0 [list['a83'] ~ int, list['a83'] <: α77', α77' <: int]
 
