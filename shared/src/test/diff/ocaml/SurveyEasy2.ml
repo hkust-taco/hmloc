@@ -31,4 +31,4 @@ let increment result = match result with
 //│                                  ^^^
 //│ U max: 1, total: 8
 //│ UERR 1 errors
-//│ L: 0 [string ~ int, string <: α68', α68' :> int]
+//│ L: 0 [string ~ int, string <: α65', α65' :> int]

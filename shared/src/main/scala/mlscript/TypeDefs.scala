@@ -211,32 +211,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
               case p: ProxyType => checkParents(p.underlying)
             }
 
-            val fields = fieldsOf(td.bodyTy, paramTags = true)
-            val tparamTags = td.tparamsargs.map { case (tp, tv) =>
-              tparamField(td.nme, tp) -> tv
-            }
-            val ctor = k match {
-              case Cls =>
-                val nomTag = clsNameToNomTag(td)(originProv(td.nme.toLoc, "class", td.nme.name), ctx)
-                val fieldsRefined = fields.iterator.map(f =>
-                  if (f._1.name.isCapitalized) f
-                  else {
-                    val fv = freshVar(noProv,
-                      S(f._1.name.drop(f._1.name.indexOf('#') + 1)) // strip any "...#" prefix
-                    )(1).tap(_.upperBounds ::= f._2)
-                    f._1 -> fv.withProv(f._2.prov)
-                  }).toList
-                PolymorphicType(0, FunctionType(
-                  RecordType.mk(fieldsRefined.filterNot(_._1.name.isCapitalized))(noProv),
-                  nomTag & RecordType.mk(
-                    fieldsRefined ::: tparamTags
-                  )(noProv)
-                  // * TODO try later:
-                  // TypeRef(td.nme, td.tparamsargs.unzip._2)(noProv) & RecordType.mk(fieldsRefined)(noProv)
-                )(originProv(td.nme.toLoc, "class constructor", td.nme.name)))
-            }
-            ctx += n.name -> VarSymbol(ctor, Var(n.name))
-
             checkParents(td.bodyTy) && checkCycle(td.bodyTy)(Set.single(L(td.nme)))
         }
 
