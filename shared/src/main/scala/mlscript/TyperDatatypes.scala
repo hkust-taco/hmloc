@@ -187,7 +187,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       var lowerBounds: List[SimpleType],
       var upperBounds: List[SimpleType],
       val nameHint: Opt[Str] = N
-  )(val prov: TypeProvenance) extends SimpleType with CompactTypeOrVariable with Ordered[TypeVariable] with Factorizable {
+  )(val prov: TypeProvenance) extends SimpleType with Ordered[TypeVariable] with Factorizable {
     private[mlscript] val uid: Int = { freshCount += 1; freshCount - 1 }
     lazy val asTypeVar = new TypeVar(L(uid), nameHint)
     var uni: Ls[Unification] = Ls()
@@ -203,10 +203,5 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         (implicit lvl: Int): TypeVariable = new TypeVariable(lvl, lbs, ubs, nameHint)(p)
   def resetState(): Unit = {
     freshCount = 0
-  }
-  trait CompactTypeOrVariable
-  type PolarVariable = (TypeVariable, Boolean)
-  object TypeVariable {
-    var collectTypeVars: Bool = false
   }
 }

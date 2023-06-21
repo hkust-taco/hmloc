@@ -113,14 +113,6 @@ abstract class TyperHelpers { Typer: Typer =>
       case ((no1, t1), (no2, t2)) => (N, t1 | t2)
     }
   }
-  
-  private def cleanupUnion(tys: Ls[ST])(implicit ctx: Ctx): Ls[ST] = {
-    var res: Ls[ST] = Nil
-    tys.reverseIterator.foreach { ty =>
-      if (!res.exists(ty <:< _)) res ::= ty
-    }
-    res
-  }
 
   def factorizeImpl(cs: Ls[Ls[ST]]): ST = trace(s"factorize? ${cs.map(_.mkString(" & ")).mkString(" | ")}") {
     def rebuild(cs: Ls[Ls[ST]]): ST =
@@ -392,18 +384,8 @@ abstract class TyperHelpers { Typer: Typer =>
       getVars.iterator.filter(tv => tv.uniConcreteTypes.nonEmpty)
         .map(tv => "\n\t\t" + tv.toString + " = " + tv.uniConcreteTypes.mkString(", ")).mkString
 
-    def exp(pol: Opt[Bool], ty: ST)(implicit ctx: Ctx): Type = (
-      ty
-        // |> (_.normalize(false))
-        // |> (simplifyType(_, pol, removePolarVars = false, inlineBounds = false))
-        // |> (shallowCopy)
-        // |> (subst(_, Map.empty)) // * Make a copy of the type and its TV graph – although we won't show the TV bounds, we still care about the bounds as they affect class type reconstruction in normalizeTypes_!
-        // |> (normalizeTypes_!(_, pol)(ctx))
-        |> (expandType(_, stopAtTyVars = true))
-      )
-
     def expOcamlTy()(implicit ctx: Ctx, showTV: Set[TV]): Type = {
-      expandType(this, stopAtTyVars = true, showTV, true)
+      expandUnifiedType(this, stopAtTyVars = true, showTV, true)
     }
 
     /** List of valid locations a type has been used at by collecting location from provenances.

@@ -97,47 +97,22 @@ abstract class TypeImpl extends Located { self: Type =>
             .map(_.showIn(ctx, prec))
             .reduce(_ + opStr + _), outerPrec > prec)
       }
-    // 
-    case Bounds(Bot, Top) => s"?"
-    case Bounds(lb, ub) if lb === ub => lb.showIn(ctx, outerPrec)
-    case Bounds(Bot, ub) => s"out ${ub.showIn(ctx, 0)}"
-    case Bounds(lb, Top) => s"in ${lb.showIn(ctx, 0)}"
-    case Bounds(lb, ub) => s"in ${lb.showIn(ctx, 0)} out ${ub.showIn(ctx, 0)}"
-    // 
     case AppliedType(n, args) => s"${n.name}[${args.map(_.showIn(ctx, 0)).mkString(", ")}]"
-    case Literal(IntLit(n)) => n.toString
-    case Literal(DecLit(n)) => n.toString
-    case Literal(StrLit(s)) => "\"" + s + "\""
-    case Constrained(b, ws) => parensIf(s"${b.showIn(ctx, 0)}\n  where${ws.map {
-      case (uv, Bounds(Bot, ub)) =>
-        s"\n    ${ctx.vs(uv)} <: ${ub.showIn(ctx, 0)}"
-      case (uv, Bounds(lb, Top)) =>
-        s"\n    ${ctx.vs(uv)} :> ${lb.showIn(ctx, 0)}"
-      case (uv, Bounds(lb, ub)) if lb === ub =>
-        s"\n    ${ctx.vs(uv)} := ${lb.showIn(ctx, 0)}"
-      case (uv, Bounds(lb, ub)) =>
-        val vstr = ctx.vs(uv)
-        s"\n    ${vstr             } :> ${lb.showIn(ctx, 0)}" +
-        s"\n    ${" " * vstr.length} <: ${ub.showIn(ctx, 0)}"
-    }.mkString}", outerPrec > 0)
     case Unified(ty, us) => parensIf(s"${ty.showIn(ctx, 0)}\n  where${us.map {
       case (tv, tys) =>
         s"\n    ${ctx.vs(tv)} = ${tys.map(_.showIn(ctx, 0)).mkString(", ")}"
     }.mkString}", outerPrec > 0)
-    case Literal(UnitLit(b)) => if (b) "undefined" else "null"
   }
   
   def children: List[Type] = this match {
     case _: NullaryType => Nil
     case Function(l, r) => l :: r :: Nil
-    case Bounds(l, r) => l :: r :: Nil
     case Record(fs) => fs.map(_._2)
     case Tuple(fs) => fs
     case Union(l, r) => l :: r :: Nil.toList
     case Inter(l, r) => l :: r :: Nil
     case Recursive(n, b) => b :: Nil
     case AppliedType(n, ts) => n :: ts
-    case Constrained(b, ws) => b :: ws.flatMap(c => c._1 :: c._2 :: Nil)
     case Unified(ty, us) => ty.children ::: us.flatMap { case (tv, tys) => tv :: tys.flatMap(_.children)}
   }
 }
@@ -351,7 +326,6 @@ trait TermImpl extends StatementImpl { self: Term =>
   protected def toType_! : Type = (this match {
     case Var(name) if name.startsWith("`") => TypeVar(R(name.tail), N)
     case Var(name) => TypeName(name)
-    case lit: Lit => Literal(lit)
     case App(App(Var("|"), lhs), rhs) => Union(lhs.toType_!, rhs.toType_!)
     case App(App(Var("&"), lhs), rhs) => Inter(lhs.toType_!, rhs.toType_!)
     case Lam(lhs, rhs) => Function(lhs.toType_!, rhs.toType_!)

@@ -621,9 +621,6 @@ class DiffTests
             typer.dbg = mode.dbg
             typer.unifyMode = mode.unify
 
-//            typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors
-//            typer.recordProvenances = !noProvs && !mode.dbg && !mode.dbgSimplif || mode.explainErrors || mode.simplifyError
-            typer.recordProvenances = true
             typer.verbose = mode.verbose
             typer.explainErrors = mode.explainErrors
             // survey programs should only output diagnostics

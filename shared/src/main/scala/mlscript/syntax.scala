@@ -98,18 +98,12 @@ final case class Record(fields: Ls[Var -> Type])        extends Type
 case class Tuple(fields: Ls[Type])    extends Type
 final case class Recursive(uv: TypeVar, body: Type)      extends Type
 final case class AppliedType(base: TypeName, targs: List[Type]) extends Type with NamedType
-final case class Bounds(lb: Type, ub: Type)              extends Type
-final case class Constrained(base: Type, where: Ls[TypeVar -> Bounds]) extends Type
 final case class Unified(base: Type, where: Ls[TypeVar -> Ls[Type]]) extends Type
 
 sealed abstract class NullaryType                        extends Type
 
 case object Top                                          extends NullaryType
 case object Bot                                          extends NullaryType
-
-/** Literal type type, e.g. type `0` is a type with only one possible value `0`. */
-final case class Literal(lit: Lit)                       extends NullaryType
-
 /** Reference to an existing type with the given name. */
 final case class TypeName(name: Str)                     extends NullaryType with NamedType with TypeNameImpl
 final case class TypeTag (name: Str)                     extends NullaryType

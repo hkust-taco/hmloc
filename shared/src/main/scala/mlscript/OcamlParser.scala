@@ -526,14 +526,12 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   }
   def ctor[p: P]: P[Type] = locate(P( tyName ~ "[" ~ ty.rep(0, ",") ~ "]" ) map {
     case (tname, targs) => AppliedType(tname, targs.toList)
-  }) | tyName | tyVar | tyWild | litTy
+  }) | tyName | tyVar
   def tyName[p: P]: P[TypeName] = locate(P(ident map TypeName))
-  def cons[p: P]: P[TypeName] = locate(P(ident map TypeName))
   def ocamlTyParam[p: P]: P[TypeName] = locate(P(("'" ~~ lowercase.!).map(param =>
       TypeName("'" + param)
     )))
   def tyVar[p: P]: P[TypeVar] = locate(P("'" ~ ident map (id => TypeVar(R("'" + id), N))))
-  def tyWild[p: P]: P[Bounds] = locate(P("?".! map (_ => Bounds(Bot, Top))))
   def rcd[p: P]: P[Record] =
     locate(P( "{" ~/ (variable ~ ":" ~ ty).rep(sep = ";") ~ "}" )
       .map(_.toList.map {
@@ -554,7 +552,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case _ => ??? // unreachable
     })
   })
-  def litTy[p: P]: P[Type] = P( lit.map(l => Literal(l).withLocOf(l)) )
 
   /** Exceptions are definitions returning empty records
     * Raising them is not relevant to the type checking flow so the raise is defined
@@ -571,7 +568,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
    * between it and the next block
    */
   def pgrm[p: P]: P[Pgrm] = P( (";".rep ~ (toplvl ~ ";".rep | ";".rep(1).map(_ => Nil))).rep.map(_.toList.flatten) ~ End ).map(Pgrm)
-  def topLevelSep[p: P]: P[Unit] = ";"
 }
 
 object OcamlParser {

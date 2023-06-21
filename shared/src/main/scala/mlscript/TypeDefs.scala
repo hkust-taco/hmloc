@@ -211,9 +211,9 @@ class TypeDefs extends UnificationSolver { self: Typer =>
               //    and to have the same has hashCode (see: the use of a cache MutSet)
               if (defn === td.nme && tys =/= targs) {
                 err(msg"Type definition is not regular: it occurs within itself as ${
-                  expandType(tr).show
+                  expandUnifiedType(tr).show
                 }, but is defined as ${
-                  expandType(TypeRef(defn, td.targs)(noProv)).show
+                  expandUnifiedType(TypeRef(defn, td.targs)(noProv)).show
                 }", td.toLoc)(raise)
                 false
               } else true

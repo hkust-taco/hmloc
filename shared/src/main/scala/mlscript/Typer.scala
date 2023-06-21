@@ -24,14 +24,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   def doFactorize: Bool = false
   def reporCollisionErrors: Bool = true
   
-  /** If flag is set proxy types are created during constraint resolution. This
-    * is needed for debugging, showing verbose error messages traces and
-    * creating simplified error messages.
-    * 
-    * It should be set wherever such features are needed
-    */
-  var recordProvenances: Boolean = true
-  
   type Raise = Diagnostic => Unit
   type Binding = Str -> TypeScheme
   type Bindings = Map[Str, TypeScheme]
@@ -182,10 +174,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     def rec(ty: Type)(implicit ctx: Ctx, recVars: Map[TypeVar, TypeVariable]): SimpleType = ty match {
       case Top => ExtrType(false)(tyTp(ty.toLoc, "top type"))
       case Bot => ExtrType(true)(tyTp(ty.toLoc, "bottom type"))
-      case Bounds(Bot, Top) =>
-        val p = tyTp(ty.toLoc, "type wildcard")
-        TypeBounds(ExtrType(true)(p), ExtrType(false)(p))(p)
-      case Bounds(lb, ub) => TypeBounds(rec(lb), rec(ub))(tyTp(ty.toLoc, "type bounds"))
       case Tuple(fields) =>
         TupleType(fields.map(fld =>
             N -> rec(fld).withProv(tp(fld.toLoc, "tuple field"))
@@ -318,13 +306,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     res
   }
   
-  def mkProxy(ty: SimpleType, prov: TypeProvenance): SimpleType = {
-    if (recordProvenances) ProvType(ty)(prov)
-    else ty // TODO don't do this when debugging errors
-    // TODO switch to return this in perf mode:
-    // ty
-  }
-  
+  def mkProxy(ty: SimpleType, prov: TypeProvenance): SimpleType = ProvType(ty)(prov)
+
   // TODO also prevent rebinding of "not"
   val reservedNames: Set[Str] = Set("|", "&", "~", ",", "neg", "and", "or")
 
@@ -698,10 +681,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       if (fields.nonEmpty)
         warn("Previous field definitions are discarded by this returned expression.", trm.toLoc)
       typeTerm(trm)
-    // case (trm: Term) :: Nil =>
-    //   assert(!rcd)
-    //   val ty = typeTerm(trm)
-    //   typeBra(Nil, rcd, (N, ty) :: fields)
     case s :: sts =>
       val (diags, desug) = s.desugared
       diags.foreach(raise)
@@ -722,78 +701,8 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       } else TupleType(fields.reverseIterator.toList)(prov)
   }
 
-  /** Convert an inferred SimpleType into the immutable Type representation. */
-  def expandType(st: SimpleType, stopAtTyVars: Bool = false, showTV: Set[TV] = Set(), ocamlStyle: Bool = false)(implicit ctx: Ctx): Type = {
-    var bounds: Ls[TypeVar -> Bounds] = Nil
-    
-    val seenVars = mutable.Set.empty[TV]
-    
-    def go(st: SimpleType)(implicit cache: Set[TV]): Type =
-            // trace(s"expand $st") {
-          st.unwrapProvs match {
-        case tv: TypeVariable if ocamlStyle =>
-          if (showTV(tv)) {
-            tv.asTypeVar
-          } else {
-            tv.asTypeVar
-              .copy(nameHint = S("_"))
-            /* 
-            tv.lowerBounds match {
-              case lb :: _ if !cache.contains(tv) => go(lb)(cache + tv)
-              case _ => tv.upperBounds match {
-                case ub :: _ if !cache.contains(tv) => go(ub)(cache + tv)
-                case _ => tv.asTypeVar//.copy(nameHint = S("_"))
-              }
-            }
-            */
-          }
-        case tv: TypeVariable if stopAtTyVars => tv.asTypeVar
-        case tv: TypeVariable =>
-          val nv = tv.asTypeVar
-          if (!seenVars(tv)) {
-            seenVars += tv
-            val l = go(tv.lowerBounds.foldLeft(BotType: ST)(_ | _))
-            val u = go(tv.upperBounds.foldLeft(TopType: ST)(_ & _))
-            if (l =/= Bot || u =/= Top)
-              bounds ::= nv -> Bounds(l, u)
-          }
-          nv
-        case FunctionType(l, r) => Function(go(l), go(r))
-        case ComposedType(true, l, r) => Union(go(l), go(r))
-        case ComposedType(false, l, r) => Inter(go(l), go(r))
-        case RecordType(fs) => Record(fs.mapValues(go))
-        case TupleType(fs) => Tuple(fs.map{ case (_, fld) => go(fld)})
-        case ExtrType(true) => Bot
-        case ExtrType(false) => Top
-        case ProxyType(und) => go(und)
-        case tag: ObjectTag => tag.id match {
-          case Var(n) =>
-            if (primitiveTypes.contains(n) // primitives like `int` are internally maintained as class tags
-              || n.isCapitalized // rigid type params like A in class Foo[A]
-              || n.startsWith("'") // rigid type varibales
-              || n === "this" // `this` type
-            ) TypeName(n)
-            else TypeTag(n.capitalize)
-          case lit: Lit => Literal(lit)
-        }
-        case TypeRef(td, Nil) => td
-        case tr @ TypeRef(td, targs) => AppliedType(td, tr.mapTargs(S(true)) {
-          case ta @ ((S(true), TopType) | (S(false), BotType)) => Bounds(Bot, Top)
-          case (_, ty) => go(ty)
-        })
-        case TypeBounds(lb, ub) => Bounds(go(lb), go(ub))
-        case _ => ???
-    }
-    // }(r => s"~> $r")
-    
-    val res = go(st)(Set.empty)
-    if (bounds.isEmpty) res
-    else Constrained(res, bounds)
-  }
-
   /** Convert an inferred SimpleType into the immutable Type representation using Unification information. */
   def expandUnifiedType(st: SimpleType, stopAtTyVars: Bool = false, showTV: Set[TV] = Set(), ocamlStyle: Bool = false)(implicit ctx: Ctx): Type = {
-    var bounds: Ls[TypeVar -> Bounds] = Nil
     var unified: Ls[TypeVar -> Ls[Type]] = Nil
 
     val seenVars = mutable.Set.empty[TV]
@@ -815,10 +724,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             seenVars += tv
             val mapping = tv.uniConcreteTypes.iterator.map(go).toList
             if (mapping.nonEmpty) unified ::= (nv, mapping)
-            val l = go(tv.lowerBounds.foldLeft(BotType: ST)(_ | _))
-            val u = go(tv.upperBounds.foldLeft(TopType: ST)(_ & _))
-            if (l =/= Bot || u =/= Top)
-              bounds ::= nv -> Bounds(l, u)
           }
           nv
         case FunctionType(l, r) => Function(go(l), go(r))
@@ -837,14 +742,11 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
               || n === "this" // `this` type
             ) TypeName(n)
             else TypeTag(n.capitalize)
-          case lit: Lit => Literal(lit)
         }
         case TypeRef(td, Nil) => td
         case tr @ TypeRef(td, targs) => AppliedType(td, tr.mapTargs(S(true)) {
-          case ta @ ((S(true), TopType) | (S(false), BotType)) => Bounds(Bot, Top)
           case (_, ty) => go(ty)
         })
-        case TypeBounds(lb, ub) => Bounds(go(lb), go(ub))
         case _ => ???
       }
     // }(r => s"~> $r")
