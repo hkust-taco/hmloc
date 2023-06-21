@@ -140,8 +140,9 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
         assert(td.tparamsargs.sizeCompare(targs) === 0)
         (td.tparamsargs lazyZip targs).map { case ((_, tv), ta) =>
           tvv(tv) match {
+            // Note: This should return a TypeBound(BotType, TopType) when using constrained types
             case VarianceInfo(true, true) =>
-              f(N, TypeBounds(BotType, TopType)(noProv))
+              f(N, TopType)
             case VarianceInfo(co, contra) =>
               f(if (co) pol else if (contra) pol.map(!_) else N, ta)
           }
@@ -162,22 +163,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   case class TraitTag(id: SimpleTerm)(val prov: TypeProvenance) extends BaseTypeOrTag with ObjectTag with Factorizable {
     def level: Int = 0
     override def toString = id.idStr
-  }
-
-  /** `TypeBounds(lb, ub)` represents an unknown type between bounds `lb` and `ub`.
-    * The only way to give something such a type is to make the type part of a def or method signature,
-    * as it will be replaced by a fresh bounded type variable upon subsumption checking (cf rigidification). */
-  case class TypeBounds(lb: SimpleType, ub: SimpleType)(val prov: TypeProvenance) extends SimpleType {
-    def level: Int = lb.level max ub.level
-    override def toString = s"$lb..$ub"
-  }
-  object TypeBounds {
-    final def mk(lb: SimpleType, ub: SimpleType, prov: TypeProvenance = noProv)(implicit ctx: Ctx): SimpleType =
-      if ((lb is ub) || lb === ub || lb <:< ub && ub <:< lb) lb else (lb, ub) match {
-        case (TypeBounds(lb, _), ub) => mk(lb, ub, prov)
-        case (lb, TypeBounds(_, ub)) => mk(lb, ub, prov)
-        case _ => TypeBounds(lb, ub)(prov)
-      }
   }
 
   /** A type variable living at a certain polymorphism level `level`, with mutable bounds.

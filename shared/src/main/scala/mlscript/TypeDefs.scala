@@ -74,7 +74,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
         mergeMap(fieldsOf(l, paramTags), fieldsOf(r, paramTags))(_ & _)
       case RecordType(fs) => fs.toMap
       case p: ProxyType => fieldsOf(p.underlying, paramTags)
-      case TypeBounds(lb, ub) => fieldsOf(ub, paramTags)
       case _: ObjectTag | _: FunctionType | _: TupleType | _: TypeVariable
         | _: ExtrType | _: ComposedType => Map.empty
     }
@@ -146,7 +145,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
           case tr @ TypeRef(tn, targs) => checkCycle(tr.expand)(travsersed + L(tn))
           case ComposedType(_, l, r) => checkCycle(l) && checkCycle(r)
           case p: ProxyType => checkCycle(p.underlying)
-          case TypeBounds(lb, ub) => checkCycle(lb) && checkCycle(ub)
           case tv: TypeVariable => travsersed(R(tv)) || {
             val t2 = travsersed + R(tv)
             tv.lowerBounds.forall(checkCycle(_)(t2)) && tv.upperBounds.forall(checkCycle(_)(t2))
@@ -190,9 +188,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
                 false
               case _: TupleType =>
                 err(msg"cannot inherit from a tuple type", prov.loco)
-                false
-              case _: TypeBounds =>
-                err(msg"cannot inherit from type bounds", prov.loco)
                 false
               case _: RecordType | _: ExtrType => true
               case p: ProxyType => checkParents(p.underlying)
@@ -308,9 +303,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
           case ComposedType(pol, lhs, rhs) =>
             updateVariance(lhs, curVariance)
             updateVariance(rhs, curVariance)
-          case TypeBounds(lb, ub) =>
-            updateVariance(lb, VarianceInfo.contra)
-            updateVariance(ub, VarianceInfo.co)
           case TupleType(fields) => fields.foreach {
               case (_ , fieldTy) => fieldVarianceHelper(fieldTy)
             }

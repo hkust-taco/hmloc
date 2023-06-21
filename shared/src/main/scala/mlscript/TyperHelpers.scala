@@ -194,7 +194,6 @@ abstract class TyperHelpers { Typer: Typer =>
     // }(r => s"= $r")
 
     def map(f: SimpleType => SimpleType): SimpleType = this match {
-      case TypeBounds(lb, ub) => TypeBounds(f(lb), f(ub))(prov)
       case FunctionType(lhs, rhs) => FunctionType(f(lhs), f(rhs))(prov)
       case RecordType(fields) => RecordType(fields.mapValues(f(_)))(prov)
       case TupleType(fields) => TupleType(fields.mapValues(f(_)))(prov)
@@ -239,8 +238,6 @@ abstract class TyperHelpers { Typer: Typer =>
         case (t0@TupleType(fs0), t1@TupleType(fs1)) =>
           if (fs0.sizeCompare(fs1) =/= 0) BotType
           else TupleType(tupleIntersection(fs0, fs1))(t0.prov)
-        case (TypeBounds(l0, u0), TypeBounds(l1, u1)) =>
-          TypeBounds(l0 | l1, u0 & u1)(prov)
         case _ if !swapped => that & (this, prov, swapped = true)
         case (`that`, _) => this
         case _ => ComposedType(false, that, this)(prov)
@@ -267,8 +264,6 @@ abstract class TyperHelpers { Typer: Typer =>
       (this === that) || ((this, that) match {
         case (RecordType(Nil), _) => TopType <:< that
         case (_, RecordType(Nil)) => this <:< TopType
-        case (TypeBounds(lb, ub), _) => ub <:< that
-        case (_, TypeBounds(lb, ub)) => this <:< lb
         case (FunctionType(l1, r1), FunctionType(l2, r2)) => assume { implicit cache =>
           l2 <:< l1 && r1 <:< r2
         }
@@ -353,7 +348,6 @@ abstract class TyperHelpers { Typer: Typer =>
       case ProxyType(und) => und :: Nil
       case _: ObjectTag => Nil
       case TypeRef(d, ts) => ts
-      case TypeBounds(lb, ub) => lb :: ub :: Nil
     }
 
     def getVars: SortedSet[TypeVariable] = {
@@ -436,7 +430,6 @@ abstract class TyperHelpers { Typer: Typer =>
       case ProxyType(und) => apply(pol)(und)
       case _: ObjectTag => ()
       case tr: TypeRef => tr.mapTargs(pol)(apply(_)(_)); ()
-      case TypeBounds(lb, ub) => apply(S(false))(lb); apply(S(true))(ub)
     }
     def applyField(pol: Opt[Bool])(fld: ST): Unit = apply(pol)(fld)
   }

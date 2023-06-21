@@ -44,7 +44,6 @@ trait TypeSimplifier { self: Typer =>
                 debugOutput(s"Mapped: ${sts} to ${nv.uniConcreteTypes}")
                 nv
               })
-            case t @ TypeBounds(lb, ub) => TypeBounds(process(lb), process(ub))(t.prov)
             case t @ FunctionType(l, r) => FunctionType(process(l), process(r))(t.prov)
             case t @ ComposedType(p, l, r) => ComposedType(p, process(l), process(r))(t.prov)
             case t @ RecordType(fs) => RecordType(fs.mapValues(process))(t.prov)
@@ -76,7 +75,6 @@ trait TypeSimplifier { self: Typer =>
                 case _ => tv
               }
             })
-            case t @ TypeBounds(lb, ub) => TypeBounds(process(lb), process(ub))(t.prov)
             case t @ FunctionType(l, r) => FunctionType(process(l), process(r))(t.prov)
             case t @ ComposedType(p, l, r) => ComposedType(p, process(l), process(r))(t.prov)
             case t @ RecordType(fs) => RecordType(fs.mapValues(process))(t.prov)

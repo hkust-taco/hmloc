@@ -162,7 +162,6 @@ trait UnificationSolver extends TyperDatatypes {
 
      def extrudeTy(ty: ST)(implicit lvl: Int): Unit = {
        if (ty.level <= lvl) ty else ty match {
-         case t @ TypeBounds(lb, ub) => extrudeTy(lb); extrudeTy(ub)
          case t @ FunctionType(l, r) => extrudeTy(l); extrudeTy(r)
          case t @ ComposedType(p, l, r) => extrudeTy(l); extrudeTy(r)
          case t @ RecordType(fs) => fs.foreach(tup => extrudeTy(tup._2))
@@ -509,13 +508,6 @@ trait UnificationSolver extends TyperDatatypes {
             v.uni = tv.uni.map(freshenUnification)
             v
         }
-        case t@TypeBounds(lb, ub) =>
-          if (rigidify) {
-            val tv = freshVar(t.prov)
-            tv.lowerBounds ::= freshen(lb)
-            tv.upperBounds ::= freshen(ub)
-            tv
-          } else TypeBounds(freshen(lb), freshen(ub))(t.prov)
         case t@FunctionType(l, r) => FunctionType(freshen(l), freshen(r))(t.prov)
         case t@ComposedType(p, l, r) => ComposedType(p, freshen(l), freshen(r))(t.prov)
         case t@RecordType(fs) => RecordType(fs.mapValues(freshen))(t.prov)
