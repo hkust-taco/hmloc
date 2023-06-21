@@ -1,16 +1,11 @@
 package mlscript
 
-import scala.collection.mutable
-import scala.collection.mutable.{Map => MutMap, Set => MutSet}
-import scala.collection.immutable.{SortedMap, SortedSet}
-import scala.util.chaining._
-import scala.annotation.tailrec
-import mlscript.utils._
-import shorthands._
 import mlscript.Message._
+import mlscript.utils._
+import mlscript.utils.shorthands._
 
-import scala.collection.immutable
-import mlscript.Diagnostic._
+import scala.collection.mutable
+import scala.collection.mutable.{Map => MutMap}
 
 /** A class encapsulating type inference state.
  *  It uses its own internal representation of types and type variables, using mutable data structures.
@@ -89,8 +84,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
   val BotType: ExtrType = ExtrType(true)(noTyProv)
   val UnitType: TypeRef = TypeRef(TypeName("unit"), Nil)(noTyProv)
   val BoolType: TypeRef = TypeRef(TypeName("bool"), Nil)(noTyProv)
-  val IntType: TypeRef = TypeRef(TypeName("int"), Nil)(noTyProv)
-  val ErrTypeId: SimpleTerm = Var("error")
 
   val builtinTypes: Ls[TypeDef] =
     TypeDef(Cls, TypeName("int"), Nil, Nil, TopType, Set.empty, N, Nil, S(TypeName("int")->Nil)) ::
@@ -119,7 +112,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
 
   // built in operators bound to their type schemes
   val builtinBindings: Bindings = {
-    import FunctionType.{ apply => fun }
+    import FunctionType.{apply => fun}
     Map(
       "true" -> BoolType,
       "false" -> BoolType,
@@ -733,7 +726,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case TupleType(fs) => Tuple(fs.map{ case (_, fld) => go(fld)})
         case ExtrType(true) => Bot
         case ExtrType(false) => Top
-        case ProxyType(und) => go(und)
+        case ProvType(und) => go(und)
         case tag: ObjectTag => tag.id match {
           case Var(n) =>
             if (primitiveTypes.contains(n) // primitives like `int` are internally maintained as class tags

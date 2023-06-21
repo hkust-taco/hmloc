@@ -93,21 +93,14 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     override def toString = s"($lhs ${if (pol) "|" else "&"} $rhs)"
   }
 
-  /** A proxy type is a derived type form storing some additional information,
-   * but which can always be converted into an underlying simple type. */
-  sealed abstract class ProxyType extends SimpleType {
-    def level: Int = underlying.level
-    def underlying: SimpleType
+  /** The sole purpose of ProvType is to store additional type provenance info. */
+  case class ProvType(underlying: SimpleType)(val prov: TypeProvenance) extends SimpleType {
     override def toString = s"[$underlying]"
-  }
-  object ProxyType {
-    def unapply(proxy: ProxyType): S[ST] =
-      S(proxy.underlying)
+    def level: Int = underlying.level
   }
 
-  /** The sole purpose of ProvType is to store additional type provenance info. */
-  case class ProvType(underlying: SimpleType)(val prov: TypeProvenance) extends ProxyType {
-    override def toString = s"[$underlying]"
+  object ProvType {
+    def unapply(prov: ProvType): S[ST] = S(prov.underlying)
   }
 
   type TR = TypeRef
@@ -186,7 +179,4 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   private var freshCount = 0
   def freshVar(p: TypeProvenance, nameHint: Opt[Str] = N, lbs: Ls[ST] = Nil, ubs: Ls[ST] = Nil)
         (implicit lvl: Int): TypeVariable = new TypeVariable(lvl, lbs, ubs, nameHint)(p)
-  def resetState(): Unit = {
-    freshCount = 0
-  }
 }

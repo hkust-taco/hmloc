@@ -1,10 +1,8 @@
 package mlscript
 
-import scala.util.chaining._
+import mlscript.Diagnostic._
 import mlscript.utils._
-import shorthands._
-import Diagnostic._
-import mlscript.Message.MessageContext
+import mlscript.utils.shorthands._
 
 import scala.collection.mutable
 

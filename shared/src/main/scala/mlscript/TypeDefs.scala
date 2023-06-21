@@ -1,12 +1,11 @@
 package mlscript
 
-import scala.collection.mutable
-import scala.collection.mutable.{Map => MutMap, Set => MutSet}
-import scala.collection.immutable.{SortedSet, SortedMap}
-import scala.util.chaining._
-import scala.annotation.tailrec
-import mlscript.utils._, shorthands._
 import mlscript.Message._
+import mlscript.utils._
+import mlscript.utils.shorthands._
+
+import scala.collection.mutable.{Map => MutMap, Set => MutSet}
+import scala.util.chaining._
 
 class TypeDefs extends UnificationSolver { self: Typer =>
   import TypeProvenance.{apply => tp}
@@ -73,7 +72,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
       case ComposedType(false, l, r) =>
         mergeMap(fieldsOf(l, paramTags), fieldsOf(r, paramTags))(_ & _)
       case RecordType(fs) => fs.toMap
-      case p: ProxyType => fieldsOf(p.underlying, paramTags)
+      case p: ProvType => fieldsOf(p.underlying, paramTags)
       case _: ObjectTag | _: FunctionType | _: TupleType | _: TypeVariable
         | _: ExtrType | _: ComposedType => Map.empty
     }
@@ -144,7 +143,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
             false
           case tr @ TypeRef(tn, targs) => checkCycle(tr.expand)(travsersed + L(tn))
           case ComposedType(_, l, r) => checkCycle(l) && checkCycle(r)
-          case p: ProxyType => checkCycle(p.underlying)
+          case p: ProvType => checkCycle(p.underlying)
           case tv: TypeVariable => travsersed(R(tv)) || {
             val t2 = travsersed + R(tv)
             tv.lowerBounds.forall(checkCycle(_)(t2)) && tv.upperBounds.forall(checkCycle(_)(t2))
@@ -190,7 +189,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
                 err(msg"cannot inherit from a tuple type", prov.loco)
                 false
               case _: RecordType | _: ExtrType => true
-              case p: ProxyType => checkParents(p.underlying)
+              case p: ProvType => checkParents(p.underlying)
             }
 
             checkParents(td.bodyTy) && checkCycle(td.bodyTy)(Set.single(L(td.nme)))
@@ -261,7 +260,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
 
       trace(s"upd[$curVariance] $ty") {
         ty match {
-          case ProxyType(underlying) => updateVariance(underlying, curVariance)
+          case ProvType(underlying) => updateVariance(underlying, curVariance)
           case ExtrType(pol) => ()
           case t: TypeVariable =>
             // update the variance information for the type variable

@@ -514,7 +514,7 @@ trait UnificationSolver extends TyperDatatypes {
         case t@TupleType(fs) => TupleType(fs.mapValues(freshen))(t.prov)
         case e@ExtrType(_) => e
         case p@ProvType(und) => ProvType(freshen(und))(p.prov)
-        case p@ProxyType(und) => freshen(und)
+        case p@ProvType(und) => freshen(und)
         case _: TraitTag => ty
         case tr@TypeRef(d, ts) => TypeRef(d, ts.map(freshen))(tr.prov)
       }

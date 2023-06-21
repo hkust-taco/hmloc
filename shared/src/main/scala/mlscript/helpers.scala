@@ -1,13 +1,11 @@
 package mlscript
 
+import mlscript.utils._
+import mlscript.utils.shorthands._
+
+import scala.collection.mutable.{Buffer, Map => MutMap, SortedMap => SortedMutMap}
+import scala.math.Ordered.orderingToOrdered
 import scala.util.chaining._
-import scala.collection.mutable.{Map => MutMap, SortedMap => SortedMutMap, Set => MutSet, Buffer}
-import scala.collection.immutable.SortedSet
-
-import math.Ordered.orderingToOrdered
-
-import mlscript.utils._, shorthands._
-import scala.collection.immutable
 
 
 // Auxiliary definitions for types

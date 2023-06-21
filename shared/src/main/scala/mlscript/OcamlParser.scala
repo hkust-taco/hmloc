@@ -31,10 +31,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
    */
   def toParams(t: Term): Term = t
 
-  // def toParamsTy(t: Type): Tuple = t match {
-  //   case t: Tuple => t
-  //   case _ => Tuple((N, Field(None, t)) :: Nil)
-  // }
   def toParamsTy(t: Type): Type = t
   
   def letter[p: P]     = P( lowercase | uppercase )

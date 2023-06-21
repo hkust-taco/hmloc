@@ -57,7 +57,7 @@ abstract class TyperHelpers { Typer: Typer =>
     fs1.flatMap { case (k, v) => fs2m.get(k).map(v2 => k -> (v | v2)) }
   }
 
-  def subst(ts: PolymorphicType, map: Map[SimpleType, SimpleType]): PolymorphicType = 
+  def subst(ts: PolymorphicType, map: Map[SimpleType, SimpleType]): PolymorphicType =
     PolymorphicType(ts.level, subst(ts.body, map))
 
   /**
@@ -93,12 +93,7 @@ abstract class TyperHelpers { Typer: Typer =>
     }
     // }(r => s"= $r")
   
-  /** Substitutes only at the syntactic level, without updating type variables nor traversing their bounds. */
-  def substSyntax(st: SimpleType)(map: PartialFunction[SimpleType, SimpleType]): SimpleType =
-    // trace(s"substSyntax $st") {
-      map.applyOrElse[ST, ST](st, _.map(substSyntax(_)(map)))
-    // }(r => s"=> $r")
-  
+
   def tupleIntersection(fs1: Ls[Opt[Var] -> ST], fs2: Ls[Opt[Var] -> ST]): Ls[Opt[Var] -> ST] = {
     require(fs1.size === fs2.size)
     (fs1 lazyZip fs2).map {
@@ -113,36 +108,6 @@ abstract class TyperHelpers { Typer: Typer =>
       case ((no1, t1), (no2, t2)) => (N, t1 | t2)
     }
   }
-
-  def factorizeImpl(cs: Ls[Ls[ST]]): ST = trace(s"factorize? ${cs.map(_.mkString(" & ")).mkString(" | ")}") {
-    def rebuild(cs: Ls[Ls[ST]]): ST =
-      cs.iterator.map(_.foldLeft(TopType: ST)(_ & _)).foldLeft(BotType: ST)(_ | _)
-    if (cs.sizeCompare(1) <= 0) return rebuild(cs)
-    val factors = MutMap.empty[Factorizable, Int]
-    cs.foreach { c =>
-      c.foreach {
-        case tv: TV =>
-          factors(tv) = factors.getOrElse(tv, 0) + 1
-        case _ =>
-      }
-    }
-    println(s"Factors ${factors.mkString(", ")}")
-    factors.maxByOption(_._2) match {
-      // case S((fact, n)) =>
-      case S((fact, n)) if n > 1 =>
-        val (factored, rest) =
-          cs.partitionMap(c => if (c.contains(fact)) L(c) else R(c))
-        println(s"Factor $fact -> ${factored.mkString(", ")}")
-        assert(factored.size === n, factored -> n)
-        val factoredFactored = fact & factorizeImpl(factored.map(_.filterNot(_ === fact)))
-        val restFactored =
-          if (factors.sizeCompare(1) > 0 && factors.exists(f => (f._1 isnt fact) && f._2 > 1))
-            factorizeImpl(rest)
-          else rebuild(rest)
-        restFactored | factoredFactored
-      case _ => rebuild(cs)
-    }
-  }(r => s"yes: $r")
 
   trait SimpleTypeImpl {
     self: SimpleType =>
@@ -199,7 +164,6 @@ abstract class TyperHelpers { Typer: Typer =>
       case TupleType(fields) => TupleType(fields.mapValues(f(_)))(prov)
       case ComposedType(pol, lhs, rhs) => ComposedType(pol, f(lhs), f(rhs))(prov)
       case ProvType(underlying) => ProvType(f(underlying))(prov)
-      case ProxyType(underlying) => f(underlying) // TODO different?
       case TypeRef(defn, targs) => TypeRef(defn, targs.map(f(_)))(prov)
       case _: TypeVariable | _: ObjectTag | _: ExtrType => this
     }
@@ -249,68 +213,6 @@ abstract class TyperHelpers { Typer: Typer =>
       case ComposedType(false, l, r) if force => l.neg() | r.neg()
     }
 
-    def >:<(that: SimpleType)(implicit ctx: Ctx): Bool =
-      (this is that) || this <:< that && that <:< this
-
-    // TODO for composed types and negs, should better first normalize the inequation
-    def <:<(that: SimpleType)(implicit ctx: Ctx, cache: MutMap[ST -> ST, Bool] = MutMap.empty): Bool = {
-      // trace(s"? $this <: $that") {
-      // trace(s"? $this <: $that   assuming:  ${
-      //     cache.iterator.map(kv => "" + kv._1._1 + (if (kv._2) " <: " else " <? ") + kv._1._2).mkString(" ; ")}") {
-      subtypingCalls += 1
-
-      def assume[R](k: MutMap[ST -> ST, Bool] => R): R = k(cache.map(kv => kv._1 -> true))
-
-      (this === that) || ((this, that) match {
-        case (RecordType(Nil), _) => TopType <:< that
-        case (_, RecordType(Nil)) => this <:< TopType
-        case (FunctionType(l1, r1), FunctionType(l2, r2)) => assume { implicit cache =>
-          l2 <:< l1 && r1 <:< r2
-        }
-        case (ComposedType(true, l, r), _) => l <:< that && r <:< that
-        case (_, ComposedType(false, l, r)) => this <:< l && this <:< r
-        case (ComposedType(false, l, r), _) => l <:< that || r <:< that
-        case (_, ComposedType(true, l, r)) => this <:< l || this <:< r
-        case (RecordType(fs1), RecordType(fs2)) => assume { implicit cache =>
-          fs2.forall(f => fs1.find(_._1 === f._1).exists(_._2 <:< f._2))
-        }
-        case (_: TypeVariable, _) | (_, _: TypeVariable)
-          if cache.contains(this -> that)
-        => cache(this -> that)
-        case (tv: TypeVariable, _) =>
-          cache(this -> that) = false
-          val tmp = tv.upperBounds.exists(_ <:< that)
-          if (tmp) cache(this -> that) = true
-          tmp
-        case (_, tv: TypeVariable) =>
-          cache(this -> that) = false
-          val tmp = tv.lowerBounds.exists(this <:< _)
-          if (tmp) cache(this -> that) = true
-          tmp
-        case (ProxyType(und), _) => und <:< that
-        case (_, ProxyType(und)) => this <:< und
-        case (_, ExtrType(false)) => true
-        case (ExtrType(true), _) => true
-        case (_, ExtrType(true)) | (ExtrType(false), _) => false // not sure whether LHS <: Bot (or Top <: RHS)
-        case (tr: TypeRef, _)
-          if (primitiveTypes contains tr.defn.name) && !tr.defn.name.isCapitalized => tr.expand <:< that
-        case (_, tr: TypeRef)
-          if (primitiveTypes contains tr.defn.name) && !tr.defn.name.isCapitalized => this <:< tr.expand
-        // TODO: In HML systems with nominal types a type ref of a data constructor can be consider a sub type of it's type constructor
-        case (tr: TypeRef, _) =>
-          ctx.tyDefs.get(tr.defn.name) match {
-            case S(td) if td.kind is Cls => td.adtData.exists(tup => ctx.tyDefs.get(tup._1.name).exists(_.bodyTy <:< that))
-            case _ => false
-          }
-        case (_, _: TypeRef) =>
-          false // TODO try to expand them (this requires populating the cache because of recursive types)
-        case (_: FunctionType, _) | (_, _: FunctionType) => false
-        case (_: RecordType, _: ObjectTag) | (_: ObjectTag, _: RecordType) => false
-        // case _ => lastWords(s"TODO $this $that ${getClass} ${that.getClass()}")
-      })
-      // }(r => s"! $r")
-    }
-
     def unwrapAll(implicit ctx: Ctx): SimpleType = unwrapProxies match {
       case tr: TypeRef => tr.expand.unwrapAll
       case u => u
@@ -322,20 +224,13 @@ abstract class TyperHelpers { Typer: Typer =>
       FunctionType(this, that)(prov)
 
     def unwrapProxies: SimpleType = this match {
-      case ProxyType(und) => und.unwrapProxies
+      case ProvType(und) => und.unwrapProxies
       case _ => this
     }
 
     def unwrapProvs: SimpleType = this match {
       case ProvType(und) => und.unwrapProvs
       case _ => this
-    }
-
-    def components(union: Bool): Ls[ST] = this match {
-      case ExtrType(`union`) => Nil
-      case ComposedType(`union`, l, r) => l.components(union) ::: r.components(union)
-      case ProvType(und) => und.components(union)
-      case _ => this :: Nil
     }
 
     def children(includeBounds: Bool): List[SimpleType] = this match {
@@ -345,7 +240,7 @@ abstract class TyperHelpers { Typer: Typer =>
       case RecordType(fs) => fs.flatMap(f => f._2 :: Nil)
       case TupleType(fs) => fs.flatMap(f => f._2 :: Nil)
       case ExtrType(_) => Nil
-      case ProxyType(und) => und :: Nil
+      case ProvType(und) => und :: Nil
       case _: ObjectTag => Nil
       case TypeRef(d, ts) => ts
     }
@@ -366,13 +261,6 @@ abstract class TyperHelpers { Typer: Typer =>
       rec(this :: Nil)
       SortedSet.from(res)(Ordering.by(_.uid))
     }
-
-    def showBounds: String =
-      getVars.iterator.filter(tv => (tv.upperBounds ++ tv.lowerBounds).nonEmpty).map(tv =>
-        "\n\t\t" + tv.toString
-          + (if (tv.lowerBounds.isEmpty) "" else " :> " + tv.lowerBounds.mkString(" | "))
-          + (if (tv.upperBounds.isEmpty) "" else " <: " + tv.upperBounds.mkString(" & "))
-      ).mkString
 
     def showUnified: String =
       getVars.iterator.filter(tv => tv.uniConcreteTypes.nonEmpty)
@@ -405,32 +293,5 @@ abstract class TyperHelpers { Typer: Typer =>
         case Seq(TypeProvenance(loc1, _, _, _), t@TypeProvenance(loc2, _, _, _)) if loc1 =/= loc2 => t
       }.toList).getOrElse(Nil)
     }
-  }
-
-  def shallowCopy(st: ST)(implicit cache: MutMap[TV, TV] = MutMap.empty): ST = st match {
-    case tv: TV => cache.getOrElseUpdate(tv, freshVar(tv.prov, tv.nameHint, Nil, Nil)(tv.level))
-    case _ => st.map(shallowCopy)
-  }
-  
-  def merge(pol: Bool, ts: Ls[ST]): ST =
-    if (pol) ts.foldLeft(BotType: ST)(_ | _)
-    else ts.foldLeft(TopType: ST)(_ & _)
-  
-  
-  class Traverser(implicit ctx: Ctx) {
-    def apply(pol: Opt[Bool])(st: ST): Unit = st match {
-      case tv: TypeVariable =>
-        if (pol =/= S(false)) tv.lowerBounds.foreach(apply(S(true)))
-        if (pol =/= S(true)) tv.upperBounds.foreach(apply(S(false)))
-      case FunctionType(l, r) => apply(pol.map(!_))(l); apply(pol)(r)
-      case ComposedType(_, l, r) => apply(pol)(l); apply(pol)(r)
-      case RecordType(fs) => fs.unzip._2.foreach(applyField(pol))
-      case TupleType(fs) => fs.unzip._2.foreach(applyField(pol))
-      case ExtrType(_) => ()
-      case ProxyType(und) => apply(pol)(und)
-      case _: ObjectTag => ()
-      case tr: TypeRef => tr.mapTargs(pol)(apply(_)(_)); ()
-    }
-    def applyField(pol: Opt[Bool])(fld: ST): Unit = apply(pol)(fld)
   }
 }

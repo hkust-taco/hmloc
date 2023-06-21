@@ -369,7 +369,7 @@ object Main {
           val ty_sch = typeLetRhs(isrec, nme, rhs)(ctx, raise)
           val inst = ty_sch.instantiate(0)
           println(s"Typed `$nme` as: $inst")
-          println(s" where: ${inst.showBounds}")
+          println(s" where: ${inst.showUnified}")
           val exp = getType(ty_sch)
           declared.get(nme) match {
             case S(sign) =>
