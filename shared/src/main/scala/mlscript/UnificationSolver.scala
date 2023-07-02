@@ -171,7 +171,7 @@ trait UnificationSolver extends TyperDatatypes {
            tv.uni.foreach(extrudeUni(_))
          case e @ ExtrType(_) => e
          case p @ ProvType(und) => extrudeTy(und)
-         case _: TraitTag => ty
+         case _: RigidTypeVariable => ty
          case tr @ TypeRef(d, ts) => ts.foreach(extrudeTy)
        }
      }
@@ -469,7 +469,7 @@ trait UnificationSolver extends TyperDatatypes {
         case tv: TypeVariable => freshened.get(tv) match {
           case Some(tv) => tv
           case None if rigidify =>
-            val rv = TraitTag( // Rigid type variables (ie, skolems) are encoded as TraitTag-s
+            val rv = RigidTypeVariable( // Rigid type variables (ie, skolems) are encoded as TraitTag-s
               Var(tv.nameHint.getOrElse("_" + freshVar(noProv).toString)))(tv.prov)
             if (tv.lowerBounds.nonEmpty || tv.upperBounds.nonEmpty) {
               // The bounds of `tv` may be recursive (refer to `tv` itself),
@@ -515,7 +515,7 @@ trait UnificationSolver extends TyperDatatypes {
         case e@ExtrType(_) => e
         case p@ProvType(und) => ProvType(freshen(und))(p.prov)
         case p@ProvType(und) => freshen(und)
-        case _: TraitTag => ty
+        case _: RigidTypeVariable => ty
         case tr@TypeRef(d, ts) => TypeRef(d, ts.map(freshen))(tr.prov)
       }
 

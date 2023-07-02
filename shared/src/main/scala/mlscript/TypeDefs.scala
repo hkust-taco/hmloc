@@ -73,7 +73,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
         mergeMap(fieldsOf(l, paramTags), fieldsOf(r, paramTags))(_ & _)
       case RecordType(fs) => fs.toMap
       case p: ProvType => fieldsOf(p.underlying, paramTags)
-      case _: ObjectTag | _: FunctionType | _: TupleType | _: TypeVariable
+      case _: RigidTypeVariable | _: FunctionType | _: TupleType | _: TypeVariable
         | _: ExtrType | _: ComposedType => Map.empty
     }
   }
@@ -148,7 +148,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
             val t2 = travsersed + R(tv)
             tv.lowerBounds.forall(checkCycle(_)(t2)) && tv.upperBounds.forall(checkCycle(_)(t2))
           }
-          case _: ExtrType | _: ObjectTag | _: FunctionType | _: RecordType | _: TupleType => true
+          case _: ExtrType | _: RigidTypeVariable | _: FunctionType | _: RecordType | _: TupleType => true
         }
         // }()
 
@@ -157,7 +157,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
           case k: ObjDefKind =>
             val parentsClasses = MutSet.empty[TypeRef]
             def checkParents(ty: SimpleType): Bool = ty match {
-              case _: ObjectTag => true // Q: always? // FIXME actually no
+              case _: RigidTypeVariable => true // Q: always? // FIXME actually no
               case tr @ TypeRef(tn2, _) =>
                 val td2 = ctx.tyDefs(tn2.name)
                 td2.kind match {

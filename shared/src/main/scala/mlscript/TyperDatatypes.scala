@@ -52,7 +52,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def toRecord: RecordType = RecordType.empty
   }
   sealed abstract class MiscBaseType extends BaseType
-  sealed trait Factorizable extends SimpleType
 
   case class FunctionType(lhs: SimpleType, rhs: SimpleType)(val prov: TypeProvenance) extends MiscBaseType {
     lazy val level: Int = lhs.level max rhs.level
@@ -148,12 +147,8 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     }
   }
 
-  sealed trait ObjectTag extends BaseTypeOrTag with Ordered[ObjectTag] {
-    val id: SimpleTerm
-    def compare(that: ObjectTag): Int = this.id compare that.id
-  }
-
-  case class TraitTag(id: SimpleTerm)(val prov: TypeProvenance) extends BaseTypeOrTag with ObjectTag with Factorizable {
+  case class RigidTypeVariable(id: SimpleTerm)(val prov: TypeProvenance) extends SimpleType {
+    def compare(that: RigidTypeVariable): Int = this.id compare that.id
     def level: Int = 0
     override def toString = id.idStr
   }
@@ -165,7 +160,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       var lowerBounds: List[SimpleType],
       var upperBounds: List[SimpleType],
       val nameHint: Opt[Str] = N
-  )(val prov: TypeProvenance) extends SimpleType with Ordered[TypeVariable] with Factorizable {
+  )(val prov: TypeProvenance) extends SimpleType with Ordered[TypeVariable] {
     private[mlscript] val uid: Int = { freshCount += 1; freshCount - 1 }
     lazy val asTypeVar = new TypeVar(L(uid), nameHint)
     var uni: Ls[Unification] = Ls()

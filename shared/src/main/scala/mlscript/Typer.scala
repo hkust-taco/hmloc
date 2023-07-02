@@ -316,7 +316,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     def unapply(v: Var)(implicit ctx: Ctx, raise: Raise): Opt[Str] =
       if (ctx.inPattern && v.isPatVar) {
         ctx.parent.dlof(_.get(v.name))(N) |>? {
-          case S(VarSymbol(ts: TypeScheme, _)) => ts.instantiate(0).unwrapProxies
+          case S(VarSymbol(ts: TypeScheme, _)) => ts.instantiate(0).unwrapProvs
         }
         ValidVar.unapply(v)
       } else N
@@ -440,7 +440,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val arg_ty = typeTerm(a)
         val res_ty = freshVar(prov)
          val funProv = tp(f.toCoveringLoc, "applied expression")
-        def go(f_ty: ST): ST = f_ty.unwrapProxies match {
+        def go(f_ty: ST): ST = f_ty.unwrapProvs match {
           case FunctionType(l, r) =>
             con(arg_ty, l, r.withProv(prov))
           case _ =>
@@ -601,7 +601,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
                   case _ => die
                 }
                 println(s"ctor type: $ctorType")
-                val (originalFieldTypes, ctorTargs) = ctorType.unwrapProxies match {
+                val (originalFieldTypes, ctorTargs) = ctorType.unwrapProvs match {
                   case FunctionType(fieldTy, TypeRef(defn, targs)) =>
                     assert(defn === adtName)
                     (fieldTy match {
@@ -727,7 +727,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case ExtrType(true) => Bot
         case ExtrType(false) => Top
         case ProvType(und) => go(und)
-        case tag: ObjectTag => tag.id match {
+        case tag: RigidTypeVariable => tag.id match {
           case Var(n) =>
             if (primitiveTypes.contains(n) // primitives like `int` are internally maintained as class tags
               || n.isCapitalized // rigid type params like A in class Foo[A]

@@ -165,7 +165,7 @@ abstract class TyperHelpers { Typer: Typer =>
       case ComposedType(pol, lhs, rhs) => ComposedType(pol, f(lhs), f(rhs))(prov)
       case ProvType(underlying) => ProvType(f(underlying))(prov)
       case TypeRef(defn, targs) => TypeRef(defn, targs.map(f(_)))(prov)
-      case _: TypeVariable | _: ObjectTag | _: ExtrType => this
+      case _: TypeVariable | _: RigidTypeVariable | _: ExtrType => this
     }
 
     def |(that: SimpleType, prov: TypeProvenance = noProv, swapped: Bool = false): SimpleType = (this, that) match {
@@ -207,26 +207,7 @@ abstract class TyperHelpers { Typer: Typer =>
         case _ => ComposedType(false, that, this)(prov)
       }
 
-    def neg(prov: TypeProvenance = noProv, force: Bool = false): SimpleType = this match {
-      case ExtrType(b) => ExtrType(!b)(noProv)
-      case ComposedType(true, l, r) => l.neg() & r.neg()
-      case ComposedType(false, l, r) if force => l.neg() | r.neg()
-    }
-
-    def unwrapAll(implicit ctx: Ctx): SimpleType = unwrapProxies match {
-      case tr: TypeRef => tr.expand.unwrapAll
-      case u => u
-    }
-
     def withProv(p: TypeProvenance): ST = mkProxy(this, p)
-
-    def abs(that: SimpleType)(prov: TypeProvenance): SimpleType =
-      FunctionType(this, that)(prov)
-
-    def unwrapProxies: SimpleType = this match {
-      case ProvType(und) => und.unwrapProxies
-      case _ => this
-    }
 
     def unwrapProvs: SimpleType = this match {
       case ProvType(und) => und.unwrapProvs
@@ -241,7 +222,7 @@ abstract class TyperHelpers { Typer: Typer =>
       case TupleType(fs) => fs.flatMap(f => f._2 :: Nil)
       case ExtrType(_) => Nil
       case ProvType(und) => und :: Nil
-      case _: ObjectTag => Nil
+      case _: RigidTypeVariable => Nil
       case TypeRef(d, ts) => ts
     }
 
