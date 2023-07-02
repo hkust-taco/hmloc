@@ -59,25 +59,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
       case _ => Set.empty // TODO TupleType?
     }
   
-  
-  /** Only supports getting the fields of a valid base class type.
-   * Notably, does not traverse type variables. 
-   * Note: this does not retrieve the positional fields implicitly defined by tuples */
-  def fieldsOf(ty: SimpleType, paramTags: Bool)(implicit ctx: Ctx): Map[Var, ST] =
-  // trace(s"Fields of $ty {${travsersed.mkString(",")}}")
-  {
-    ty match {
-      case tr @ TypeRef(td, targs) =>
-        fieldsOf(tr.expandWith(paramTags), paramTags)
-      case ComposedType(false, l, r) =>
-        mergeMap(fieldsOf(l, paramTags), fieldsOf(r, paramTags))(_ & _)
-      case RecordType(fs) => fs.toMap
-      case p: ProvType => fieldsOf(p.underlying, paramTags)
-      case _: RigidTypeVariable | _: FunctionType | _: TupleType | _: TypeVariable
-        | _: ExtrType | _: ComposedType => Map.empty
-    }
-  }
-
   /** Add type definitions to context. Raises error if a type defintion
     * has already been defined or it is malformed.
     *
@@ -154,7 +135,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
 
         val rightParents = td.kind match {
           case Als => checkCycle(td.bodyTy)(Set.single(L(td.nme)))
-          case k: ObjDefKind =>
+          case Cls =>
             val parentsClasses = MutSet.empty[TypeRef]
             def checkParents(ty: SimpleType): Bool = ty match {
               case _: RigidTypeVariable => true // Q: always? // FIXME actually no

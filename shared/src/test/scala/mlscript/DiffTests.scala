@@ -42,12 +42,7 @@ class DiffTests
   with ParallelTestExecution
   with TimeLimitedTests
 {
-  
-  
-  /**  Hook for dependent projects, like the monomorphizer. */
-  def postProcess(mode: ModeType, basePath: Ls[Str], testName: Str, unit: TypingUnit): Ls[Str] = Nil
-  
-  
+
   private val inParallel = isInstanceOf[ParallelTestExecution]
   
   import DiffTests._
@@ -114,7 +109,7 @@ class DiffTests
       str.splitSane('\n').foreach(l => out.println(outputMarker + l))
     def reportOutput(str: String) = str.splitSane('\n').foreach(l => out.println(outputMarker + l))
     def outputSourceCode(code: SourceCode) = code.lines.foreach{line => out.println(outputMarker + line.toString())}
-    val allStatements = mutable.Buffer.empty[DesugaredStatement]
+    val allStatements = mutable.Buffer.empty[Statement]
     val typer = new Typer(dbg = false, verbose = false, explainErrors = false) {
       override def funkyTuples = file.ext =:= "fun"
       override def emitDbg(str: String): Unit = output(str)
@@ -232,7 +227,7 @@ class DiffTests
                   typer.uniState.subsume(ty_sch, sign)(ctx, raise, typer.TypeProvenance(d.toLoc, "def definition"))
               }
 
-            case desug: DesugaredStatement => ()
+            case _ => ()
           }
           (ctx, declared)
         }
@@ -769,7 +764,7 @@ class DiffTests
                     exp.show :: s"  <:  $nme:" :: sign_exp.show :: Nil
                 }
                 typingOutputs += R[Ls[Str], Str -> Ls[Str]](nme.name -> typingOutput)
-              case desug: DesugaredStatement =>
+              case desug: Statement =>
                 typer.dbg = mode.dbg
                 typer.typeStatement(desug, allowPure = true)(ctx, raiseToBuffer) match {
                   // when does this happen??

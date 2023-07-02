@@ -7,19 +7,14 @@ import sourcecode._
 abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
 
   type TN = TypeName
+  type TP = TypeProvenance
 
-  // The data types used for type inference:
   case class TypeProvenance(loco: Opt[Loc], desc: Str, originName: Opt[Str] = N, isType: Bool = false)(implicit val file: FileName, val line: Line) {
     val isOrigin: Bool = originName.isDefined
-    def & (that: TypeProvenance): TypeProvenance = this // arbitrary; maybe should do better
     override def toString: Str = (if (isOrigin) "o: " else "") + "‹"+loco.fold(desc)(desc+":"+_)+s"›[${file.value}:${line.value}] src: ${loco.fold("NA")(_.showLocationInSource)}"
   }
 
-  type TP = TypeProvenance
-
-  sealed abstract class TypeInfo
-
-  case class VarSymbol(ty: TypeScheme, definingVar: Var) extends TypeInfo
+  case class VarSymbol(ty: TypeScheme, definingVar: Var)
 
   /** A type that potentially contains universally quantified type variables,
     * and which can be isntantiated to a given level. */
@@ -47,13 +42,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
   }
   type ST = SimpleType
 
-  sealed abstract class BaseTypeOrTag extends SimpleType
-  sealed abstract class BaseType extends BaseTypeOrTag {
-    def toRecord: RecordType = RecordType.empty
-  }
-  sealed abstract class MiscBaseType extends BaseType
-
-  case class FunctionType(lhs: SimpleType, rhs: SimpleType)(val prov: TypeProvenance) extends MiscBaseType {
+  case class FunctionType(lhs: SimpleType, rhs: SimpleType)(val prov: TypeProvenance) extends SimpleType {
     lazy val level: Int = lhs.level max rhs.level
     override def toString = s"(${lhs} -> $rhs)"
   }
@@ -70,13 +59,8 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       if (fields.isEmpty) ExtrType(false)(prov) else RecordType(fields)(prov)
   }
 
-  case class TupleType(fields: List[Opt[Var] -> ST])(val prov: TypeProvenance) extends BaseType {
-    lazy val inner: ST = fields.map(_._2).reduceLeftOption(_ | _).getOrElse(BotType)
+  case class TupleType(fields: List[Opt[Var] -> ST])(val prov: TypeProvenance) extends SimpleType {
     lazy val level: Int = fields.iterator.map(_._2.level).maxOption.getOrElse(0)
-    override lazy val toRecord: RecordType =
-      RecordType(
-        fields.zipWithIndex.map { case ((_, t), i) => (Var("_"+(i+1)), t) }
-      )(prov)
     override def toString =
       s"(${fields.map(f => s"${f._1.fold("")(_.name+": ")}${f._2},").mkString(" ")})"
   }

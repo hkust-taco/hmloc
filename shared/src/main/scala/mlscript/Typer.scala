@@ -34,15 +34,15 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     * The public helper functions should be preferred for manipulating `mthEnv`
    */
   case class Ctx(
-      parent: Opt[Ctx],
-      env: MutMap[Str, TypeInfo],
-      lvl: Int,
-      inPattern: Bool,
-      tyDefs: Map[Str, TypeDef],
+                  parent: Opt[Ctx],
+                  env: MutMap[Str, VarSymbol],
+                  lvl: Int,
+                  inPattern: Bool,
+                  tyDefs: Map[Str, TypeDef],
   ) {
-    def +=(b: Str -> TypeInfo): Unit = env += b
-    def ++=(bs: IterableOnce[Str -> TypeInfo]): Unit = bs.iterator.foreach(+=)
-    def get(name: Str): Opt[TypeInfo] = env.get(name) orElse parent.dlof(_.get(name))(N)
+    def +=(b: Str -> VarSymbol): Unit = env += b
+    def ++=(bs: IterableOnce[Str -> VarSymbol]): Unit = bs.iterator.foreach(+=)
+    def get(name: Str): Opt[VarSymbol] = env.get(name) orElse parent.dlof(_.get(name))(N)
     def contains(name: Str): Bool = env.contains(name) || parent.exists(_.contains(name))
     def nest: Ctx = copy(Some(this), MutMap.empty)
     def nextLevel: Ctx = copy(lvl = lvl + 1)
@@ -232,7 +232,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     typeTerm(pat)(ctx.copy(inPattern = true), raise, vars)
   
   
-  def typeStatement(s: DesugaredStatement, allowPure: Bool)
+  def typeStatement(s: Statement, allowPure: Bool)
         (implicit ctx: Ctx, raise: Raise): PolymorphicType \/ Ls[Binding] = s match {
     case Def(false, Var("_"), L(rhs), isByname) => typeStatement(rhs, allowPure)
     case Def(isrec, nme, L(rhs), isByname) => // TODO reject R(..)
@@ -470,12 +470,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         newCtx += nme.name -> VarSymbol(n_ty, nme)
         typeTerm(bod)(newCtx, raise)
       case Blk(stmts) => typeTerms(stmts, false, Nil)(ctx.nest, raise, prov)
-      case Bind(l, r) =>
-        val l_ty = typeTerm(l)
-        val newCtx = ctx.nest // so the pattern's context don't merge with the outer context!
-        val r_ty = typePattern(r)(newCtx, raise)
-        ctx ++= newCtx.env
-        con(l_ty, r_ty, r_ty)
       case iff @ If(cond, body) =>
         println(PrettyPrintHelper.inspect(iff))
         body match {

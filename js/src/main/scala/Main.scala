@@ -395,7 +395,7 @@ object Main {
           ctx += nme.name -> VarSymbol(ty_sch, nme)
           declared += nme -> ty_sch
           results append S(d.nme.name) -> htmlize(getType(ty_sch).show)
-        case s: DesugaredStatement =>
+        case s: Statement =>
           typer.typeStatement(s, allowPure = true) match {
             case R(binds) =>
               binds.foreach { case (nme, pty) =>
@@ -417,7 +417,7 @@ object Main {
           if (stopAtFirstError) decls = Nil
           val culprit = d match {
             case Def(isrec, nme, rhs, isByname)  => "def " + nme
-            case _: DesugaredStatement => "statement"
+            case _: Statement => "statement"
           }
           res ++= report(err)
           errorOccurred = true
@@ -499,7 +499,7 @@ object Helpers {
                   typer.uniState.subsume(ty_sch, sign)(ctx, raise, typer.TypeProvenance(d.toLoc, "def definition"))
               }
 
-            case desug: DesugaredStatement => ()
+            case _ => ()
           }
           (ctx, declared)
         }
