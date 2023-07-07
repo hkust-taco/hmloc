@@ -207,7 +207,7 @@ abstract class TyperHelpers { Typer: Typer =>
         case _ => ComposedType(false, that, this)(prov)
       }
 
-    def withProv(p: TypeProvenance): ST = mkProxy(this, p)
+    def withProv(p: TypeProvenance): ST = mkProv(this, p)
 
     def unwrapProvs: SimpleType = this match {
       case ProvType(und) => und.unwrapProvs

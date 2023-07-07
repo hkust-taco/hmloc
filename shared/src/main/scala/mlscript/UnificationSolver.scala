@@ -238,18 +238,6 @@ trait UnificationSolver extends TyperDatatypes {
     }.toList
 
     def createSequenceString(implicit ctx: Ctx): Str = {
-      def  constraintToSequence(c: Constraint, last: Bool = false): Ls[(ST, Opt[Bool])] = {
-        val (a, b) = Constraint.unapply(c).get
-        val flow = c.dir
-        // for the last constraint display both the types
-        // don't show arrow for last type
-        if (last) {
-          (a, S(flow)) :: (b, N) :: Nil
-        } else {
-          (a, S(flow)) :: Nil
-        }
-      }
-
       implicit val showTV: Set[TV] = sequenceTVs
 
       // Currently only show type sequence for types at current level of nesting

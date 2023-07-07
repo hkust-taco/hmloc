@@ -17,11 +17,9 @@ class TypeDefs extends UnificationSolver { self: Typer =>
    * @param kind tells if it's a class, interface or alias
    * @param nme name of the defined type
    * @param tparamsargs list of type parameter names and their corresponding type variable names used in the definition of the type
-   * @param tvars
    * @param bodyTy type of the body, this means the fields of a class or interface or the type that is being aliased
    * @param mthDecls method type declarations in a class or interface, not relevant for type alias
    * @param mthDefs method definitions in a class or interface, not relevant for type alias
-   * @param baseClasses base class if the class or interface inherits from any
    * @param toLoc source location related information
    * @param positionals positional term parameters of the class
    */
@@ -29,11 +27,8 @@ class TypeDefs extends UnificationSolver { self: Typer =>
     kind: TypeDefKind,
     nme: TypeName,
     tparamsargs: List[(TypeName, TypeVariable)],
-    tvars: Iterable[TypeVariable], // "implicit" type variables. instantiate every time a `TypeRef` is expanded
     bodyTy: SimpleType,
-    baseClasses: Set[TypeName],
     toLoc: Opt[Loc],
-    positionals: Ls[Str],
     // maps a class to it's adt by name and maps params to adt param by position
     // for e.g. in type 'a, 'b either = Left of 'a | Right of 'b
     // Right will have an adtData = S((TypeName("either"), List(1)))
@@ -78,12 +73,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
     val newDefs = newDefs0.flatMap { td0 =>
       val n = td0.nme.name
       val td = td0
-      // val n = td0.nme.name.capitalize
-      // val td = if (td0.nme.name.isCapitalized) td0
-      // else {
-      //   err(msg"Type names must start with a capital letter", td0.nme.toLoc)
-      //   td0.copy(nme = td0.nme.copy(n).withLocOf(td0.nme)).withLocOf(td0)
-      // }
+
       if (primitiveTypes.contains(n)) {
         err(msg"Type name '$n' is reserved.", td.nme.toLoc)
       }
@@ -102,7 +92,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
           val tparamsargs = td.tparams.lazyZip(dummyTargs)
           val (bodyTy, tvars) = 
             typeType2(td.body, simplify = false)(ctx.copy(lvl = 0), raise, tparamsargs.map(_.name -> _).toMap, newDefsInfo)
-          val td1 = TypeDef(td.kind, td.nme, tparamsargs.toList, tvars, bodyTy, baseClassesOf(td), td.toLoc, td.positionals.map(_.name), td.adtData)
+          val td1 = TypeDef(td.kind, td.nme, tparamsargs.toList, bodyTy, td.toLoc, td.adtData)
           allDefs += n -> td1
           S(td1)
       }
@@ -310,7 +300,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
       val visitedSet: MutSet[Bool -> TypeVariable] = MutSet()
       varianceUpdated = false;
       tyDefs.foreach {
-        case t @ TypeDef(k, nme, _, _, body, _, _, _, _) =>
+        case t @ TypeDef(k, nme, _, body, _, _) =>
           trace(s"${k.str} ${nme.name}  ${
                 t.tvarVariances.getOrElse(die).iterator.map(kv => s"${kv._2} ${kv._1}").mkString("  ")}") {
             updateVariance(body, VarianceInfo.co)(t, visitedSet)

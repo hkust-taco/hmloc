@@ -108,12 +108,8 @@ class DiffTests
       if (stdout) System.out.println(str) else
       str.splitSane('\n').foreach(l => out.println(outputMarker + l))
     def reportOutput(str: String) = str.splitSane('\n').foreach(l => out.println(outputMarker + l))
-    def outputSourceCode(code: SourceCode) = code.lines.foreach{line => out.println(outputMarker + line.toString())}
-    val allStatements = mutable.Buffer.empty[Statement]
     val typer = new Typer(dbg = false, verbose = false, explainErrors = false) {
-      override def funkyTuples = file.ext =:= "fun"
       override def emitDbg(str: String): Unit = output(str)
-      override def reporCollisionErrors: Bool = false
     }
     var ctx: typer.Ctx = typer.Ctx.init
     var declared: Map[Str, typer.PolymorphicType] = Map.empty
@@ -862,8 +858,8 @@ class DiffTests
     val timeStr = (((endTime - beginTime) / 1000 / 100).toDouble / 10.0).toString
     val testColor = if (testFailed) Console.RED else Console.GREEN
     
-    val resStr = s"${" " * (35 - testStr.size)}${testColor}${
-      " " * (6 - timeStr.size)}$timeStr  ms${Console.RESET}"
+    val resStr = s"${" " * (35 - testStr.length)}${testColor}${
+      " " * (6 - timeStr.length)}$timeStr  ms${Console.RESET}"
     
     if (inParallel) println(s"${Console.CYAN}Processed${Console.RESET}  $testStr$resStr")
     else println(resStr)
@@ -884,7 +880,7 @@ class DiffTests
 object DiffTests {
   
   private val TimeLimit =
-    if (sys.env.get("CI").isDefined) Span(25, Seconds)
+    if (sys.env.contains("CI")) Span(25, Seconds)
     else Span(10000, Seconds)
   
   private val pwd = os.pwd
@@ -907,33 +903,5 @@ object DiffTests {
       Set.empty
     }
   
-  // Allow overriding which specific tests to run, sometimes easier for development:
-  private val focused = Set[Str](
-    // "LetRec"
-    // "Ascribe",
-    // "Repro",
-    // "RecursiveTypes",
-    // "Simple",
-    // "Inherit",
-    // "Basics",
-    // "Paper",
-    // "Negations",
-    // "RecFuns",
-    // "With",
-    // "Annoying",
-    // "Tony",
-    // "Lists",
-    // "Traits",
-    // "BadTraits",
-    // "TraitMatching",
-    // "Subsume",
-    // "Methods",
-  ).map(os.RelPath(_))
-  // private def filter(name: Str): Bool =
-  def filter(file: os.RelPath): Bool = {
-    if (focused.nonEmpty) focused(file) else modified(file) || modified.isEmpty &&
-      true
-      // name.startsWith("new/")
-      // file.segments.toList.init.lastOption.contains("parser")
-  }
+  def filter(file: os.RelPath): Bool = modified(file) || modified.isEmpty
 }
