@@ -49,14 +49,14 @@ class DiffTests
 
   // scala test will not execute a test if the test class has constructor parameters.
   // override this to get the correct paths of test files.
-  protected lazy val files = allFiles.filter { file =>
+  protected lazy val files: Seq[Path] = allFiles.filter { file =>
     val fileName = file.baseName
     // validExt(file.ext) && filter(fileName)
     validExt(file.ext) && filter(file.relativeTo(pwd))
     // validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("UnificationError")
   }
   
-  val timeLimit = TimeLimit
+  val timeLimit: Span = TimeLimit
   
   override val defaultTestSignaler: Signaler = new Signaler {
     @annotation.nowarn("msg=method stop in class Thread is deprecated") def apply(testThread: Thread): Unit = {
@@ -431,7 +431,7 @@ class DiffTests
 
           msgs.zipWithIndex.foreach{
             case (L(msg), i) => outputMsg(msg, sctx)
-            case (R(report), i) => reportUniError(report, output, S(sctx))
+            case (R(report), _) => reportUniError(report, output, S(sctx))
           }
         }
 
@@ -443,7 +443,7 @@ class DiffTests
             var unificationRelativeLineNums = false
             val sctx = Message.mkCtx(diag.allMsgs.iterator.map(_._1), "?")
             val headStr = diag match {
-              case ErrorReport(msg, loco, src) =>
+              case ErrorReport(_, loco, src) =>
                 src match {
                   case Diagnostic.Lexing =>
                     totalParseErrors += 1
@@ -458,15 +458,14 @@ class DiffTests
               case _: UnificationReport =>
                 totalTypeErrors += 1
                 s"╔══[ERROR] "
-              case WarningReport(msg, loco, src) =>
+              case WarningReport(msg, loco, _) =>
                 totalWarnings += 1
                 s"╔══[WARNING] "
             }
             val seqStr = diag match {
-              case UnificationReport(_, _, seqStr, _) => {
+              case UnificationReport(_, _, seqStr, _) =>
                 unificationRelativeLineNums = true
                 seqStr
-              }
               case _ => false
             }
             val prepre = "║  "
@@ -485,16 +484,16 @@ class DiffTests
               }
               // unification error has seq string
               else if (msgNum =:= 1 && seqStr) {
-                output(s"╟── ${msgStr}")
+                output(s"╟── $msgStr")
                 output(prepre)
               }
-              else output(s"${if (isLast && loco.isEmpty) "╙──" else "╟──"} ${msgStr}")
+              else output(s"${if (isLast && loco.isEmpty) "╙──" else "╟──"} $msgStr")
               if (loco.isEmpty && diag.allMsgs.size =:= 1) output("╙──")
               loco.foreach { loc =>
-                val (startLineNum, startLineStr, startLineCol) =
+                val (startLineNum, _, startLineCol) =
                   loc.origin.fph.getLineColAt(loc.spanStart)
                 if (globalLineNum =:= 0) globalLineNum += startLineNum - 1
-                val (endLineNum, endLineStr, endLineCol) =
+                val (endLineNum, _, endLineCol) =
                   loc.origin.fph.getLineColAt(loc.spanEnd)
                 var l = startLineNum
                 var c = startLineCol
@@ -505,11 +504,9 @@ class DiffTests
                     if (loc.origin.fileName == "builtin") "builtin:"
                     else if (l == startLineNum) {
                       val linemarker = "l."
-                      if (unificationRelativeLineNums || showRelativeLineNums && relativeLineNum > 0) s"${linemarker}$relativeLineNum:"
+                      if (unificationRelativeLineNums || showRelativeLineNums && relativeLineNum > 0) s"$linemarker$relativeLineNum:"
                       else s"$linemarker$globalLineNum:"
-                    } else {
-                      "    "  // about the same space as if it had line number
-                    }
+                    } else "    " // about the same space as if it had line number
                   }
                   if (tex) {
                     val curLine = loc.origin.fph.lines(l - 1)
@@ -517,7 +514,7 @@ class DiffTests
                     // println(curLine.length.toString)
                     // println(stdout)
                     // output(prepre + pre + "\t" + curLine)
-                    val tickBuilder = new StringBuilder()
+                    val tickBuilder = new mutable.StringBuilder()
                     // tickBuilder ++= (prepre + " " * pre.length + "\t" + " " * (c - 1))
                     val lastCol = if (l =:= endLineNum) endLineCol min (curLine.length + 1)
                       else curLine.length + 1
@@ -550,7 +547,7 @@ class DiffTests
                     } else {
                       output(prepre + lineNumber + "\t" + curLine)
                     }
-                    val tickBuilder = new StringBuilder()
+                    val tickBuilder = new mutable.StringBuilder()
                     tickBuilder ++= (
                       (if (isLast && l =:= endLineNum) "╙──" else prepre)
                       + " " * lineNumber.length + "\t" + " " * (c - 1))
@@ -560,7 +557,7 @@ class DiffTests
                       else tickBuilder += ' '
                       c += 1
                     }
-                    if (c =:= startLineCol) tickBuilder += ('^')
+                    if (c =:= startLineCol) tickBuilder += '^'
                     if (dotextend) tickBuilder ++= "^^^^"
                     output(tickBuilder.toString)
                   }
@@ -588,22 +585,21 @@ class DiffTests
         }
         
         val raise: typer.Raise = d => report(d :: Nil)
-        
-        // try to parse block of text into mlscript ast
-        val ans = try {
+
+        try {
           parse(processedBlockStr, p => new OcamlParser(Origin(testName, globalStartLineNum, fph)).pgrm(p) )
         } match {
           case f: Failure =>
-            val Failure(lbl, index, extra) = f
+            val Failure(_, index, extra) = f
             val (lineNum, lineStr, col) = fph.getLineColAt(index)
             val globalLineNum = (allLines.size - lines.size) + lineNum
             if (!mode.expectParseErrors && !mode.fixme)
               failures += globalLineNum
             output("/!\\ Parse error: " + extra.trace().msg +
               s" at l.$globalLineNum:$col: $lineStr")
-            
+
           // successfully parsed block into a valid syntactically valid program
-          case Success(prog, index) =>
+          case Success(prog, _) =>
             if (mode.expectParseErrors && !newParser)
               failures += blockLineNum
             if (mode.dbgParsing) output(s"Parsed: ${PrettyPrintHelper.inspect(prog)}")
@@ -619,8 +615,8 @@ class DiffTests
 
             // In parseOnly mode file only parse and print desugared blocks for file
             // do not perform type checking or codegen or results
-            val (p, (diags, (typeDefs, stmts))) = if (parseOnly) {
-              val (diags, (typeDefs, stmts)) = prog.desugared
+            val (_, (diags, (typeDefs, stmts))) = if (parseOnly) {
+              val (_, (typeDefs, stmts)) = prog.desugared
               typeDefs.foreach(td => output("Desugared: " + td))
               stmts.foreach { s =>
                 output("Desugared: " + s)
@@ -632,9 +628,9 @@ class DiffTests
             report(diags)
 
             val oldCtx = ctx
-            ctx = 
+            ctx =
               // if (newParser) typer.typeTypingUnit(tu)
-              // else 
+              // else
               typer.processTypeDefs(typeDefs)(ctx, raise)
 
             def getType(ty: typer.TypeScheme): Type = {
@@ -651,7 +647,7 @@ class DiffTests
                 }
                 val sim = SimplifyPipeline(wty)(ctx)
                 val exp = typer.expandUnifiedType(sim)(ctx)
-                if (mode.dbgSimplif) output(s"⬤ Expanded: ${exp}")
+                if (mode.dbgSimplif) output(s"⬤ Expanded: $exp")
                 exp
               }
 
@@ -661,10 +657,10 @@ class DiffTests
             val curBlockTypeDefs = typeDefs
               // add check from process type def block below
               .flatMap(td => if (!oldCtx.tyDefs.contains(td.nme.name)) ctx.tyDefs.get(td.nme.name) else None)
-            
+
             // activate typer tracing if variance debugging is on and then set it back
             // this makes it possible to debug variance in isolation
-            var temp = typer.dbg
+            val temp = typer.dbg
             typer.dbg = mode.debugVariance
             typer.computeVariances(curBlockTypeDefs, ctx)
             typer.dbg = temp
@@ -682,14 +678,14 @@ class DiffTests
                 val tvv = ttd.tvarVariances.getOrElse(die)
 
                 // generate warnings for bivariant type variables
-                val bivariantTypeVars = ttd.tparamsargs.iterator.filter{ case (tname, tvar) =>
+                val bivariantTypeVars = ttd.tparamsargs.iterator.filter{ case (_, tvar) =>
                   tvv.get(tvar).contains(typer.VarianceInfo.bi)
                 }.map(_._1).toList
-                if (!bivariantTypeVars.isEmpty) {
+                if (bivariantTypeVars.nonEmpty) {
                   varianceWarnings.put(td.nme, bivariantTypeVars)
                 }
-                
-                val params = if (!ttd.tparamsargs.isEmpty)
+
+                val params = if (ttd.tparamsargs.nonEmpty)
                     SourceCode.horizontalArray(ttd.tparamsargs.map{ case (tname, tvar) =>
                       val tvarVariance = tvv.getOrElse(tvar, throw new Exception(
                         s"Type variable $tvar not found in variance store ${ttd.tvarVariances} for $ttd"))
@@ -700,8 +696,8 @@ class DiffTests
                 output(s"Defined " + td.kind.str + " " + tn + params)
               }
             )
-            
-            if (!varianceWarnings.isEmpty) {
+
+            if (varianceWarnings.nonEmpty) {
               import Message._
               val diags = varianceWarnings.iterator.map { case (tname, biVars) =>
                 val warnings = biVars.map( tname => msg"${tname.name} is irrelevant and may be removed" -> tname.toLoc)
@@ -719,13 +715,13 @@ class DiffTests
               typingOutputs += L(diagLineBuffers.toList)
               diagLineBuffers.clear()
             }
-            
+
             // process statements and output mlscript types
             // all `Def`s and `Term`s are processed here
             stmts.foreach {
               // statement only declares a new term with its type
               // but does not give a body/definition to it
-              case Def(isrec, nme, R(PolyType(tps, rhs)), isByname) =>
+              case Def(isrec, nme, R(PolyType(tps, rhs)), _) =>
                 typer.dbg = mode.dbg
                 val ty_sch = typer.PolymorphicType(0,
                   typer.typeType(rhs)(ctx.nextLevel, raiseToBuffer,
@@ -736,7 +732,7 @@ class DiffTests
                 typingOutputs += R[Ls[Str], Str -> Ls[Str]](nme.name -> (s"$nme: ${exp.show}" :: Nil))
 
               // statement is defined and has a body/definition
-              case d @ Def(isrec, nme, L(rhs), isByname) =>
+              case d @ Def(isrec, nme, L(rhs), _) =>
                 typer.dbg = mode.dbg
                 val ty_sch = typer.typeLetRhs(isrec, nme, rhs)(ctx, raiseToBuffer)
                 val exp = getType(ty_sch)
@@ -770,7 +766,7 @@ class DiffTests
                       ctx += nme -> typer.VarSymbol(pty, Var(nme))
                       typingOutputs += R[Ls[Str], Str -> Ls[Str]](nme -> (s"$nme: ${ptType.show}" :: Nil))
                     }
-                  
+
                   // statements for terms that compute to a value
                   // and are not bound to a variable name
                   case L(pty) =>
@@ -779,12 +775,10 @@ class DiffTests
                       val res = "res"
                       ctx += res -> typer.VarSymbol(pty, Var(res))
                       typingOutputs += R[Ls[Str], Str -> Ls[Str]](res, s"res: ${exp.show}" :: Nil)
-                    } else (
-                      typingOutputs += R[Ls[Str], Str -> Ls[Str]]("" -> Nil)
-                    )
+                    } else typingOutputs += R[Ls[Str], Str -> Ls[Str]]("" -> Nil)
                 }
             }
-            
+
             // generate unification for the type variables created in the current
             // typing unit.
             if (mode.unify) {
@@ -805,13 +799,13 @@ class DiffTests
             }
 
             if (mode.stats) {
-              val (co, an, su, ty) = typer.stats
+              val (co, an, su, _) = typer.stats
               output(s"constrain calls  : " + co)
               output(s"annoying  calls  : " + an)
               output(s"subtyping calls  : " + su)
               // output(s"constructed types: " + ty)
             }
-            
+
             if (mode.expectParseErrors && totalParseErrors =:= 0)
               failures += blockLineNum
             if (mode.expectTypeErrors && totalTypeErrors =:= 0)
@@ -829,7 +823,7 @@ class DiffTests
               failures += allLines.size - lines.size
             // err.printStackTrace(out)
             output("/!!!\\ Uncaught error: " + err +
-              err.getStackTrace().take(
+              err.getStackTrace.take(
                 if (mode.fullExceptionStack) Int.MaxValue
                 else if (mode.fixme) 0
                 else 10
@@ -858,7 +852,7 @@ class DiffTests
     val timeStr = (((endTime - beginTime) / 1000 / 100).toDouble / 10.0).toString
     val testColor = if (testFailed) Console.RED else Console.GREEN
     
-    val resStr = s"${" " * (35 - testStr.length)}${testColor}${
+    val resStr = s"${" " * (35 - testStr.length)}$testColor${
       " " * (6 - timeStr.length)}$timeStr  ms${Console.RESET}"
     
     if (inParallel) println(s"${Console.CYAN}Processed${Console.RESET}  $testStr$resStr")

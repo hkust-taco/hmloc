@@ -100,11 +100,6 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
     def expandWith(paramTags: Bool)(implicit ctx: Ctx): SimpleType = {
       val td = ctx.tyDefs(defn.name)
       require(targs.size === td.tparamsargs.size)
-      lazy val tparamTags =
-        if (paramTags) RecordType.mk(td.tparamsargs.map { case (tp, tv) =>
-            tparamField(defn, tp) -> tv
-          })(noProv)
-        else TopType
       // substitute the arguments of type def
       // with the arguments given to the type ref
       subst(td.bodyTy, td.targs.lazyZip(targs).toMap)
@@ -124,6 +119,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
           }
       }}
     }
+
     override def toString = showProvOver(false) {
       val displayName =
         if (primitiveTypes.contains(defn.name)) defn.name else defn.name
