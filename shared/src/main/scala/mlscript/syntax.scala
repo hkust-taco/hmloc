@@ -2,9 +2,12 @@ package mlscript
 
 import mlscript.utils._, shorthands._
 
-
+////////////////////////////////////////////////
 // Terms
+////////////////////////////////////////////////
 
+sealed trait Statement extends StatementImpl
+sealed trait Terms extends Statement
 final case class Pgrm(tops: Ls[Statement]) extends PgrmImpl
 
 sealed abstract class Decl extends Statement with DeclImpl
@@ -51,10 +54,6 @@ final case class Sel(receiver: Term, fieldName: Var)                 extends Ter
 final case class Let(isRec: Bool, name: Var, rhs: Term, body: Term)  extends Term
 /** A block of statements that are parsed and type checked together */
 final case class Blk(stmts: Ls[Statement])                           extends Term with BlkImpl
-/** Braces or brackets that encloses a term
-  * @param rcd set this flag if this term is a record, otherwise it's a tuple
-  * @param trm
-  */
 /** A term is optionally ascribed with a type as in: term: ty */
 final case class Asc(trm: Term, ty: Type)                            extends Term
 final case class With(trm: Term, fields: Rcd)                        extends Term
@@ -71,40 +70,29 @@ final case class StrLit(value: Str)               extends Lit
 final case class UnitLit(undefinedOrNull: Bool)   extends Lit
 
 sealed abstract class SimpleTerm extends Term with SimpleTermImpl
-
-sealed trait Statement extends StatementImpl
 final case class LetS(isRec: Bool, pat: Term, rhs: Term)  extends Statement
 
-
-sealed trait Terms extends Statement
-
-
+////////////////////////////////////////////////
 // Types
+////////////////////////////////////////////////
 
 sealed abstract class Type extends TypeImpl
-
-sealed trait NamedType extends Type { val base: TypeName }
-
 sealed abstract class Composed(val pol: Bool) extends Type with ComposedImpl
-
 final case class Union(lhs: Type, rhs: Type)             extends Composed(true)
 final case class Inter(lhs: Type, rhs: Type)             extends Composed(false)
 final case class Function(lhs: Type, rhs: Type)          extends Type
 final case class Record(fields: Ls[Var -> Type])        extends Type
 final case class Tuple(fields: Ls[Type])    extends Type
 final case class Recursive(uv: TypeVar, body: Type)      extends Type
-final case class AppliedType(base: TypeName, targs: List[Type]) extends Type with NamedType
+final case class AppliedType(base: TypeName, targs: List[Type]) extends Type
 final case class Unified(base: Type, where: Ls[TypeVar -> Ls[Type]]) extends Type
-
-sealed abstract class NullaryType                        extends Type
-
-case object Top                                          extends NullaryType
-case object Bot                                          extends NullaryType
+case object Top                                          extends Type
+case object Bot                                          extends Type
 /** Reference to an existing type with the given name. */
-final case class TypeName(name: Str)                     extends NullaryType with NamedType with TypeNameImpl
-final case class TypeTag (name: Str)                     extends NullaryType
+final case class TypeName(name: Str)                     extends Type with TypeNameImpl
+final case class TypeTag (name: Str)                     extends Type
 
-final case class TypeVar(val identifier: Int \/ Str, nameHint: Opt[Str]) extends NullaryType with TypeVarImpl {
+final case class TypeVar(val identifier: Int \/ Str, nameHint: Opt[Str]) extends Type with TypeVarImpl {
   require(nameHint.isEmpty || identifier.isLeft)
   // ^ The better data structure to represent this would be an EitherOrBoth
   override def toString: Str = identifier.fold("α" + _, identity)

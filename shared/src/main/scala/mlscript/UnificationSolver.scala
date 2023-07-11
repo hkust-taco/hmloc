@@ -182,7 +182,6 @@ trait UnificationSolver extends TyperDatatypes {
     }
   }
 
-  val newErrorCache: MutSet[Unification] = MutSet()
   val uniState = new UnificationState()
 
   def outputUnificationErrors(): Ls[Str] = {
@@ -510,8 +509,6 @@ trait UnificationSolver extends TyperDatatypes {
     freshen(ty)
   }
 
-  // helper functions
-  def err(msg: Message, loco: Opt[Loc])(implicit raise: Raise): SimpleType = err(msg -> loco :: Nil)
   def err(msgs: List[Message -> Opt[Loc]])(implicit raise: Raise): SimpleType = {
     raise(ErrorReport(msgs))
     TypeRef(TypeName("err"), Nil)(noProv)

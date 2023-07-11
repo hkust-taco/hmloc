@@ -182,7 +182,7 @@ abstract class PolyTypeImpl extends Located { self: PolyType =>
 
 trait TypeVarImpl extends Ordered[TypeVar] { self: TypeVar =>
   def compare(that: TypeVar): Int = {
-    (this.identifier.fold((_, ""), (0, _))) compare (that.identifier.fold((_, ""), (0, _)))
+    this.identifier.fold((_, ""), (0, _)) compare that.identifier.fold((_, ""), (0, _))
   }
 }
 
@@ -236,7 +236,6 @@ trait DeclImpl extends Located { self: Decl =>
 }
 
 trait TypeNameImpl extends Ordered[TypeName] { self: TypeName =>
-  val base: TypeName = this
   def compare(that: TypeName): Int = this.name compare that.name
 }
 

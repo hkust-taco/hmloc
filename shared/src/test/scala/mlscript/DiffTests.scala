@@ -197,7 +197,7 @@ class DiffTests
           stmts.foreach {
             // statement only declares a new term with its type
             // but does not give a body/definition to it
-            case Def(isrec, nme, R(PolyType(tps, rhs)), isByname) =>
+            case Def(_, nme, R(PolyType(tps, rhs)), _) =>
               val ty_sch = typer.PolymorphicType(0,
                 typer.typeType(rhs)(ctx.nextLevel, raise,
                   vars = tps.map(tp => tp.name -> typer.freshVar(typer.noProv/*FIXME*/)(1)).toMap))
@@ -205,7 +205,7 @@ class DiffTests
               declared += nme.name -> ty_sch
 
             // statement is defined and has a body/definition
-            case d @ Def(isrec, nme, L(rhs), isByname) =>
+            case d @ Def(isrec, nme, L(rhs), _) =>
               val ty_sch = typer.typeLetRhs(isrec, nme, rhs)(ctx, raise)
               // statement does not have a declared type for the body
               // the inferred type must be used and stored for lookup

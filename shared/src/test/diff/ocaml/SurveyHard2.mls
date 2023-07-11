@@ -1,0 +1,111 @@
+let rec clone x n = if n <= 0 then [] else x :: (clone x (n - 1))
+
+let addTuple (l1,l2) = l1 + l2
+
+let rec removeZero l =
+  match l with | [] -> [] | h::t -> if h = 0 then removeZero t else h :: t
+
+let padZero l1 l2 =
+  if (List.length l1) > (List.length l2)
+  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
+  else
+    if (List.length l1) < (List.length l2)
+    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
+    else (l1, l2)
+ 
+let bigAdd l1 l2 =
+  let add (l1,l2) =
+    let f a x = (a + x) mod 10 in
+    let base = 0 in
+    let args = List.map addTuple (List.combine l1 l2) in
+    let (_,res) = List.fold_left f base args in res in
+  removeZero (add (padZero l1 l2))
+ 
+(* (@): 'a list -> 'a list -> 'a list is a list concatenation operator *)
+(* List.length: 'a list -> int *)
+(* List.fold_left: ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a *)
+(* List.combine: 'a list -> 'b list -> ('a * 'b) list zips two lists together *)
+(* List.map: ('a -> 'b) -> 'a list -> 'b list map elements of a list *)
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
+//│         (int) ---> (?a) ---> (_ * _)
+//│ 
+//│ ◉ (int) comes from
+//│ │  - l.12     let base = 0 in
+//│ │                        ^
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                                            ^^^^
+//│ ▼ 
+//│ ◉ (?a) is assumed for
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) comes from
+//│    - l.14     let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
+//│         (int) <--- (?a) ~~~~ (?b) ---> (_ * _)
+//│ 
+//│ ◉ (int) comes from
+//│ ▲  - lib. let (+): int -> int -> int
+//│ │                  ^^^
+//│ │  - l.11     let f a x = (a + x) mod 10 in
+//│ │                          ^
+//│ │ 
+//│ ◉ (?a) is assumed for
+//│    - l.11     let f a x = (a + x) mod 10 in
+//│                     ^
+//│   ◉ (?a -> _ -> int) comes from
+//│   │  - l.11     let f a x = (a + x) mod 10 in
+//│   │                   ^^^^^^^^^^^^^^^^^^^^
+//│   │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│   │                                          ^
+//│   ▼ 
+//│   ◉ (?b -> _ -> ?b) comes from
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                   ^^^^^^^^^^^^^^
+//│ ◉ (?b) is assumed for
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) comes from
+//│    - l.14     let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ [ERROR] Type `int` does not match `_ * _`
+//│ 
+//│         (int) ~~~~ (?a) ---> (_ * _)
+//│ 
+//│ ◉ (int) comes from
+//│    - l.11     let f a x = (a + x) mod 10 in
+//│                           ^^^^^^^^^^^^^^
+//│    - lib. let mod: int -> int -> int
+//│                                  ^^^
+//│   ◉ (_ -> int) comes from
+//│      - l.11     let f a x = (a + x) mod 10 in
+//│                         ^^^^^^^^^^^^^^^^^^
+//│     ◉ (_ -> _ -> int) comes from
+//│     │  - l.11     let f a x = (a + x) mod 10 in
+//│     │                   ^^^^^^^^^^^^^^^^^^^^
+//│     │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│     │                                          ^
+//│     ▼ 
+//│     ◉ (?a -> _ -> ?a) comes from
+//│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                     ^^^^^^^^^^^^^^
+//│   ◉ (_ -> ?a) comes from
+//│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+//│                                         ^^^^^^^^
+//│ ◉ (?a) is assumed for
+//│ │  - l.14     let (_,res) = List.fold_left f base args in res in
+//│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//│ ▼ 
+//│ ◉ (_ * _) comes from
+//│    - l.14     let (_,res) = List.fold_left f base args in res in
+//│                   ^^^^^^^
+//│ U max: 63, total: 470
+//│ UERR 3 errors
+//│ L: 2 [int ~ ([α127''], [α128''],), [int - (α123'' -> [int]) ~ (α121'' -> α120'') - α120'', L: 1 [(α123'' -> [int]) ~ (α121'' -> α120''), [(α123'' -> [int]) - (α122'' -> (α123'' -> [int])) ~ (α120'' -> (α121'' -> α120'')) - (α121'' -> α120''), L: 0 [(α122'' -> (α123'' -> [int])) ~ (α120'' -> (α121'' -> α120'')), (α122'' -> (α123'' -> [int])) <: (α120'' -> (α121'' -> α120''))]]]], α120'' <: ([α127''], [α128''],)]
+//│ L: 1 [int ~ ([α127''], [α128''],), int :> α122'', [α122'' - (α122'' -> (α123'' -> [int])) ~ (α120'' -> (α121'' -> α120'')) - α120'', L: 0 [(α122'' -> (α123'' -> [int])) ~ (α120'' -> (α121'' -> α120'')), (α122'' -> (α123'' -> [int])) <: (α120'' -> (α121'' -> α120''))]], α120'' <: ([α127''], [α128''],)]
+//│ L: 0 [int ~ ([α127''], [α128''],), int <: α120'', α120'' <: ([α127''], [α128''],)]
+
