@@ -14,14 +14,14 @@ Scala source code for the HM<sup>ℓ</sup> with many examples.
 
 This artifact consists of an SBT (Scala Build Tool) project with an implementation of
 the SimpleSub modified to work as an HM<sup>ℓ</sup> type system introduced in the
-corresponding paper. In addition, we provide a differential test suite which
+corresponding paper. In addition, we provide a test suite which
 includes examples and a web demo that gives live typing and running results
 of the user input source.
 
 - The `shared/src/main/scala/mlscript` directory contains the sources of the HM<sup>ℓ</sup> compiler.
   - For more documentation of the compiler codebase, please refer to `hml-codebase-doc.md`.
 - The `shared/src/test/scala/mlscript` directory contains the implementation of
-  the differential test infrastructure.
+  the testing infrastructure.
 - The `shared/src/test/diff` directory contains MLscript tests.
 
 ### Claims to artifact evaluation badges
@@ -34,10 +34,10 @@ Examples in the paper work as they are shown, which have
 desired typing and running results produced by our implementation.
 Important examples can be found in the differential test suite.
 
-The `shared/src/test/diff/ocaml` directory contains tests. Some notable ones are -
+The `shared/src/test/diff/ocaml` directory contains tests. Some notable ones are:
   - `Survey*.mls` are the example programs used in user survey described in the paper
   - `OcamlExprParser.mls` shows the subset of OCaml syntax supported by the parser
-  - `LeyPoly.mls` - shows let polymorphism
+  - `LetPoly.mls` - shows let polymorphism
   - `Scratch.mls` a blank file you can use to test out your own examples
 
 #### Reusable
@@ -47,7 +47,7 @@ we explain how the compiler codebase is organized and introduce the general idea
 about the implementation of the type system, which helps the reuse of the codebase for
 future extension of features.
 
-Of particular interest, is the discussion around provenances used in typing and how
+Of particular interest is the discussion around provenances used in typing and how
 the types are unified. We hope this could provide inspiration for reusing the
 artifact to reuse or extend the type system.
 
@@ -100,10 +100,10 @@ We provide two ways of experimenting with MLscript.
 To run the web demo, compile the project with `mlscriptJS/fastOptJS`, 
 then open the `local_testing.html` file in a browser.
 
-### Differential test suite
+### Using the test suite
 
-To compile the code to JVM and run all tests,
-compile the project with `~mlscriptJVM/testOnly mlscript.DiffTests`.
+To compile the code to JVM and re-run the tests upon file changes,
+launch SBT and then use the SBT command `~mlscriptJVM/testOnly mlscript.DiffTests`.
 
 The test output is inserted as comments beginning with `//│` in the test file,
 immediately after each corresponding code block.
