@@ -103,15 +103,16 @@ abstract class TypeImpl extends Located { self: Type =>
   }
   
   def children: List[Type] = this match {
-    case _: NullaryType => Nil
     case Function(l, r) => l :: r :: Nil
     case Record(fs) => fs.map(_._2)
     case Tuple(fs) => fs
-    case Union(l, r) => l :: r :: Nil.toList
+    case Union(l, r) => l :: r :: Nil
     case Inter(l, r) => l :: r :: Nil
     case Recursive(n, b) => b :: Nil
     case AppliedType(n, ts) => n :: ts
     case Unified(ty, us) => ty.children ::: us.flatMap { case (tv, tys) => tv :: tys.flatMap(_.children)}
+    case _: TypeName | _: TypeVar | _: Top.type | _: Bot.type => Nil
+    case t => lastWords(s"Cannot find children for type $t")
   }
 }
 
@@ -265,7 +266,6 @@ trait TermImpl extends StatementImpl { self: Term =>
       case Let(isRec, name, rhs, body) => "let binding"
       case Tup(x :: Nil) => x.describe
       case Tup(xs) => "tuple"
-      case With(t, fs) =>  "`with` extension"
       case Assign(lhs, rhs) => "assignment"
       case If(_, _) => "if-else block"
     }
@@ -293,7 +293,6 @@ trait TermImpl extends StatementImpl { self: Term =>
       s"let${if (isRec) " rec" else ""} $name = $rhs in $body" |> bra
     case Tup(xs) =>
       xs.iterator.map(t => t + ",").mkString(" ") |> bra
-    case With(t, fs) =>  s"$t with $fs" |> bra
     case Assign(lhs, rhs) => s" $lhs <- $rhs" |> bra
     case If(cond, body) => s"if $cond" + body.mkString(" then ") |> bra
   }}
@@ -402,7 +401,6 @@ trait StatementImpl extends Located { self: Statement =>
     case Blk(stmts) => stmts
     case LetS(_, pat, rhs) => pat :: rhs :: Nil
     case _: Lit => Nil
-    case With(t, fs) => t :: fs :: Nil
     case d @ Def(_, n, b, _) => n :: d.body :: Nil
     case TypeDef(kind, nme, tparams, body, pos, _) => nme :: tparams ::: pos ::: body :: Nil
     case Assign(lhs, rhs) => lhs :: rhs :: Nil
@@ -465,8 +463,6 @@ object PrettyPrintHelper {
     case Let(isRec, name, rhs, body) => s"Let($isRec, $name, ${inspect(rhs)}, ${inspect(body)})"
     case Blk(stmts)                  => s"Blk(...)"
     case Asc(trm, ty)                => s"Asc(${inspect(trm)}, $ty)"
-    case With(trm, fields) =>
-      s"With(${inspect(trm)}, ${inspect(fields)})"
     case IntLit(value)  => s"IntLit($value)"
     case DecLit(value)  => s"DecLit($value)"
     case StrLit(value)  => s"StrLit($value)"

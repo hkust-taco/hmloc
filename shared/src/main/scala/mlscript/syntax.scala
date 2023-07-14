@@ -56,7 +56,6 @@ final case class Let(isRec: Bool, name: Var, rhs: Term, body: Term)  extends Ter
 final case class Blk(stmts: Ls[Statement])                           extends Term with BlkImpl
 /** A term is optionally ascribed with a type as in: term: ty */
 final case class Asc(trm: Term, ty: Type)                            extends Term
-final case class With(trm: Term, fields: Rcd)                        extends Term
 final case class Assign(lhs: Term, rhs: Term)                        extends Term
 final case class If(lhs: Term, rhs: Ls[IfBody])                    extends Term
 

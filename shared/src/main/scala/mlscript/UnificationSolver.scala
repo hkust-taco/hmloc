@@ -509,10 +509,16 @@ trait UnificationSolver extends TyperDatatypes {
     freshen(ty)
   }
 
+  def err(msg: Message -> Opt[Loc])(implicit raise: Raise): SimpleType = {
+    raise(ErrorReport(msg :: Nil))
+    TypeRef(TypeName("err"), Nil)(noProv)
+  }
+
   def err(msgs: List[Message -> Opt[Loc]])(implicit raise: Raise): SimpleType = {
     raise(ErrorReport(msgs))
     TypeRef(TypeName("err"), Nil)(noProv)
   }
+
   def warn(msg: Message, loco: Opt[Loc])(implicit raise: Raise): Unit = warn(msg -> loco :: Nil)
   def warn(msgs: List[Message -> Opt[Loc]])(implicit raise: Raise): Unit = raise(WarningReport(msgs))
 

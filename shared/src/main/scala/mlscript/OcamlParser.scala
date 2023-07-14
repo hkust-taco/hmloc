@@ -56,7 +56,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
 
   /** Top level term */
   def term[p: P]: P[Term] = ocamlWithAsc | ascribableTerm
-  def ascribableTerm[p: P]: P[Term] = P(let | letPatMat | fun | ite | _match | withs)
+  def ascribableTerm[p: P]: P[Term] = P(let | letPatMat | fun | ite | _match | binops)
 
   def lit[p: P]: P[Lit] =
     locate(floatnumber.map(x => DecLit(x)) | number.map(x => IntLit(BigInt(x))) | Lexer.stringliteral.map(StrLit)
@@ -158,9 +158,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       val trm1 = ascs.foldLeft(withs)(Asc)
       val trm2 = equateTerm.fold(trm1)(App(OpApp("==", trm1), _))
       tupleTerm.fold(trm2 :: Nil)(trm2 :: _)
-  }
-  def withs[p: P]: P[Term] = P( binops ~ (kw("with") ~ record).rep ).map {
-    case (as, ws) => ws.foldLeft(as)((acc, w) => With(acc, w))
   }
   
   /** Subsitute operators with functions to handle special cases in ocaml */
