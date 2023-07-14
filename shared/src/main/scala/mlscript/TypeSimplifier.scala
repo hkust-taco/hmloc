@@ -46,7 +46,6 @@ trait TypeSimplifier { self: Typer =>
               })
             case t @ FunctionType(l, r) => FunctionType(process(l), process(r))(t.prov)
             case t @ ComposedType(p, l, r) => ComposedType(p, process(l), process(r))(t.prov)
-            case t @ RecordType(fs) => RecordType(fs.mapValues(process))(t.prov)
             case t @ TupleType(fs) => TupleType(fs.mapValues(process))(t.prov)
             case e @ ExtrType(_) => e
             case p @ ProvType(und) => ProvType(process(und))(p.prov)
@@ -77,7 +76,6 @@ trait TypeSimplifier { self: Typer =>
             })
             case t @ FunctionType(l, r) => FunctionType(process(l), process(r))(t.prov)
             case t @ ComposedType(p, l, r) => ComposedType(p, process(l), process(r))(t.prov)
-            case t @ RecordType(fs) => RecordType(fs.mapValues(process))(t.prov)
             case t @ TupleType(fs) => TupleType(fs.mapValues(process))(t.prov)
             case e @ ExtrType(_) => e
             case p @ ProvType(und) => ProvType(process(und))(p.prov)

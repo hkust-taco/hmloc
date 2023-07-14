@@ -49,10 +49,6 @@ abstract class TypeImpl extends Located { self: Type =>
     case TypeVar(_, S("_")) => "_"
     case uv: TypeVar => ctx.vs(uv)
     case Function(l, r) => parensIf(l.showOcaml(ctx, 31) + " -> " + r.showOcaml(ctx, 30), outerPrec > 30)
-    case Record(fs) => fs.map { nt =>
-      val nme = nt._1.name
-      s"${nme}: ${nt._2.showOcaml(ctx, 0)}"
-    }.mkString("{", ", ", "}")
     case Tuple(fields) => parensIf(s"${fields.map(_.showOcaml(ctx, 2)).mkString(" * ")}", outerPrec > 1)
     case AppliedType(n, arg :: Nil) => s"${arg.showOcaml(ctx, 2)} ${n.name}"
     case AppliedType(n, args) => s"(${args.map(_.showOcaml(ctx, 2)).mkString(", ")}) ${n.name}"
@@ -72,14 +68,6 @@ abstract class TypeImpl extends Located { self: Type =>
     case Recursive(n, b) => parensIf(s"${b.showIn(ctx, 2)} as ${ctx.vs(n)}", outerPrec > 1)
     case Function(Tuple(l :: Nil), r) => Function(l, r).showIn(ctx, outerPrec)
     case Function(l, r) => parensIf(l.showIn(ctx, 31) + " -> " + r.showIn(ctx, 30), outerPrec > 30)
-    case Record(fs) => fs.map { nt =>
-        val nme = nt._1.name
-        if (nme.isCapitalized) nt._2 match {
-          case Top => s"$nme"
-          case ub => s"$nme <: ${ub.showIn(ctx, 0)}"
-        }
-        else s"${nme}: ${nt._2.showIn(ctx, 0)}"
-      }.mkString("{", ", ", "}")
     case Tuple(fs) =>
       fs.map(nt => s"${nt.showIn(ctx, 0)},").mkString("(", " ", ")")
     case Union(TypeName("true"), TypeName("false")) | Union(TypeName("false"), TypeName("true")) =>
@@ -104,7 +92,6 @@ abstract class TypeImpl extends Located { self: Type =>
   
   def children: List[Type] = this match {
     case Function(l, r) => l :: r :: Nil
-    case Record(fs) => fs.map(_._2)
     case Tuple(fs) => fs
     case Union(l, r) => l :: r :: Nil
     case Inter(l, r) => l :: r :: Nil
@@ -117,7 +104,7 @@ abstract class TypeImpl extends Located { self: Type =>
 }
 
 
-final case class ShowCtx(vs: Map[TypeVar, Str], debug: Bool) // TODO make use of `debug` or rm
+final case class ShowCtx(vs: Map[TypeVar, Str])
 object ShowCtx {
   /**
     * Create a context from a list of types. For named variables and
@@ -125,7 +112,7 @@ object ShowCtx {
     * completely new names. If same name exists increment counter suffix
     * in the name.
     */
-  def mk(tys: IterableOnce[Type], pre: Str = "'", debug: Bool = false): ShowCtx = {
+  def mk(tys: IterableOnce[Type], pre: Str = "'"): ShowCtx = {
     val (otherVars, namedVars) = tys.iterator.toList.flatMap(_.typeVarsList).distinct.partitionMap { tv =>
       tv.identifier match { case L(_) => L(tv.nameHint -> tv); case R(nh) => R(nh -> tv) }
     }
@@ -158,7 +145,7 @@ object ShowCtx {
       S(('a' + idx % numLetters).toChar.toString + (if (postfix === 0) "" else postfix.toString), idx + 1)
     }.filterNot(used).map(assignName)
     
-    ShowCtx(namedMap ++ unnamedVars.zip(names), debug)
+    ShowCtx(namedMap ++ unnamedVars.zip(names))
   }
 }
 
@@ -225,14 +212,12 @@ trait DeclImpl extends Located { self: Decl =>
     case _: TypeDef => "type declaration"
   }
   def show: Str = showHead + (this match {
-    case TypeDef(Als, _, _, _, _, _) => " = "; case _ => ": " }) + showBody
+    case TypeDef(Als, _, _, _, _) => " = "; case _ => ": " }) + showBody
   def showHead: Str = this match {
     case Def(true, n, b, isByname) => s"rec def $n"
     case Def(false, n, b, isByname) => s"def $n"
-    case TypeDef(k, n, tps, b, pos, _) =>
-      s"${k.str} ${n.name}${if (tps.isEmpty) "" else tps.map(_.name).mkString("[", ", ", "]")}${
-        if (pos.isEmpty) "" else pos.mkString("(", ", ", ")")
-      }"
+    case TypeDef(k, n, tps, b, _) =>
+      s"${k.str} ${n.name}${if (tps.isEmpty) "" else tps.map(_.name).mkString("[", ", ", "]")}"
   }
 }
 
@@ -261,7 +246,6 @@ trait TermImpl extends StatementImpl { self: Term =>
       case App(OpApp(op, lhs), rhs) => "operator application"
       case OpApp(op, lhs) => "operator application"
       case App(lhs, rhs) => "application"
-      case Rcd(fields) => "record"
       case Sel(receiver, fieldName) => "field selection"
       case Let(isRec, name, rhs, body) => "let binding"
       case Tup(x :: Nil) => x.describe
@@ -285,9 +269,6 @@ trait TermImpl extends StatementImpl { self: Term =>
     case Asc(trm, ty) => s"$trm : $ty"  |> bra
     case Lam(name, rhs) => s"$name => $rhs" |> bra
     case App(lhs, rhs) => s"${lhs.print(!lhs.isInstanceOf[App])} ${rhs.print(true)}" |> bra
-    case Rcd(fields) =>
-      fields.iterator.map(nv =>
-        nv._1.name + ": " + nv._2).mkString("{", ", ", "}")
     case Sel(receiver, fieldName) => "(" + receiver.toString + ")." + fieldName
     case Let(isRec, name, rhs, body) =>
       s"let${if (isRec) " rec" else ""} $name = $rhs in $body" |> bra
@@ -395,14 +376,13 @@ trait StatementImpl extends Located { self: Statement =>
     case Lam(lhs, rhs) => lhs :: rhs :: Nil
     case App(lhs, rhs) => lhs :: rhs :: Nil
     case Tup(fields) => fields
-    case Rcd(fields) => fields.map(_._2)
     case Sel(receiver, fieldName) => receiver :: fieldName :: Nil
     case Let(isRec, name, rhs, body) => rhs :: body :: Nil
     case Blk(stmts) => stmts
     case LetS(_, pat, rhs) => pat :: rhs :: Nil
     case _: Lit => Nil
     case d @ Def(_, n, b, _) => n :: d.body :: Nil
-    case TypeDef(kind, nme, tparams, body, pos, _) => nme :: tparams ::: pos ::: body :: Nil
+    case TypeDef(kind, nme, tparams, body, _) => nme :: tparams ::: body :: Nil
     case Assign(lhs, rhs) => lhs :: rhs :: Nil
     case If(body, els) => body :: els
   }
@@ -454,11 +434,6 @@ object PrettyPrintHelper {
     case Tup(fields) =>
       val entries = fields.map(inspect)
       s"Tup(${entries mkString ", "})"
-    case Rcd(fields) =>
-      val entries = fields.iterator
-        .map { case k -> v => s"${inspect(k)} = ${inspect(v)}" }
-        .mkString(", ")
-      s"Rcd($entries)"
     case Sel(receiver, fieldName)    => s"Sel(${inspect(receiver)}, $fieldName)"
     case Let(isRec, name, rhs, body) => s"Let($isRec, $name, ${inspect(rhs)}, ${inspect(body)})"
     case Blk(stmts)                  => s"Blk(...)"
@@ -470,8 +445,8 @@ object PrettyPrintHelper {
     case Assign(f, v)   => s"Assign(${inspect(f)}, ${inspect(v)})"
     case If(bod, els) => s"If(${inspect(bod)}, ${els.map(inspect)})"
     case LetS(isRec, pat, rhs) => s"LetS(isRec: $isRec, pat: ${inspect(pat)}, rhs: ${inspect(rhs)}"
-    case TypeDef(Cls, nme, tname, tbody, tvars, adtData) => s"TypeDef($Cls, $nme, $tname, $tbody, $tvars) of adt: $adtData"
-    case TypeDef(kind, nme, tname, tbody, tvars, _) => s"TypeDef($kind, $nme, $tname, $tbody, $tvars)"
+    case TypeDef(Cls, nme, tparams, tbody, adtData) => s"TypeDef($Cls, $nme, $tparams, $tbody) of adt: $adtData"
+    case TypeDef(kind, nme, tparams, tbody, _) => s"TypeDef($kind, $nme, $tparams, $tbody)"
     case Def(rec, nme, rhs, isByname) =>
       s"Def($rec, $nme, ${rhs.fold(inspect, "" + _)}, $isByname)"
   }

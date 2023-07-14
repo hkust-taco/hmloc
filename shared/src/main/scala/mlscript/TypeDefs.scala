@@ -49,7 +49,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
       case Inter(l, r) => baseClassesOf(l) ++ baseClassesOf(r)
       case TypeName(nme) => Set.single(TypeName(nme))
       case AppliedType(b, _) => baseClassesOf(b)
-      case Record(_) => Set.empty
       case _: Union => Set.empty
       case _ => Set.empty // TODO TupleType?
     }
@@ -119,52 +118,12 @@ class TypeDefs extends UnificationSolver { self: Typer =>
             val t2 = travsersed + R(tv)
             tv.lowerBounds.forall(checkCycle(_)(t2)) && tv.upperBounds.forall(checkCycle(_)(t2))
           }
-          case _: ExtrType | _: RigidTypeVariable | _: FunctionType | _: RecordType | _: TupleType => true
+          case _: ExtrType | _: RigidTypeVariable | _: FunctionType | _: TupleType => true
         }
         // }()
 
-        val rightParents = td.kind match {
-          case Als => checkCycle(td.bodyTy)(Set.single(L(td.nme)))
-          case Cls =>
-            val parentsClasses = MutSet.empty[TypeRef]
-            def checkParents(ty: SimpleType): Bool = ty match {
-              case _: RigidTypeVariable => true // Q: always? // FIXME actually no
-              case tr @ TypeRef(tn2, _) =>
-                val td2 = ctx.tyDefs(tn2.name)
-                td2.kind match {
-                  case Cls =>
-                    if (td.kind is Cls) {
-                      parentsClasses.isEmpty || {
-                        err(msg"${td.kind.str} $n cannot inherit from class ${tn2
-                            } as it already inherits from class ${parentsClasses.head.defn}",
-                          prov.loco)
-                        false
-                      } tap (_ => parentsClasses += tr)
-                    } else
-                      checkParents(tr.expand)
-                  case Als =>
-                    err(msg"cannot inherit from a type alias", prov.loco)
-                    false
-                }
-              case ComposedType(false, l, r) => checkParents(l) && checkParents(r)
-              case ComposedType(true, l, r) =>
-                err(msg"cannot inherit from a type union", prov.loco)
-                false
-              case tv: TypeVariable =>
-                err(msg"cannot inherit from a type variable", prov.loco)
-                false
-              case _: FunctionType =>
-                err(msg"cannot inherit from a function type", prov.loco)
-                false
-              case _: TupleType =>
-                err(msg"cannot inherit from a tuple type", prov.loco)
-                false
-              case _: RecordType | _: ExtrType => true
-              case p: ProvType => checkParents(p.underlying)
-            }
-
-            checkParents(td.bodyTy) && checkCycle(td.bodyTy)(Set.single(L(td.nme)))
-        }
+        // TODO: double check this logic
+        val noCycle = checkCycle(td.bodyTy)(Set.single(L(td.nme)))
 
         def checkRegular(ty: SimpleType)(implicit reached: Map[Str, Ls[SimpleType]]): Bool = ty match {
           case tr @ TypeRef(defn, targs) => reached.get(defn.name) match {
@@ -188,7 +147,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
         
         // Note: this will end up going through some types several times... We could make sure to
         //    only go through each type once, but the error messages would be worse.
-        if (rightParents && checkRegular(td.bodyTy)(Map(n.name -> td.targs)))
+        if (noCycle && checkRegular(td.bodyTy)(Map(n.name -> td.targs)))
           td.nme.name -> td :: Nil
         else Nil
       })
@@ -251,9 +210,6 @@ class TypeDefs extends UnificationSolver { self: Typer =>
             if (visitUB) visited += false -> t
             if (visitLB) t.lowerBounds.foreach(lb => updateVariance(lb, VarianceInfo.co))
             if (visitUB) t.upperBounds.foreach(ub => updateVariance(ub, VarianceInfo.contra))
-          case RecordType(fields) => fields.foreach {
-            case (_ , fieldTy) => fieldVarianceHelper(fieldTy)
-          }
           case TypeRef(defn, targs) =>
             // it's possible that the type definition may not exist in the
             // context because it is malformed or incorrect. Do nothing in

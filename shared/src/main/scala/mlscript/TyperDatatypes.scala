@@ -44,19 +44,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
 
   case class FunctionType(lhs: SimpleType, rhs: SimpleType)(val prov: TypeProvenance) extends SimpleType {
     lazy val level: Int = lhs.level max rhs.level
-    override def toString = s"(${lhs} -> $rhs)"
-  }
-
-  case class RecordType(fields: List[(Var, ST)])(val prov: TypeProvenance) extends SimpleType {
-    // TODO: assert no repeated fields
-    lazy val level: Int = fields.iterator.map(_._2.level).maxOption.getOrElse(0)
-    def sorted: RecordType = RecordType(fields.sortBy(_._1))(prov)
-    override def toString = s"{${fields.map(f => s"${f._1}: ${f._2}").mkString(", ")}}"
-  }
-  object RecordType {
-    def empty: RecordType = RecordType(Nil)(noProv)
-    def mk(fields: List[(Var, ST)])(prov: TypeProvenance = noProv): SimpleType =
-      if (fields.isEmpty) ExtrType(false)(prov) else RecordType(fields)(prov)
+    override def toString = s"($lhs -> $rhs)"
   }
 
   case class TupleType(fields: List[Opt[Var] -> ST])(val prov: TypeProvenance) extends SimpleType {

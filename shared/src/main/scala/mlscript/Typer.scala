@@ -177,18 +177,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case Union(lhs, rhs) => (if (simplify) rec(lhs) | (rec(rhs), _: TypeProvenance)
           else ComposedType(true, rec(lhs), rec(rhs)) _
         )(tyTp(ty.toLoc, "union type"))
-      case Record(fs) =>
-        val prov = tyTp(ty.toLoc, "record type")
-        fs.groupMap(_._1.name)(_._1).foreach { case s -> fieldNames if fieldNames.sizeIs > 1 => err(
-            msg"Multiple declarations of field name ${s} in ${prov.desc}" -> ty.toLoc
-              :: fieldNames.map(tp => msg"Declared at" -> tp.toLoc))(raise)
-          case _ =>
-        }
-        RecordType.mk(fs.map { nt =>
-          if (nt._1.name.isCapitalized)
-            err(msg"Field identifiers must start with a small letter", nt._1.toLoc)(raise)
-          nt._1 -> rec(nt._2).withProv(tp(App(nt._1, Var("").withLocOf(nt._2)).toCoveringLoc, "record field"))
-        })(prov)
       case Function(lhs, rhs) => FunctionType(rec(lhs), rec(rhs))(tyTp(ty.toLoc, "function type"))
       case TypeName("this") =>
         ctx.env.getOrElse("this", err(msg"undeclared this" -> ty.toLoc :: Nil)) match {
@@ -365,20 +353,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       case _: IntLit => IntType.withProv(prov)
       case _: StrLit => StringType.withProv(prov)
       case _: DecLit => FloatType.withProv(prov)
-      case Rcd(fs) =>
-        val prov = tp(term.toLoc, "record literal")
-        fs.groupMap(_._1.name)(_._1).foreach { case s -> fieldNames if fieldNames.sizeIs > 1 => err(
-            msg"Multiple declarations of field name ${s} in ${prov.desc}" -> term.toLoc
-              :: fieldNames.map(tp => msg"Declared at" -> tp.toLoc))(raise)
-          case _ =>
-        }
-        RecordType.mk(fs.map { case (n, t) =>
-          if (n.name.isCapitalized)
-            err(msg"Field identifiers must start with a small letter", term.toLoc)(raise)
-          val tym = typeTerm(t)
-          val fprov = tp(App(n, t).toLoc, "record field")
-          (n, tym.withProv(fprov))
-        })(prov)
       case Tup(fs) =>
         TupleType(fs.map { t =>
           val tym = typeTerm(t)
@@ -386,19 +360,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           N -> tym.withProv(fprov)
         })(tp(term.toLoc, "tuple literal"))
         // TODO is this supported in ocaml
-      case Assign(s @ Sel(r, f), rhs) =>
-        val o_ty = typeTerm(r)
-        val sprov = tp(s.toLoc, "assigned selection")
-        val fieldType = freshVar(sprov, Opt.when(!f.name.startsWith("_"))(f.name))
-        val obj_ty =
-          // Note: this proxy does not seem to make any difference:
-          mkProv(o_ty, tp(r.toCoveringLoc, "receiver"))
-//        TODO: check correctness con(obj_ty, RecordType.mk((f, FieldType(Some(fieldType), TopType)(
-        con(obj_ty, RecordType.mk((f, TopType.withProv(
-          tp(f.toLoc, "assigned field")
-        )) :: Nil)(sprov), fieldType)
-        val vl = typeTerm(rhs)
-        con(vl, fieldType, UnitType.withProv(prov))
       case Assign(lhs, rhs) =>
         err(msg"Illegal assignment" -> prov.loco
           :: msg"cannot assign to ${lhs.describe}" -> lhs.toLoc :: Nil)
@@ -427,17 +388,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
             resTy
         }
         go(fun_ty)
-      case Sel(obj, fieldName) =>
-        def rcdSel(obj: Term, fieldName: Var) = {
-          val o_ty = typeTerm(obj)
-          val res = freshVar(prov, Opt.when(!fieldName.name.startsWith("_"))(fieldName.name))
-          val obj_ty = mkProv(o_ty, tp(obj.toCoveringLoc, "receiver"))
-          val rcd_ty = RecordType.mk(
-            fieldName -> res.withProv(tp(fieldName.toLoc, "field selector")) :: Nil)(hintProv(prov))
-          con(obj_ty, rcd_ty, res)
-        }
-        // methods have been removed only field selection works
-        rcdSel(obj, fieldName)
       case Let(isrec, nme, rhs, bod) =>
         val n_ty = typeLetRhs(isrec, nme, rhs)
         val newCtx = ctx.nest
@@ -648,18 +598,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       val newBindings = desug.flatMap(typeStatement(_, allowPure = false).toOption)
       ctx ++= newBindings.iterator.flatten.map(nt => nt._1 -> VarSymbol(nt._2, Var(nt._1)))
       typeTerms(sts, rcd, fields)
-    case Nil =>
-      if (rcd) {
-        val fs = fields.reverseIterator.zipWithIndex.map {
-          case ((S(n), t), i) =>
-            n -> t
-          case ((N, t), i) =>
-            // err("Missing name for record field", t.prov.loco)
-            warn("Missing name for record field", t.prov.loco)
-            (Var("_" + (i + 1)), t)
-        }.toList
-        RecordType.mk(fs)(prov)
-      } else TupleType(fields.reverseIterator.toList)(prov)
+    case Nil => TupleType(fields.reverseIterator.toList)(prov)
   }
 
   /** Convert an inferred SimpleType into the immutable Type representation using Unification information. */
@@ -690,7 +629,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         case FunctionType(l, r) => Function(go(l), go(r))
         case ComposedType(true, l, r) => Union(go(l), go(r))
         case ComposedType(false, l, r) => Inter(go(l), go(r))
-        case RecordType(fs) => Record(fs.mapValues(go))
         case TupleType(fs) => Tuple(fs.map{ case (_, fld) => go(fld)})
         case ExtrType(true) => Bot
         case ExtrType(false) => Top

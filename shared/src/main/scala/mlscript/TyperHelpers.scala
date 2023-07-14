@@ -160,7 +160,6 @@ abstract class TyperHelpers { Typer: Typer =>
 
     def map(f: SimpleType => SimpleType): SimpleType = this match {
       case FunctionType(lhs, rhs) => FunctionType(f(lhs), f(rhs))(prov)
-      case RecordType(fields) => RecordType(fields.mapValues(f(_)))(prov)
       case TupleType(fields) => TupleType(fields.mapValues(f(_)))(prov)
       case ComposedType(pol, lhs, rhs) => ComposedType(pol, f(lhs), f(rhs))(prov)
       case ProvType(underlying) => ProvType(f(underlying))(prov)
@@ -171,14 +170,6 @@ abstract class TyperHelpers { Typer: Typer =>
     def |(that: SimpleType, prov: TypeProvenance = noProv, swapped: Bool = false): SimpleType = (this, that) match {
       case (TopType, _) => TopType
       case (BotType, _) => that
-
-      // These were wrong! During constraint solving it's important to keep them!
-      // case (_: RecordType, _: PrimType | _: FunctionType) => TopType
-      // case (_: FunctionType, _: PrimType | _: RecordType) => TopType
-
-      case (_: RecordType, _: FunctionType) => TopType
-      case (RecordType(fs1), RecordType(fs2)) =>
-        RecordType(recordUnion(fs1, fs2))(prov)
       case (t0@TupleType(fs0), t1@TupleType(fs1))
         // If the sizes are different, to merge these we'd have to return
         //  the awkward `t0.toArray & t0.toRecord | t1.toArray & t1.toRecord`
@@ -191,14 +182,11 @@ abstract class TyperHelpers { Typer: Typer =>
 
     def &(that: SimpleType, prov: TypeProvenance = noProv, swapped: Bool = false): SimpleType =
       (this, that) match {
-        case (TopType | RecordType(Nil), _) => that
         case (BotType, _) => BotType
         // Unnecessary and can complicate constraint solving quite a lot:
         // case (ComposedType(true, l, r), _) => l & that | r & that
         case (FunctionType(l1, r1), FunctionType(l2, r2)) =>
           FunctionType(l1 | l2, r1 & r2)(prov)
-        case (RecordType(fs1), RecordType(fs2)) =>
-          RecordType(mergeSortedMap(fs1, fs2)(_ & _).toList)(prov)
         case (t0@TupleType(fs0), t1@TupleType(fs1)) =>
           if (fs0.sizeCompare(fs1) =/= 0) BotType
           else TupleType(tupleIntersection(fs0, fs1))(t0.prov)
@@ -218,7 +206,6 @@ abstract class TyperHelpers { Typer: Typer =>
       case tv: TypeVariable => if (includeBounds) tv.uniConcreteTypes.toList else Nil
       case FunctionType(l, r) => l :: r :: Nil
       case ComposedType(_, l, r) => l :: r :: Nil
-      case RecordType(fs) => fs.flatMap(f => f._2 :: Nil)
       case TupleType(fs) => fs.flatMap(f => f._2 :: Nil)
       case ExtrType(_) => Nil
       case ProvType(und) => und :: Nil

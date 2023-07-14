@@ -42,7 +42,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   // ocaml operators adapted from https://v2.ocaml.org/manual/lex.html#operator-char
   def ocamlOps[p:P]: P[Var] = P("::").!.map(Var)
   // also parse strings like "List.map" as identifier
-  // TODO This means record fields access won't work fix that later
   def ident[p: P]: P[String] =
     P( (letter | "_") ~~ (letter | digit | "_" | "'" | ".").repX ).!.filter(!keywords(_))
 
@@ -78,7 +77,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case (ts, _) => Tup(ts.toList)
   })
 
-  def subtermNoSel[p: P]: P[Term] = P( parens | record | lit | variable | ocamlList )
+  def subtermNoSel[p: P]: P[Term] = P( parens | lit | variable | ocamlList )
   
   def subterm[p: P]: P[Term] = P( Index ~~ subtermNoSel ~ (
     // Fields:
@@ -91,12 +90,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
         val base = sels.foldLeft(st)((acc, t) => Sel(acc, t))
         a.fold(base)(Assign(base, _))
     }
-  def record[p: P]: P[Rcd] = locate(P(
-      "{" ~/ (kw("mut").!.? ~ variable ~ "=" ~ term map L.apply).|(kw("mut").!.? ~ variable map R.apply).rep(sep = ";") ~ "}"
-    ).map { fs => Rcd(fs.map{ 
-        case L((mut, v, t)) => v -> t
-        case R(mut -> id) => id -> id }.toList)})
-  
+
   // TODO: change term to list of terms and give the list of terms as to `toParams`
   def fun[p: P]: P[Term] = locate(P( kw("fun") ~/ term ~ "->" ~ term ).map(nb => Lam(toParams(nb._1), nb._2)))
   
@@ -386,18 +380,15 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     * type 'a, 'b tup = Tup of ['a * 'b list] => ('a, List['b])
     * type 'a, 'b tup = Tup of [('a * 'b) list] => (List[('a, 'b)])
     */
-  def ocamlConstructorBody[p: P]: P[(Set[TypeName], Record)] =
+  def ocamlConstructorBody[p: P]: P[(Set[TypeName], Type)] =
     ocamlTypeExpression.rep(1, "*")
     .map {
       case Seq((tparams, tbody)) =>
-        val rcdBody = Record(Var("_0") -> tbody :: Nil)
-        (tparams, rcdBody)
+        (tparams, tbody)
       case parts =>
         val tparams = parts.flatMap(_._1).toSet
-        val rcdBody = parts.zipWithIndex.map {
-          case (t, i) => Var(s"_$i") -> t._2
-        }.toList
-        (tparams, Record(rcdBody))
+        val tupBody = parts.map(_._2).toList
+        (tparams, Tuple(tupBody))
     }
 
   def constructorName[p: P]: P[TypeName] =
@@ -408,13 +399,11 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def ocamlConstructorDecl[p: P]: P[TypeDef] =
     P((constructorName ~ ("of" ~/ ocamlConstructorBody).?).map {
       case (id, Some((params, body))) =>
-        val positionals = body.fields.map(_._1)
-        TypeDef(Cls, id, params.toList, body, positionals)
-      case (id, None)                 => TypeDef(Cls, id, Nil, Record(Ls.empty), Nil)
+        TypeDef(Cls, id, params.toList, body)
+      case (id, None)                 => TypeDef(Cls, id, Nil, Tuple(Ls.empty))
     })
     
   // https://v2.ocaml.org/manual/typedecl.html#ss:typedefs
-  // TODO: handle record style type representation
   // type 'a lst = [Null | Cons of 'a * 'a lst]
   def ocamlDataConstructor[p: P]: P[List[TypeDef]] = ocamlConstructorDecl.rep(1, "|").map(_.toList)
   
@@ -455,10 +444,10 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
           case (union, tdef) => Union(unionType(tdef), union)
         }
         val helpers = bodyUpdateAdtInfo.flatMap(cls => ocamlTyDeclHelper(cls, alsName, tparams))
-        TypeDef(Als, alsName, tparams, aliasBody, Nil, S(alsName, Nil)) :: bodyUpdateAdtInfo ::: helpers ::: moreTypes.getOrElse(Nil)
+        TypeDef(Als, alsName, tparams, aliasBody, S(alsName, Nil)) :: bodyUpdateAdtInfo ::: helpers ::: moreTypes.getOrElse(Nil)
       // a type name, variable or applied type as alias
       case (tparams, tname, R((_, t)), moreTypes) =>
-        TypeDef(Als, tname, tparams, t, Nil) :: moreTypes.getOrElse(Nil)
+        TypeDef(Als, tname, tparams, t) :: moreTypes.getOrElse(Nil)
       }
     )
   
@@ -478,23 +467,21 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case params => AppliedType(alsName, params)
     }).withLocOf(tyDef)
     tyDef.kind match {
-      case Cls => {
+      case Cls =>
         tyDef.body match {
-          case Record(Nil) =>
+          case Tuple(Nil) =>
             val funAppTy = PolyType(alsParams, alsTy)
             val fun = Def(false, Var(tyDef.nme.name), R(funAppTy), true).withLocOf(tyDef.nme)
             S(fun)
-          case Record(fields) =>
-            val funArg = fields match {
-              case f :: Nil => f._2
-              case _ => Tuple(fields.map(_._2))
-            }
-            val funTy = PolyType(alsParams, Function(funArg, alsTy))
+          case args: Tuple =>
+            val funTy = PolyType(alsParams, Function(args, alsTy))
             val fun = Def(false, Var(tyDef.nme.name), R(funTy), true).withLocOf(tyDef.nme)
             S(fun)
-          case _ => N
+          case ty =>
+            val funTy = PolyType(alsParams, Function(Tuple(ty :: Nil), alsTy))
+            val fun = Def(false, Var(tyDef.nme.name), R(funTy), true).withLocOf(tyDef.nme)
+            S(fun)
         }
-      }
       case _ => N
     }
   }
@@ -514,7 +501,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   // Note: field removal types are not supposed to be explicitly used by programmers,
   //    and they won't work in negative positions,
   //    but parsing them is useful in tests (such as shared/src/test/diff/mlscript/Annoying.mls)
-  def tyNoFun[p: P]: P[Type] = P( (rcd | ctor | parTy) ~ ("\\" ~ variable).rep(0) ) map {
+  def tyNoFun[p: P]: P[Type] = P( (ctor | parTy) ~ ("\\" ~ variable).rep(0) ) map {
     case (ty, Nil) => ty
   }
   def ctor[p: P]: P[Type] = locate(P( tyName ~ "[" ~ ty.rep(0, ",") ~ "]" ) map {
@@ -525,12 +512,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       TypeName("'" + param)
     )))
   def tyVar[p: P]: P[TypeVar] = locate(P("'" ~ ident map (id => TypeVar(R("'" + id), N))))
-  def rcd[p: P]: P[Record] =
-    locate(P( "{" ~/ (variable ~ ":" ~ ty).rep(sep = ";") ~ "}" )
-      .map(_.toList.map {
-        case (v, t) => v -> t
-      } pipe Record))
-
   def parTyCell[p: P]: P[Either[Type, (Type, Boolean)]] = (("..." | kw("mut")).!.? ~ ty). map {
     case (Some("..."), t) => Left(t)
     case (Some("mut"), t) => Right(t -> true)
@@ -552,7 +533,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     */
   def ocamlExceptionDef[p: P]: P[Def] = P(
     "exception" ~ ident
-  ).map(name => Def(false, Var(name), L(Rcd(Nil)), false))
+  ).map(name => Def(false, Var(name), L(Tup(Nil)), false))
   def toplvl[p: P]: P[Ls[Statement]] =
     P(ocamlDefDecl.map(_ :: Nil) | (kw("type") ~/ ocamlTyDecl) | ocamlExceptionDef.map(_ :: Nil) | termOrAssign.map(_ :: Nil))
   /** the program consists of multiple top level blocks separated by ";"

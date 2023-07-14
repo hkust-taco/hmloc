@@ -164,7 +164,6 @@ trait UnificationSolver extends TyperDatatypes {
        if (ty.level <= lvl) ty else ty match {
          case t @ FunctionType(l, r) => extrudeTy(l); extrudeTy(r)
          case t @ ComposedType(p, l, r) => extrudeTy(l); extrudeTy(r)
-         case t @ RecordType(fs) => fs.foreach(tup => extrudeTy(tup._2))
          case t @ TupleType(fs) => fs.foreach(tup => extrudeTy(tup._2))
          case tv: TypeVariable =>
            tv.level = lvl
@@ -497,7 +496,6 @@ trait UnificationSolver extends TyperDatatypes {
         }
         case t@FunctionType(l, r) => FunctionType(freshen(l), freshen(r))(t.prov)
         case t@ComposedType(p, l, r) => ComposedType(p, freshen(l), freshen(r))(t.prov)
-        case t@RecordType(fs) => RecordType(fs.mapValues(freshen))(t.prov)
         case t@TupleType(fs) => TupleType(fs.mapValues(freshen))(t.prov)
         case e@ExtrType(_) => e
         case p@ProvType(und) => ProvType(freshen(und))(p.prov)

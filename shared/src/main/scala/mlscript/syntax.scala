@@ -31,7 +31,6 @@ final case class TypeDef(
   nme: TypeName,
   tparams: List[TypeName],
   body: Type,
-  positionals: Ls[Var],
   // maps a class to it's adt by name and maps params to adt param by position
   // for e.g. in type 'a, 'b either = Left of 'a | Right of 'b
   // Right will have an adtData = S((TypeName("either"), List(1)))
@@ -49,7 +48,6 @@ final case class Var(name: Str)                                      extends Sim
 final case class Lam(lhs: Term, rhs: Term)                           extends Term
 final case class App(lhs: Term, rhs: Term)                           extends Term
 final case class Tup(fields: Ls[Term]) extends Term
-final case class Rcd(fields: Ls[Var -> Term])                         extends Term
 final case class Sel(receiver: Term, fieldName: Var)                 extends Term
 final case class Let(isRec: Bool, name: Var, rhs: Term, body: Term)  extends Term
 /** A block of statements that are parsed and type checked together */
@@ -80,7 +78,6 @@ sealed abstract class Composed(val pol: Bool) extends Type with ComposedImpl
 final case class Union(lhs: Type, rhs: Type)             extends Composed(true)
 final case class Inter(lhs: Type, rhs: Type)             extends Composed(false)
 final case class Function(lhs: Type, rhs: Type)          extends Type
-final case class Record(fields: Ls[Var -> Type])        extends Type
 final case class Tuple(fields: Ls[Type])    extends Type
 final case class Recursive(uv: TypeVar, body: Type)      extends Type
 final case class AppliedType(base: TypeName, targs: List[Type]) extends Type
