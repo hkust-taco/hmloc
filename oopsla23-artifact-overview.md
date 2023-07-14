@@ -37,7 +37,9 @@ The `shared/src/test/diff/ocaml` directory contains tests. Some notable ones are
   - `Survey*.mls` are the example programs used in user survey described in the paper
   - `OcamlExprParser.mls` shows the subset of OCaml syntax supported by the parser
   - `LetPoly.mls` - shows let polymorphism
-  - `Scratch.mls` a blank file you can use to test out your own examples
+  
+You can edit and existing file or create a new file in the same directory to test
+your own examples.
 
 #### Reusable
 
@@ -111,3 +113,20 @@ and it will only run the modified tests.
 
 To run the web demo, compile the project with `hmlocJS/fastOptJS`, 
 then open the `local_testing.html` file in a browser.
+
+### Syntax reference
+
+| **Feature** | **Type syntax** | **Term syntax** |
+| -- | -- | -- |
+| **Basic terms and types** | | |
+| literals | true, false, 0, 1, "", etc | same |
+| function | int -> int | fun x -> x + 1 |
+| tuples | (int, int,) | (1, 2,) |
+| application | F[A] | f a |
+| variable | 'a | x |
+| let binding | | let x = s in t |
+| pattern matching | | `match t with C1(a, b, c) -> a \| C2(a, b) -> b` |
+| **Top level declarations** | | |
+| definition | val foo: T | def foo = t |
+| algebraic data type | type 'a list = Cons('a, 'a list) | Nil | Cons(1, Nil) |
+| type alias | type Foo[T] = List[T] | |

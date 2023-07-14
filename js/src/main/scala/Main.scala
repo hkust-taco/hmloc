@@ -44,8 +44,6 @@ object Main {
             s" at line $lineNum:<BLOCKQUOTE>$lineStr</BLOCKQUOTE>"
         case Success(pgrm, index) =>
           println(s"Parsed: $pgrm")
-          val (diags, (typeDefs, stmts)) = pgrm.desugared
-          // report(diags) // TODO... currently the OcamlParser does not report any in desugaring so this is fine
           val (typeCheckResult, errorResult) = checkProgramType(pgrm)
           errorResult match {
             case Some(typeCheckResult) => typeCheckResult
@@ -62,7 +60,7 @@ object Main {
                   |""".stripMargin
               // Assemble something like: `val <name>: <type> = <value>`.
               // If error occurred, leave `<no value>`.
-              typeCheckResult.zip(pgrm.desugared._2._2) foreach { case ((name, ty), origin) =>
+              typeCheckResult.zip(pgrm.desugared._2) foreach { case ((name, ty), origin) =>
                 val value = origin match {
                   // Do not extract from results if its a type declaration.
                   case Def(_, _, R(_), _) => N
@@ -112,14 +110,13 @@ object Main {
     s"<u class=\"error-underline\">$fragment</u>"
   
   def checkProgramType(pgrm: Pgrm): Ls[Option[Str] -> Str] -> Option[Str] = {
-    val (diags, (typeDefs, stmts)) = pgrm.desugared
+    val (typeDefs, stmts) = pgrm.desugared
     
-    val typer = new hmloc.Typer(
+    val typer: Typer = new hmloc.Typer(
       dbg = false,
       verbose = false,
       explainErrors = false
     ) {
-      override def reporCollisionErrors: Bool = false
       unifyMode = true
     }
     
@@ -461,7 +458,7 @@ object Helpers {
           // output("Failed to parse library")
           (typer.Ctx.init, Map.empty)
         case Success(prog, index) => {
-          val (_, (typeDefs, stmts)) = prog.desugared
+          val (typeDefs, stmts) = prog.desugared
           var ctx = typer.Ctx.init
           val raise: typer.Raise = d => ()
           var declared: Map[Str, typer.PolymorphicType] = Map.empty
