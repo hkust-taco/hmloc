@@ -249,7 +249,6 @@ trait TermImpl extends StatementImpl { self: Term =>
       case Let(isRec, name, rhs, body) => "let binding"
       case Tup(x :: Nil) => x.describe
       case Tup(xs) => "tuple"
-      case Assign(lhs, rhs) => "assignment"
       case If(_, _) => "if-else block"
     }
   }
@@ -272,7 +271,6 @@ trait TermImpl extends StatementImpl { self: Term =>
       s"let${if (isRec) " rec" else ""} $name = $rhs in $body" |> bra
     case Tup(xs) =>
       xs.iterator.map(t => t + ",").mkString(" ") |> bra
-    case Assign(lhs, rhs) => s" $lhs <- $rhs" |> bra
     case If(cond, body) => s"if $cond" + body.mkString(" then ") |> bra
   }}
 }
@@ -380,7 +378,6 @@ trait StatementImpl extends Located { self: Statement =>
     case _: Lit => Nil
     case d @ Def(_, n, b, _) => n :: d.body :: Nil
     case TypeDef(kind, nme, tparams, body, _) => nme :: tparams ::: body :: Nil
-    case Assign(lhs, rhs) => lhs :: rhs :: Nil
     case If(body, els) => body :: els
   }
 
@@ -438,7 +435,6 @@ object PrettyPrintHelper {
     case DecLit(value)  => s"DecLit($value)"
     case StrLit(value)  => s"StrLit($value)"
     case UnitLit(value)  => s"UnitLit($value)"
-    case Assign(f, v)   => s"Assign(${inspect(f)}, ${inspect(v)})"
     case If(bod, els) => s"If(${inspect(bod)}, ${els.map(inspect)})"
     case LetS(isRec, pat, rhs) => s"LetS(isRec: $isRec, pat: ${inspect(pat)}, rhs: ${inspect(rhs)}"
     case TypeDef(Cls, nme, tparams, tbody, adtData) => s"TypeDef($Cls, $nme, $tparams, $tbody) of adt: $adtData"

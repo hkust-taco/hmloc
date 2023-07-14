@@ -359,9 +359,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
           N -> tym.withProv(fprov)
         })(tp(term.toLoc, "tuple literal"))
         // TODO is this supported in ocaml
-      case Assign(lhs, rhs) =>
-        err(msg"Illegal assignment" -> prov.loco
-          :: msg"cannot assign to ${lhs.describe}" -> lhs.toLoc :: Nil)
       case pat if ctx.inPattern =>
         err(msg"Unsupported pattern shape${
           if (dbg) " ("+pat.getClass.toString+")" else ""}:", pat.toLoc)(raise)
