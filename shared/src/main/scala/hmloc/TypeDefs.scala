@@ -104,25 +104,26 @@ class TypeDefs extends UnificationSolver { self: Typer =>
       ctx.copy(tyDefs = oldDefs ++ newDefs.flatMap { td =>
         implicit val prov: TypeProvenance = tp(td.toLoc, "type definition")
         val n = td.nme
-        
+
+        // Check if the a type definition uses itself in it's body
         def checkCycle(ty: SimpleType)(implicit travsersed: Set[TypeName \/ TV]): Bool =
             // trace(s"Cycle? $ty {${travsersed.mkString(",")}}") {
             ty match {
+          // Only check type reference name for cycle
+          // expanded type can still use the type to create recursive data types
           case TypeRef(tn, _) if travsersed(L(tn)) =>
             err(msg"illegal cycle involving type ${tn}", prov.loco)
             false
-          case tr @ TypeRef(tn, targs) => checkCycle(tr.expand)(travsersed + L(tn))
           case ComposedType(_, l, r) => checkCycle(l) && checkCycle(r)
           case p: ProvType => checkCycle(p.underlying)
           case tv: TypeVariable => travsersed(R(tv)) || {
             val t2 = travsersed + R(tv)
             tv.lowerBounds.forall(checkCycle(_)(t2)) && tv.upperBounds.forall(checkCycle(_)(t2))
           }
-          case _: ExtrType | _: RigidTypeVariable | _: FunctionType | _: TupleType => true
+          case _: ExtrType | _: RigidTypeVariable | _: FunctionType | _: TupleType | _: TypeRef => true
         }
         // }()
 
-        // TODO: double check this logic
         val noCycle = checkCycle(td.bodyTy)(Set.single(L(td.nme)))
 
         def checkRegular(ty: SimpleType)(implicit reached: Map[Str, Ls[SimpleType]]): Bool = ty match {
