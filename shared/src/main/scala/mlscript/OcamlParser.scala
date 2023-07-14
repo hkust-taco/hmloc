@@ -77,23 +77,11 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case (ts, _) => Tup(ts.toList)
   })
 
-  def subtermNoSel[p: P]: P[Term] = P( parens | lit | variable | ocamlList )
-  
-  def subterm[p: P]: P[Term] = P( Index ~~ subtermNoSel ~ (
-    // Fields:
-    ("." ~/ (variable | locate(("(" ~/ ident ~ "." ~ ident ~ ")")
-      .map {case (prt, id) => Var(s"${prt}.${id}")})))
-      .map {(t: Var) => t}
-    // Assignment:
-    ).rep ~ ("<-" ~ term).?).map {
-      case (i0, st, sels, a) =>
-        val base = sels.foldLeft(st)((acc, t) => Sel(acc, t))
-        a.fold(base)(Assign(base, _))
-    }
+  def subterm[p: P]: P[Term] = P( parens | lit | variable | ocamlList )
 
   // TODO: change term to list of terms and give the list of terms as to `toParams`
   def fun[p: P]: P[Term] = locate(P( kw("fun") ~/ term ~ "->" ~ term ).map(nb => Lam(toParams(nb._1), nb._2)))
-  
+
   def let[p: P]: P[Term] = locate(P(
       kw("let") ~ kw("rec").!.?.map(_.isDefined) ~ variable ~ subterm.rep ~ "=" ~ term ~ kw("in") ~ term
     ) map {
@@ -118,9 +106,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   /** Parses an expression of the form `expr (: type) (= expr2)`. This is the
     * an important term parser because it is the one that actually parses the
     * sub terms
-    * 
+    *
     * the type ascription is optional
-    * 
+    *
     * The equality check is optional but needed for parsing ocaml style
     * equality check for terms as in the following examples
     * a [= 3]
@@ -153,7 +141,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       val trm2 = equateTerm.fold(trm1)(App(OpApp("==", trm1), _))
       tupleTerm.fold(trm2 :: Nil)(trm2 :: _)
   }
-  
+
   /** Subsitute operators with functions to handle special cases in ocaml */
   def appSubstitution: PartialFunction[Term, Term] = {
     case App(App(op, v@Var("mod")), rhs) =>
@@ -182,13 +170,13 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       t.copy(fields = newFields)
     case t => t
   }
-  def mkApp(lhs: Term, rhs: Term): Term = 
+  def mkApp(lhs: Term, rhs: Term): Term =
     App(appSubstitution(lhs), toParams(rhs))
   /** Parses where one or more subterms are applied to one subterm. It is used
     * in binops which is used in withs to parse terms.
     */
   def apps[p: P]: P[Term] = P( subterm.rep(1).map(_.reduce(mkApp)) )
-  
+
   def _match[p: P]: P[If] =
     locate(P( kw("match") ~/ term ~ "with" ~ "|".? ~ matchArms).map {
       case (expr, arms) => If(expr, arms)
@@ -229,7 +217,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case (cs,i) => cs.filterNot(_ == ' ').map(_ -> i)
   }.toMap.withDefaultValue(Int.MaxValue)
   def precedence(op: String): Int = prec(op.head) min prec(op.last)
-  
+
   // Adapted from: https://github.com/databricks/sjsonnet/blob/master/sjsonnet/src/sjsonnet/Parser.scala#L136-L180
   def binops[p: P]: P[Term] =
     P(apps ~ (Index ~~ operator.! ~~ Index ~/ apps).rep ~ "").map { case (pre, fs) =>
@@ -275,9 +263,9 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       "#", "\\", "\u21d2", "\u2190" // "@" is the infix operator for "List_append"
     ) ~~ !OpChar
   }.opaque("symbolic keywords")
-  
+
   def expr[p: P]: P[Term] = P( term ~ End )
-  
+
   /** top level function defintions using let with single and multiple arguments
    *  let ap a b = a b
    *  let :: a b = Cons a b

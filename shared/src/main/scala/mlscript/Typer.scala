@@ -26,7 +26,6 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     * `R` represents the actual method types.
     *   The first optional value is the parent name, with `N` representing implicit calls,
     *   and the second value is the method name.
-    *   (See the case for `Sel` in `typeTerm` for documentation on explicit vs. implicit calls.)
     * The public helper functions should be preferred for manipulating `mthEnv`
    */
   case class Ctx(

@@ -48,7 +48,6 @@ final case class Var(name: Str)                                      extends Sim
 final case class Lam(lhs: Term, rhs: Term)                           extends Term
 final case class App(lhs: Term, rhs: Term)                           extends Term
 final case class Tup(fields: Ls[Term]) extends Term
-final case class Sel(receiver: Term, fieldName: Var)                 extends Term
 final case class Let(isRec: Bool, name: Var, rhs: Term, body: Term)  extends Term
 /** A block of statements that are parsed and type checked together */
 final case class Blk(stmts: Ls[Statement])                           extends Term with BlkImpl

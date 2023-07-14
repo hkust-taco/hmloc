@@ -246,7 +246,6 @@ trait TermImpl extends StatementImpl { self: Term =>
       case App(OpApp(op, lhs), rhs) => "operator application"
       case OpApp(op, lhs) => "operator application"
       case App(lhs, rhs) => "application"
-      case Sel(receiver, fieldName) => "field selection"
       case Let(isRec, name, rhs, body) => "let binding"
       case Tup(x :: Nil) => x.describe
       case Tup(xs) => "tuple"
@@ -269,7 +268,6 @@ trait TermImpl extends StatementImpl { self: Term =>
     case Asc(trm, ty) => s"$trm : $ty"  |> bra
     case Lam(name, rhs) => s"$name => $rhs" |> bra
     case App(lhs, rhs) => s"${lhs.print(!lhs.isInstanceOf[App])} ${rhs.print(true)}" |> bra
-    case Sel(receiver, fieldName) => "(" + receiver.toString + ")." + fieldName
     case Let(isRec, name, rhs, body) =>
       s"let${if (isRec) " rec" else ""} $name = $rhs in $body" |> bra
     case Tup(xs) =>
@@ -376,7 +374,6 @@ trait StatementImpl extends Located { self: Statement =>
     case Lam(lhs, rhs) => lhs :: rhs :: Nil
     case App(lhs, rhs) => lhs :: rhs :: Nil
     case Tup(fields) => fields
-    case Sel(receiver, fieldName) => receiver :: fieldName :: Nil
     case Let(isRec, name, rhs, body) => rhs :: body :: Nil
     case Blk(stmts) => stmts
     case LetS(_, pat, rhs) => pat :: rhs :: Nil
@@ -434,7 +431,6 @@ object PrettyPrintHelper {
     case Tup(fields) =>
       val entries = fields.map(inspect)
       s"Tup(${entries mkString ", "})"
-    case Sel(receiver, fieldName)    => s"Sel(${inspect(receiver)}, $fieldName)"
     case Let(isRec, name, rhs, body) => s"Let($isRec, $name, ${inspect(rhs)}, ${inspect(body)})"
     case Blk(stmts)                  => s"Blk(...)"
     case Asc(trm, ty)                => s"Asc(${inspect(trm)}, $ty)"
