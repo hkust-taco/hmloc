@@ -42,7 +42,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     */
   def termOrAssign[p: P]: P[Statement] = P( term ~ ("=" ~ term).? ).map {
     case (expr, N) => expr
-    case (pat, S(bod)) => LetS(false, pat, bod)
   }
 
   /** Top level term */
@@ -336,7 +335,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
    * Can return TypeName or a Tuple or a Function
   */
   def ocamlTypeAlias[p: P]: P[(Set[TypeName], Type)] =
-    // (("(" ~/ ocamlTypeExpression ~ ")") | ocamlTypeExpression).rep(1, "*")
     (ocamlTypeFun | ("(" ~/ ocamlTypeFun ~ ")")).rep(1, "*")
     .map {
       case Seq(t) => t

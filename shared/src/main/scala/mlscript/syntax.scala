@@ -6,9 +6,11 @@ import mlscript.utils._, shorthands._
 // Terms
 ////////////////////////////////////////////////
 
-sealed trait Statement extends StatementImpl
-sealed trait Terms extends Statement
 final case class Pgrm(tops: Ls[Statement]) extends PgrmImpl
+
+sealed trait Statement extends StatementImpl
+
+sealed trait Terms extends Statement
 
 sealed abstract class Decl extends Statement with DeclImpl
 /** A Def is any function declaration in the global scope
@@ -43,8 +45,6 @@ case object Cls extends TypeDefKind("class")
 case object Als extends TypeDefKind("type alias")
 
 sealed abstract class Term                                           extends Terms with TermImpl
-sealed abstract class Lit                                            extends SimpleTerm with LitImpl
-final case class Var(name: Str)                                      extends SimpleTerm with VarImpl
 final case class Lam(lhs: Term, rhs: Term)                           extends Term
 final case class App(lhs: Term, rhs: Term)                           extends Term
 final case class Tup(fields: Ls[Term]) extends Term
@@ -59,13 +59,13 @@ sealed abstract class IfBody extends IfBodyImpl
 final case class IfThen(expr: Term, rhs: Term) extends IfBody
 final case class IfElse(expr: Term) extends IfBody
 
+sealed abstract class SimpleTerm extends Term with SimpleTermImpl
+sealed abstract class Lit                                            extends SimpleTerm
+final case class Var(name: Str)                                      extends SimpleTerm with VarImpl
 final case class IntLit(value: BigInt)            extends Lit
 final case class DecLit(value: BigDecimal)        extends Lit
 final case class StrLit(value: Str)               extends Lit
 final case class UnitLit(undefinedOrNull: Bool)   extends Lit
-
-sealed abstract class SimpleTerm extends Term with SimpleTermImpl
-final case class LetS(isRec: Bool, pat: Term, rhs: Term)  extends Statement
 
 ////////////////////////////////////////////////
 // Types

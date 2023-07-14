@@ -589,9 +589,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         warn("Previous field definitions are discarded by this returned expression.", trm.toLoc)
       typeTerm(trm)
     case s :: sts =>
-      val (diags, desug) = s.desugared
-      diags.foreach(raise)
-      val newBindings = desug.flatMap(typeStatement(_, allowPure = false).toOption)
+      val newBindings = typeStatement(s, allowPure = false).toOption
       ctx ++= newBindings.iterator.flatten.map(nt => nt._1 -> VarSymbol(nt._2, Var(nt._1)))
       typeTerms(sts, rcd, fields)
     case Nil => TupleType(fields.reverseIterator.toList)(prov)

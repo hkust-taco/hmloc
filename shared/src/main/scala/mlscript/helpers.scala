@@ -3,6 +3,7 @@ package mlscript
 import mlscript.utils._
 import mlscript.utils.shorthands._
 
+import scala.collection.mutable
 import scala.collection.mutable.{Buffer, Map => MutMap, SortedMap => SortedMutMap}
 import scala.math.Ordered.orderingToOrdered
 import scala.util.chaining._
@@ -177,17 +178,11 @@ trait TypeVarImpl extends Ordered[TypeVar] { self: TypeVar =>
 // Auxiliary definitions for terms
 
 trait PgrmImpl { self: Pgrm =>
-  lazy val desugared: (Ls[Diagnostic] -> (Ls[TypeDef], Ls[Terms])) = {
-    val diags = Buffer.empty[Diagnostic]
-    val res = tops.flatMap { s =>
-        val (ds, d) = s.desugared
-        diags ++= ds
-        d
-    }.partitionMap {
+  lazy val desugared: (Ls[TypeDef], Ls[Terms]) = {
+    tops.partitionMap {
       case td: TypeDef => L(td)
       case ot: Terms => R(ot)
    }
-    diags.toList -> res
   }
   override def toString = tops.map("" + _ + ";").mkString(" ")
 }
@@ -275,15 +270,6 @@ trait TermImpl extends StatementImpl { self: Term =>
   }}
 }
 
-trait LitImpl { self: Lit =>
-  def baseClasses: Set[TypeName] = this match {
-    case _: IntLit => Set.single(TypeName("int")) + TypeName("number")
-    case _: StrLit => Set.single(TypeName("string"))
-    case _: DecLit => Set.single(TypeName("number"))
-    case _: UnitLit => Set.empty
-  }
-}
-
 trait VarImpl { self: Var =>
   def isPatVar: Bool =
     name.head.isLetter && name.head.isLower && name =/= "true" && name =/= "false"
@@ -351,21 +337,6 @@ trait Located {
 }
 
 trait StatementImpl extends Located { self: Statement =>
-  
-  lazy val desugared = doDesugar
-  private def doDesugar: Ls[Diagnostic] -> Ls[Statement] = this match {
-    case l @ LetS(isrec, pat, rhs) =>
-      val (diags, v, args) = desugDefnPattern(pat, Nil)
-      diags -> (Def(isrec, v, L(args.foldRight(rhs)(Lam)), false).withLocOf(l) :: Nil)
-    case d: Statement => Nil -> (d :: Nil)
-  }
-  import Message._
-  protected def desugDefnPattern(pat: Term, args: Ls[Term]): (Ls[Diagnostic], Var, Ls[Term]) = pat match {
-    case App(l, r) => desugDefnPattern(l, r :: args)
-    case v: Var => (Nil, v, args)
-    case _ => (ErrorReport(msg"Unsupported pattern shape" -> pat.toLoc :: Nil) :: Nil, Var("<error>"), args) // TODO
-  }
-
   def children: List[Located] = this match {
     case Var(name) => Nil
     case Asc(trm, ty) => trm :: Nil
@@ -374,7 +345,6 @@ trait StatementImpl extends Located { self: Statement =>
     case Tup(fields) => fields
     case Let(isRec, name, rhs, body) => rhs :: body :: Nil
     case Blk(stmts) => stmts
-    case LetS(_, pat, rhs) => pat :: rhs :: Nil
     case _: Lit => Nil
     case d @ Def(_, n, b, _) => n :: d.body :: Nil
     case TypeDef(kind, nme, tparams, body, _) => nme :: tparams ::: body :: Nil
@@ -382,13 +352,11 @@ trait StatementImpl extends Located { self: Statement =>
   }
 
   override def toString: Str = this match {
-    case LetS(isRec, name, rhs) => s"let${if (isRec) " rec" else ""} $name = $rhs"
     case _: Term => super.toString
     case d: Decl => d.show
   }
 
   def describe: Str = this match {
-    case _: LetS => "let statement"
     case decl: Decl => decl.describe
     case terms: Terms => terms.describe
   }
@@ -436,7 +404,6 @@ object PrettyPrintHelper {
     case StrLit(value)  => s"StrLit($value)"
     case UnitLit(value)  => s"UnitLit($value)"
     case If(bod, els) => s"If(${inspect(bod)}, ${els.map(inspect)})"
-    case LetS(isRec, pat, rhs) => s"LetS(isRec: $isRec, pat: ${inspect(pat)}, rhs: ${inspect(rhs)}"
     case TypeDef(Cls, nme, tparams, tbody, adtData) => s"TypeDef($Cls, $nme, $tparams, $tbody) of adt: $adtData"
     case TypeDef(kind, nme, tparams, tbody, _) => s"TypeDef($kind, $nme, $tparams, $tbody)"
     case Def(rec, nme, rhs, isByname) =>

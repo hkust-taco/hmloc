@@ -185,7 +185,7 @@ class DiffTests
           output("Failed to parse library")
           (typer.Ctx.init, Map.empty)
         case Success(prog, index) => {
-          val (_, (typeDefs, stmts)) = prog.desugared
+          val (typeDefs, stmts) = prog.desugared
           var ctx = typer.Ctx.init
           val raise: typer.Raise = d => ()
           var declared: Map[Str, typer.PolymorphicType] = Map.empty
@@ -615,17 +615,16 @@ class DiffTests
 
             // In parseOnly mode file only parse and print desugared blocks for file
             // do not perform type checking or codegen or results
-            val (_, (diags, (typeDefs, stmts))) = if (parseOnly) {
-              val (_, (typeDefs, stmts)) = prog.desugared
+            val (_, (typeDefs, stmts)) = if (parseOnly) {
+              val (typeDefs, stmts) = prog.desugared
               typeDefs.foreach(td => output("Desugared: " + td))
               stmts.foreach { s =>
                 output("Desugared: " + s)
               }
-              (Pgrm(Nil), (Nil, (Nil, Nil)))
+              (Pgrm(Nil), (Nil, Nil))
             } else {
               (prog, prog.desugared)
             }
-            report(diags)
 
             val oldCtx = ctx
             ctx =
