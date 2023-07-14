@@ -25,14 +25,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def locate[p:P, L <: Located](tree: => P[L]): P[L] = (Index ~~ tree ~~ Index).map {
     case (i0, n, i1) => n.withLoc(i0, i1, origin)
   }
-  
-  /** Implicitly tupled function argument is marked differently so that
-   * type checking and error reporting can ignore it
-   */
-  def toParams(t: Term): Term = t
-
-  def toParamsTy(t: Type): Type = t
-  
   def letter[p: P]     = P( lowercase | uppercase )
   def lowercase[p: P]  = P( CharIn("a-z") )
   def uppercase[p: P]  = P( CharIn("A-Z") )
@@ -80,12 +72,12 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def subterm[p: P]: P[Term] = P( parens | lit | variable | ocamlList )
 
   // TODO: change term to list of terms and give the list of terms as to `toParams`
-  def fun[p: P]: P[Term] = locate(P( kw("fun") ~/ term ~ "->" ~ term ).map(nb => Lam(toParams(nb._1), nb._2)))
+  def fun[p: P]: P[Term] = locate(P( kw("fun") ~/ term ~ "->" ~ term ).map(nb => Lam(nb._1, nb._2)))
 
   def let[p: P]: P[Term] = locate(P(
       kw("let") ~ kw("rec").!.?.map(_.isDefined) ~ variable ~ subterm.rep ~ "=" ~ term ~ kw("in") ~ term
     ) map {
-      case (rec, id, ps, rhs, bod) => Let(rec, id, ps.foldRight(rhs)((i, acc) => Lam(toParams(i), acc)), bod)
+      case (rec, id, ps, rhs, bod) => Let(rec, id, ps.foldRight(rhs)((i, acc) => Lam(i, acc)), bod)
     })
 
   /** Patter match on the lhs of the let expression
@@ -123,7 +115,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   ).map {
     case (withs, ascs, equateTerm, tupleTerm) =>
       val trm1 = ascs.foldLeft(withs)(Asc)
-      val trm2 = equateTerm.fold(trm1)(rhs => App(OpApp("eq", toParams(trm1)), toParams(rhs)))
+      val trm2 = equateTerm.fold(trm1)(rhs => App(OpApp("eq", trm1), rhs))
       tupleTerm.fold(trm2)(trm3 => Tup(trm2 :: trm3))
   })
   /** Inner call to withsAsc term which parses a list of terms optionally
@@ -171,7 +163,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case t => t
   }
   def mkApp(lhs: Term, rhs: Term): Term =
-    App(appSubstitution(lhs), toParams(rhs))
+    App(appSubstitution(lhs), rhs)
   /** Parses where one or more subterms are applied to one subterm. It is used
     * in binops which is used in withs to parse terms.
     */
@@ -274,7 +266,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     locate(P(((kw("let") | kw("val")) ~ kw("rec").!.?.map(_.isDefined) ~ ("(" ~ operator.!.map(Var) ~ ")" | ocamlLabelName) ~ ":" ~/ ocamlFnTy map {
       case (rec, id, (tps, t)) => Def(rec, id, R(PolyType(tps.toList, t)), true)
     }) | (kw("let") ~ kw("rec").!.?.map(_.isDefined) ~/ ocamlLabelName ~ subterm.rep ~ "=" ~ term map {
-      case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(toParams(i), acc))), true)
+      case (rec, id, ps, bod) => Def(rec, id, L(ps.foldRight(bod)((i, acc) => Lam(i, acc))), true)
     })))
     
   /** Type parameters and types separated by white space
@@ -334,7 +326,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
       case parts =>
         val tparams = parts.flatMap(_._1).toSet
         val funBody = parts.init.map(_._2).foldRight(parts.last._2){
-          case (arg, ret) => Function(toParamsTy(arg), ret)
+          case (arg, ret) => Function(arg, ret)
         }
         (tparams, funBody)
     }
@@ -357,7 +349,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   /** Type alias body if it includes a function type
   */
   def ocamlFnTy[p: P]: P[(Set[TypeName], Type)] = (ocamlTypeAlias ~ ("->" ~/ ocamlFnTy).?).map {
-    case (tps, ty, S((retTps, retTy))) => (tps ++ retTps, Function(toParamsTy(ty), retTy))
+    case (tps, ty, S((retTps, retTy))) => (tps ++ retTps, Function(ty, retTy))
     case (tps, ty, N) => (tps, ty)
     case args => throw new Exception(s"Incorrect defintion for ocaml type with $args")
   }
@@ -483,7 +475,7 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
   def tyNoAs[p: P]: P[Type] = P( tyNoUnion.rep(1, "|") ).map(_.reduce(Union))
   def tyNoUnion[p: P]: P[Type] = P( tyNoInter.rep(1, "&") ).map(_.reduce(Inter))
   def tyNoInter[p: P]: P[Type] = P( tyNoFun ~ ("->" ~/ tyNoInter).? ).map {
-    case (l, S(r)) => Function(toParamsTy(l), r)
+    case (l, S(r)) => Function(l, r)
     case (l, N) => l
   }
   // Note: field removal types are not supposed to be explicitly used by programmers,
