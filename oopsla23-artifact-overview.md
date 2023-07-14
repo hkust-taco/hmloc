@@ -37,6 +37,7 @@ The `shared/src/test/diff/ocaml` directory contains tests. Some notable ones are
   - `Survey*.mls` are the example programs used in user survey described in the paper
   - `OcamlExprParser.mls` shows the subset of OCaml syntax supported by the parser
   - `LetPoly.mls` - shows let polymorphism
+  - `Realistic.mls` - shows examples that might occur in an actual codebase
   
 You can edit and existing file or create a new file in the same directory to test
 your own examples.

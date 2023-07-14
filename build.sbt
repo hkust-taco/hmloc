@@ -9,7 +9,7 @@ ThisBuild / organizationName := "LPTK"
 
 lazy val hmloc = crossProject(JSPlatform, JVMPlatform).in(file("."))
   .settings(
-    name := "mlscript",
+    name := "hmloc",
     scalacOptions ++= Seq(
       "-deprecation",
       "-feature",
