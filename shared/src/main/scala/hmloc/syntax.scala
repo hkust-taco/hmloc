@@ -1,6 +1,6 @@
-package mlscript
+package hmloc
 
-import mlscript.utils._, shorthands._
+import hmloc.utils._, shorthands._
 
 ////////////////////////////////////////////////
 // Terms

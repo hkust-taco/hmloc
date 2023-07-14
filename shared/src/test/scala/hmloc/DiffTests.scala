@@ -1,4 +1,4 @@
-package mlscript
+package hmloc
 
 import fastparse._
 import fastparse.Parsed.Failure
@@ -6,7 +6,7 @@ import fastparse.Parsed.Success
 
 import scala.collection.mutable
 import scala.collection.mutable.{Map => MutMap}
-import mlscript.utils._
+import hmloc.utils._
 import shorthands._
 import org.scalatest.{ParallelTestExecution, funsuite}
 import org.scalatest.time._
@@ -31,10 +31,6 @@ abstract class ModeType {
   def stdout: Bool
   def noExecution: Bool
   def debugVariance: Bool
-  def expectRuntimeErrors: Bool
-  def expectCodeGenErrors: Bool
-  def showRepl: Bool
-  def allowEscape: Bool
 }
 
 class DiffTests
@@ -50,10 +46,7 @@ class DiffTests
   // scala test will not execute a test if the test class has constructor parameters.
   // override this to get the correct paths of test files.
   protected lazy val files: Seq[Path] = allFiles.filter { file =>
-    val fileName = file.baseName
-    // validExt(file.ext) && filter(fileName)
     validExt(file.ext) && filter(file.relativeTo(pwd))
-    // validExt(file.ext) && filter(file.relativeTo(pwd)) && fileName.contains("UnificationError")
   }
   
   val timeLimit: Span = TimeLimit
@@ -89,8 +82,7 @@ class DiffTests
     val beginTime = System.nanoTime()
     
     val outputMarker = "//│ "
-    // val oldOutputMarker = "/// "
-    
+
     val diffBegMarker = "<<<<<<<"
     val diffMidMarker = "======="
     val diff3MidMarker = "|||||||" // * Appears under `git config merge.conflictstyle diff3` (https://stackoverflow.com/a/18131595/1518588)
@@ -133,16 +125,6 @@ class DiffTests
       stdout: Bool = false,
       noExecution: Bool = false,
       debugVariance: Bool = false,
-      expectRuntimeErrors: Bool = false,
-      expectCodeGenErrors: Bool = false,
-      showRepl: Bool = false,
-      allowEscape: Bool = false,
-      ocamlParser: Bool = false,
-      // capture nested prov, apply hueristics and find faulty locations
-      simplifyError: Bool = false,
-      // print suspicious location after block
-      suspiciousLocation: Bool = false,
-      // noProvs: Bool = false,
       unify: Bool = true,  // unify is on by default
       unifyDbg: Bool = false,
       tex: Bool = false,
@@ -157,13 +139,10 @@ class DiffTests
     var showRelativeLineNums = false
     // Parse and check the file with ocaml syntax and semantic rules
     var ocamlMode = false
-    // load mlscript type definitions of ocaml standard library constructs
+    // load type definitions of ocaml standard library constructs
     var ocamlLoadLibrary = false
     var noProvs = false
     var allowRuntimeErrors = false
-    var newParser = basePath.headOption.contains("parser") || basePath.headOption.contains("compiler")
-
-    val host = ReplHost()
 
     /** Load type definitions and function definitions from a file into ctx
       * and declared definitions. This is useful for loading ocaml standard
@@ -253,14 +232,9 @@ class DiffTests
           case "AllowParseErrors" => allowParseErrors = true; mode
           case "AllowRuntimeErrors" => allowRuntimeErrors = true; mode
           case "ShowRelativeLineNums" => showRelativeLineNums = true; mode
-          case "NewParser" => newParser = true; mode
           case "NoProvs" => noProvs = true; mode
           case "ne" => mode.copy(noExecution = true)
           case "dv" => mode.copy(debugVariance = true)
-          case "ge" => mode.copy(expectCodeGenErrors = true)
-          case "re" => mode.copy(expectRuntimeErrors = true)
-          case "ShowRepl" => mode.copy(showRepl = true)
-          case "escape" => mode.copy(allowEscape = true)
           // Parse and check the file with ocaml syntax and semantic rules
           case "OcamlParser" => ocamlMode = true; mode
           // don't load ocaml library in special cases
@@ -276,8 +250,6 @@ class DiffTests
             ctx = libCtx
             declared = libDeclared
             mode
-          case "simplifyError" => mode.copy(simplifyError = true)
-          case "sus" => mode.copy(suspiciousLocation = true)
           // unify type bounds to find errors for HM style type system
           case "unify" => mode.copy(unify = true)
           case "unifyDbg" => mode.copy(unifyDbg = true, unify = true)
@@ -328,7 +300,6 @@ class DiffTests
           // || l.startsWith(oldOutputMarker)
         ))).toIndexedSeq
         block.foreach(out.println)
-        // top level line separators are same for both mlscript and ocaml parser
         val processedBlock = OcamlParser.addTopLevelSeparators(block)
         val processedBlockStr = processedBlock.mkString
         val fph = new FastParseHelpers(block)
@@ -337,10 +308,8 @@ class DiffTests
         var totalTypeErrors = 0
         var totalParseErrors = 0
         var totalWarnings = 0
-        var totalRuntimeErrors = 0
-        var totalCodeGenErrors = 0
 
-        def report(diags: Ls[mlscript.Diagnostic], output: Str => Unit = reportOutput): Unit =
+        def report(diags: Ls[hmloc.Diagnostic], output: Str => Unit = reportOutput): Unit =
           if (mode.tex) reportBase(diags, str => output(fixTex(str))) else reportBase(diags, output)
 
         def fixTex(output: Str): Str =
@@ -436,7 +405,7 @@ class DiffTests
         }
 
         // report errors and warnings
-        def reportBase(diags: Ls[mlscript.Diagnostic], output: Str => Unit): Unit = {
+        def reportBase(diags: Ls[hmloc.Diagnostic], output: Str => Unit): Unit = {
           diags.foreach {
             case report: UniErrReport => reportUniError(report, output)
             case diag =>
@@ -600,10 +569,9 @@ class DiffTests
 
           // successfully parsed block into a valid syntactically valid program
           case Success(prog, _) =>
-            if (mode.expectParseErrors && !newParser)
+            if (mode.expectParseErrors)
               failures += blockLineNum
             if (mode.dbgParsing) output(s"Parsed: ${PrettyPrintHelper.inspect(prog)}")
-            // if (mode.isDebugging) typer.resetState()
             if (mode.stats) typer.resetStats()
             typer.dbg = mode.dbg
             typer.unifyMode = mode.unify
@@ -628,8 +596,6 @@ class DiffTests
 
             val oldCtx = ctx
             ctx =
-              // if (newParser) typer.typeTypingUnit(tu)
-              // else
               typer.processTypeDefs(typeDefs)(ctx, raise)
 
             def getType(ty: typer.TypeScheme): Type = {
@@ -715,7 +681,7 @@ class DiffTests
               diagLineBuffers.clear()
             }
 
-            // process statements and output mlscript types
+            // process statements and output types
             // all `Def`s and `Term`s are processed here
             stmts.foreach {
               // statement only declares a new term with its type
@@ -811,10 +777,6 @@ class DiffTests
               failures += blockLineNum
             if (mode.expectWarnings && totalWarnings =:= 0)
               failures += blockLineNum
-            if (mode.expectCodeGenErrors && totalCodeGenErrors =:= 0)
-              failures += blockLineNum
-            if (mode.expectRuntimeErrors && totalRuntimeErrors =:= 0)
-              failures += blockLineNum
         } catch {
           case oh_noes: ThreadDeath => throw oh_noes
           case err: Throwable =>
@@ -843,7 +805,6 @@ class DiffTests
 
     try rec(allLines, defaultMode) finally {
       out.close()
-      host.terminate()
     }
     val testFailed = failures.nonEmpty || unmergedChanges.nonEmpty
     val result = strw.toString

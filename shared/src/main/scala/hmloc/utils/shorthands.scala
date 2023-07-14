@@ -1,4 +1,4 @@
-package mlscript.utils
+package hmloc.utils
 
 import scala.annotation.showAsInfix
 import scala.util.chaining._

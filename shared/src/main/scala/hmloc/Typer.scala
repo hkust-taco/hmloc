@@ -1,8 +1,8 @@
-package mlscript
+package hmloc
 
-import mlscript.Message._
-import mlscript.utils._
-import mlscript.utils.shorthands._
+import hmloc.Message._
+import hmloc.utils._
+import hmloc.utils.shorthands._
 
 import scala.collection.mutable
 import scala.collection.mutable.{Map => MutMap}
@@ -10,7 +10,6 @@ import scala.collection.mutable.{Map => MutMap}
 /** A class encapsulating type inference state.
  *  It uses its own internal representation of types and type variables, using mutable data structures.
  *  Inferred SimpleType values are then turned into CompactType values for simplification.
- *  In order to turn the resulting CompactType into a mlscript.Type, we use `expandCompactType`.
  */
 class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     extends TypeDefs with TypeSimplifier {

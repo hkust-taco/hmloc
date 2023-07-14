@@ -1,7 +1,7 @@
-package mlscript
+package hmloc
 
-import mlscript.utils._
-import mlscript.utils.shorthands._
+import hmloc.utils._
+import hmloc.utils.shorthands._
 
 import scala.collection.mutable
 import scala.collection.mutable.{Buffer, Map => MutMap, SortedMap => SortedMutMap}
@@ -385,6 +385,7 @@ trait IfBodyImpl extends Located { self: IfBody =>
 }
 
 
+// Pretty print AST
 object PrettyPrintHelper {
   /**
     * Show how a term is actually structured.

@@ -1,4 +1,4 @@
-package mlscript.utils
+package hmloc.utils
 
 import scala.annotation.tailrec
 import scala.collection.immutable.SortedMap

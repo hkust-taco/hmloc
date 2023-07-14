@@ -1,6 +1,6 @@
-package mlscript
+package hmloc
 
-import mlscript.utils.shorthands._
+import hmloc.utils.shorthands._
 
 /**
  * A helper class to manipulate an interactive Node.js process.

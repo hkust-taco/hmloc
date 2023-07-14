@@ -1,4 +1,4 @@
-package mlscript
+package hmloc
 
 class NodeTests extends org.scalatest.funsuite.AnyFunSuite {
   

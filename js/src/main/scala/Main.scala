@@ -3,9 +3,9 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 import org.scalajs.dom
 import org.scalajs.dom.document
 import org.scalajs.dom.raw.{Event, HTMLTextAreaElement, TextEvent, UIEvent}
-import mlscript.utils._
-import mlscript._
-import mlscript.utils.shorthands._
+import hmloc.utils._
+import hmloc._
+import hmloc.utils.shorthands._
 
 import scala.util.matching.Regex
 import scala.scalajs.js
@@ -31,10 +31,10 @@ object Main {
     val tryRes = Try[Str] {
       import fastparse._
       import fastparse.Parsed.{Success, Failure}
-      import mlscript.{OcamlParser, ErrorReport, Origin}
+      import hmloc.{OcamlParser, ErrorReport, Origin}
       val lines = str.splitSane('\n').toIndexedSeq
       val processedBlock = OcamlParser.addTopLevelSeparators(lines).mkString
-      val fph = new mlscript.FastParseHelpers(str, lines)
+      val fph = new hmloc.FastParseHelpers(str, lines)
       val parser = new OcamlParser(Origin("<input>", 1, fph))
       parse(processedBlock, parser.pgrm(_), verboseFailures = false) match {
         case f: Failure =>
@@ -114,7 +114,7 @@ object Main {
   def checkProgramType(pgrm: Pgrm): Ls[Option[Str] -> Str] -> Option[Str] = {
     val (diags, (typeDefs, stmts)) = pgrm.desugared
     
-    val typer = new mlscript.Typer(
+    val typer = new hmloc.Typer(
       dbg = false,
       verbose = false,
       explainErrors = false
@@ -437,7 +437,7 @@ object Helpers {
   import os.Path
   import fastparse._
   import fastparse.Parsed.{Success, Failure}
-  import mlscript.{OcamlParser, ErrorReport, Origin}
+  import hmloc.{OcamlParser, ErrorReport, Origin}
   
   // val libPath = dir/"ocaml"/"OcamlLibrary.mls"
   

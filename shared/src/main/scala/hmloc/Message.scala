@@ -1,7 +1,7 @@
-package mlscript
+package hmloc
 
 import scala.language.implicitConversions
-import mlscript.utils._, shorthands._
+import hmloc.utils._, shorthands._
 
 final case class Message(bits: Ls[Message.Bit]) {
   def show: Str = {

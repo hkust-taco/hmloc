@@ -1,6 +1,6 @@
-package mlscript.utils
+package hmloc.utils
 
-import mlscript.utils.shorthands._
+import hmloc.utils.shorthands._
 
 class SourceLine(val content: Str, indent: Int = 0) {
   def indented: SourceLine = new SourceLine(content, indent + 1)

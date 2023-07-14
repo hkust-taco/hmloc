@@ -1,9 +1,9 @@
-package mlscript
+package hmloc
 
 import fastparse._
-import mlscript.Lexer._
-import mlscript.utils._
-import mlscript.utils.shorthands._
+import hmloc.Lexer._
+import hmloc.utils._
+import hmloc.utils.shorthands._
 
 import scala.util.chaining._
 
@@ -476,9 +476,6 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
     case (l, S(r)) => Function(l, r)
     case (l, N) => l
   }
-  // Note: field removal types are not supposed to be explicitly used by programmers,
-  //    and they won't work in negative positions,
-  //    but parsing them is useful in tests (such as shared/src/test/diff/mlscript/Annoying.mls)
   def tyNoFun[p: P]: P[Type] = P( (ctor | parTy) ~ ("\\" ~ variable).rep(0) ) map {
     case (ty, Nil) => ty
   }

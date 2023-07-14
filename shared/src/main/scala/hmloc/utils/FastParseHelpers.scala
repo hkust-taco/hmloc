@@ -1,6 +1,6 @@
-package mlscript
+package hmloc
 
-import mlscript.utils._, shorthands._
+import hmloc.utils._, shorthands._
 
 class FastParseHelpers(val blockStr: Str, val lines: collection.IndexedSeq[Str]) {
   def this(lines: IndexedSeq[Str]) = this(lines.mkString("\n"), lines)

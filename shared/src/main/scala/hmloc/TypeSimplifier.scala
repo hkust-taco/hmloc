@@ -1,7 +1,7 @@
-package mlscript
+package hmloc
 
-import mlscript.utils._
-import mlscript.utils.shorthands._
+import hmloc.utils._
+import hmloc.utils.shorthands._
 
 import scala.collection.mutable.{Map => MutMap}
 

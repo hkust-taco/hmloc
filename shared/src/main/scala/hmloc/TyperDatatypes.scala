@@ -1,7 +1,7 @@
-package mlscript
+package hmloc
 
-import mlscript.utils._
-import mlscript.utils.shorthands._
+import hmloc.utils._
+import hmloc.utils.shorthands._
 import sourcecode._
 
 abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
@@ -129,7 +129,7 @@ abstract class TyperDatatypes extends TyperHelpers { self: Typer =>
       var upperBounds: List[SimpleType],
       val nameHint: Opt[Str] = N
   )(val prov: TypeProvenance) extends SimpleType with Ordered[TypeVariable] {
-    private[mlscript] val uid: Int = { freshCount += 1; freshCount - 1 }
+    private[hmloc] val uid: Int = { freshCount += 1; freshCount - 1 }
     lazy val asTypeVar = new TypeVar(L(uid), nameHint)
     var uni: Ls[Unification] = Ls()
     var uniConcreteTypes: Set[ST] = Set.empty

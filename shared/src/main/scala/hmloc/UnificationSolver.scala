@@ -1,8 +1,8 @@
-package mlscript
+package hmloc
 
-import mlscript.Message.MessageContext
-import mlscript.utils._
-import mlscript.utils.shorthands._
+import hmloc.Message.MessageContext
+import hmloc.utils._
+import hmloc.utils.shorthands._
 
 import scala.collection.immutable.Queue
 import scala.collection.mutable

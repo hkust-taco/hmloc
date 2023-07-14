@@ -1,8 +1,8 @@
-package mlscript
+package hmloc
 
-import mlscript.Message._
-import mlscript.utils._
-import mlscript.utils.shorthands._
+import hmloc.Message._
+import hmloc.utils._
+import hmloc.utils.shorthands._
 
 import scala.collection.mutable.{Map => MutMap, Set => MutSet}
 import scala.util.chaining._
@@ -42,7 +42,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
   def tparamField(clsNme: TypeName, tparamNme: TypeName): Var =
     Var(clsNme.name + "#" + tparamNme.name)
 
-  def baseClassesOf(tyd: mlscript.TypeDef): Set[TypeName] =
+  def baseClassesOf(tyd: hmloc.TypeDef): Set[TypeName] =
     if (tyd.kind === Als) Set.empty else baseClassesOf(tyd.body)
   
   private def baseClassesOf(ty: Type): Set[TypeName] = ty match {
@@ -64,7 +64,7 @@ class TypeDefs extends UnificationSolver { self: Typer =>
     *   method to raise errors
     * @return
     */
-  def processTypeDefs(newDefs0: List[mlscript.TypeDef])(implicit ctx: Ctx, raise: Raise): Ctx = {
+  def processTypeDefs(newDefs0: List[hmloc.TypeDef])(implicit ctx: Ctx, raise: Raise): Ctx = {
     
     var allDefs = ctx.tyDefs
     val allEnv = ctx.env.clone

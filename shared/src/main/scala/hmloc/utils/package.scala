@@ -1,4 +1,4 @@
-package mlscript
+package hmloc
 
 import utils.shorthands._
 import scala.collection.mutable

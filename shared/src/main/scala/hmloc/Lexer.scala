@@ -1,4 +1,4 @@
-package mlscript
+package hmloc
 
 import fastparse._
 import fastparse.NoWhitespace._
