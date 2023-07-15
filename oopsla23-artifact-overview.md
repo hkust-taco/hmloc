@@ -21,7 +21,8 @@ of the user input source.
 - The `shared/src/main/scala/hmloc` directory contains the sources of the hmloc compiler.
 - The `shared/src/test/scala/hmloc` directory contains the implementation of the testing infrastructure.
 - The `shared/src/test/diff` directory contains hmloc tests.
-- For more documentation of the compiler codebase, please refer to `hmloc-codebase-doc.md`.
+
+**For detailed explanation of the codebase, please refer to `hmloc-codebase-doc.md`**.
 
 ### Claims to artifact evaluation badges
 
