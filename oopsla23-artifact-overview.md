@@ -124,7 +124,7 @@ then open the `local_testing.html` file in a browser.
 | **Feature** | **Type syntax** | **Term syntax** |
 | -- | -- | -- |
 | **Basic terms and types** | | |
-| literals | true, false, 0, 1, "", etc | same |
+| literals | bool, string, int | true, false, 1, 2, "hello" |
 | function | int -> int | fun x -> x + 1 |
 | tuples | (int, int,) | (1, 2,) |
 | application | F[A] | f a |
@@ -132,6 +132,5 @@ then open the `local_testing.html` file in a browser.
 | let binding | | let x = s in t |
 | pattern matching | | `match t with C1(a, b, c) -> a \| C2(a, b) -> b` |
 | **Top level declarations** | | |
-| definition | val foo: T | def foo = t |
-| algebraic data type | type 'a list = Cons('a, 'a list) | Nil | Cons(1, Nil) |
-| type alias | type Foo[T] = List[T] | |
+| definition | val foo: T | def foo x = t |
+| algebraic data type | `type 'a list = Cons of ('a, 'a list) \| Nil` | Cons(1, Nil) |

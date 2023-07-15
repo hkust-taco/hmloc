@@ -1,15 +1,12 @@
-import scala.util.Try
-import scala.scalajs.js.annotation.JSExportTopLevel
+import hmloc._
+import hmloc.utils._
+import hmloc.utils.shorthands._
 import org.scalajs.dom
 import org.scalajs.dom.document
-import org.scalajs.dom.raw.{Event, HTMLTextAreaElement, TextEvent, UIEvent}
-import hmloc.utils._
-import hmloc._
-import hmloc.utils.shorthands._
 
+import scala.scalajs.js.annotation.JSExportTopLevel
+import scala.util.Try
 import scala.util.matching.Regex
-import scala.scalajs.js
-import scala.collection.{immutable, mutable}
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -29,9 +26,9 @@ object Main {
     // println(s"Input: $str")
     val target = document.querySelector("#system-output")
     val tryRes = Try[Str] {
+      import fastparse.Parsed.{Failure, Success}
       import fastparse._
-      import fastparse.Parsed.{Success, Failure}
-      import hmloc.{OcamlParser, ErrorReport, Origin}
+      import hmloc.{OcamlParser, Origin}
       val lines = str.splitSane('\n').toIndexedSeq
       val processedBlock = OcamlParser.addTopLevelSeparators(lines).mkString
       val fph = new hmloc.FastParseHelpers(str, lines)
@@ -431,10 +428,9 @@ object Main {
 }
 
 object Helpers {
-  import os.Path
+  import fastparse.Parsed.{Failure, Success}
   import fastparse._
-  import fastparse.Parsed.{Success, Failure}
-  import hmloc.{OcamlParser, ErrorReport, Origin}
+  import hmloc.{OcamlParser, Origin}
   
   // val libPath = dir/"ocaml"/"OcamlLibrary.mls"
   
@@ -506,18 +502,9 @@ object Helpers {
   val libStr =
 """
 // common data types
+type ('a, 'b) either = Left of 'a | Right of 'b
 type 'a list = Cons of 'a * 'a list | Nil
 type 'a option = None | Some of 'a
-//│ Defined type alias list[+'a]
-//│ Defined class Cons[+'a]
-//│ Defined class Nil
-//│ Defined type alias option[+'a]
-//│ Defined class None
-//│ Defined class Some[+'a]
-//│ Cons: ('a, list['a],) -> list['a]
-//│ Nil: list[nothing]
-//│ None: option[nothing]
-//│ Some: 'a -> option['a]
 
 // helper functions
 let raise: 'a -> nothing
@@ -528,20 +515,10 @@ let print_string: string -> unit
 let print_endline: string -> unit
 let string_of_int: int -> string
 let failwith: string -> 'a
-//│ raise: anything -> nothing
-//│ fst: ('a, anything,) -> 'a
-//│ snd: (anything, 'a,) -> 'a
-//│ print_int: int -> unit
-//│ print_string: string -> unit
-//│ print_endline: string -> unit
-//│ string_of_int: int -> string
-//│ failwith: string -> nothing
 
 // string
 let (^): string -> string -> string
 let String_length: string -> int
-//│ ^: string -> string -> string
-//│ String_length: string -> int
 
 // arithmetic
 let (+): int -> int -> int
@@ -553,15 +530,6 @@ let abs: int -> int
 let mod: int -> int -> int
 let succ: int -> int
 let pred: int -> int
-//│ +: int -> int -> int
-//│ -: int -> int -> int
-//│ *: int -> int -> int
-//│ /: int -> int -> int
-//│ %: int -> int -> int
-//│ abs: int -> int
-//│ mod: int -> int -> int
-//│ succ: int -> int
-//│ pred: int -> int
 
 // comparison operators
 let (<): 'a -> 'a -> bool
@@ -571,13 +539,6 @@ let (>=): 'a -> 'a -> bool
 let (<>): 'a -> 'a -> bool
 let (==): 'a -> 'a -> bool
 let (!=): 'a -> 'a -> bool
-//│ <: anything -> anything -> bool
-//│ <=: anything -> anything -> bool
-//│ >: anything -> anything -> bool
-//│ >=: anything -> anything -> bool
-//│ <>: anything -> anything -> bool
-//│ ==: anything -> anything -> bool
-//│ !=: anything -> anything -> bool
 
 // list
 let List.length: 'a list -> int
@@ -589,15 +550,6 @@ let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 let List.hd: 'a list -> 'a
 let List.rev: 'a list -> 'a list
 let List.combine: 'a list -> 'b list -> ('a * 'b) list
-//│ List.length: list[?] -> int
-//│ List.mem: anything -> list[?] -> bool
-//│ List.append: list['a] -> list['a] -> list['a]
-//│ @: list['a] -> list['a] -> list['a]
-//│ List.map: ('a -> 'b) -> list['a] -> list['b]
-//│ List.fold_left: ('a -> 'b -> 'a) -> 'a -> list['b] -> 'a
-//│ List.hd: list['a] -> 'a
-//│ List.rev: list['a] -> list['a]
-//│ List.combine: list['a] -> list['b] -> list[('a, 'b,)]
 
 // float
 let (+.): float -> float -> float
@@ -609,21 +561,9 @@ let atan: float -> float
 let sin: float -> float
 let cos: float -> float
 let tan: float -> float
-//│ +.: float -> float -> float
-//│ -.: float -> float -> float
-//│ *.: float -> float -> float
-//│ /.: float -> float -> float
-//│ **: float -> float -> float
-//│ atan: float -> float
-//│ sin: float -> float
-//│ cos: float -> float
-//│ tan: float -> float
 
 let (&&): bool -> bool -> bool
 let (||): bool -> bool -> bool
 let not: bool -> bool
-//│ &&: bool -> bool -> bool
-//│ ||: bool -> bool -> bool
-//│ not: bool -> bool
 """
 }
