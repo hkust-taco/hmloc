@@ -61,8 +61,8 @@ artifact to reuse or extend the type system.
 
 #### Available
 
-We agree to publish our artifact under a Creative Commons license.
-Note that this hmloc type system will be open source.
+We agree to publish our artifact under the MIT License.
+We will also make the implementation open source and available online on GitHub.
 We will include the link in the final version of the manuscript.
 
 ## Artifact Requirements
