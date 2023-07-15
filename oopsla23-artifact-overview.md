@@ -8,7 +8,7 @@ OOPSLA submission number for the paper: #183
 
 ### Artifact type and format
 
-Scala source code for the HM<sup>ℓ</sup> with many examples.
+Scala source code for the HM<sup>ℓ</sup> (HMloc) with many examples.
 
 ### File organization
 
@@ -19,9 +19,9 @@ includes examples and a web demo that gives live typing and running results
 of the user input source.
 
 - The `shared/src/main/scala/hmloc` directory contains the sources of the hmloc compiler.
-  - For more documentation of the compiler codebase, please refer to `hmloc-codebase-doc.md`.
 - The `shared/src/test/scala/hmloc` directory contains the implementation of the testing infrastructure.
 - The `shared/src/test/diff` directory contains hmloc tests.
+- For more documentation of the compiler codebase, please refer to `hmloc-codebase-doc.md`.
 
 ### Claims to artifact evaluation badges
 
@@ -29,16 +29,21 @@ We claim all three badges: functional, reusable, and available.
 
 #### Functional
 
-Examples in the paper work as they are shown, which have
-desired typing and running results produced by our implementation.
-Important examples can be found in the differential test suite.
+The HMloc type system types a functional programming language with algebraic
+data types, tuples, functions. It also supports let polymorphism. This language
+uses a subset of OCaml syntax.
+
+This artifact demonstrates the error reporting technique we've implemented in
+HMloc. Type errors for programs show detailed data flow information. The artifact
+includes a test suite and many example programs and their reported errors.
 
 The `shared/src/test/diff/ocaml` directory contains tests. Some notable ones are:
   - `Survey*.mls` are the example programs used in user survey described in the paper
-  - `OcamlExprParser.mls` shows the subset of OCaml syntax supported by the parser
-  - `LetPoly.mls` - shows let polymorphism
+  - `OcamlPresentation.mls` - demonstrates a variety of errors
+  - `LetPoly.mls` - shows errors in code that uses let polymorphism
   - `Realistic.mls` - shows examples that might occur in an actual codebase
-  
+  - `OcamlExprParser.mls` shows the subset of OCaml syntax supported by the parser
+
 You can edit and existing file or create a new file in the same directory to test
 your own examples.
 
@@ -57,7 +62,7 @@ artifact to reuse or extend the type system.
 
 We agree to publish our artifact under a Creative Commons license.
 Note that this hmloc type system will be open source.
-We will provide the link after the double-blind review process.
+We will include the link in the final version of the manuscript.
 
 ## Artifact Requirements
 
@@ -72,8 +77,8 @@ a recent Java Virtual Machine (JVM), the Scala Build Tool (SBT)
 
 ### Using the Docker Image
 
-To build the docker image, one should first install Docker if it is not installed yet.
-Then, one can build an image and launch it with the following command:
+To build the docker image, one should first install Docker if it is not installed yet. [link](https://docs.docker.com/engine/install/)
+Then, one can build and launch the artifact with the following command:
 
 ```
 docker build --tag 'hmloc-oopsla23' .
@@ -92,8 +97,9 @@ Please `cd` to `hmloc/` and launch the SBT shell by typing `sbt`.
 
 ## Experimenting with HMloc
 
-We provide two ways of experimenting with HMloc and recommend using the test
-suite.
+We provide two ways of experimenting with HMloc. A test suite that runs example files and a web demo where the user can type their programs and see the results live.
+
+We recommend using the the test suite.
 
 ### Using the test suite
 
@@ -102,13 +108,11 @@ launch SBT and then use the SBT command `~hmlocJVM/testOnly hmloc.DiffTests`.
 
 The test output is inserted as comments beginning with `//│` in the test file,
 immediately after each corresponding code block.
-We recommend using an editor that automatically reloads open files on changes
-so that the test results for each code block can be easily seen.
 
 If there are any unstaged changes (as determined by `git`),
-only the corresponding files will be tested in any test file (those in shared/src/test/diff).
-One may make modifications to some test files and rerun the test command,
-and it will only run the modified tests.
+only the test files with those changes will be run (those in `shared/src/test/diff`). You may modify test files to run your own examples.
+
+We recommend using an editor that automatically reloads open files on changes so that the test results for each code block can be easily seen.
 
 ### Web demo
 

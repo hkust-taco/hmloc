@@ -2,29 +2,32 @@
 
 ## Overview
 
-The codebase of HM<sup>ℓ</sup> has all basic components
-of a static type checker: lexer, parser, typer (but no code generation).
-For testing, there is a web demo of HMloc as well as a test suite.
+The codebase of HM<sup>ℓ</sup> (HMloc) has all basic components
+of a type checker: lexer, parser, typer (but no code generation).
+For testing, there is a test suite and a web demo.
+
 We now give a high-level introduction to each compiler component and its correspondence to
 our Scala sources. Note that source file paths are rooted in `/shared/src/main/scala/hmloc`.
 
 ## Lexing
 
-Class `Lexer` in `Lexer.scala` is the lexer class. It takes an `origin` object,
+Class `Lexer` in `Lexer.scala` is the lexer class. It takes an `origin` object
 which contains the original source string together with the source file name,
-the number of the first line, and some helper functions. Scala native types are
-used as token types.
+the number of the first line, and some helper functions. **Each token has information
+about the source code location where it was introduced.**
+
+Scala native types are used as token types.
 
 ### Parsing
 
 Class `OcamlParser` in `OcamlParser.scala` is the parser class. It uses parser
 combinators functions to parse a subset of OCaml syntax. It consumes the source
-and produces syntax data types. Method `pgrm` splits the souce by the separator
-into blocks that parsed by `toplvl` method. It allows type declarations,
+and produces terms. Method `pgrm` splits the source by the separator
+into blocks that are parsed by `toplvl` method. `toplvl` parses type declarations,
 function declarations or other terms.
 
 File `syntax.scala` contains surface syntax data types of HMloc
-which are *immutable*, different from internal representations in the
+which are *immutable*, and different from internal representations in the
 typer for later type inference.  Here we introduce several surface syntax
 data types:
 
@@ -32,7 +35,7 @@ data types:
   declaration, a `Cls` for data constructor, `Als` for type constructor.
 - Class `Def` defines top level functions
 - Class `Term` includes HMloc term data types.
-- Class `IfBody` defines terms for if-then-else and match-with.
+- Class `IfBody` terms for the body of an if-then-else and match-with term.
 - Class `Type` defines surface level types.
 
 ## Typing
@@ -81,8 +84,8 @@ The `Typer` also defines builtin bindings and types.
 - Class `TypeProvenance` stores the source code location where a type is introduced.
 
 It has two methods for typing -
-* `typeTerm` accepts a term and types it. It also tracks the source code location
-  of the term using type provenance. When two inferred types need to be unified
+* `typeTerm` accepts a term and types it. **It also tracks the source code location
+  of the term using a `TypeProvenance`**. When two inferred types need to be unified
   it generates a data flow constraint and passes it on to the `UnificationSolver`
 * `typeType` accepts a surface level type and converts it into an internal type
   representation.
@@ -94,11 +97,10 @@ adds them to the `Ctx`.
 ## Unification
 
 `UnificationSolver.scala` defines the `UnificationSolver` class which unifies types.
-As described in the corresponding paper, it tracks the provenances of the unified
-types.
-
 Unification is particularly interesting because it tracks the data flow through
-source code locations.
+source code locations. As described in the corresponding paper, it uses
+the provenance of types, which contains the source code locations,
+to track the data flow.
 
 - class `Unification` stores a sequence of data flows that shows how two types are unified
 - abstract class `DataFlow` shows how two types are unified
