@@ -126,7 +126,7 @@ then open the `local_testing.html` file in a browser.
 | -- | -- | -- |
 | **Basic terms and types** | | |
 | literals | bool, string, int | true, false, 1, 2, "hello" |
-| function | int -> int | fun x -> x + 1 |
+| function | int -> int | fun x -> x + 1, fun (x, y) -> x + y |
 | tuples | (int, int,) | (1, 2,) |
 | application | F[A] | f a |
 | variable | 'a | x |
