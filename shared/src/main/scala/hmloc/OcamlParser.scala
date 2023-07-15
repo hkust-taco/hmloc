@@ -451,12 +451,8 @@ class OcamlParser(origin: Origin, indent: Int = 0, recordLocations: Bool = true)
             val funAppTy = PolyType(alsParams, alsTy)
             val fun = Def(false, Var(tyDef.nme.name), R(funAppTy), true).withLocOf(tyDef.nme)
             S(fun)
-          case args: Tuple =>
-            val funTy = PolyType(alsParams, Function(args, alsTy))
-            val fun = Def(false, Var(tyDef.nme.name), R(funTy), true).withLocOf(tyDef.nme)
-            S(fun)
           case ty =>
-            val funTy = PolyType(alsParams, Function(Tuple(ty :: Nil), alsTy))
+            val funTy = PolyType(alsParams, Function(ty, alsTy))
             val fun = Def(false, Var(tyDef.nme.name), R(funTy), true).withLocOf(tyDef.nme)
             S(fun)
         }
