@@ -51,7 +51,7 @@ let bigAdd l1 l2 =
 //│                   ^^^^^^^
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
-//│         (int) <--- (?a) ~~~~ (?b) ---> (_ * _)
+//│         (int) <--- (?b) ~~~~ (?a) ---> (_ * _)
 //│ 
 //│ ◉ (int) comes from
 //│ ▲  - lib. let (+): int -> int -> int
@@ -59,19 +59,19 @@ let bigAdd l1 l2 =
 //│ │  - l.3      let f a x = (a + x) mod 10 in
 //│ │                          ^
 //│ │ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│    - l.3      let f a x = (a + x) mod 10 in
 //│                     ^
-//│   ◉ (?a -> _ -> int) comes from
+//│   ◉ (?b -> _ -> int) comes from
 //│   │  - l.3      let f a x = (a + x) mod 10 in
 //│   │                   ^^^^^^^^^^^^^^^^^^^^
 //│   │  - l.6      let (_,res) = List.fold_left f base args in res in
 //│   │                                          ^
 //│   ▼ 
-//│   ◉ (?b -> _ -> ?b) comes from
+//│   ◉ (?a -> _ -> ?a) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                   ^^^^^^^^^^^^^^
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.6      let (_,res) = List.fold_left f base args in res in
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -160,19 +160,19 @@ let bigAdd l1 l2 =
   removeZero (add (padZero l1 l2));;
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
-//│         (_ list) ---> (?a) <--- (?b) ---> (_ * _)
+//│         (_ list) ---> (?b) <--- (?a) ---> (_ * _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.5        if x = []
 //│ │                      ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.5        if x = []
 //│ │                  ^
 //│ │  - l.3      let f a x =
 //│ │                     ^
 //│ │ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.3      let f a x =
 //│ │                     ^
 //│ │  - l.8          (let (toSum1,toSum2) = x in
@@ -183,7 +183,7 @@ let bigAdd l1 l2 =
 //│                        ^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ~~~~ (?a) ~~~~ (?b) ~~~~ (?c) ---> (?d) <--- (_ list)
+//│         (_ * _) ~~~~ (?b) ~~~~ (?c) ~~~~ (?d) ---> (?a) <--- (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
@@ -194,11 +194,11 @@ let bigAdd l1 l2 =
 //│   │  - l.14     let args = List.rev (List.combine l1 l2) in
 //│   │                                 ^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?a list) comes from
+//│   ◉ (?b list) comes from
 //│      - lib. let List.rev: 'a list -> 'a list
 //│                           ^^^^^^^
-//│ ◉ (?a) is assumed for
-//│   ◉ (?a list) comes from
+//│ ◉ (?b) is assumed for
+//│   ◉ (?b list) comes from
 //│   │  - lib. let List.rev: 'a list -> 'a list
 //│   │                                  ^^^^^^^
 //│   │  - l.14     let args = List.rev (List.combine l1 l2) in
@@ -206,36 +206,36 @@ let bigAdd l1 l2 =
 //│   │  - l.15     let (_,res) = List.fold_left f base args in res in
 //│   │                                                 ^^^^
 //│   ▼ 
-//│   ◉ (?b list) comes from
+//│   ◉ (?c list) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                                            ^^^^^^^
-//│ ◉ (?b) is assumed for
-//│   ◉ (?b -> _) comes from
+//│ ◉ (?c) is assumed for
+//│   ◉ (?c -> _) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│     ◉ (_ -> ?b -> _) comes from
+//│     ◉ (_ -> ?c -> _) comes from
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
 //│     │  - l.15     let (_,res) = List.fold_left f base args in res in
 //│     │                                          ^
 //│     │ 
-//│     ◉ (_ -> ?c -> _) comes from
+//│     ◉ (_ -> ?d -> _) comes from
 //│        - l.3      let f a x =
 //│                         ^^^^^
 //│                     let (carry,currentSum) = a in ...
 //│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (?c -> _) comes from
+//│   ◉ (?d -> _) comes from
 //│      - l.3      let f a x =
 //│                         ^^^
 //│                   let (carry,currentSum) = a in ...
 //│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?c) is assumed for
+//│ ◉ (?d) is assumed for
 //│ │  - l.3      let f a x =
 //│ │                     ^
 //│ │  - l.5        if x = []
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?d) is assumed for
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.5        if x = []
 //│ │                      ^^
 //│ │ 
@@ -244,7 +244,7 @@ let bigAdd l1 l2 =
 //│                        ^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
-//│         (_ list) ---> (?a) <--- (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ * _)
+//│         (_ list) ---> (?a) <--- (?c) ~~~~ (?b) ~~~~ (?c) ---> (_ * _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.5        if x = []
@@ -254,15 +254,15 @@ let bigAdd l1 l2 =
 //│ ▲  - l.5        if x = []
 //│ │                  ^
 //│ │ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?c) is assumed for
 //│    - l.3      let f a x =
 //│                       ^
-//│   ◉ (?b -> _) comes from
+//│   ◉ (?c -> _) comes from
 //│      - l.3      let f a x =
 //│                         ^^^
 //│                   let (carry,currentSum) = a in ...
 //│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> ?b -> _) comes from
+//│     ◉ (_ -> ?c -> _) comes from
 //│     │  - l.3      let f a x =
 //│     │                   ^^^^^
 //│     │               let (carry,currentSum) = a in ...
@@ -270,33 +270,33 @@ let bigAdd l1 l2 =
 //│     │  - l.15     let (_,res) = List.fold_left f base args in res in
 //│     │                                          ^
 //│     ▼ 
-//│     ◉ (_ -> ?c -> _) comes from
+//│     ◉ (_ -> ?b -> _) comes from
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (?c -> _) comes from
+//│   ◉ (?b -> _) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│ ◉ (?c) is assumed for
-//│   ◉ (?c -> _) comes from
+//│ ◉ (?b) is assumed for
+//│   ◉ (?b -> _) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│     ◉ (_ -> ?c -> _) comes from
+//│     ◉ (_ -> ?b -> _) comes from
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
 //│     │  - l.15     let (_,res) = List.fold_left f base args in res in
 //│     │                                          ^
 //│     │ 
-//│     ◉ (_ -> ?b -> _) comes from
+//│     ◉ (_ -> ?c -> _) comes from
 //│        - l.3      let f a x =
 //│                         ^^^^^
 //│                     let (carry,currentSum) = a in ...
 //│                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (?b -> _) comes from
+//│   ◉ (?c -> _) comes from
 //│      - l.3      let f a x =
 //│                         ^^^
 //│                   let (carry,currentSum) = a in ...
 //│                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?b) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.3      let f a x =
 //│ │                     ^
 //│ │  - l.8          (let (toSum1,toSum2) = x in
@@ -393,7 +393,7 @@ let bigMul l1 l2 =
 //│                                     ^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│         (_ * _) ---> (?b) ---> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -401,7 +401,7 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
@@ -409,7 +409,7 @@ let bigMul l1 l2 =
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ │  - l.-36  if (List.length l1) > (List.length l2)
@@ -420,7 +420,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│         (_ * _) ---> (?b) ---> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -428,7 +428,7 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
@@ -436,7 +436,7 @@ let bigMul l1 l2 =
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ │  - l.-32    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
@@ -447,7 +447,7 @@ let bigMul l1 l2 =
 //│                               ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│         (_ * _) ---> (?b) ---> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -455,7 +455,7 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
@@ -463,7 +463,7 @@ let bigMul l1 l2 =
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ │  - l.-32    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
@@ -474,7 +474,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│         (_ * _) ---> (?b) ---> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -482,7 +482,7 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
@@ -490,7 +490,7 @@ let bigMul l1 l2 =
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ │  - l.-35  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
@@ -501,7 +501,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ---> (_ list)
+//│         (_ * _) ---> (?b) ---> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -509,7 +509,7 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
@@ -517,7 +517,7 @@ let bigMul l1 l2 =
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ │  - l.-33    if (List.length l1) < (List.length l2)
@@ -528,7 +528,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ---> (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -536,16 +536,16 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
 //│ │                                    ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│    - l.-37let padZero l1 l2 =
 //│                       ^^
-//│   ◉ (?b * _) comes from
+//│   ◉ (?a * _) comes from
 //│   │  - l.-31    else (l1, l2);;
 //│   │                  ^^^^^^^^
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
@@ -553,7 +553,7 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
@@ -585,7 +585,7 @@ let bigMul l1 l2 =
 //│                             ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ~~~~ (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -593,16 +593,16 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
 //│ │                                    ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│    - l.-37let padZero l1 l2 =
 //│                       ^^
-//│   ◉ (?b * _) comes from
+//│   ◉ (?a * _) comes from
 //│   │  - l.-31    else (l1, l2);;
 //│   │                  ^^^^^^^^
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
@@ -610,7 +610,7 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
@@ -654,7 +654,7 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
@@ -670,7 +670,7 @@ let bigMul l1 l2 =
 //│                                          ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ~~~~ (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -678,16 +678,16 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
 //│ │                                    ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│    - l.-37let padZero l1 l2 =
 //│                       ^^
-//│   ◉ (?b * _) comes from
+//│   ◉ (?a * _) comes from
 //│   │  - l.-31    else (l1, l2);;
 //│   │                  ^^^^^^^^
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
@@ -695,7 +695,7 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
@@ -739,16 +739,16 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b * _) comes from
+//│   ◉ (?a * _) comes from
 //│      - l.-31    else (l1, l2);;
 //│                      ^^^^^^^^
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ │  - l.-36  if (List.length l1) > (List.length l2)
@@ -759,7 +759,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ~~~~ (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -767,16 +767,16 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
 //│ │                                    ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│    - l.-37let padZero l1 l2 =
 //│                       ^^
-//│   ◉ (?b * _) comes from
+//│   ◉ (?a * _) comes from
 //│   │  - l.-31    else (l1, l2);;
 //│   │                  ^^^^^^^^
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
@@ -784,7 +784,7 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
@@ -828,16 +828,16 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b * _) comes from
+//│   ◉ (?a * _) comes from
 //│      - l.-31    else (l1, l2);;
 //│                      ^^^^^^^^
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ │  - l.-32    then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2)
@@ -848,7 +848,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ~~~~ (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -856,16 +856,16 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
 //│ │                                    ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│    - l.-37let padZero l1 l2 =
 //│                       ^^
-//│   ◉ (?b * _) comes from
+//│   ◉ (?a * _) comes from
 //│   │  - l.-31    else (l1, l2);;
 //│   │                  ^^^^^^^^
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
@@ -873,7 +873,7 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
@@ -917,16 +917,16 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b * _) comes from
+//│   ◉ (?a * _) comes from
 //│      - l.-31    else (l1, l2);;
 //│                      ^^^^^^^^
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ │  - l.-35  then (l1, ((clone 0 ((List.length l1) - (List.length l2))) @ l2))
@@ -937,7 +937,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?a) ---> (?b) ~~~~ (?c) ~~~~ (?b) ---> (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ~~~~ (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -945,16 +945,16 @@ let bigMul l1 l2 =
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.-26let bigAdd l1 l2 =
 //│ │                    ^^
 //│ │  - l.-17  removeZero (add (padZero l1 l2));;
 //│ │                                    ^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│    - l.-37let padZero l1 l2 =
 //│                       ^^
-//│   ◉ (?b * _) comes from
+//│   ◉ (?a * _) comes from
 //│   │  - l.-31    else (l1, l2);;
 //│   │                  ^^^^^^^^
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
@@ -962,7 +962,7 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   │  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
@@ -1006,16 +1006,16 @@ let bigMul l1 l2 =
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.-33    if (List.length l1) < (List.length l2)
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │             then (((clone 0 ((List.length l2) - (List.length l1))) @ l1), l2) ...
 //│   │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?b * _) comes from
+//│   ◉ (?a * _) comes from
 //│      - l.-31    else (l1, l2);;
 //│                      ^^^^^^^^
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.-37let padZero l1 l2 =
 //│ │                     ^^
 //│ │  - l.-33    if (List.length l1) < (List.length l2)
@@ -1026,7 +1026,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `int * _ list` does not match `_ -> _`
 //│ 
-//│         (int * _ list) ---> (?a) ~~~~ (?b) <--- (?c) <--- (?d) <--- (_ -> _)
+//│         (int * _ list) ---> (?a) ~~~~ (?b) <--- (?d) <--- (?c) <--- (_ -> _)
 //│ 
 //│ ◉ (int * _ list) comes from
 //│ │  - l.6    let base = (0, []) in
@@ -1064,7 +1064,7 @@ let bigMul l1 l2 =
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?c) is assumed for
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.4      let (carry,res) = a in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1072,7 +1072,7 @@ let bigMul l1 l2 =
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?d) is assumed for
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1085,7 +1085,7 @@ let bigMul l1 l2 =
 //│             ^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `int * _ list` does not match `_ list`
 //│ 
-//│         (int * _ list) ---> (?a) ~~~~ (?b) <--- (?c) <--- (?d) <--- (_ list)
+//│         (int * _ list) ---> (?a) ~~~~ (?b) <--- (?d) <--- (?c) <--- (_ list)
 //│ 
 //│ ◉ (int * _ list) comes from
 //│ │  - l.6    let base = (0, []) in
@@ -1123,7 +1123,7 @@ let bigMul l1 l2 =
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?c) is assumed for
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.4      let (carry,res) = a in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1131,7 +1131,7 @@ let bigMul l1 l2 =
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?d) is assumed for
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -1140,7 +1140,7 @@ let bigMul l1 l2 =
 //│                                     ^^
 //│ [ERROR] Type `_ -> _` does not match `_ * _`
 //│ 
-//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ---> (_ * _)
+//│         (_ -> _) ---> (?c) ---> (?d) ---> (?b) ~~~~ (?a) ---> (_ * _)
 //│ 
 //│ ◉ (_ -> _) comes from
 //│ │  - l.-26let bigAdd l1 l2 =
@@ -1152,7 +1152,7 @@ let bigMul l1 l2 =
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.4      let (carry,res) = a in
@@ -1160,23 +1160,23 @@ let bigMul l1 l2 =
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?d) is assumed for
 //│ │  - l.4      let (carry,res) = a in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed for
+//│ ◉ (?b) is assumed for
 //│    - l.3      let (x1,x2) = x in
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?c) comes from
+//│   ◉ (_ -> ?b) comes from
 //│      - l.2    let f a x =
 //│                       ^^^
 //│                 let (x1,x2) = x in ...
 //│                 ^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> ?c) comes from
+//│     ◉ (_ -> _ -> ?b) comes from
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
 //│     │             let (x1,x2) = x in ...
@@ -1184,13 +1184,13 @@ let bigMul l1 l2 =
 //│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│     │                                            ^
 //│     ▼ 
-//│     ◉ (?d -> _ -> ?d) comes from
+//│     ◉ (?a -> _ -> ?a) comes from
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?d) comes from
+//│   ◉ (_ -> ?a) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│ ◉ (?d) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -1199,7 +1199,7 @@ let bigMul l1 l2 =
 //│                 ^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
-//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ---> (_ * _)
+//│         (_ list) ---> (?c) ---> (?d) ---> (?b) ~~~~ (?a) ---> (_ * _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1207,7 +1207,7 @@ let bigMul l1 l2 =
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.4      let (carry,res) = a in
@@ -1215,23 +1215,23 @@ let bigMul l1 l2 =
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?d) is assumed for
 //│ │  - l.4      let (carry,res) = a in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed for
+//│ ◉ (?b) is assumed for
 //│    - l.3      let (x1,x2) = x in
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?c) comes from
+//│   ◉ (_ -> ?b) comes from
 //│      - l.2    let f a x =
 //│                       ^^^
 //│                 let (x1,x2) = x in ...
 //│                 ^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> ?c) comes from
+//│     ◉ (_ -> _ -> ?b) comes from
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
 //│     │             let (x1,x2) = x in ...
@@ -1239,13 +1239,13 @@ let bigMul l1 l2 =
 //│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│     │                                            ^
 //│     ▼ 
-//│     ◉ (?d -> _ -> ?d) comes from
+//│     ◉ (?a -> _ -> ?a) comes from
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?d) comes from
+//│   ◉ (_ -> ?a) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│ ◉ (?d) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│ │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -1254,7 +1254,7 @@ let bigMul l1 l2 =
 //│                 ^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
-//│         (_ list) <--- (?a) ~~~~ (?b) ---> (_ -> _)
+//│         (_ list) <--- (?a) ~~~~ (?c) ---> (_ -> _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ ▲  - lib. let List.rev: 'a list -> 'a list
@@ -1301,7 +1301,7 @@ let bigMul l1 l2 =
 //│                        ^^
 //│ [ERROR] Type `_ -> _` does not match `_ * _`
 //│ 
-//│         (_ -> _) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?e) ---> (_ * _)
+//│         (_ -> _) ---> (?b) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?c) ---> (_ * _)
 //│ 
 //│ ◉ (_ -> _) comes from
 //│ │  - l.-26let bigAdd l1 l2 =
@@ -1313,7 +1313,7 @@ let bigMul l1 l2 =
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.4      let (carry,res) = a in
@@ -1321,23 +1321,23 @@ let bigMul l1 l2 =
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?d) is assumed for
 //│ │  - l.4      let (carry,res) = a in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed for
+//│ ◉ (?e) is assumed for
 //│    - l.3      let (x1,x2) = x in
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?c) comes from
+//│   ◉ (_ -> ?e) comes from
 //│      - l.2    let f a x =
 //│                       ^^^
 //│                 let (x1,x2) = x in ...
 //│                 ^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (?d -> _ -> ?c) comes from
+//│     ◉ (?c -> _ -> ?e) comes from
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
 //│     │             let (x1,x2) = x in ...
@@ -1345,25 +1345,25 @@ let bigMul l1 l2 =
 //│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│     │                                            ^
 //│     ▼ 
-//│     ◉ (?e -> _ -> ?e) comes from
+//│     ◉ (?a -> _ -> ?a) comes from
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?e) comes from
+//│   ◉ (_ -> ?a) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│ ◉ (?e) is assumed for
-//│   ◉ (?e -> _ -> ?e) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a -> _ -> ?a) comes from
 //│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│   │                               ^^^^^^^^^^^^^^
 //│   │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│   │                                            ^
 //│   │ 
-//│   ◉ (?d -> _ -> ?c) comes from
+//│   ◉ (?c -> _ -> ?e) comes from
 //│      - l.2    let f a x =
 //│                     ^^^^^
 //│                 let (x1,x2) = x in ...
 //│                 ^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?d) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.2    let f a x =
 //│ │                 ^
 //│ │  - l.4      let (carry,res) = a in
@@ -1374,7 +1374,7 @@ let bigMul l1 l2 =
 //│                   ^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
-//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?e) ---> (_ * _)
+//│         (_ list) ---> (?b) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?c) ---> (_ * _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1382,7 +1382,7 @@ let bigMul l1 l2 =
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.4      let (carry,res) = a in
@@ -1390,23 +1390,23 @@ let bigMul l1 l2 =
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?d) is assumed for
 //│ │  - l.4      let (carry,res) = a in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed for
+//│ ◉ (?e) is assumed for
 //│    - l.3      let (x1,x2) = x in
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?c) comes from
+//│   ◉ (_ -> ?e) comes from
 //│      - l.2    let f a x =
 //│                       ^^^
 //│                 let (x1,x2) = x in ...
 //│                 ^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (?d -> _ -> ?c) comes from
+//│     ◉ (?c -> _ -> ?e) comes from
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
 //│     │             let (x1,x2) = x in ...
@@ -1414,25 +1414,25 @@ let bigMul l1 l2 =
 //│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│     │                                            ^
 //│     ▼ 
-//│     ◉ (?e -> _ -> ?e) comes from
+//│     ◉ (?a -> _ -> ?a) comes from
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?e) comes from
+//│   ◉ (_ -> ?a) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│ ◉ (?e) is assumed for
-//│   ◉ (?e -> _ -> ?e) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a -> _ -> ?a) comes from
 //│   ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│   │                               ^^^^^^^^^^^^^^
 //│   │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│   │                                            ^
 //│   │ 
-//│   ◉ (?d -> _ -> ?c) comes from
+//│   ◉ (?c -> _ -> ?e) comes from
 //│      - l.2    let f a x =
 //│                     ^^^^^
 //│                 let (x1,x2) = x in ...
 //│                 ^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?d) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.2    let f a x =
 //│ │                 ^
 //│ │  - l.4      let (carry,res) = a in
@@ -1443,7 +1443,7 @@ let bigMul l1 l2 =
 //│                   ^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
-//│         (_ list) ---> (?a) ---> (?b) ---> (?c) ~~~~ (?d) ~~~~ (?c) <--- (?b) <--- (?a) <--- (_ -> _)
+//│         (_ list) ---> (?c) ---> (?d) ---> (?b) ~~~~ (?a) ~~~~ (?b) <--- (?d) <--- (?c) <--- (_ -> _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1451,7 +1451,7 @@ let bigMul l1 l2 =
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.4      let (carry,res) = a in
@@ -1459,23 +1459,23 @@ let bigMul l1 l2 =
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?d) is assumed for
 //│ │  - l.4      let (carry,res) = a in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed for
+//│ ◉ (?b) is assumed for
 //│    - l.3      let (x1,x2) = x in
 //│               ^^^^^^^^^^^^^^^^^^
 //│               let (carry,res) = a in ...
 //│               ^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?c) comes from
+//│   ◉ (_ -> ?b) comes from
 //│      - l.2    let f a x =
 //│                       ^^^
 //│                 let (x1,x2) = x in ...
 //│                 ^^^^^^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> _ -> ?c) comes from
+//│     ◉ (_ -> _ -> ?b) comes from
 //│     │  - l.2    let f a x =
 //│     │                 ^^^^^
 //│     │             let (x1,x2) = x in ...
@@ -1483,33 +1483,33 @@ let bigMul l1 l2 =
 //│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│     │                                            ^
 //│     ▼ 
-//│     ◉ (?d -> _ -> ?d) comes from
+//│     ◉ (?a -> _ -> ?a) comes from
 //│        - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                     ^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?d) comes from
+//│   ◉ (_ -> ?a) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│ ◉ (?d) is assumed for
-//│   ◉ (_ -> ?d) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (_ -> ?a) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                         ^^^^^^^^
-//│     ◉ (?d -> _ -> ?d) comes from
+//│     ◉ (?a -> _ -> ?a) comes from
 //│     ▲  - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│     │                               ^^^^^^^^^^^^^^
 //│     │  - l.8    let (carry,res) = List.fold_left f base args in [carry] @ res;;
 //│     │                                            ^
 //│     │ 
-//│     ◉ (_ -> _ -> ?c) comes from
+//│     ◉ (_ -> _ -> ?b) comes from
 //│        - l.2    let f a x =
 //│                       ^^^^^
 //│                   let (x1,x2) = x in ...
 //│                   ^^^^^^^^^^^^^^^^^^^^^^
-//│   ◉ (_ -> ?c) comes from
+//│   ◉ (_ -> ?b) comes from
 //│      - l.2    let f a x =
 //│                       ^^^
 //│                 let (x1,x2) = x in ...
 //│                 ^^^^^^^^^^^^^^^^^^^^^^
-//│ ◉ (?c) is assumed for
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.3      let (x1,x2) = x in
 //│ │             ^^^^^^^^^^^^^^^^^^
 //│ │             let (carry,res) = a in ...
@@ -1519,7 +1519,7 @@ let bigMul l1 l2 =
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?d) is assumed for
 //│ ▲  - l.4      let (carry,res) = a in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^
 //│ │             match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1527,7 +1527,7 @@ let bigMul l1 l2 =
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
 //│ │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1589,7 +1589,7 @@ let rec additivePersistence n =
   | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (bool) ---> (?a) ---> (?b) <--- (int)
+//│         (bool) ---> (?b) ---> (?a) <--- (int)
 //│ 
 //│ ◉ (bool) comes from
 //│ │  - l.4    | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
@@ -1597,7 +1597,7 @@ let rec additivePersistence n =
 //│ │  - l.4    | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
 //│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ │  - l.4    | h::t -> if (addNumbs (h :: t)) >= 10 then false else true;;
 //│ │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.2    match digits n with
@@ -1605,7 +1605,7 @@ let rec additivePersistence n =
 //│ │           | [] -> 0 ...
 //│ │           ^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.2    match digits n with
 //│ │           ^^^^^^^^^^^^^^^^^^^
 //│ │           | [] -> 0 ...

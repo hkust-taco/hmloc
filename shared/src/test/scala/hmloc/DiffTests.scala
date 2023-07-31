@@ -319,7 +319,7 @@ class DiffTests
             .replaceAll("╟──", "")
             .replaceAll("║  ", "  ")
 
-        def reportUniError(err: UniErrReport, output: Str => Unit, show: Opt[ShowCtx] = N): Unit = {
+        def reportUniError(err: UniErrReport, output: Str => Unit): Unit = {
           def outputMsg(info: (Message, Ls[Loc], Bool, Int, Bool), sctx: ShowCtx): Unit = {
             val (msg, locs, dir, level, last) = info
             val levelOffset = " " * (level * 2)
@@ -385,8 +385,7 @@ class DiffTests
               if (idx == locs.length - 1 && !last) output(locPre)
             }
           }
-          val (mainMsg, seqStr, msgs, _, _) = UniErrReport.unapply(err).get
-          val sctx = show.getOrElse(Message.mkCtx(err.allMsgs.map(_._1), "?"))
+          val (mainMsg, seqStr, msgs, sctx, _, _) = UniErrReport.unapply(err).get
 
           if (err.level == 0) {
             val mainPre = "[ERROR] "
@@ -400,7 +399,7 @@ class DiffTests
 
           msgs.zipWithIndex.foreach{
             case (L(msg), i) => outputMsg(msg, sctx)
-            case (R(report), _) => reportUniError(report, output, S(sctx))
+            case (R(report), _) => reportUniError(report, output)
           }
         }
 

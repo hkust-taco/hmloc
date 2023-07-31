@@ -198,6 +198,14 @@ trait UnificationSolver extends TyperDatatypes {
     lazy val a: ST = flow.head.getStart
     lazy val b: ST = flow.last.getEnd
     lazy val level: Int = flow.iterator.map(_.level).max
+    lazy val sequenceTVs: Set[TV] = {
+      val tvSet: MutSet[TV] = MutSet()
+      constraintSequence.map { case (Constraint(a, b), _) =>
+        a.unwrapProvs match { case tv: TypeVariable => tvSet += tv case _ => ()}
+        b.unwrapProvs match { case tv: TypeVariable => tvSet += tv case _ => ()}
+      }
+      tvSet.toSet
+    }
 
     override def compare(that: Unification): Int = {
       val levelComp = this.level.compare(that.level)
@@ -220,14 +228,8 @@ trait UnificationSolver extends TyperDatatypes {
 
     override def toString: Str = s"L: $level [${a.unwrapProvs} ~ ${b.unwrapProvs}, ${flow.mkString(", ")}]"
 
-    def sequenceTVs: Set[TV] = {
-      val tvSet: MutSet[TV] = MutSet()
-      constraintSequence.map { case (Constraint(a, b), _) =>
-        a.unwrapProvs match { case tv: TypeVariable => tvSet += tv case _ => ()}
-        b.unwrapProvs match { case tv: TypeVariable => tvSet += tv case _ => ()}
-      }
-      tvSet.toSet
-    }
+    def createCtx(implicit ctx: Ctx): ShowCtx =
+      ShowCtx.mk(sequenceTVs.map(_.expOcamlTy()(ctx, sequenceTVs)), "?")
 
     lazy val constraintSequence: Ls[(Constraint, Int)] = flow.iterator.flatMap {
       case c: Constraint => (c, level) :: Nil
@@ -250,7 +252,7 @@ trait UnificationSolver extends TyperDatatypes {
         }
       }.toList
 
-      val sctx = Message.mkCtx(sequenceMessage, "?")
+      val sctx = createCtx
       val sb = new mutable.StringBuilder();
       sequenceMessage.foreach(msg => sb ++= msg.showIn(sctx))
       sb.toString()
@@ -268,8 +270,9 @@ trait UnificationSolver extends TyperDatatypes {
 
     def rev: Unification = Unification(flow.map(_.rev).reverse)
 
-    def createErrorMessage(level: Int = 0)(implicit ctx: Ctx, showTV: Set[TV]): UniErrReport = {
+    def createErrorMessage(level: Int = 0, showCtx: Opt[ShowCtx] = N)(implicit ctx: Ctx, showTV: Set[TV]): UniErrReport = {
       println(s"UERR REPORT $toString")
+      val sctx = showCtx.getOrElse(createCtx)
       val mainMsg = msg"Type `${a.expOcamlTy()(ctx, Set())}` does not match `${b.expOcamlTy()(ctx, Set())}`"
       val seqString = createSequenceString
       def msg(a: ST): Message = a.unwrapProvs match {
@@ -315,7 +318,7 @@ trait UnificationSolver extends TyperDatatypes {
           // single constructor show projected types
           case (Seq(ctor@Constructor(_, _, _, _, uni)), _) =>
             L(constructorArgumentMessage(ctor, true, level)) ::
-              R(uni.createErrorMessage(level + 1)(ctx, showTV)) ::
+              R(uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV)) ::
               L(constructorArgumentMessage(ctor, false, level)) ::
               Nil
           case (Seq(c: Constraint, _: Constraint), _) => constraintToMessage(c).map(L(_))
@@ -324,7 +327,7 @@ trait UnificationSolver extends TyperDatatypes {
           // project their common type once
           case (Seq(ctor@Constructor(_, _, _, _, uni), ctor2: Constructor), idx) if ctor.b === ctor2.a =>
             val project = L(constructorArgumentMessage(ctor, false, level))
-            val nestedReport = R(uni.createErrorMessage(level + 1)(ctx, showTV))
+            val nestedReport = R(uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV))
             if (idx == 0) {
               L(constructorArgumentMessage(ctor, true, level)) :: nestedReport :: project :: Nil
             } else {
@@ -332,7 +335,7 @@ trait UnificationSolver extends TyperDatatypes {
             }
           // if constructor is first in the sequence project left type
           case (Seq(ctor@Constructor(_, _, _, _, uni), _), idx) =>
-            val nestedReport = R(uni.createErrorMessage(level + 1)(ctx, showTV)) :: Nil
+            val nestedReport = R(uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV)) :: Nil
             if (idx == 0) {
               L(constructorArgumentMessage(ctor, true, level)) :: nestedReport
             } else {
@@ -342,9 +345,9 @@ trait UnificationSolver extends TyperDatatypes {
           case c: Constraint => constraintToMessage(c, true).map(L(_))
           case ctor@Constructor(_, _, _, _, uni) =>
             // if constructor is last in the sequence project type
-            R(uni.createErrorMessage(level + 1)(ctx, showTV)) :: L(constructorArgumentMessage(ctor, false, level)) :: Nil
+            R(uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV)) :: L(constructorArgumentMessage(ctor, false, level)) :: Nil
         } else { Nil })
-        UniErrReport(mainMsg, seqString, msgs, level)
+        UniErrReport(mainMsg, seqString, msgs, sctx, level)
       }
       report
     }

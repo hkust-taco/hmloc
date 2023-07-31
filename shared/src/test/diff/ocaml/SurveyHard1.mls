@@ -12,7 +12,7 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 (* TODO: fix second last sequence string *)
 //│ [ERROR] Type `_ list` does not match `(_ -> _) -> _ list -> _ list`
 //│ 
-//│         (_ list) <--- (?a) ~~~~ ((_ -> _) -> _ list -> _ list)
+//│         (_ list) <--- (?b) ~~~~ ((_ -> _) -> _ list -> _ list)
 //│ 
 //│ ◉ (_ list) comes from
 //│ ▲  - l.3    | [] -> ""
@@ -20,15 +20,15 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ │  - l.2    match sl with
 //│ │                 ^^
 //│ │ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│    - l.1  let rec sepConcat sep sl =
 //│                                 ^^
-//│   ◉ (?a -> _) comes from
+//│   ◉ (?b -> _) comes from
 //│      - l.1  let rec sepConcat sep sl =
 //│                                   ^^^^
 //│               match sl with ...
 //│               ^^^^^^^^^^^^^^^^^
-//│     ◉ (_ -> ?a -> _) comes from
+//│     ◉ (_ -> ?b -> _) comes from
 //│     │  - l.1  let rec sepConcat sep sl =
 //│     │                           ^^^^^^^^
 //│     │           match sl with ...
@@ -40,10 +40,10 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│     │  - l.1  let rec sepConcat sep sl =
 //│     │                 ^^^^^^^^^
 //│     ▼ 
-//│     ◉ (string -> ?b) comes from
+//│     ◉ (string -> ?a) comes from
 //│        - l.8  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│                                              ^^^^^^^^^
-//│   ◉ (?b) is assumed for
+//│   ◉ (?a) is assumed for
 //│   │  - l.8  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│   │                                        ^^^^^^^^^^^^^^
 //│   ▼ 
@@ -57,7 +57,7 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `string` does not match `(_ * _) -> _`
 //│ 
-//│         (string) <--- (?a) ~~~~ (?b) ---> (?c) ~~~~ (?d) ---> ((_ * _) -> _)
+//│         (string) <--- (?e) ~~~~ (?d) ---> (?c) ~~~~ (?a) ---> ((_ * _) -> _)
 //│ 
 //│ ◉ (string) comes from
 //│ ▲  - lib. let (^): string -> string -> string
@@ -65,19 +65,19 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ │  - l.5        let f a x = a ^ (sep ^ x) in
 //│ │                           ^
 //│ │ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?e) is assumed for
 //│    - l.5        let f a x = a ^ (sep ^ x) in
 //│                       ^
-//│   ◉ (?a -> _ -> string) comes from
+//│   ◉ (?e -> _ -> string) comes from
 //│   │  - l.5        let f a x = a ^ (sep ^ x) in
 //│   │                     ^^^^^^^^^^^^^^^^^^^
 //│   │  - l.6        let base = h in let l = t in List.fold_left f base l
 //│   │                                                           ^
 //│   ▼ 
-//│   ◉ (?b -> _ -> ?b) comes from
+//│   ◉ (?d -> _ -> ?d) comes from
 //│      - lib. let List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
 //│                                   ^^^^^^^^^^^^^^
-//│ ◉ (?b) is assumed for
+//│ ◉ (?d) is assumed for
 //│ │  - l.6        let base = h in let l = t in List.fold_left f base l
 //│ │                                            ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
@@ -103,17 +103,17 @@ let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│     │  - l.1  let rec sepConcat sep sl =
 //│     │                 ^^^^^^^^^
 //│     ▼ 
-//│     ◉ (string -> ?d) comes from
+//│     ◉ (string -> ?b) comes from
 //│        - l.8  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│                                              ^^^^^^^^^
-//│   ◉ (?d) is assumed for
+//│   ◉ (?b) is assumed for
 //│   │  - l.8  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│   │                                        ^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (((_ -> _) -> _ list -> _ list) -> ?e) comes from
+//│   ◉ (((_ -> _) -> _ list -> _ list) -> ?a) comes from
 //│      - l.8  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│                                            ^^^^^^^^^^^^^^
-//│ ◉ (?e) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.8  let stringOfList f l = "[" ^ ((sepConcat "; " List.map (f, l)) ^ "]")
 //│ │                                        ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 

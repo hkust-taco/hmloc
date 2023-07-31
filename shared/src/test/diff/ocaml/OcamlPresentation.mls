@@ -201,7 +201,7 @@ let test2 x = match x with
 let g x = (not x, (if true then x else 5))
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
-//│         (int) ---> (?a) <--- (?b) ---> (bool)
+//│         (int) ---> (?b) <--- (?a) ---> (bool)
 //│ 
 //│ ◉ (int) comes from
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
@@ -209,7 +209,7 @@ let g x = (not x, (if true then x else 5))
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  let g x = (not x, (if true then x else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
@@ -217,7 +217,7 @@ let g x = (not x, (if true then x else 5))
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │               ^
 //│ │ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
 //│ │               ^
 //│ │  - l.1  let g x = (not x, (if true then x else 5))
@@ -301,7 +301,7 @@ let wrap x = x :: []
 let rec t = wrap (if true then 1 else t)
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (_ list) ---> (?t) ---> (?a) ---> (?b) <--- (?a) <--- (int)
+//│         (_ list) ---> (?t) ---> (?b) ---> (?a) <--- (?b) <--- (int)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.1  let wrap x = x :: []
@@ -319,19 +319,19 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -340,7 +340,7 @@ let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a list) ---> (?t) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (int)
+//│         (?a list) ---> (?t) ---> (?c) ---> (?b) ~~~~ (?a) ~~~~ (?b) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a list) comes from
 //│ │  - l.1  let wrap x = x :: []
@@ -358,14 +358,14 @@ let rec t = wrap (if true then 1 else t)
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?c) is assumed for
+//│ ◉ (?b) is assumed for
 //│    - l.1  let wrap x = x :: []
 //│                    ^
-//│   ◉ (?c * _ list) comes from
+//│   ◉ (?b * _ list) comes from
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   ▼ 
@@ -377,16 +377,16 @@ let rec t = wrap (if true then 1 else t)
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   │ 
-//│   ◉ (?c * _ list) comes from
+//│   ◉ (?b * _ list) comes from
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?c) is assumed for
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  let wrap x = x :: []
 //│ │                  ^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?c) is assumed for
 //│ ▲  - l.2  let rec t = wrap (if true then 1 else t)
 //│ │                          ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -395,9 +395,9 @@ let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a list) ---> (?t) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (int)
+//│         (?a0 list) ---> (?t) ---> (?b) ---> (?c) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?c) <--- (?b) <--- (int)
 //│ 
-//│ ◉ (?a list) comes from
+//│ ◉ (?a0 list) comes from
 //│ │  - l.1  let wrap x = x :: []
 //│ │                      ^^^^^^^
 //│ │  - l.2  let rec t = wrap (if true then 1 else t)
@@ -420,43 +420,43 @@ let rec t = wrap (if true then 1 else t)
 //│ ◉ (?c) is assumed for
 //│    - l.1  let wrap x = x :: []
 //│                    ^
-//│   ◉ (?c * ?a0 list) comes from
+//│   ◉ (?c * ?a list) comes from
 //│   │  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a * ?a list) comes from
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
-//│ ◉ (?a) is assumed for
-//│   ◉ (?a list) comes from
-//│     ◉ (?a * ?a list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
+//│     ◉ (?a0 * ?a0 list) comes from
 //│     ▲  - l.1  let wrap x = x :: []
 //│     │                      ^^^^^^^
 //│     │ 
-//│     ◉ (?c * ?a0 list) comes from
-//│        - l.1  let wrap x = x :: []
-//│                            ^^^^^^^
-//│   ◉ (?a0 list) comes from
-//│      - l.1  let wrap x = x :: []
-//│                               ^^
-//│ ◉ (?a0) is assumed for
-//│   ◉ (?a0 list) comes from
-//│      - l.1  let wrap x = x :: []
-//│                               ^^
-//│     ◉ (?c * ?a0 list) comes from
-//│     │  - l.1  let wrap x = x :: []
-//│     │                      ^^^^^^^
-//│     ▼ 
-//│     ◉ (?a * ?a list) comes from
+//│     ◉ (?c * ?a list) comes from
 //│        - l.1  let wrap x = x :: []
 //│                            ^^^^^^^
 //│   ◉ (?a list) comes from
+//│      - l.1  let wrap x = x :: []
+//│                               ^^
 //│ ◉ (?a) is assumed for
-//│   ◉ (?a * ?a list) comes from
+//│   ◉ (?a list) comes from
+//│      - l.1  let wrap x = x :: []
+//│                               ^^
+//│     ◉ (?c * ?a list) comes from
+//│     │  - l.1  let wrap x = x :: []
+//│     │                      ^^^^^^^
+//│     ▼ 
+//│     ◉ (?a0 * ?a0 list) comes from
+//│        - l.1  let wrap x = x :: []
+//│                            ^^^^^^^
+//│   ◉ (?a0 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.1  let wrap x = x :: []
 //│   │                      ^^^^^^^
 //│   │ 
-//│   ◉ (?c * ?a0 list) comes from
+//│   ◉ (?c * ?a list) comes from
 //│      - l.1  let wrap x = x :: []
 //│                          ^^^^^^^
 //│ ◉ (?c) is assumed for

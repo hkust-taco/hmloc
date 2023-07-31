@@ -4,7 +4,7 @@
 let h y = (not y, (if true then y else 5))
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
-//│         (int) ---> (?a) <--- (?b) ---> (bool)
+//│         (int) ---> (?b) <--- (?a) ---> (bool)
 //│ 
 //│ ◉ (int) comes from
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
@@ -12,7 +12,7 @@ let h y = (not y, (if true then y else 5))
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  let h y = (not y, (if true then y else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
@@ -20,7 +20,7 @@ let h y = (not y, (if true then y else 5))
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │               ^
 //│ │ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │               ^
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
@@ -45,7 +45,7 @@ let h y = (not y, (if true then y else 5))
 let h y = (not y, (if true then y else 5))
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
-//│         (int) ---> (?a) <--- (?b) ---> (bool)
+//│         (int) ---> (?b) <--- (?a) ---> (bool)
 //│ 
 //│ ◉ (int) comes from
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
@@ -53,7 +53,7 @@ let h y = (not y, (if true then y else 5))
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ ▲  - l.1  let h y = (not y, (if true then y else 5))
 //│ │                           ^^^^^^^^^^^^^^^^^^^^^^^
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
@@ -61,7 +61,7 @@ let h y = (not y, (if true then y else 5))
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │               ^
 //│ │ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?a) is assumed for
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
 //│ │               ^
 //│ │  - l.1  let h y = (not y, (if true then y else 5))
@@ -125,7 +125,7 @@ let mkpair x y = (x, confluence y)
 let conflict x = mkpair (not x) x
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (bool) <--- (?a) ---> (?b) ---> (?c) ---> (?d) <--- (int)
+//│         (bool) <--- (?b) ---> (?c) ---> (?d) ---> (?a) <--- (int)
 //│ 
 //│ ◉ (bool) comes from
 //│ ▲  - lib. let not: bool -> bool
@@ -135,7 +135,7 @@ let conflict x = mkpair (not x) x
 //│ │  - l.2  let conflict x = mkpair (not x) x
 //│ │                      ^
 //│ │ 
-//│ ◉ (?a) is assumed for
+//│ ◉ (?b) is assumed for
 //│ │  - l.2  let conflict x = mkpair (not x) x
 //│ │                      ^
 //│ │  - l.2  let conflict x = mkpair (not x) x
@@ -143,7 +143,7 @@ let conflict x = mkpair (not x) x
 //│ │  - l.1  let mkpair x y = (x, confluence y)
 //│ │                      ^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?c) is assumed for
 //│ │  - l.1  let mkpair x y = (x, confluence y)
 //│ │                      ^
 //│ │  - l.1  let mkpair x y = (x, confluence y)
@@ -151,7 +151,7 @@ let conflict x = mkpair (not x) x
 //│ │  - l.-37let confluence z = if true then z else 5
 //│ │                        ^
 //│ ▼ 
-//│ ◉ (?c) is assumed for
+//│ ◉ (?d) is assumed for
 //│ │  - l.-37let confluence z = if true then z else 5
 //│ │                        ^
 //│ │  - l.-37let confluence z = if true then z else 5
@@ -159,7 +159,7 @@ let conflict x = mkpair (not x) x
 //│ │  - l.-37let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ ▼ 
-//│ ◉ (?d) is assumed for
+//│ ◉ (?a) is assumed for
 //│ ▲  - l.-37let confluence z = if true then z else 5
 //│ │                            ^^^^^^^^^^^^^^^^^^^^^
 //│ │ 
@@ -233,24 +233,24 @@ let y x = [x]
 let k a = if a then [2] else y true
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (bool) ---> (?b) ~~~~ (?a) ~~~~ (?a0) ~~~~ (int)
+//│         (bool) ---> (?c) ~~~~ (?a0) ~~~~ (?a) ~~~~ (int)
 //│ 
 //│ ◉ (bool) comes from
 //│ │  - l.2  let k a = if a then [2] else y true
 //│ │                                        ^^^^
 //│ ▼ 
-//│ ◉ (?b) is assumed for
+//│ ◉ (?c) is assumed for
 //│    - l.1  let y x = [x]
 //│                 ^
-//│   ◉ (?b * _ list) comes from
+//│   ◉ (?c * _ list) comes from
 //│   │  - l.1  let y x = [x]
 //│   │                    ^
 //│   ▼ 
-//│   ◉ (?a * ?a list) comes from
+//│   ◉ (?a0 * ?a0 list) comes from
 //│      - l.1  let y x = [x]
 //│                        ^
-//│ ◉ (?a) is assumed for
-//│   ◉ (?a list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 list) comes from
 //│   │  - l.1  let y x = [x]
 //│   │                   ^^^
 //│   │  - l.2  let k a = if a then [2] else y true
@@ -258,15 +258,15 @@ let k a = if a then [2] else y true
 //│   │  - l.2  let k a = if a then [2] else y true
 //│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   ▼ 
-//│   ◉ (?c) is assumed for
+//│   ◉ (?b) is assumed for
 //│   ▲  - l.2  let k a = if a then [2] else y true
 //│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?a0 list) comes from
+//│   ◉ (?a list) comes from
 //│      - l.2  let k a = if a then [2] else y true
 //│                                 ^^^
-//│ ◉ (?a0) is assumed for
-//│   ◉ (?a0 * ?a0 list) comes from
+//│ ◉ (?a) is assumed for
+//│   ◉ (?a * ?a list) comes from
 //│   ▲  - l.2  let k a = if a then [2] else y true
 //│   │                              ^
 //│   │ 
@@ -278,7 +278,7 @@ let k a = if a then [2] else y true
 //│                                ^
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (bool) ---> (?b) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a1) ~~~~ (int)
+//│         (bool) ---> (?b) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (int)
 //│ 
 //│ ◉ (bool) comes from
 //│ │  - l.2  let k a = if a then [2] else y true
@@ -291,12 +291,12 @@ let k a = if a then [2] else y true
 //│   │  - l.1  let y x = [x]
 //│   │                    ^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) comes from
+//│   ◉ (?a1 * ?a1 list) comes from
 //│      - l.1  let y x = [x]
 //│                        ^
-//│ ◉ (?a0) is assumed for
-//│   ◉ (?a0 list) comes from
-//│     ◉ (?a0 * ?a0 list) comes from
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
+//│     ◉ (?a1 * ?a1 list) comes from
 //│     ▲  - l.1  let y x = [x]
 //│     │                    ^
 //│     │ 
@@ -310,12 +310,12 @@ let k a = if a then [2] else y true
 //│     │  - l.1  let y x = [x]
 //│     │                    ^
 //│     ▼ 
-//│     ◉ (?a0 * ?a0 list) comes from
+//│     ◉ (?a1 * ?a1 list) comes from
 //│        - l.1  let y x = [x]
 //│                          ^
-//│   ◉ (?a0 list) comes from
-//│ ◉ (?a0) is assumed for
-//│   ◉ (?a0 list) comes from
+//│   ◉ (?a1 list) comes from
+//│ ◉ (?a1) is assumed for
+//│   ◉ (?a1 list) comes from
 //│   │  - l.1  let y x = [x]
 //│   │                   ^^^
 //│   │  - l.2  let k a = if a then [2] else y true
@@ -327,11 +327,11 @@ let k a = if a then [2] else y true
 //│   ▲  - l.2  let k a = if a then [2] else y true
 //│   │                   ^^^^^^^^^^^^^^^^^^^^^^^^^
 //│   │ 
-//│   ◉ (?a1 list) comes from
+//│   ◉ (?a0 list) comes from
 //│      - l.2  let k a = if a then [2] else y true
 //│                                 ^^^
-//│ ◉ (?a1) is assumed for
-//│   ◉ (?a1 * ?a1 list) comes from
+//│ ◉ (?a0) is assumed for
+//│   ◉ (?a0 * ?a0 list) comes from
 //│   ▲  - l.2  let k a = if a then [2] else y true
 //│   │                              ^
 //│   │ 

@@ -46,7 +46,7 @@ final case class UnificationReport(mainMsg: Str, allMsgs: Ls[Message -> Opt[Loc]
   val kind: Kind = Error
 }
 
-final case class UniErrReport(mainMsg: Message, seqStr: Str, msgs: Ls[(Message, Ls[Loc], Bool, Int, Bool) \/ UniErrReport], level: Int = 0, source: Source = Typing) extends Diagnostic (mainMsg.toString) {
+final case class UniErrReport(mainMsg: Message, seqStr: Str, msgs: Ls[(Message, Ls[Loc], Bool, Int, Bool) \/ UniErrReport], showCtx: ShowCtx, level: Int = 0, source: Source = Typing) extends Diagnostic (mainMsg.toString) {
   override val allMsgs: Ls[(Message, Opt[Loc])] = (mainMsg -> N) :: msgs.flatMap {
     case L((msg, _, _, _, _)) => (msg -> N) :: Nil
     case R(report) => report.allMsgs
