@@ -266,47 +266,42 @@ trait UnificationSolver extends TyperDatatypes {
         // single constraint
         case (Seq(c@Constraint(a, b)), _) => L(msg"(${a.expOcamlTy()}) ${arrowStr(c)} (${b.expOcamlTy()})") :: Nil
         // single constructor show projected types
-        // TODO: check variance for arrow direction
-        case (Seq(Constructor(a, b, _, _, uni)), _) => L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(true)} ") ::
+        case (Seq(ctor@Constructor(a, b, _, _, uni)), _) => L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())} ") ::
           R(uni.createFullSequenceString(lvl + 1)) ::
-          L(msg" ${ctorArrowStr(false)} (${b.expOcamlTy()})") :: Nil
+          L(msg" ${ctorArrowStr(ctor.typeArgDir(false))} (${b.expOcamlTy()})") :: Nil
         case (Seq(c: Constraint, _: Constraint), idx) if idx == 0 => L(msg"(${c.a.expOcamlTy()}) ${arrowStr(c)} (${c.b.expOcamlTy()})") :: Nil
         case (Seq(c: Constraint, _: Constraint), _) => L(msg"${arrowStr(c)} (${c.b.expOcamlTy()})") :: Nil
-        // TODO: check variance for arrow direction
-        case (Seq(c: Constraint, _: Constructor), idx) if idx == 0=>
-          L(msg"(${c.a.expOcamlTy()}) ${arrowStr(c)} (${c.b.expOcamlTy()}) ${ctorArrowStr(true)}") :: Nil
-        case (Seq(c: Constraint, _: Constructor), idx) =>
-          L(msg"${arrowStr(c)} (${c.b.expOcamlTy()}) ${ctorArrowStr(true)}") :: Nil
+        case (Seq(c: Constraint, ctor: Constructor), idx) if idx == 0 =>
+          L(msg"(${c.a.expOcamlTy()}) ${arrowStr(c)} (${c.b.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())}") :: Nil
+        case (Seq(c: Constraint, ctor: Constructor), _) =>
+          L(msg"${arrowStr(c)} (${c.b.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())}") :: Nil
         // if there are two constructors side by side
         // project their common type once
-        // TODO: check variance for arrow direction
         case (Seq(ctor@Constructor(a, b, _, _, uni), ctor2: Constructor), idx) if ctor.b === ctor2.a =>
           if (idx == 0) {
-            L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(true)} ") ::
+            L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())} ") ::
               R(uni.createFullSequenceString(lvl + 1)) ::
-              L(msg" (${b.expOcamlTy()}) ${ctorArrowStr(false)}") :: Nil
+              L(msg" (${b.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir(false))}") :: Nil
           } else {
             R(uni.createFullSequenceString(lvl + 1)) ::
-              L(msg" ${ctorArrowStr(false)} (${b.expOcamlTy()}) ${ctorArrowStr(false)}") :: Nil
+              L(msg" ${ctorArrowStr(ctor.typeArgDir(false))} (${b.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())}") :: Nil
           }
         // if constructor is first in the sequence project left type
-        // TODO: check variance for arrow direction
-        case (Seq(Constructor(a, b, _, _, uni), _), idx) =>
+        case (Seq(ctor@Constructor(a, b, _, _, uni), _), idx) =>
           if (idx == 0) {
-            L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(true)} ") ::
+            L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())} ") ::
               R(uni.createFullSequenceString(lvl + 1)) ::
-              L(msg" ${ctorArrowStr(true)} (${b.expOcamlTy()})") ::
+              L(msg" ${ctorArrowStr(ctor.typeArgDir(false))} (${b.expOcamlTy()})") ::
               Nil
           } else {
             R(uni.createFullSequenceString(lvl + 1)) ::
-            L(msg" ${ctorArrowStr(true)} (${b.expOcamlTy()})") :: Nil
+            L(msg" ${ctorArrowStr(ctor.typeArgDir(false))} (${b.expOcamlTy()})") :: Nil
           }
       }.flatten.toList ::: (if (flow.length != 1) flow.last match {
           case c: Constraint => L(msg"${arrowStr(c)} (${c.b.expOcamlTy()})") :: Nil
           // if constructor is last in the sequence project the right type argument
-          // TODO: check variance for arrow direction
-          case Constructor(_, b, _, _, uni) =>
-            R(uni.createFullSequenceString(lvl + 1)) :: L(msg" ${ctorArrowStr(false)} (${b.expOcamlTy()})") :: Nil
+          case ctor@Constructor(_, b, _, _, uni) =>
+            R(uni.createFullSequenceString(lvl + 1)) :: L(msg" ${ctorArrowStr(ctor.typeArgDir(false))} (${b.expOcamlTy()})") :: Nil
         } else { Nil })
 
       sequenceString.map(msg => msg.fold(msg => msg.showIn(sctx), msgstr => msgstr)).mkString(" ")
@@ -486,7 +481,41 @@ trait UnificationSolver extends TyperDatatypes {
       c
     }
   }
-  case class Constructor(a: ST, b: ST, ctora: ST, ctorb: ST, uni: Unification) extends DataFlow
+  case class Constructor(a: ST, b: ST, ctora: ST, ctorb: ST, uni: Unification) extends DataFlow {
+    def typeArgDir(start: Bool = true): Bool = {
+      if (start) {
+        val dir = uni.flow.head match {
+          case c: Constraint => c.dir
+          case ctor: Constructor => ctor.typeArgDir(start)
+        }
+
+        val pol = ctora.unwrapProvs match {
+          case FunctionType(lhs, _) if lhs.unwrapProvs === a.unwrapProvs => false
+          case _: FunctionType => true
+          case _: TupleType => true
+          case TypeRef(defn, targs) => true // TODO use variance
+          case _ => ???
+        }
+
+        if (pol) dir else !dir
+      } else {
+        val dir = uni.flow.last match {
+          case c: Constraint => c.dir
+          case ctor: Constructor => ctor.typeArgDir(start)
+        }
+
+        val pol = ctorb.unwrapProvs match {
+          case FunctionType(lhs, _) if lhs.unwrapProvs === b.unwrapProvs => false
+          case _: FunctionType => true
+          case _: TupleType => true
+          case TypeRef(defn, targs) => true // TODO use variance
+          case _ => ???
+        }
+
+        if (pol) dir else !dir
+      }
+    }
+  }
 
 
   // Note: maybe this and `extrude` should be merged?
