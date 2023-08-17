@@ -176,7 +176,7 @@ let f: string list -> unit
 f x
 //│ [ERROR] Type `int` does not match `string`
 //│ 
-//│         (int) ~~~~ (string)
+//│         (int) ~~~>  (int list) ---> (string list)  <~~~ (string)
 //│ 
 //│ ◉ (int) comes from
 //│    - l.-7 let x: int list
@@ -221,7 +221,7 @@ f x
 if true then x else y
 //│ [ERROR] Type `string` does not match `int`
 //│ 
-//│         (string) ~~~~ (int)
+//│         (string) ~~~>  (string list) ---> (?a) <--- (int list)  <~~~ (int)
 //│ 
 //│ ◉ (string) comes from
 //│    - l.-51let y: string list
@@ -342,7 +342,7 @@ g b
 //│                   ^^^^^^^^^^^
 //│ [ERROR] Type `bool` does not match `unit`
 //│ 
-//│         (bool) ---> (?a) ~~~~ (unit)
+//│         (bool) ---> (?a) ~~~> (_ -> ?a) ---> (string list -> unit)  <~~~ (unit)
 //│ 
 //│ ◉ (bool) comes from
 //│ │  - l.3  let f x = if x then true else false
@@ -363,7 +363,7 @@ g b
 //│                                  ^^^^
 //│ [ERROR] Type `bool` does not match `string list`
 //│ 
-//│         (bool) <--- (?a) ~~~~ (string list)
+//│         (bool) <--- (?a) ~~~> (?a -> _) ---> (string list -> unit)  <~~~ (string list)
 //│ 
 //│ ◉ (bool) comes from
 //│ ▲  - l.3  let f x = if x then true else false
@@ -401,7 +401,7 @@ let wrap x = x :: []
 if true then wrap 1 else wrap true
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (bool) ---> (?d) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?b) <--- (int)
+//│         (bool) ---> (?d) ~~~> (?d * _ list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a list) ---> (?c) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?b * _ list)  ~~~> (?b) <--- (int)
 //│ 
 //│ ◉ (bool) comes from
 //│ │  - l.1  if true then wrap 1 else wrap true
@@ -452,7 +452,7 @@ if true then wrap 1 else wrap true
 //│                             ^
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (bool) ---> (?d) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a2) ~~~~ (?a0) ~~~~ (?b) <--- (int)
+//│         (bool) ---> (?d) ~~~> (?d * ?a1 list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?a * ?a list) <--- (?d * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?d * ?a1 list) ---> (?a * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ---> (?c) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ~~~>  (?a0 * ?a0 list) <--- (?b * ?a2 list)  <~~~ (?a2 list)  <~~~ (?a2) <~~~ (?a2 list) ~~~>  (?b * ?a2 list) ---> (?a0 * ?a0 list)  <~~~ (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?b * ?a2 list)  ~~~> (?b) <--- (int)
 //│ 
 //│ ◉ (bool) comes from
 //│ │  - l.1  if true then wrap 1 else wrap true
@@ -576,7 +576,7 @@ if true then wrap (if true then 1 else false) else wrap true
 //│                                           ^
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
-//│         (int) ---> (?b) ---> (?c) ~~~~ (?a) ~~~~ (?c) <--- (?b) <--- (bool)
+//│         (int) ---> (?b) ---> (?c) ~~~> (?c * _ list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a * ?a list) <--- (?c * _ list)  ~~~> (?c) <--- (?b) <--- (bool)
 //│ 
 //│ ◉ (int) comes from
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
@@ -621,7 +621,7 @@ if true then wrap (if true then 1 else false) else wrap true
 //│                                                  ^^^^^
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
-//│         (int) ---> (?b) ---> (?c) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?c) <--- (?b) <--- (bool)
+//│         (int) ---> (?b) ---> (?c) ~~~> (?c * ?a list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ~~~>  (?a0 * ?a0 list) <--- (?c * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?c * ?a list) ---> (?a0 * ?a0 list)  <~~~ (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?c * ?a list)  ~~~> (?c) <--- (?b) <--- (bool)
 //│ 
 //│ ◉ (int) comes from
 //│ │  - l.1  if true then wrap (if true then 1 else false) else wrap true
@@ -738,7 +738,7 @@ let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a list) ---> (?t) ---> (?c) ---> (?b) ~~~~ (?a) ~~~~ (?b) <--- (?c) <--- (int)
+//│         (?a list) ---> (?t) ---> (?c) ---> (?b) ~~~> (?b * _ list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a * ?a list) <--- (?b * _ list)  ~~~> (?b) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a list) comes from
 //│ │  - l.-301let wrap x = x :: []
@@ -793,7 +793,7 @@ let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a list) ---> (?t) ---> (?c) ---> (?b) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?b) <--- (?c) <--- (int)
+//│         (?a list) ---> (?t) ---> (?c) ---> (?b) ~~~> (?b * ?a0 list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?a * ?a list) <--- (?b * ?a0 list)  <~~~ (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ~~~>  (?b * ?a0 list) ---> (?a * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a * ?a list) <--- (?b * ?a0 list)  ~~~> (?b) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a list) comes from
 //│ │  - l.-301let wrap x = x :: []
@@ -980,7 +980,7 @@ let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (_ list) ---> (?b) ---> (?m) ---> (?c) ---> (?e) ---> (?d) ~~~~ (?a) ~~~~ (?d) <--- (?e) <--- (?c) <--- (int)
+//│         (_ list) ---> (?b) ---> (?m) ---> (?c) ---> (?e) ---> (?d) ~~~> (?d * _ list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a * ?a list) <--- (?d * _ list)  ~~~> (?d) <--- (?e) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -1059,7 +1059,7 @@ let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?e) ---> (?d) ~~~~ (?a) ~~~~ (?d) <--- (?e) <--- (?c) <--- (int)
+//│         (?a list) ---> (?b) ---> (?m) ---> (?c) ---> (?e) ---> (?d) ~~~> (?d * _ list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a * ?a list) <--- (?d * _ list)  ~~~> (?d) <--- (?e) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -1138,7 +1138,7 @@ let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
-//│         (int) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?d) <--- (bool)
+//│         (int) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?d * _ list)  ~~~> (?d) <--- (bool)
 //│ 
 //│ ◉ (int) comes from
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1203,7 +1203,7 @@ let rec m = test (if true then 1 else m)
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
-//│         (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?d) <--- (bool)
+//│         (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?d * _ list)  ~~~> (?d) <--- (bool)
 //│ 
 //│ ◉ (?a0 list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -1286,7 +1286,7 @@ let rec m = test (if true then 1 else m)
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
-//│         (?a list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?d) <--- (bool)
+//│         (?a list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?d * _ list)  ~~~> (?d) <--- (bool)
 //│ 
 //│ ◉ (?a list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -1369,7 +1369,7 @@ let rec m = test (if true then 1 else m)
 //│                                                      ^^^^
 //│ [ERROR] Type `int` does not match `bool`
 //│ 
-//│         (int) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?d) <--- (bool)
+//│         (int) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 * ?a1 list) <--- (?d * ?a list)  ~~~> (?d) <--- (bool)
 //│ 
 //│ ◉ (int) comes from
 //│ │  - l.3  let rec m = test (if true then 1 else m)
@@ -1458,7 +1458,7 @@ let rec m = test (if true then 1 else m)
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
-//│         (?a1 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?d) <--- (bool)
+//│         (?a1 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 * ?a1 list) <--- (?d * ?a list)  ~~~> (?d) <--- (bool)
 //│ 
 //│ ◉ (?a1 list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -1565,7 +1565,7 @@ let rec m = test (if true then 1 else m)
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
-//│         (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?d) <--- (bool)
+//│         (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 * ?a1 list) <--- (?d * ?a list)  ~~~> (?d) <--- (bool)
 //│ 
 //│ ◉ (?a0 list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -1672,7 +1672,7 @@ let rec m = test (if true then 1 else m)
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a1 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?d) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?c) <--- (?f) <--- (?b) <--- (int)
+//│         (?a1 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?d) <~~~ (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?c * _ list)  ~~~> (?c) <--- (?f) <--- (?b) <--- (int)
 //│ 
 //│ ◉ (?a1 list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -1855,7 +1855,7 @@ let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?d) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?c) <--- (?f) <--- (?b) <--- (int)
+//│         (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?d) <~~~ (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?c * _ list)  ~~~> (?c) <--- (?f) <--- (?b) <--- (int)
 //│ 
 //│ ◉ (?a0 list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -2038,7 +2038,7 @@ let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a1 list) ---> (?b) ---> (?m) ---> (?c) ---> (?e) ---> (?d) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?d) <--- (?e) <--- (?c) <--- (int)
+//│         (?a1 list) ---> (?b) ---> (?m) ---> (?c) ---> (?e) ---> (?d) ~~~> (?d * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?b) ---> (?m) <--- (?b) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (_ * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (_ * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?b) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?b) ---> (?m) ---> (?c) ---> (?e) ---> (?d) ~~~> (?d * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?b) ---> (?m) <--- (?b) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (_ * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (_ * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?b) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?d * _ list)  ~~~> (?d) <--- (?e) <--- (?c) <--- (?m) <--- (?b) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?b) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?d * _ list)  ~~~> (?d) <--- (?e) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a1 list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -2381,7 +2381,7 @@ let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `bool` does not match `int`
 //│ 
-//│         (bool) ---> (?d) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?c) <--- (?f) <--- (?b) <--- (int)
+//│         (bool) ---> (?d) ~~~> (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?c * _ list)  ~~~> (?c) <--- (?f) <--- (?b) <--- (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?c * _ list)  ~~~> (?c) <--- (?f) <--- (?b) <--- (int)
 //│ 
 //│ ◉ (bool) comes from
 //│ │  - l.1  let test z = if true then wrap z else wrap true
@@ -2710,7 +2710,7 @@ let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
-//│         (?a1 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?d) <--- (bool)
+//│         (?a1 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?c * _ list)  ~~~> (?c) <--- (?f) <--- (?b) <--- (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 * ?a1 list) <--- (?d * ?a list)  ~~~> (?d) <--- (bool)
 //│ 
 //│ ◉ (?a1 list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -3097,7 +3097,7 @@ let rec m = test (if true then 1 else m)
 //│                                                      ^^^^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?d) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?c) <--- (?f) <--- (?b) <--- (int)
+//│         (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?d) <~~~ (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?c * _ list)  ~~~> (?c) <--- (?f) <--- (?b) <--- (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?c * _ list)  ~~~> (?c) <--- (?f) <--- (?b) <--- (int)
 //│ 
 //│ ◉ (?a0 list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -3536,7 +3536,7 @@ let rec m = test (if true then 1 else m)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `bool`
 //│ 
-//│         (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?d) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a0) ~~~~ (?a1) ~~~~ (?a) ~~~~ (?a1) ~~~~ (?d) <--- (bool)
+//│         (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?d) <~~~ (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) ---> (?b) ---> (?f) ---> (?c) ~~~> (?c * _ list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?c * _ list)  ~~~> (?c) <--- (?f) <--- (?b) <--- (?m) <--- (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ---> (?e) ---> (?m) <--- (?e) <--- (?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ---> (?e) <--- (?a1 list)  <~~~ (?a1) <~~~ (?a1 list) ~~~>  (?a1 * ?a1 list) <--- (?d * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?d * ?a list) ---> (?a1 * ?a1 list)  <~~~ (?a1 list)  <~~~ (?a1) <~~~ (?a1 * ?a1 list) <--- (?d * ?a list)  ~~~> (?d) <--- (bool)
 //│ 
 //│ ◉ (?a0 list) comes from
 //│ │  - l.-486let wrap x = x :: []
@@ -4061,7 +4061,7 @@ let rec digitsOfInt n =
 //│                    ^^^^^^^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (_ list) ~~~~ (?a) ---> (int)
+//│         (_ list) ~~~>  (_ -> _ list) ---> (?digitsOfInt) ---> (_ -> ?a)  ~~~> (?a) ---> (int)
 //│ 
 //│ ◉ (_ list) comes from
 //│    - l.2    ((digitsOfInt n) / 10) @ [remainder];;

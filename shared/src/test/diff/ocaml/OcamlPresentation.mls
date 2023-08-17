@@ -340,7 +340,7 @@ let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a list) ---> (?t) ---> (?c) ---> (?b) ~~~~ (?a) ~~~~ (?b) <--- (?c) <--- (int)
+//│         (?a list) ---> (?t) ---> (?c) ---> (?b) ~~~> (?b * _ list) ---> (?a * ?a list)  <~~~ (?a) <~~~ (?a * ?a list) <--- (?b * _ list)  ~~~> (?b) <--- (?c) <--- (int)
 //│ 
 //│ ◉ (?a list) comes from
 //│ │  - l.1  let wrap x = x :: []
@@ -395,7 +395,7 @@ let rec t = wrap (if true then 1 else t)
 //│                                          ^
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (?a0 list) ---> (?t) ---> (?b) ---> (?c) ~~~~ (?a0) ~~~~ (?a) ~~~~ (?a0) ~~~~ (?c) <--- (?b) <--- (int)
+//│         (?a0 list) ---> (?t) ---> (?b) ---> (?c) ~~~> (?c * ?a list) ---> (?a0 * ?a0 list)  <~~~ (?a0) <~~~ (?a0 list) ~~~>  (?a0 * ?a0 list) <--- (?c * ?a list)  <~~~ (?a list)  <~~~ (?a) <~~~ (?a list) ~~~>  (?c * ?a list) ---> (?a0 * ?a0 list)  <~~~ (?a0 list)  <~~~ (?a0) <~~~ (?a0 * ?a0 list) <--- (?c * ?a list)  ~~~> (?c) <--- (?b) <--- (int)
 //│ 
 //│ ◉ (?a0 list) comes from
 //│ │  - l.1  let wrap x = x :: []
@@ -488,7 +488,7 @@ let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0
 let weird x = (x + 1, length x)
 //│ [ERROR] Type `_ list` does not match `int`
 //│ 
-//│         (_ list) ~~~~ (?a) ---> (int)
+//│         (_ list) ~~~>  (_ list -> _) <--- (?length) ---> (?a -> _)  ~~~> (?a) ---> (int)
 //│ 
 //│ ◉ (_ list) comes from
 //│    - l.1  let rec length ls = match ls with | hd :: tl -> 1 + length tl | [] -> 0

@@ -258,6 +258,60 @@ trait UnificationSolver extends TyperDatatypes {
       sb.toString()
     }
 
+    def createFullSequenceString(lvl: Int = 0)(implicit ctx: Ctx, sctx: ShowCtx, showTV: Set[TV]): Str = {
+      val arrowStr = (c: Constraint) => if (c.dir) "--->" else "<---"
+      val ctorArrowStr = (dir: Bool) => if (dir) "~~~>" else "<~~~"
+
+      val sequenceString: Ls[Either[Message, Str]] = flow.iterator.sliding(2).zipWithIndex.collect {
+        // single constraint
+        case (Seq(c@Constraint(a, b)), _) => L(msg"(${a.expOcamlTy()}) ${arrowStr(c)} (${b.expOcamlTy()})") :: Nil
+        // single constructor show projected types
+        // TODO: check variance for arrow direction
+        case (Seq(Constructor(a, b, _, _, uni)), _) => L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(true)} ") ::
+          R(uni.createFullSequenceString(lvl + 1)) ::
+          L(msg" ${ctorArrowStr(false)} (${b.expOcamlTy()})") :: Nil
+        case (Seq(c: Constraint, _: Constraint), idx) if idx == 0 => L(msg"(${c.a.expOcamlTy()}) ${arrowStr(c)} (${c.b.expOcamlTy()})") :: Nil
+        case (Seq(c: Constraint, _: Constraint), _) => L(msg"${arrowStr(c)} (${c.b.expOcamlTy()})") :: Nil
+        // TODO: check variance for arrow direction
+        case (Seq(c: Constraint, _: Constructor), idx) if idx == 0=>
+          L(msg"(${c.a.expOcamlTy()}) ${arrowStr(c)} (${c.b.expOcamlTy()}) ${ctorArrowStr(true)}") :: Nil
+        case (Seq(c: Constraint, _: Constructor), idx) =>
+          L(msg"${arrowStr(c)} (${c.b.expOcamlTy()}) ${ctorArrowStr(true)}") :: Nil
+        // if there are two constructors side by side
+        // project their common type once
+        // TODO: check variance for arrow direction
+        case (Seq(ctor@Constructor(a, b, _, _, uni), ctor2: Constructor), idx) if ctor.b === ctor2.a =>
+          if (idx == 0) {
+            L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(true)} ") ::
+              R(uni.createFullSequenceString(lvl + 1)) ::
+              L(msg" (${b.expOcamlTy()}) ${ctorArrowStr(false)}") :: Nil
+          } else {
+            R(uni.createFullSequenceString(lvl + 1)) ::
+              L(msg" ${ctorArrowStr(false)} (${b.expOcamlTy()}) ${ctorArrowStr(false)}") :: Nil
+          }
+        // if constructor is first in the sequence project left type
+        // TODO: check variance for arrow direction
+        case (Seq(Constructor(a, b, _, _, uni), _), idx) =>
+          if (idx == 0) {
+            L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(true)} ") ::
+              R(uni.createFullSequenceString(lvl + 1)) ::
+              L(msg" ${ctorArrowStr(true)} (${b.expOcamlTy()})") ::
+              Nil
+          } else {
+            R(uni.createFullSequenceString(lvl + 1)) ::
+            L(msg" ${ctorArrowStr(true)} (${b.expOcamlTy()})") :: Nil
+          }
+      }.flatten.toList ::: (if (flow.length != 1) flow.last match {
+          case c: Constraint => L(msg"${arrowStr(c)} (${c.b.expOcamlTy()})") :: Nil
+          // if constructor is last in the sequence project the right type argument
+          // TODO: check variance for arrow direction
+          case Constructor(_, b, _, _, uni) =>
+            R(uni.createFullSequenceString(lvl + 1)) :: L(msg" ${ctorArrowStr(false)} (${b.expOcamlTy()})") :: Nil
+        } else { Nil })
+
+      sequenceString.map(msg => msg.fold(msg => msg.showIn(sctx), msgstr => msgstr)).mkString(" ")
+    }
+
     def concat(other: Unification): Unification = {
       assert(b.unwrapProvs == other.a.unwrapProvs, s"$b != ${other.a}")
       Unification(flow.enqueueAll(other.flow))
@@ -274,7 +328,7 @@ trait UnificationSolver extends TyperDatatypes {
       println(s"UERR REPORT $toString")
       val sctx = showCtx.getOrElse(createCtx)
       val mainMsg = msg"Type `${a.expOcamlTy()(ctx, Set())}` does not match `${b.expOcamlTy()(ctx, Set())}`"
-      val seqString = createSequenceString
+      val seqString = createFullSequenceString()(ctx, sctx, showTV)
       def msg(a: ST): Message = a.unwrapProvs match {
         case tv: TV => msg"(${tv.expOcamlTy()}) is assumed for"
         case st => msg"(${st.expOcamlTy()}) comes from"

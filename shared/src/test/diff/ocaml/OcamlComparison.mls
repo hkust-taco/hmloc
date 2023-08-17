@@ -51,7 +51,7 @@ let bigAdd l1 l2 =
 //│                   ^^^^^^^
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
-//│         (int) <--- (?b) ~~~~ (?a) ---> (_ * _)
+//│         (int) <--- (?b) ~~~> (?b -> _ -> int) ---> (?a -> _ -> ?a)  ~~~> (?a) ---> (_ * _)
 //│ 
 //│ ◉ (int) comes from
 //│ ▲  - lib. let (+): int -> int -> int
@@ -80,7 +80,7 @@ let bigAdd l1 l2 =
 //│                   ^^^^^^^
 //│ [ERROR] Type `int` does not match `_ * _`
 //│ 
-//│         (int) ~~~~ (?a) ---> (_ * _)
+//│         (int) ~~~>  (_ -> int) ~~~>  (_ -> _ -> int) ---> (?a -> _ -> ?a)  <~~~ (_ -> ?a)  ~~~> (?a) ---> (_ * _)
 //│ 
 //│ ◉ (int) comes from
 //│    - l.3      let f a x = (a + x) mod 10 in
@@ -183,7 +183,7 @@ let bigAdd l1 l2 =
 //│                        ^^^^^^^^^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ~~~~ (?b) ~~~~ (?c) ~~~~ (?d) ---> (?a) <--- (_ list)
+//│         (_ * _) ~~~>  ((_ * _) list) ---> (?b list)  (?b) <~~~ (?b list) ---> (?c list)  <~~~ (?c) <~~~ (?c -> _) ~~~>  (_ -> ?c -> _) <--- (_ -> ?d -> _)  <~~~ (?d -> _)  ~~~> (?d) ---> (?a) <--- (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│    - lib. let List.combine: 'a list -> 'b list -> ('a * 'b) list
@@ -244,7 +244,7 @@ let bigAdd l1 l2 =
 //│                        ^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
-//│         (_ list) ---> (?a) <--- (?c) ~~~~ (?b) ~~~~ (?c) ---> (_ * _)
+//│         (_ list) ---> (?a) <--- (?c) ~~~> (?c -> _) ~~~>  (_ -> ?c -> _) ---> (_ -> ?b -> _)  <~~~ (?b -> _)  <~~~ (?b) <~~~ (?b -> _) ~~~>  (_ -> ?b -> _) <--- (_ -> ?c -> _)  <~~~ (?c -> _)  ~~~> (?c) ---> (_ * _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.5        if x = []
@@ -528,7 +528,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ---> (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~> (?a * _) ---> (?b) ---> (?d) ---> (?e * _)  ~~~> (?e) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -585,7 +585,7 @@ let bigMul l1 l2 =
 //│                             ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ~~~~ (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~> (?a * _) ---> (?b) ---> (?d) ---> (?e * _)  <~~~ (?e) <~~~ (?e * _) <--- (?d) <--- (?b) <--- (_ list * _)  <~~~ (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -670,7 +670,7 @@ let bigMul l1 l2 =
 //│                                          ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ~~~~ (?a) ---> (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~> (?a * _) ---> (?b) ---> (?d) ---> (?e * _)  <~~~ (?e) <~~~ (?e * _) <--- (?d) <--- (?b) <--- (?a * _)  ~~~> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -759,7 +759,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ~~~~ (?a) ---> (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~> (?a * _) ---> (?b) ---> (?d) ---> (?e * _)  <~~~ (?e) <~~~ (?e * _) <--- (?d) <--- (?b) <--- (?a * _)  ~~~> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -848,7 +848,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ~~~~ (?a) ---> (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~> (?a * _) ---> (?b) ---> (?d) ---> (?e * _)  <~~~ (?e) <~~~ (?e * _) <--- (?d) <--- (?b) <--- (?a * _)  ~~~> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -937,7 +937,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `_ * _` does not match `_ list`
 //│ 
-//│         (_ * _) ---> (?c) ---> (?a) ~~~~ (?e) ~~~~ (?a) ---> (_ list)
+//│         (_ * _) ---> (?c) ---> (?a) ~~~> (?a * _) ---> (?b) ---> (?d) ---> (?e * _)  <~~~ (?e) <~~~ (?e * _) <--- (?d) <--- (?b) <--- (?a * _)  ~~~> (?a) ---> (_ list)
 //│ 
 //│ ◉ (_ * _) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1026,7 +1026,7 @@ let bigMul l1 l2 =
 //│                            ^^^^^^^
 //│ [ERROR] Type `int * _ list` does not match `_ -> _`
 //│ 
-//│         (int * _ list) ---> (?a) ~~~~ (?b) <--- (?d) <--- (?c) <--- (_ -> _)
+//│         (int * _ list) ---> (?a) ~~~> (_ -> ?a) ~~~>  (?a -> _ -> ?a) <--- (_ -> _ -> ?b)  <~~~ (_ -> ?b)  ~~~> (?b) <--- (?d) <--- (?c) <--- (_ -> _)
 //│ 
 //│ ◉ (int * _ list) comes from
 //│ │  - l.6    let base = (0, []) in
@@ -1085,7 +1085,7 @@ let bigMul l1 l2 =
 //│             ^^^^^^^^^^^^^^^^^^^^^
 //│ [ERROR] Type `int * _ list` does not match `_ list`
 //│ 
-//│         (int * _ list) ---> (?a) ~~~~ (?b) <--- (?d) <--- (?c) <--- (_ list)
+//│         (int * _ list) ---> (?a) ~~~> (_ -> ?a) ~~~>  (?a -> _ -> ?a) <--- (_ -> _ -> ?b)  <~~~ (_ -> ?b)  ~~~> (?b) <--- (?d) <--- (?c) <--- (_ list)
 //│ 
 //│ ◉ (int * _ list) comes from
 //│ │  - l.6    let base = (0, []) in
@@ -1140,7 +1140,7 @@ let bigMul l1 l2 =
 //│                                     ^^
 //│ [ERROR] Type `_ -> _` does not match `_ * _`
 //│ 
-//│         (_ -> _) ---> (?c) ---> (?d) ---> (?b) ~~~~ (?a) ---> (_ * _)
+//│         (_ -> _) ---> (?c) ---> (?d) ---> (?b) ~~~> (_ -> ?b) ~~~>  (_ -> _ -> ?b) ---> (?a -> _ -> ?a)  <~~~ (_ -> ?a)  ~~~> (?a) ---> (_ * _)
 //│ 
 //│ ◉ (_ -> _) comes from
 //│ │  - l.-26let bigAdd l1 l2 =
@@ -1199,7 +1199,7 @@ let bigMul l1 l2 =
 //│                 ^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
-//│         (_ list) ---> (?c) ---> (?d) ---> (?b) ~~~~ (?a) ---> (_ * _)
+//│         (_ list) ---> (?c) ---> (?d) ---> (?b) ~~~> (_ -> ?b) ~~~>  (_ -> _ -> ?b) ---> (?a -> _ -> ?a)  <~~~ (_ -> ?a)  ~~~> (?a) ---> (_ * _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1254,7 +1254,7 @@ let bigMul l1 l2 =
 //│                 ^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
-//│         (_ list) <--- (?a) ~~~~ (?c) ---> (_ -> _)
+//│         (_ list) <--- (?a) ~~~> (?a -> _) ~~~>  (_ -> ?a -> _) ---> (?mulByDigit) ---> (_ -> ?b)  ~~~> (?b) ---> (?c -> _)  ~~~> (?c) ---> (_ -> _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ ▲  - lib. let List.rev: 'a list -> 'a list
@@ -1301,7 +1301,7 @@ let bigMul l1 l2 =
 //│                        ^^
 //│ [ERROR] Type `_ -> _` does not match `_ * _`
 //│ 
-//│         (_ -> _) ---> (?b) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?c) ---> (_ * _)
+//│         (_ -> _) ---> (?b) ---> (?d) ---> (?e) ~~~> (_ -> ?e) ~~~>  (?c -> _ -> ?e) ---> (?a -> _ -> ?a)  <~~~ (_ -> ?a)  <~~~ (?a) <~~~ (?a -> _ -> ?a) <--- (?c -> _ -> ?e)  ~~~> (?c) ---> (_ * _)
 //│ 
 //│ ◉ (_ -> _) comes from
 //│ │  - l.-26let bigAdd l1 l2 =
@@ -1374,7 +1374,7 @@ let bigMul l1 l2 =
 //│                   ^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ * _`
 //│ 
-//│         (_ list) ---> (?b) ---> (?d) ---> (?e) ~~~~ (?a) ~~~~ (?c) ---> (_ * _)
+//│         (_ list) ---> (?b) ---> (?d) ---> (?e) ~~~> (_ -> ?e) ~~~>  (?c -> _ -> ?e) ---> (?a -> _ -> ?a)  <~~~ (_ -> ?a)  <~~~ (?a) <~~~ (?a -> _ -> ?a) <--- (?c -> _ -> ?e)  ~~~> (?c) ---> (_ * _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
@@ -1443,7 +1443,7 @@ let bigMul l1 l2 =
 //│                   ^^^^^^^^^^^
 //│ [ERROR] Type `_ list` does not match `_ -> _`
 //│ 
-//│         (_ list) ---> (?c) ---> (?d) ---> (?b) ~~~~ (?a) ~~~~ (?b) <--- (?d) <--- (?c) <--- (_ -> _)
+//│         (_ list) ---> (?c) ---> (?d) ---> (?b) ~~~> (_ -> ?b) ~~~>  (_ -> _ -> ?b) ---> (?a -> _ -> ?a)  <~~~ (_ -> ?a)  <~~~ (?a) <~~~ (_ -> ?a) ~~~>  (?a -> _ -> ?a) <--- (_ -> _ -> ?b)  <~~~ (_ -> ?b)  ~~~> (?b) <--- (?d) <--- (?c) <--- (_ -> _)
 //│ 
 //│ ◉ (_ list) comes from
 //│ │  - l.5      match x2 with | [] -> [] | h::t -> bigAdd ((mulByDigit h l1), res) in
