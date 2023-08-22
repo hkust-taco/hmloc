@@ -50,20 +50,28 @@ trait UnificationSolver extends TyperDatatypes {
     override def hasNext: Bool = queue.nonEmpty
     override def next(): Unification = queue.dequeue()
 
-    def unify(a: ST, b: ST): Unit = {
+    def unify(a: ST, b: ST)(implicit ctx: Ctx): Unit = {
       enqueueUnification(Unification.fromLhsRhs(a, b))
-      unify()
+      unify
     }
 
-    def unify(): Unit = foreach { u =>
+    def unify(implicit ctx: Ctx): Unit = foreach { u =>
       println(s"U $u")
       val st1 = u.a.unwrapProvs
       val st2 = u.b.unwrapProvs
 
       (st1, st2) match {
         case (tr1: TypeRef, tr2: TypeRef) if tr1.defn === tr2.defn && tr1.targs.length === tr2.targs.length =>
-          tr1.targs.zip(tr2.targs).foreach { case (arg1, arg2) =>
-            enqueueUnification(Unification(Queue(Constructor(arg1, arg2, tr1, tr2, u))))
+          tr1.targs.zip(tr2.targs).zipWithIndex.foreach { case ((arg1, arg2), idx) =>
+            val pol = ctx.tyDefs.get(tr1.defn.name).flatMap(tdef => {
+              val targ = tdef.targs(idx)
+              tdef.tvarVariances.flatMap(varStore => varStore.get(targ).map(varInfo => {
+                // simplify variance to boolean polarity info since we don't have/expect
+                // to create text flow representations for invariant and bivariant flows
+                varInfo.isCovariant || varInfo.isContravariant
+              }))
+            }).getOrElse(lastWords(s"Unable to find variance info for $tr1 argument $idx"))
+            enqueueUnification(Unification(Queue(Constructor(arg1, arg2, tr1, tr2, u, pol))))
           }
         case (_: TypeRef, _: TypeRef) => addError(u)
         case (tup1: TupleType, tup2: TupleType) if tup1.fields.length === tup2.fields.length =>
@@ -72,7 +80,7 @@ trait UnificationSolver extends TyperDatatypes {
             }
         case (_: TupleType, _: TupleType) => addError(u)
         case (FunctionType(arg1, res1), FunctionType(arg2, res2)) =>
-          enqueueUnification(Unification(Queue(Constructor(arg1, arg2, st1, st2, u))))
+          enqueueUnification(Unification(Queue(Constructor(arg1, arg2, st1, st2, u, false))))
           enqueueUnification(Unification(Queue(Constructor(res1, res2, st1, st2, u))))
         case (_: FunctionType, _: FunctionType) => addError(u)
         case (tv1: TypeVariable, tv2: TypeVariable) if tv1 === tv2 =>
@@ -153,8 +161,8 @@ trait UnificationSolver extends TyperDatatypes {
     }
     
      def extrudeDF(df: DataFlow)(implicit lvl: Int): Unit = df match {
-       case c@Constraint(a, b) => extrudeTy(a); extrudeTy(b)
-       case Constructor(a, b, ctora, ctorb, uni) =>
+       case Constraint(a, b) => extrudeTy(a); extrudeTy(b)
+       case Constructor(a, b, ctora, ctorb, uni, _) =>
          extrudeTy(a); extrudeTy(b); extrudeTy(ctora); extrudeTy(ctorb); extrudeUni(uni)
      }
 
@@ -233,7 +241,7 @@ trait UnificationSolver extends TyperDatatypes {
 
     lazy val constraintSequence: Ls[(Constraint, Int)] = flow.iterator.flatMap {
       case c: Constraint => (c, level) :: Nil
-      case Constructor(a, b, ctora, ctorb, uni) =>
+      case Constructor(a, b, ctora, ctorb, uni, _) =>
         (Constraint.startTransition(a, ctora), level) :: uni.constraintSequence ::: (Constraint.endTransition(ctorb, b), level) :: Nil
     }.toList
 
@@ -260,48 +268,53 @@ trait UnificationSolver extends TyperDatatypes {
 
     def createFullSequenceString(lvl: Int = 0)(implicit ctx: Ctx, sctx: ShowCtx, showTV: Set[TV]): Str = {
       val arrowStr = (c: Constraint) => if (c.dir) "--->" else "<---"
-      val ctorArrowStr = (dir: Bool) => if (dir) "~~~>" else "<~~~"
+      val ctorArrowStr = (ctor: Constructor, leftEnd: Bool) =>
+        if (leftEnd) {
+          if (ctor.aproj) "~~~>" else "<~~~"
+        } else {
+          if (ctor.bproj) "~~~>" else "<~~~"
+        }
 
       val sequenceString: Ls[Either[Message, Str]] = flow.iterator.sliding(2).zipWithIndex.collect {
         // single constraint
         case (Seq(c@Constraint(a, b)), _) => L(msg"(${a.expOcamlTy()}) ${arrowStr(c)} (${b.expOcamlTy()})") :: Nil
         // single constructor show projected types
-        case (Seq(ctor@Constructor(a, b, _, _, uni)), _) => L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())} ") ::
+        case (Seq(ctor@Constructor(a, b, _, _, uni, _)), _) => L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(ctor, true)} ") ::
           R(uni.createFullSequenceString(lvl + 1)) ::
-          L(msg" ${ctorArrowStr(ctor.typeArgDir(false))} (${b.expOcamlTy()})") :: Nil
+          L(msg" ${ctorArrowStr(ctor, false)} (${b.expOcamlTy()})") :: Nil
         case (Seq(c: Constraint, _: Constraint), idx) if idx == 0 => L(msg"(${c.a.expOcamlTy()}) ${arrowStr(c)} (${c.b.expOcamlTy()})") :: Nil
         case (Seq(c: Constraint, _: Constraint), _) => L(msg"${arrowStr(c)} (${c.b.expOcamlTy()})") :: Nil
         case (Seq(c: Constraint, ctor: Constructor), idx) if idx == 0 =>
-          L(msg"(${c.a.expOcamlTy()}) ${arrowStr(c)} (${c.b.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())}") :: Nil
+          L(msg"(${c.a.expOcamlTy()}) ${arrowStr(c)} (${c.b.expOcamlTy()}) ${ctorArrowStr(ctor, true)}") :: Nil
         case (Seq(c: Constraint, ctor: Constructor), _) =>
-          L(msg"${arrowStr(c)} (${c.b.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())}") :: Nil
+          L(msg"${arrowStr(c)} (${c.b.expOcamlTy()}) ${ctorArrowStr(ctor, true)}") :: Nil
         // if there are two constructors side by side
         // project their common type once
-        case (Seq(ctor@Constructor(a, b, _, _, uni), ctor2: Constructor), idx) if ctor.b === ctor2.a =>
+        case (Seq(ctor@Constructor(a, b, _, _, uni, _), ctor2: Constructor), idx) if ctor.b === ctor2.a =>
           if (idx == 0) {
-            L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())} ") ::
+            L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(ctor, true)} ") ::
               R(uni.createFullSequenceString(lvl + 1)) ::
-              L(msg" (${b.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir(false))}") :: Nil
+              L(msg" (${b.expOcamlTy()}) ${ctorArrowStr(ctor, false)}") :: Nil
           } else {
             R(uni.createFullSequenceString(lvl + 1)) ::
-              L(msg" ${ctorArrowStr(ctor.typeArgDir(false))} (${b.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())}") :: Nil
+              L(msg" ${ctorArrowStr(ctor, false)} (${b.expOcamlTy()}) ${ctorArrowStr(ctor, true)}") :: Nil
           }
         // if constructor is first in the sequence project left type
-        case (Seq(ctor@Constructor(a, b, _, _, uni), _), idx) =>
+        case (Seq(ctor@Constructor(a, b, _, _, uni, _), _), idx) =>
           if (idx == 0) {
-            L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(ctor.typeArgDir())} ") ::
+            L(msg"(${a.expOcamlTy()}) ${ctorArrowStr(ctor, true)} ") ::
               R(uni.createFullSequenceString(lvl + 1)) ::
-              L(msg" ${ctorArrowStr(ctor.typeArgDir(false))} (${b.expOcamlTy()})") ::
+              L(msg" ${ctorArrowStr(ctor, false)} (${b.expOcamlTy()})") ::
               Nil
           } else {
             R(uni.createFullSequenceString(lvl + 1)) ::
-            L(msg" ${ctorArrowStr(ctor.typeArgDir(false))} (${b.expOcamlTy()})") :: Nil
+            L(msg" ${ctorArrowStr(ctor, false)} (${b.expOcamlTy()})") :: Nil
           }
       }.flatten.toList ::: (if (flow.length != 1) flow.last match {
           case c: Constraint => L(msg"${arrowStr(c)} (${c.b.expOcamlTy()})") :: Nil
           // if constructor is last in the sequence project the right type argument
-          case ctor@Constructor(_, b, _, _, uni) =>
-            R(uni.createFullSequenceString(lvl + 1)) :: L(msg" ${ctorArrowStr(ctor.typeArgDir(false))} (${b.expOcamlTy()})") :: Nil
+          case ctor@Constructor(_, b, _, _, uni, _) =>
+            R(uni.createFullSequenceString(lvl + 1)) :: L(msg" ${ctorArrowStr(ctor, false)} (${b.expOcamlTy()})") :: Nil
         } else { Nil })
 
       sequenceString.map(msg => msg.fold(msg => msg.showIn(sctx), msgstr => msgstr)).mkString(" ")
@@ -365,26 +378,26 @@ trait UnificationSolver extends TyperDatatypes {
           // single constraint
           case (Seq(c: Constraint), _) => constraintToMessage(c, true).map(L(_))
           // single constructor show projected types
-          case (Seq(ctor@Constructor(_, _, _, _, uni)), _) =>
+          case (Seq(ctor: Constructor), _) =>
             L(constructorArgumentMessage(ctor, true, level)) ::
-              R(uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV)) ::
+              R(ctor.uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV)) ::
               L(constructorArgumentMessage(ctor, false, level)) ::
               Nil
           case (Seq(c: Constraint, _: Constraint), _) => constraintToMessage(c).map(L(_))
           case (Seq(c: Constraint, _: Constructor), _) => constraintToMessage(c, true).map(L(_))
           // if there are two constructors side by side
           // project their common type once
-          case (Seq(ctor@Constructor(_, _, _, _, uni), ctor2: Constructor), idx) if ctor.b === ctor2.a =>
+          case (Seq(ctor: Constructor, ctor2: Constructor), idx) if ctor.b === ctor2.a =>
             val project = L(constructorArgumentMessage(ctor, false, level))
-            val nestedReport = R(uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV))
+            val nestedReport = R(ctor.uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV))
             if (idx == 0) {
               L(constructorArgumentMessage(ctor, true, level)) :: nestedReport :: project :: Nil
             } else {
               nestedReport :: project :: Nil
             }
           // if constructor is first in the sequence project left type
-          case (Seq(ctor@Constructor(_, _, _, _, uni), _), idx) =>
-            val nestedReport = R(uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV)) :: Nil
+          case (Seq(ctor: Constructor, _), idx) =>
+            val nestedReport = R(ctor.uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV)) :: Nil
             if (idx == 0) {
               L(constructorArgumentMessage(ctor, true, level)) :: nestedReport
             } else {
@@ -392,9 +405,9 @@ trait UnificationSolver extends TyperDatatypes {
             }
         }.flatten.toList ::: (if (flow.length != 1) flow.last match {
           case c: Constraint => constraintToMessage(c, true).map(L(_))
-          case ctor@Constructor(_, _, _, _, uni) =>
+          case ctor: Constructor =>
             // if constructor is last in the sequence project type
-            R(uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV)) :: L(constructorArgumentMessage(ctor, false, level)) :: Nil
+            R(ctor.uni.createErrorMessage(level + 1, S(sctx))(ctx, showTV)) :: L(constructorArgumentMessage(ctor, false, level)) :: Nil
         } else { Nil })
         UniErrReport(mainMsg, seqString, msgs, sctx, level)
       }
@@ -422,8 +435,20 @@ trait UnificationSolver extends TyperDatatypes {
         val c1 = Constraint(b, a)
         c1.dir = !c.dir
         c1
-      case Constructor(a, b, ctora, ctorb, flow) =>
-        Constructor(b, a, ctorb, ctora, flow.rev)
+      case Constructor(a, b, ctora, ctorb, flow, pol) =>
+        Constructor(b, a, ctorb, ctora, flow.rev, pol)
+    }
+
+    // direction of flow at the type a end
+    def aproj: Bool = this match {
+      case c: Constraint => c.dir
+      case ctor: Constructor => !ctor.pol ^ ctor.uni.flow.head.aproj
+    }
+
+    // direction of flow at the type b end
+    def bproj: Bool = this match {
+      case c: Constraint => c.dir
+      case ctor: Constructor => !ctor.pol ^ ctor.uni.flow.last.bproj
     }
 
     lazy val level: Int = this match {
@@ -433,7 +458,7 @@ trait UnificationSolver extends TyperDatatypes {
 
     override def toString: Str = this match {
       case c@Constraint(a, b) => if (c.dir) s"${a.unwrapProvs} <: ${b.unwrapProvs}" else s"${a.unwrapProvs} :> ${b.unwrapProvs}"
-      case Constructor(a, b, ctora, ctorb, flow) => s"[${a.unwrapProvs} - ${ctora.unwrapProvs} ~ ${ctorb.unwrapProvs} - ${b.unwrapProvs}, $flow]"
+      case Constructor(a, b, ctora, ctorb, flow, _) => s"[${a.unwrapProvs} - ${ctora.unwrapProvs} ~ ${ctorb.unwrapProvs} - ${b.unwrapProvs}, $flow]"
     }
   }
 
@@ -481,42 +506,7 @@ trait UnificationSolver extends TyperDatatypes {
       c
     }
   }
-  case class Constructor(a: ST, b: ST, ctora: ST, ctorb: ST, uni: Unification) extends DataFlow {
-    def typeArgDir(start: Bool = true): Bool = {
-      if (start) {
-        val dir = uni.flow.head match {
-          case c: Constraint => c.dir
-          case ctor: Constructor => ctor.typeArgDir(start)
-        }
-
-        val pol = ctora.unwrapProvs match {
-          case FunctionType(lhs, _) if lhs.unwrapProvs === a.unwrapProvs => false
-          case _: FunctionType => true
-          case _: TupleType => true
-          case TypeRef(defn, targs) => true // TODO use variance
-          case _ => ???
-        }
-
-        if (pol) dir else !dir
-      } else {
-        val dir = uni.flow.last match {
-          case c: Constraint => c.dir
-          case ctor: Constructor => ctor.typeArgDir(start)
-        }
-
-        val pol = ctorb.unwrapProvs match {
-          case FunctionType(lhs, _) if lhs.unwrapProvs === b.unwrapProvs => false
-          case _: FunctionType => true
-          case _: TupleType => true
-          case TypeRef(defn, targs) => true // TODO use variance
-          case _ => ???
-        }
-
-        if (pol) dir else !dir
-      }
-    }
-  }
-
+  case class Constructor(a: ST, b: ST, ctora: ST, ctorb: ST, uni: Unification, pol: Bool=true) extends DataFlow
 
   // Note: maybe this and `extrude` should be merged?
   def freshenAbove(lim: Int, ty: SimpleType, rigidify: Bool = false)(implicit lvl: Int): SimpleType = {
@@ -527,7 +517,7 @@ trait UnificationSolver extends TyperDatatypes {
         val c1 = Constraint(freshen(a), freshen(b))
         c1.dir = c.dir
         c1
-      case Constructor(a, b, ctora, ctorb, uni) =>
+      case Constructor(a, b, ctora, ctorb, uni, _) =>
         Constructor(freshen(a), freshen(b), freshen(ctora), freshen(ctorb), freshenUnification(uni))
     }
 

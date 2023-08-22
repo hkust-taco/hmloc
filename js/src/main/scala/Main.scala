@@ -263,7 +263,8 @@ object Main {
           }
         }
       }
-      val (mainMsg, seqStr, msgs, _, _) = UniErrReport.unapply(err).get
+      // TODO Update error reporting logic as in DiffTests
+      val (mainMsg, seqStr, msgs, _, _, _) = UniErrReport.unapply(err).get
       val sctx = show.getOrElse(Message.mkCtx(err.allMsgs.map(_._1)))
 
       if (err.level === 0) {
