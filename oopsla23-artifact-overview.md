@@ -39,7 +39,8 @@ HMloc. Type errors for programs show detailed data flow information. The artifac
 includes a test suite and many example programs and their reported errors.
 
 The `shared/src/test/diff/ocaml` directory contains tests. Some notable ones are:
-  - `Survey*.mls` are the example programs used in user survey described in the paper
+  - `OriginalDraftIntro.mls` has the introductory examples covered in the paper in section 1 and 2
+  - `Survey*.mls` are the example programs used in user survey described in the paper. The exact user survey program and errors are in the appendix and the results are discussed in section 5 of the paper. Note: that the extra wordings/format might have changed since the user survey however the core data flow information and visualization is retained.
   - `OcamlPresentation.mls` - demonstrates a variety of errors
   - `LetPoly.mls` - shows errors in code that uses let polymorphism
   - `Realistic.mls` - shows examples that might occur in an actual codebase
@@ -97,7 +98,7 @@ The user will be attached to the shell of the container after the image gets pul
 
 ## Experimenting with HMloc
 
-We provide two ways of experimenting with HMloc. A test suite that runs example files and a web demo where the user can type their programs and see the results live.
+We provide two ways of experimenting with HMloc. A test suite that runs example files and a web demo where the user can type their programs and see the results live. The error messages can sometimes can get quite verbose. This is currently a limitation of this approach as is discussed in section 5.4 of the paper.
 
 We recommend using the the test suite.
 
@@ -134,3 +135,5 @@ then open the `local_testing.html` file in a browser.
 | **Top level declarations** | | |
 | definition | val foo: T | def foo x = t |
 | algebraic data type | `type 'a list = Cons of ('a, 'a list) \| Nil` | Cons(1, Nil) |
+
+The syntax for HMloc is a derived from a reduced subset of OCaml. The parser implementation is custom and does not handle all the corner cases expected of a full parser implementation. We encourage users to reference existing examples for specific nuances concerning the syntax.
