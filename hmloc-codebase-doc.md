@@ -44,7 +44,7 @@ The typer accepts the abstract syntax tree of a program
 and performs type inference. It tracks source locations of the program terms.
 It wraps the inferred type with the provenance that contains the source location
 of the corresponding terms.
-For more information about the type system, see the paper.
+For more information about the type system, see section 3 of the paper.
 
 The corresponding files are:
 - `Typer.scala` contains the main typer class.
@@ -98,7 +98,7 @@ adds them to the `Ctx`.
 
 `UnificationSolver.scala` defines the `UnificationSolver` class which unifies types.
 Unification is particularly interesting because it tracks the data flow through
-source code locations. As described in the corresponding paper, it uses
+source code locations. As described in section 4 of the corresponding paper, it uses
 the provenance of types, which contains the source code locations,
 to track the data flow.
 
