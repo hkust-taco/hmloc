@@ -86,8 +86,7 @@ docker build --tag 'hmloc-oopsla23' .
 docker run -it --rm 'hmloc-oopsla23'
 ```
 
-The user will be attached to the shell of the container after the image gets pulled and the container is launched.
-Please `cd` to `hmloc/` and launch the SBT shell by typing `sbt`.
+The user will be attached to the shell of the container after the image gets pulled and the container is launched. Launch the SBT shell by typing `sbt`.
 
 ### Setting up from Scratch
 
