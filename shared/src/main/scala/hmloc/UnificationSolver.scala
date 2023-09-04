@@ -8,6 +8,11 @@ import scala.collection.immutable.Queue
 import scala.collection.mutable
 import scala.collection.mutable.{Queue => MutQueue, Set => MutSet, Map => MutMap}
 
+/* Unification solver creates data flows from sub-typing constraints. It also formats
+ * reports for incorrect data flows.
+ * 
+ * The unification algorithm is formally described in the section 4 of the paper.
+ */
 trait UnificationSolver extends TyperDatatypes {
   self: Typer =>
 
