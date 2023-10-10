@@ -177,35 +177,23 @@ type ('a, 'b) heapD = HeapD of 'a * 'b list
 (("hi", 1) :: Nil)
 (("hi", 1) :: Nil):heap
 (("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ [ERROR] Type `_ list` does not match `heap`
+//│ [ERROR] Type `(string * int) list` does not match `heap`
 //│ 
-//│         (_ list) ---> (heap)
+//│         ((string * int) list) ---> (heap)
 //│ 
-//│ ◉ (_ list) comes from
+//│ ◉ ((string * int) list) comes from
 //│ │  - l.2  (("hi", 1) :: Nil):heap
 //│ │         ^^^^^^^^^^^^^^^^^^
 //│ ▼ 
 //│ ◉ (heap) comes from
 //│    - l.2  (("hi", 1) :: Nil):heap
 //│                              ^^^^
-//│ [ERROR] Type `_ list` does not match `heap`
-//│ 
-//│         (_ list) ---> (heap)
-//│ 
-//│ ◉ (_ list) comes from
-//│ │  - l.3  (("hi", 1) :: ("bye", 2) :: Nil):heap
-//│ │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//│ ▼ 
-//│ ◉ (heap) comes from
-//│    - l.3  (("hi", 1) :: ("bye", 2) :: Nil):heap
-//│                                            ^^^^
 //│ res: list[(string, int,)]
 //│ res: heap
 //│ res: heap
-//│ U max: 3, total: 25
-//│ UERR 2 errors
-//│ L: 0 [list['a123] ~ heap, list['a123] <: heap]
-//│ L: 0 [list['a121] ~ heap, list['a121] <: heap]
+//│ U max: 2, total: 6
+//│ UERR 1 errors
+//│ L: 0 [list[([[string]], [[int]],)] ~ heap, list[([[string]], [[int]],)] <: heap]
 
 let update h str i = (str,i)::h
 //│ update: list[('a, 'b,)] -> 'a -> 'b -> list[('a, 'b,)]
@@ -229,21 +217,21 @@ let interp2 = (fun (env:env) opt ->
 //│                ^^^^
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.215:	fun (env: env) _ -> []
+//│ ║  l.203:	fun (env: env) _ -> []
 //│ ╙──      	    ^^^^^^^^^^^^
 //│ res: err -> list['a]
 //│ ╔══[ERROR] Unsupported pattern shape:
 //│ ║  
-//│ ║  l.216:	let interp2 = (fun (env:env) opt ->
+//│ ║  l.204:	let interp2 = (fun (env:env) opt ->
 //│ ╙──      	                   ^^^^^^^^^^^^^
 //│ ╔══[ERROR] identifier not found: opt
 //│ ║  
-//│ ║  l.217:	  match opt with
+//│ ║  l.205:	  match opt with
 //│ ╙──      	        ^^^
 //│ interp2: err -> int
 //│ U max: 1, total: 2
 //│ UERR 1 errors
-//│ L: 0 [err ~ option['a132'], err <: option['a132']]
+//│ L: 0 [err ~ option['a99'], err <: option['a99']]
 
 let head xs = match xs with
   Cons(x, xs) -> x
@@ -305,7 +293,7 @@ let checkagain (v: (int, int, (int, int))) =
 //│ │                                      ^
 //│ ▼ 
 //│ ◉ (int) comes from
-//│    - l.-223let (+): int -> int -> int
+//│    - l.-211let (+): int -> int -> int
 //│                            ^^^
 //│ [ERROR] Type `int` does not match `err`
 //│ 
@@ -344,24 +332,24 @@ let checkagain (v: (int, int, (int, int))) =
 //│                      ^
 //│ ╔══[ERROR] identifier not found: k
 //│ ║  
-//│ ║  l.298:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.286:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	           ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.298:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.286:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	              ^
 //│ ╔══[ERROR] identifier not found: k
 //│ ║  
-//│ ║  l.298:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.286:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	                             ^
 //│ ╔══[ERROR] identifier not found: d
 //│ ║  
-//│ ║  l.298:	   (a, b, (k, d)) -> a + b + k + d
+//│ ║  l.286:	   (a, b, (k, d)) -> a + b + k + d
 //│ ╙──      	                                 ^
 //│ checkagain: (int, int, (int, int,),) -> int
 //│ U max: 3, total: 15
 //│ UERR 2 errors
-//│ L: 2 [int ~ err, [int - ([int], [int],) ~ ([[err]], [[err]],) - err, L: 1 [([int], [int],) ~ ([[err]], [[err]],), [([int], [int],) - ([int], [int], [([int], [int],)],) ~ ([α157'], [α158'], [α159'],) - α159', L: 0 [([int], [int], [([int], [int],)],) ~ ([α157'], [α158'], [α159'],), ([int], [int], [([int], [int],)],) :> α155', α155' <: ([α157'], [α158'], [α159'],)]], α159' <: ([[err]], [[err]],)]]]
+//│ L: 2 [int ~ err, [int - ([int], [int],) ~ ([[err]], [[err]],) - err, L: 1 [([int], [int],) ~ ([[err]], [[err]],), [([int], [int],) - ([int], [int], [([int], [int],)],) ~ ([α124'], [α125'], [α126'],) - α126', L: 0 [([int], [int], [([int], [int],)],) ~ ([α124'], [α125'], [α126'],), ([int], [int], [([int], [int],)],) :> α122', α122' <: ([α124'], [α125'], [α126'],)]], α126' <: ([[err]], [[err]],)]]]
 //│ L: 0 [err ~ int, err <: int]
 
 let (<): 'a -> 'a -> bool
@@ -412,47 +400,25 @@ let g x = x, if true then x else x
 [0, 1; 2, 3, 4]
 //│ [ERROR] Type `int * int * int` does not match `int * int`
 //│ 
-//│         (int * int * int) ~~~>  ((int * int * int) * _ list) ---> (?a0 * ?a0 list)  (?a0) ~~~> (?a0 list) ~~~>  ((int * int) * ?a0 list) ---> (?a * ?a list)  ~~~> (?a list)  ~~~> (?a) ~~~> (?a * ?a list) <--- ((int * int) * ?a0 list)  <~~~ (int * int)
+//│         (int * int * int) ~~~>  ((int * int * int) list) ---> ((int * int) list)  ~~~> (int * int)
 //│ 
 //│ ◉ (int * int * int) comes from
 //│    - l.1  [0, 1; 2, 3, 4]
 //│                  ^^^^^^^
-//│   ◉ ((int * int * int) * _ list) comes from
+//│   ◉ ((int * int * int) list) comes from
 //│   │  - l.1  [0, 1; 2, 3, 4]
 //│   │                ^^^^^^^
 //│   ▼ 
-//│   ◉ (?a0 * ?a0 list) comes from
+//│   ◉ ((int * int) list) comes from
 //│      - l.1  [0, 1; 2, 3, 4]
-//│                    ^^^^^^^
-//│ ◉ (?a0) is assumed for
-//│   ◉ (?a0 list) comes from
-//│      - l.1  [0, 1; 2, 3, 4]
-//│                    ^^^^^^^
-//│     ◉ ((int * int) * ?a0 list) comes from
-//│     │  - l.1  [0, 1; 2, 3, 4]
-//│     │          ^^^^^^^^^^^^^
-//│     ▼ 
-//│     ◉ (?a * ?a list) comes from
-//│        - l.1  [0, 1; 2, 3, 4]
-//│                ^^^^^^^^^^^^^
-//│   ◉ (?a list) comes from
-//│ ◉ (?a) is assumed for
-//│   ◉ (?a * ?a list) comes from
-//│   ▲  - l.1  [0, 1; 2, 3, 4]
-//│   │          ^^^^^^^^^^^^^
-//│   │ 
-//│   ◉ ((int * int) * ?a0 list) comes from
-//│      - l.1  [0, 1; 2, 3, 4]
-//│              ^^^^^^^^^^^^^
+//│             ^^^^^^^^^^^^^^^
 //│ ◉ (int * int) comes from
 //│    - l.1  [0, 1; 2, 3, 4]
 //│            ^^^^
-//│ res: list['a]
-//│   where
-//│     'a = (int, int, int,), (int, int,)
-//│ U max: 3, total: 15
+//│ res: list[(int, int,)]
+//│ U max: 1, total: 3
 //│ UERR 1 errors
-//│ L: 2 [([[int]], [[int]], [[int]],) ~ ([[int]], [[int]],), [([[int]], [[int]], [[int]],) - ([([[int]], [[int]], [[int]],)], [[list['a191]]],) ~ ('a190, list['a190],) - 'a190, L: 0 [([([[int]], [[int]], [[int]],)], [[list['a191]]],) ~ ('a190, list['a190],), ([([[int]], [[int]], [[int]],)], [[list['a191]]],) <: ('a190, list['a190],)]], ['a190 - list['a190] ~ list['a189] - 'a189, L: 1 [list['a190] ~ list['a189], [list['a190] - ([([[int]], [[int]],)], [[list['a190]]],) ~ ('a189, list['a189],) - list['a189], L: 0 [([([[int]], [[int]],)], [[list['a190]]],) ~ ('a189, list['a189],), ([([[int]], [[int]],)], [[list['a190]]],) <: ('a189, list['a189],)]]]], ['a189 - ('a189, list['a189],) ~ ([([[int]], [[int]],)], [[list['a190]]],) - ([[int]], [[int]],), L: 0 [('a189, list['a189],) ~ ([([[int]], [[int]],)], [[list['a190]]],), ('a189, list['a189],) :> ([([[int]], [[int]],)], [[list['a190]]],)]]]
+//│ L: 1 [([[int]], [[int]], [[int]],) ~ ([[int]], [[int]],), [([[int]], [[int]], [[int]],) - list[([[int]], [[int]], [[int]],)] ~ list[([[int]], [[int]],)] - ([[int]], [[int]],), L: 0 [list[([[int]], [[int]], [[int]],)] ~ list[([[int]], [[int]],)], list[([[int]], [[int]], [[int]],)] <: list[([[int]], [[int]],)]]]]
 
 let increment x = match x with
   | 0 -> 1
@@ -497,5 +463,5 @@ let len ls = match ls with | "hd :: tl" -> 1 | [] -> 0
 //│     'b = list['a], string
 //│ U max: 1, total: 4
 //│ UERR 1 errors
-//│ L: 0 [string ~ list['a207'], string :> α205', α205' <: list['a207']]
+//│ L: 0 [string ~ list['a162'], string :> α160', α160' <: list['a162']]
 

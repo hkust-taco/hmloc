@@ -10,6 +10,8 @@ import scala.collection.mutable.{Map => MutMap}
 /** A class encapsulating type inference state.
  *  It uses its own internal representation of types and type variables, using mutable data structures.
  *  Inferred SimpleType values are then turned into CompactType values for simplification.
+ * 
+ * The typing logic and state closely corresponds to the typing rule and explanations given in section 3 of the paper.
  */
 class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     extends TypeDefs with TypeSimplifier {
@@ -301,7 +303,11 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
     */
   def hintProv(p: TP): TP = noProv
   
-  /** Infer the type of a term. */
+  /** Infer the type of a term.
+   * 
+   * This implementation is closely related to the typing rules described in
+   * section 3 of the paper.
+   */
   def typeTerm(term: Term, desc: String = "")(implicit ctx: Ctx, raise: Raise, vars: Map[Str, SimpleType] = Map.empty): SimpleType
         = trace(s"$lvl. Typing ${if (ctx.inPattern) "pattern" else "term"} $term ${term.getClass.getSimpleName}") {
     // implicit val prov: TypeProvenance = ttp(term)
@@ -366,6 +372,25 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
         val param_ty = typePattern(pat)(newCtx, raise, vars)
         val body_ty = typeTerm(body)(newCtx, raise, vars)
         FunctionType(param_ty, body_ty)(tp(term.toLoc, "function"))
+      // specialize Cons Nil application for better error messages
+      case cons@App(Var("Cons"), Tup(v :: Var("Nil") :: Nil)) =>
+        // version 2 inline Nil
+//        val arg_var = freshVar(tp(v.toCoveringLoc, "cons arg"))
+//        val v_ty = typeTerm(v)
+//        con(v_ty, arg_var, arg_var)
+//        TypeRef(TypeName("list"), arg_var :: Nil)(tp(cons.toLoc, "cons"))
+        // version 2 remove Nil completely
+        val v_ty = typeTerm(v)
+        TypeRef(TypeName("list"), v_ty :: Nil)(tp(cons.toLoc, "cons"))
+      // specialize Cons application for better error messages
+      case cons@App(Var("Cons"), Tup(v :: vs :: Nil)) =>
+        // version 2 simplified style
+        val arg_var = freshVar(tp(v.toCoveringLoc, "cons arg"))
+        val v_ty = typeTerm(v)
+        con(v_ty, arg_var, arg_var)
+        val vs_ty = typeTerm(vs)
+        val res_ty = TypeRef(TypeName("list"), v_ty :: Nil)(tp(cons.toLoc, "cons"))
+        con(vs_ty, res_ty, res_ty)
       case App(f, a) =>
         // version 2 simplified style
         val fun_ty = typeTerm(f)
