@@ -385,9 +385,7 @@ class Typer(var dbg: Boolean, var verbose: Bool, var explainErrors: Bool)
       // specialize Cons application for better error messages
       case cons@App(Var("Cons"), Tup(v :: vs :: Nil)) =>
         // version 2 simplified style
-        val arg_var = freshVar(tp(v.toCoveringLoc, "cons arg"))
         val v_ty = typeTerm(v)
-        con(v_ty, arg_var, arg_var)
         val vs_ty = typeTerm(vs)
         val res_ty = TypeRef(TypeName("list"), v_ty :: Nil)(tp(cons.toLoc, "cons"))
         con(vs_ty, res_ty, res_ty)
